@@ -568,6 +568,13 @@
                                     "usecase": "Strengthens website safety."
                                 },
                                 {
+                                    "text": "Crypto redirection security improvements",
+                                    "status": "next",
+                                    "contributors": ["Vivek"],
+                                    "note": "Adding stronger redirect protection.",
+                                    "usecase": "Prevents wrong or unsafe redirects."
+                                },
+                                {
                                     "text": "Template-based event pages",
                                     "status": "later",
                                     "contributors": ["Vivek"],
@@ -575,11 +582,11 @@
                                     "usecase": "Makes future event pages faster to build."
                                 },
                                 {
-                                    "text": "Crypto redirection security improvements",
-                                    "status": "next",
-                                    "contributors": ["Vivek"],
-                                    "note": "Adding stronger redirect protection.",
-                                    "usecase": "Prevents wrong or unsafe redirects."
+                                    "text": "Events listing and joining via Web Zoom SDK",
+                                    "status": "later",
+                                    "contributors": ["Subhrajit"],
+                                    "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
+                                    "usecase": "1. Display upcoming events on the website.\n2. User selects an event to join.\n3. System generates a unique session token (JWT) for the user.\n4. Token can be retrieved via scanning QR code or app code."
                                 }
                             ]
                         },
@@ -697,11 +704,11 @@
                                     "usecase": "Keeps lead records updated."
                                 },
                                 {
-                                    "text": "Data sync optimization",
+                                    "text": "Zoho CRM Data Migration",
                                     "status": "now",
                                     "contributors": ["Manish Neemnarayan"],
-                                    "note": "Improving how quickly data syncs.",
-                                    "usecase": "Makes CRM data more reliable."
+                                    "note": "Enhancing the speed and reliability of CRM data synchronization during migration.",
+                                    "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making."
                                 }
                             ]
                         },
@@ -861,18 +868,32 @@
                                     "usecase": "Prepares for future expansion."
                                 },
                                 {
-                                    "text": "Queue architecture refactor",
+                                    "text": "Centerstage: Queue architecture",
                                     "status": "next",
                                     "contributors": ["Vivek", "Manish Neemnarayan"],
                                     "note": "Improving how work is processed in the backend.",
                                     "usecase": "Makes the system more scalable."
                                 },
                                 {
-                                    "text": "Chat / Messenger backend",
+                                    "text": "Centerstage: Chat / Messenger backend",
                                     "status": "next",
                                     "contributors": ["Manish Neemnarayan", "Vivek"],
                                     "note": "Planning the backend for chat features.",
                                     "usecase": "Enables future messaging support."
+                                },
+                                {
+                                    "text": "Support for app-code authentication in API",
+                                    "status": "later",
+                                    "contributors": ["Vivek"],
+                                    "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
+                                    "usecase": "1. User generates a temporary app code from the mobile app.\n2. User submits the app code to the API endpoint.\n3. API validates the code and issues a short-lived JWT token."
+                                },
+                                {
+                                    "text": "Streaks",
+                                    "status": "later",
+                                    "contributors": ["Manish Neemnarayan", "Vivek"],
+                                    "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
+                                    "usecase": "1. Track daily/weekly participation of users in events or platform activities.\n2. Increment streak count when user performs the required action consecutively.\n3. Show streaks on user dashboard to motivate engagement.\n4. Optionally, provide rewards or badges for achieving streak milestones.\n5. Reset streak if the user misses a day/session."
                                 }
                             ]
                         },
