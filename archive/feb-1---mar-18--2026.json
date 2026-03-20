@@ -1,0 +1,1221 @@
+{
+            "metadata": {
+                        "title": "Khyaal Engineering Updates",
+                        "dateRange": "Feb 1 \u2013 Mar 18, 2026",
+                        "description": "Executive Updates"
+            },
+            "tracks": [
+                        {
+                                    "id": "platform",
+                                    "name": "Khyaal Platform",
+                                    "theme": "blue",
+                                    "subtracks": [
+                                                {
+                                                            "name": "Website",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Legacy page refresh \u2013 29 pages migrated and modernized",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Updated older pages to a cleaner and faster experience.",
+                                                                                    "usecase": "Improves page speed and usability.",
+                                                                                    "publishedDate": "2026-03-20"
+                                                                        },
+                                                                        {
+                                                                                    "text": "99 Subscription launch",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Launched a paid subscription option for users.",
+                                                                                    "usecase": "Supports recurring revenue."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Delhi Marathon event page",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Created a dedicated page for the event.",
+                                                                                    "usecase": "Helps users register and access event details easily."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Emailer templates for Travel and Axis Max",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Built reusable email designs for campaigns.",
+                                                                                    "usecase": "Speeds up campaign launches."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Chatbot UI fixes",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Improved the chatbot screen and flow.",
+                                                                                    "usecase": "Makes support easier to use."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Pulse SDK integration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Connected website activity tracking to Pulse.",
+                                                                                    "usecase": "Gives a better view of user behavior."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Crypto redirection issue RCA completed",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Found the cause of the wrong website redirect.",
+                                                                                    "usecase": "Helps prevent users from reaching the wrong page."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Initiated VAPT with Appknox",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Kicked off Vulnerability Assessment and Penetration Testing (VAPT) with Appknox for the platform.",
+                                                                                    "usecase": "Identifies and mitigates security vulnerabilities early to ensure platform safety and compliance."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Captcha implementation",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Adding a bot check on forms.",
+                                                                                    "usecase": "Reduces spam and fake submissions."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Rajkot event",
+                                                                                    "status": "now",
+                                                                                    "due": "23 Mar",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Created a dedicated page for the event.",
+                                                                                    "usecase": "Helps users register and access event details easily."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Missing Pulse events tracking",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Adding missing user activity tracking.",
+                                                                                    "usecase": "Improves reporting and journey analysis."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Legacy migration alerts and reporting",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Automating updates during migration work.",
+                                                                                    "usecase": "Keeps teams informed with less manual work."
+                                                                        },
+                                                                        {
+                                                                                    "text": "CMS modular blocks",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Creating reusable page sections.",
+                                                                                    "usecase": "Speeds up website content creation."
+                                                                        },
+                                                                        {
+                                                                                    "text": "VAPT fixes remediation",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Closing security issues found in testing.",
+                                                                                    "usecase": "Strengthens website safety."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Crypto redirection security improvements",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Adding stronger redirect protection.",
+                                                                                    "usecase": "Prevents wrong or unsafe redirects."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Template-based event pages",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Planning reusable event page designs.",
+                                                                                    "usecase": "Makes future event pages faster to build."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Events listing and joining via Web Zoom SDK",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
+                                                                                    "usecase": "1. Display upcoming events on the website.\n2. User selects an event to join.\n3. System generates a unique session token (JWT) for the user.\n4. Token can be retrieved via scanning QR code or app code."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "50Above50 Website",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Home page redesign",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Improved the main landing page look and feel.",
+                                                                                    "usecase": "Creates a better first impression."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Category details page redesign",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Simplified the category information page.",
+                                                                                    "usecase": "Helps users understand options more easily."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Certificate downloads for returning participants",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Enabled self-service certificate access.",
+                                                                                    "usecase": "Reduces support requests."
+                                                                        },
+                                                                        {
+                                                                                    "text": "2026 registration and app membership bundle",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Added a bundled registration offer.",
+                                                                                    "usecase": "Encourages membership sign-ups."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Coin redemption for category access",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Allowed users to use coins for rewards.",
+                                                                                    "usecase": "Increases engagement and repeat usage."
+                                                                        },
+                                                                        {
+                                                                                    "text": "50-50 Category Structure Refinement & Migration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Refined category structure by merging, updating, and adding categories while maintaining a total of 50. Migrated existing data to align with the new structure.",
+                                                                                    "usecase": "Ensures a consistent, optimized category framework for better content organization and user navigation."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Zoho integration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Connected website leads to Zoho.",
+                                                                                    "usecase": "Improves lead tracking."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Pulse SDK integration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Added analytics tracking to 50Above50.",
+                                                                                    "usecase": "Shows how users interact with the website."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Security review kick-off",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Started security review for the site.",
+                                                                                    "usecase": "Finds issues before they become risks."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Missing Pulse events tracking",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Adding missing activity tracking events.",
+                                                                                    "usecase": "Improves campaign and funnel analysis."
+                                                                        },
+                                                                        {
+                                                                                    "text": "VAPT fixes remediation",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Fixing issues found in security testing.",
+                                                                                    "usecase": "Improves website security."
+                                                                        },
+                                                                        {
+                                                                                    "text": "In-app transition",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Planning the move into the app journey.",
+                                                                                    "usecase": "Gives users a smoother app experience."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "50Above50 CRM",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Coin redemption integration in CRM",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Built the backend for coin-based rewards.",
+                                                                                    "usecase": "Lets users redeem categories using coins."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Zoho CRM connector",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Connected CRM systems for data flow.",
+                                                                                    "usecase": "Keeps lead records updated."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Zoho CRM Data Migration",
+                                                                                    "status": "now",
+                                                                                    "due": "20 Mar",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Enhancing the speed and reliability of CRM data synchronization during migration.",
+                                                                                    "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Manage Admin",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Tambola enhancements",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Improved admin controls for Tambola.",
+                                                                                    "usecase": "Makes event management easier."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Event data entry improvements",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Simplified event setup and editing.",
+                                                                                    "usecase": "Speeds up internal operations."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Event categories and sub-categories",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Organized events into clearer groups.",
+                                                                                    "usecase": "Improves event management."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Backward compatibility maintenance",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Kept older admin flows working.",
+                                                                                    "usecase": "Avoids disruption for existing users."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Product requests from Raissa",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Delivered requested admin improvements.",
+                                                                                    "usecase": "Supports product and business needs."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "API",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Tambola enhancements",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Updated the backend for Tambola features.",
+                                                                                    "usecase": "Supports the latest product flow."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Event data and category support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Improved backend handling for events.",
+                                                                                    "usecase": "Makes event setup cleaner."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Backward compatibility layer",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Kept older integrations working.",
+                                                                                    "usecase": "Prevents breaks during updates."
+                                                                        },
+                                                                        {
+                                                                                    "text": "KYC protocol migration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Updated the identity verification flow.",
+                                                                                    "usecase": "Keeps the process compliant."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Event pagination support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Improved loading of event lists.",
+                                                                                    "usecase": "Makes the app faster for users."
+                                                                        },
+                                                                        {
+                                                                                    "text": "99 Subscription API endpoints",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Enabled subscription-related backend flows.",
+                                                                                    "usecase": "Supports purchase and management."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Event restriction logic",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Added rules for event access.",
+                                                                                    "usecase": "Controls who can join specific events."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Coin redemption API",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Built the API for coin redemption.",
+                                                                                    "usecase": "Allows reward usage in the system."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Zoho CRM integration API",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Connected backend data with Zoho.",
+                                                                                    "usecase": "Keeps CRM records in sync."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Security review kick-off",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Started API security testing.",
+                                                                                    "usecase": "Identifies technical risks early."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Membership status sync via Razorpay to Pulse",
+                                                                                    "status": "now",
+                                                                                    "due": "23 Mar",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Capturing all membership status updates (e.g., initiated, charged, started, cancelled, expired) and sending them to Pulse via Razorpay webhook triggers.",
+                                                                                    "usecase": "Provides complete visibility of the user membership lifecycle for better tracking, automation, and engagement."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Cross-platform automation",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Connecting tools for automated updates.",
+                                                                                    "usecase": "Reduces manual coordination."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Community query support",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Supporting ongoing community requests.",
+                                                                                    "usecase": "Keeps user help requests moving."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Ad hoc data support",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Handling one-off data needs.",
+                                                                                    "usecase": "Supports business operations quickly."
+                                                                        },
+                                                                        {
+                                                                                    "text": "VAPT fixes implementation",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Fixing security findings in the API.",
+                                                                                    "usecase": "Improves platform safety."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Centerstage API",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Planned support for a future product area.",
+                                                                                    "usecase": "Prepares for future expansion."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Centerstage: Queue architecture",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Improving how work is processed in the backend.",
+                                                                                    "usecase": "Makes the system more scalable."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Centerstage: Chat / Messenger backend",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Manish",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Planning the backend for chat features.",
+                                                                                    "usecase": "Enables future messaging support."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Support for app-code authentication in API",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
+                                                                                    "usecase": "1. User generates a temporary app code from the mobile app.\n2. User submits the app code to the API endpoint.\n3. API validates the code and issues a short-lived JWT token."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Streaks",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Manish",
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
+                                                                                    "usecase": "1. Track daily/weekly participation of users in events or platform activities.\n2. Increment streak count when user performs the required action consecutively.\n3. Show streaks on user dashboard to motivate engagement.\n4. Optionally, provide rewards or badges for achieving streak milestones.\n5. Reset streak if the user misses a day/session."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Adhoc / Integrations",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Tracking and automation integrations",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Connecting reporting tools and workflows.",
+                                                                                    "usecase": "Reduces manual updates."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Tour email campaigns",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Sending tour-related emails manually to selected user groups (cohorts).",
+                                                                                    "usecase": "Enables targeted communication for specific user segments."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Community query support",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek"
+                                                                                    ],
+                                                                                    "note": "Helping with community-related requests.",
+                                                                                    "usecase": "Keeps support flowing."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Data support",
+                                                                                    "status": "ongoing",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Manish"
+                                                                                    ],
+                                                                                    "note": "Handling quick data-related needs.",
+                                                                                    "usecase": "Supports operational work."
+                                                                        }
+                                                            ]
+                                                }
+                                    ]
+                        },
+                        {
+                                    "id": "pulse",
+                                    "name": "Pulse (Analytics & CDP)",
+                                    "theme": "violet",
+                                    "subtracks": [
+                                                {
+                                                            "name": "Others",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "AWS to GCP migration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "note": "Moved core data and workflows to GCP.",
+                                                                                    "usecase": "Improves stability and reduces complexity."
+                                                                        },
+                                                                        {
+                                                                                    "text": "GCP cost optimization",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Lowered overall cloud costs.",
+                                                                                    "usecase": "Reduces infrastructure spend."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Session support for Pulse console",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit",
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Improved login/session handling.",
+                                                                                    "usecase": "Makes console access smoother."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Analytics \u2013 Users",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "User query optimization",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Made user reports faster.",
+                                                                                    "usecase": "Improves reporting speed."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Null filter support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "note": "Added cleaner filtering options.",
+                                                                                    "usecase": "Helps find incomplete records."
+                                                                        },
+                                                                        {
+                                                                                    "text": "User timeline tracking",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Started tracking user activity over time.",
+                                                                                    "usecase": "Improves customer journey visibility."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Near real-time user sync",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Updated user data quickly in Pulse.",
+                                                                                    "usecase": "Makes journeys and segments more current."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Analytics \u2013 Events",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Event query optimization",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Improved event analytics speed.",
+                                                                                    "usecase": "Makes reporting more responsive."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Null filter support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added cleaner event filters.",
+                                                                                    "usecase": "Improves data quality in reports."
+                                                                        },
+                                                                        {
+                                                                                    "text": "IST timestamp view",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Showed time in local Indian format.",
+                                                                                    "usecase": "Makes reports easier to read."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Analytics \u2013 Segment / Cohort",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Null filter support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Improved cohort filtering.",
+                                                                                    "usecase": "Makes targeting more accurate."
+                                                                        },
+                                                                        {
+                                                                                    "text": "External user data support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Allowed outside lists to be used.",
+                                                                                    "usecase": "Brings more data into segmentation."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Clone support for segments and cohorts",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Enabled copying existing setups.",
+                                                                                    "usecase": "Saves time when creating new audiences."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Utility support for DOB, current time, and event time",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added extra filters for rules.",
+                                                                                    "usecase": "Makes targeting more flexible."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Scheduled cohort refresh",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Updated cohorts on a schedule.",
+                                                                                    "usecase": "Keeps audience lists current."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Journey",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "External user data support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Allowed journeys to use outside data.",
+                                                                                    "usecase": "Expands campaign reach."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Clone support for journeys",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Enabled journey duplication.",
+                                                                                    "usecase": "Speeds up journey setup."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Utility support for DOB, current time, and event time",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added date and time based rules.",
+                                                                                    "usecase": "Improves journey logic."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Journey engine optimization",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Improved journey speed and stability.",
+                                                                                    "usecase": "Handles more traffic reliably."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Condition-based triggers",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added rule-based journey starts.",
+                                                                                    "usecase": "Targets users more precisely."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Null filter support",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Improved filtering inside journeys.",
+                                                                                    "usecase": "Makes journeys more accurate."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Google Sheets and Slack actions",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added automatic action outputs.",
+                                                                                    "usecase": "Reduces manual follow-up work."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Tag support and tag filters",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Enabled tag-based audience control.",
+                                                                                    "usecase": "Improves targeting and personalization."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Custom Expression Support in Journey",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
+                                                                                    "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Campaign",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Firebase device token sync",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish",
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Kept device tokens updated.",
+                                                                                    "usecase": "Ensures notifications reach the right device."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Dynamic topic creation",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish",
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Created campaign groups automatically.",
+                                                                                    "usecase": "Speeds up messaging to new audiences."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Scheduled campaign sending",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Manish",
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Allowed campaigns to send later.",
+                                                                                    "usecase": "Improves campaign timing."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Campaign logs and history",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Added a history view for campaigns.",
+                                                                                    "usecase": "Makes tracking easier."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "AI Agents",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "AI Sales Agent for calls",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Built an AI assistant to handle initial sales calls.",
+                                                                                    "usecase": "Helps reach out to users faster and reduces manual calling effort."
+                                                                        },
+                                                                        {
+                                                                                    "text": "AI Sales Agent \u2013 Call summarization setup",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Call summaries are working via Exotel; evaluating support on Plivo where recording is limited.",
+                                                                                    "usecase": "Provides quick insights from calls without manual review."
+                                                                        },
+                                                                        {
+                                                                                    "text": "AI Sales Agent \u2013 Tour-specific setup",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "AI calling agent is configured with tour-specific data (tours + FAQs) to handle targeted conversations.",
+                                                                                    "usecase": "Enables personalized outreach for specific tours to improve engagement and conversions."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Sales Agent \u2013 Specific Tours Pilot launch tesing, stakeholder alignment",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Susmit",
+                                                                                                "Pritish",
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Preparing for internal pilot testing by aligning stakeholders and refining prompts, responses, and data based on initial feedback.",
+                                                                                    "usecase": "Ensures the system is validated internally before full rollout."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Prompt & conversation refinement",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Pritish",
+                                                                                                "Susmit"
+                                                                                    ],
+                                                                                    "note": "Finalizing conversation scripts including sales pitch, closure, and intent/ratings handling.",
+                                                                                    "usecase": "Improves quality of conversations and increases chances of successful conversions."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Plivo setup for India & recording feasibility",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Susmit"
+                                                                                    ],
+                                                                                    "note": "Setting up Plivo for Indian numbers and checking recording support and associated costs. Manual recording remains a fallback option.",
+                                                                                    "usecase": "Enables scalable calling infrastructure for India with clarity on recording capabilities."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Call recording feasibility",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Susmit"
+                                                                                    ],
+                                                                                    "note": "Exploring call recording setup with Plivo, including feasibility and cost. Manual recording is possible but requires additional effort.",
+                                                                                    "usecase": "Helps review calls, improve quality, and maintain records for training and compliance."
+                                                                        },
+                                                                        {
+                                                                                    "text": "AI Assistant 2.0",
+                                                                                    "status": "next",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
+                                                                                    "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "CDP",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "MongoDB and Shopify data migration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Raj",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Brought key data sources into Pulse.",
+                                                                                    "usecase": "Creates a unified view of customers."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Data Hub Launch",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Established a centralized data foundation.",
+                                                                                    "usecase": "Features: Data Models, Metrics. Enables cohort/segment creation (e.g., non-club users), powers recommendations and personalization, and supports dashboards and analytics."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Gold Tier feature engineering",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "due": "25 Mar",
+                                                                                    "note": "Preparing important data features.",
+                                                                                    "usecase": "Supports better analytics and predictions."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Gold Tier data models",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "due": "25 Mar",
+                                                                                    "note": "Defining the structure for Gold Tier data.",
+                                                                                    "usecase": "Keeps data organized for use."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Gold Tier metrics",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "due": "25 Mar",
+                                                                                    "note": "Defining key measures for Gold Tier.",
+                                                                                    "usecase": "Helps track performance clearly."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Dashboards",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "due": "27 Mar",
+                                                                                    "note": "Publishing user-facing dashboards with key metrics and insights.",
+                                                                                    "usecase": "Makes data-driven insights easily accessible for teams to monitor performance and make informed decisions."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Recommendation: ML Feature Engineering",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "due": "27 Mar 2026",
+                                                                                    "note": "Building and finalizing ~50 ML features including propensity, time-series, standard deviation, and averages.",
+                                                                                    "usecase": "Improves model accuracy and strength of recommendations."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Recommendation: Persona Engine Integration",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "due": "27 Mar 2026",
+                                                                                    "note": "Integrating long-term and contextual memory using Mem0 and Neo4j.",
+                                                                                    "usecase": "Enables deeper personalization based on user memory and behavior."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Recommendation: Predictive Recommendation Engine (Cold Data)",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "due": "3 Apr 2026",
+                                                                                    "note": "Building recommendation models using historical (cold) data.",
+                                                                                    "usecase": "Predicts user needs and preferences proactively."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Recommendation: Contextual Recommendation Engine (Hot Data)",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Rushikesh"
+                                                                                    ],
+                                                                                    "due": "10 Apr 2026",
+                                                                                    "note": "Developing real-time recommendations based on live (hot) data.",
+                                                                                    "usecase": "Delivers real-time, context-aware recommendations to improve engagement."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Pages \u2013 Headless CMS",
+                                                            "note": "A centralized content system enabling teams to create once and reuse content across the platform without engineering dependency.",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Headless CMS Live Deployment",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Vivek",
+                                                                                                "Nikhil",
+                                                                                                "Subhrajit"
+                                                                                    ],
+                                                                                    "note": "Deployed the headless CMS for content creation and management.",
+                                                                                    "usecase": "Enables teams to manage and publish content independently from a single source."
+                                                                        }
+                                                            ]
+                                                },
+                                                {
+                                                            "name": "Flow",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "Personalization in Flow",
+                                                                                    "status": "later",
+                                                                                    "contributors": [
+                                                                                                "Nikhil"
+                                                                                    ],
+                                                                                    "note": "Introducing personalization within flows using user data and behavior.",
+                                                                                    "usecase": "Enables dynamic, user-specific journeys to improve engagement and outcomes."
+                                                                        }
+                                                            ]
+                                                }
+                                    ]
+                        },
+                        {
+                                    "id": "devops",
+                                    "name": "DevOps & Infrastructure",
+                                    "theme": "emerald",
+                                    "subtracks": [
+                                                {
+                                                            "name": "Infrastructure & Security",
+                                                            "items": [
+                                                                        {
+                                                                                    "text": "AWS cost optimization",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Reducing cloud costs across environments.",
+                                                                                    "usecase": "Improves cost efficiency."
+                                                                        },
+                                                                        {
+                                                                                    "text": "VAPT documentation",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Preparing security test documentation.",
+                                                                                    "usecase": "Supports security review and compliance."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Khyaal Tours redirect issue investigation",
+                                                                                    "status": "now",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Root cause analysis completed and potential issue identified; fix is being worked on.",
+                                                                                    "usecase": "Helps resolve incorrect redirection and ensures users reach the correct website."
+                                                                        },
+                                                                        {
+                                                                                    "text": "S3 to GCS migration",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Moved storage to Google Cloud.",
+                                                                                    "usecase": "Improves platform alignment and efficiency."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Grafana monitoring dashboards",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Added system monitoring dashboards.",
+                                                                                    "usecase": "Improves visibility into system health."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Slack alerting",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Set up instant alerts for issues.",
+                                                                                    "usecase": "Speeds up incident response."
+                                                                        },
+                                                                        {
+                                                                                    "text": "Application monitoring",
+                                                                                    "status": "done",
+                                                                                    "contributors": [
+                                                                                                "Raj"
+                                                                                    ],
+                                                                                    "note": "Monitoring is now active across apps.",
+                                                                                    "usecase": "Helps maintain stability and performance."
+                                                                        }
+                                                            ]
+                                                }
+                                    ]
+                        }
+            ]
+}

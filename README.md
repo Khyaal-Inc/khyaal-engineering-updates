@@ -2,28 +2,40 @@
 
 Engineering updates and platform progress reports for Khyaal.
 
-## 🔐 Authentication
+## 🔐 Zero-Deploy Authentication
 
-This page is protected. The authentication logic has been moved to an AWS Lambda function for improved security.
+This project uses a "Zero-Deploy" architecture. The frontend is protected by an AWS Lambda gateway that fetches data directly from GitHub in real-time. This means you **never need to redeploy the Lambda** when you update engineering items or create archives.
 
-### 🚀 1-Click Deployment
+### 🚀 1. Initial Setup (One-time only)
 
-To set up or update the authentication gateway, follow these steps:
-
-1.  **Ensure AWS CLI is configured** on your machine.
-2.  **Run the deployment script**:
+1.  **Deploy the Gateway**: 
+    If you haven't yet, run the 1-click deployment script:
     ```bash
     sh deploy_auth.sh
     ```
-3.  **Update the Frontend**:
-    - The script will output a **Lambda Function URL**.
-    - Copy this URL and update the `LAMBDA_URL` constant in `index.html`.
+2.  **Add your GitHub Token**:
+    To allow the Lambda to fetch private data for everyone (e.g., non-developers), add a [GitHub Personal Access Token](https://github.com/settings/tokens) to the Lambda environment variables:
+    ```bash
+    aws lambda update-function-configuration \
+      --function-name khyaal-auth-gatekeeper \
+      --environment "Variables={GITHUB_TOKEN=your_token_here}" \
+      --region ap-south-1
+    ```
+3.  **Update index.html**:
+    Ensure the `LAMBDA_URL` in `index.html` matches the output from the deployment script.
 
-### 🛠️ Architecture
+### ✍️ 2. Updating Content
 
-- **Frontend**: `index.html` (Uses `fetch` to call the Lambda endpoint).
-- **Backend**: AWS Lambda (`auth_gatekeeper.js`) with a public Function URL.
-- **Security**: SHA-256 hashing is used for password verification on the server-side.
+To update the engineering items:
+1.  Open `index.html` in your browser.
+2.  Login with the password.
+3.  Make your changes and click **Save to GitHub**.
+4.  The changes are **live immediately**! No deployment needed.
+
+### 📂 3. Archiving & Snapshots
+
+- **Archive & Clear**: Creates a JSON snapshot in the `archive/` folder.
+- **Historical Snapshots**: These can be viewed dynamically from the main dashboard. The "template" remains the same, but the data is loaded from the archive JSON files.
 
 ---
 © 2026 Khyaal Inc.
