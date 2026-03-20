@@ -877,22 +877,35 @@
                     `;
 
                     track.subtracks.forEach((subtrack, subtrackIndex) => {
+                        // Calculate Subtrack Progress early (exclude 'later')
+                        const activeItemsSub = subtrack.items.filter(i => i.status !== 'later');
+                        const totalActiveSub = activeItemsSub.length;
+                        const doneItemsSub = activeItemsSub.filter(i => i.status === 'done').length;
+                        const percent = totalActiveSub > 0 ? Math.round((doneItemsSub / totalActiveSub) * 100) : 0;
+
                         html += `<div class="subtrack-section">`;
                         html += `
-                            <div class="subtrack-title flex justify-between items-center px-4 py-2.5 bg-slate-50 rounded-xl group/sub mb-0.5 cursor-pointer" onclick="toggleSubtrack('${track.name}', '${subtrack.name}')" style="border-left: 8px solid ${accentColor}">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-slate-800 text-lg">${subtrack.name}</span>
+                            <div class="subtrack-title flex justify-between items-center px-4 py-3 mb-1 cursor-pointer transition-all duration-300 rounded-r-lg group/sub" 
+                                 onclick="toggleSubtrack('${track.name}', '${subtrack.name}')"
+                                 style="border-left: 6px solid ${accentColor}; 
+                                        background: linear-gradient(to right, ${accentColor}18 ${percent}%, #f8fafc ${percent}%);
+                                        box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                
+                                <div class="flex items-center gap-4 flex-1 min-w-0">
+                                    <span class="font-black text-slate-900 text-lg truncate">${subtrack.name}</span>
+                                    <span class="flex-shrink-0 text-[11px] font-black text-slate-600 bg-white/90 px-2.5 py-1 rounded-full border border-slate-200 shadow-sm tracking-wider">${percent}%</span>
                                 </div>
-                                <div class="flex gap-2 items-center">
+
+                                <div class="flex gap-2 items-center flex-shrink-0">
                                     ${window.isAuthenticated === true ? `
-                                    <div class="flex gap-1">
-                                        <button onclick="event.stopPropagation(); addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md hover:bg-emerald-100 font-bold border border-emerald-100 shadow-sm">Add Item</button>
-                                        <button onclick="event.stopPropagation(); openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-md hover:bg-blue-100 font-bold border border-blue-100 shadow-sm">Edit</button>
-                                        <button onclick="event.stopPropagation(); deleteSubtrack(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded-md hover:bg-red-100 font-bold border border-red-100 shadow-sm">Delete</button>
+                                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                                        <button onclick="addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 font-bold border border-emerald-100 shadow-sm transition-colors uppercase tracking-wider">Add Item</button>
+                                        <button onclick="openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-md hover:bg-blue-100 font-bold border border-blue-100 shadow-sm transition-colors uppercase tracking-wider">Edit</button>
+                                        <button onclick="deleteSubtrack(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-red-50 text-red-700 px-2.5 py-1.5 rounded-md hover:bg-red-100 font-bold border border-red-100 shadow-sm transition-colors uppercase tracking-wider">Delete</button>
                                     </div>
                                     ` : ''}
                                     <span class="ml-2 text-slate-400">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg class="w-5 h-5 transition-transform duration-200" id="icon-${track.name}-${subtrack.name}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                                     </span>
                                 </div>
                             </div>
@@ -921,24 +934,8 @@
                         // Apply Global Search
                         items = items.filter(item => isItemInSearch(item));
 
-                        // Calculate Subtrack Progress
-                        const totalItems = subtrack.items.length;
-                        const doneItems = subtrack.items.filter(i => i.status === 'done').length;
-                        const percent = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
-                        const progressHtml = `
-                            <div class="mt-2 mb-4">
-                                <div class="flex justify-between items-end mb-1">
-                                    <span class="progress-label">Subtrack Completion</span>
-                                    <span class="text-[10px] font-bold text-slate-500">${percent}%</span>
-                                </div>
-                                <div class="progress-container">
-                                    <div class="progress-fill" style="width: ${percent}%; background-color: ${accentColor} !important; min-width: ${percent > 0 ? '4px' : '0'}"></div>
-                                </div>
-                            </div>
-                        `;
-
-                        if (items.length > 0 || globalSearchQuery === '') {
-                            html += progressHtml;
+                        if (items.length > 0) {
+                            // Unified Progress is now in the header
                         }
 
                         const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
@@ -1074,9 +1071,9 @@
 
                 statuses.forEach(status => {
                     let items = [];
-                    UPDATE_DATA.tracks.forEach(track => {
-                        track.subtracks.forEach(subtrack => {
-                            subtrack.items.forEach(item => {
+                    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                        track.subtracks.forEach((subtrack, subtrackIndex) => {
+                            subtrack.items.forEach((item, itemIndex) => {
                                 if (item.status === status) {
                                     // Apply advanced date filter
                                     if (!isItemInDateRange(item)) return;
@@ -1096,7 +1093,10 @@
                                         ...item,
                                         track: track.name,
                                         trackTheme: track.theme,
-                                        subtrack: subtrack.name
+                                        subtrack: subtrack.name,
+                                        trackIndex,
+                                        subtrackIndex,
+                                        itemIndex
                                     });
                                 }
                             });
@@ -1160,7 +1160,10 @@
                                             <div class="flex items-start gap-4">
                                                 <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
                                                     <span class="status-pill ${config.class} min-w-[54px] text-center">${config.label}</span>
-                                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${priorityLabel}</span>
+                                                    ${(() => {
+                                                        const pInfo = priorityConfig[item.priority || 'medium'];
+                                                        return `<span class="status-pill ${pInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${pInfo.label}</span>`;
+                                                    })()}
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="mb-1">${contentHtml}</div>
@@ -1219,9 +1222,9 @@
 
                 priorities.forEach(priority => {
                     let items = [];
-                    UPDATE_DATA.tracks.forEach(track => {
-                        track.subtracks.forEach(subtrack => {
-                            subtrack.items.forEach(item => {
+                    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                        track.subtracks.forEach((subtrack, subtrackIndex) => {
+                            subtrack.items.forEach((item, itemIndex) => {
                                 const itemPriority = item.priority || 'medium';
                                 if (itemPriority === priority) {
                                     if (!isItemInDateRange(item)) return;
@@ -1240,7 +1243,10 @@
                                         ...item,
                                         track: track.name,
                                         trackTheme: track.theme,
-                                        subtrack: subtrack.name
+                                        subtrack: subtrack.name,
+                                        trackIndex,
+                                        subtrackIndex,
+                                        itemIndex
                                     });
                                 }
                             });
@@ -1300,7 +1306,10 @@
                                             <div class="flex items-start gap-4">
                                                 <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
                                                     <span class="status-pill ${status.class} min-w-[54px] text-center">${status.label}</span>
-                                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${priorityLabel}</span>
+                                                    ${(() => {
+                                                        const pInfo = priorityConfig[item.priority || 'medium'];
+                                                        return `<span class="status-pill ${pInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${pInfo.label}</span>`;
+                                                    })()}
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="mb-1">${contentHtml}</div>
@@ -1733,6 +1742,13 @@
                         document.getElementById('github-token').value = githubToken;
                         authenticateCms();
                     }
+
+                    // Close modal on outside click
+                    document.getElementById('cms-modal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeCmsModal();
+                        }
+                    });
                 }
             }
 
