@@ -116,6 +116,18 @@
             color: white;
         }
 
+        /* Specific status pill styles for better contrast */
+        .status-pill.done { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-pill.now { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-pill.ongoing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status-pill.next { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+        .status-pill.later { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+        /* Priority Colors */
+        .priority-high { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .priority-medium { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+        .priority-low { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+
         /* Contributor Tags */
         .contributor-tag {
             font-size: 0.75rem;
@@ -764,6 +776,12 @@
                 later: { label: 'Later', class: 'badge-later', bucket: 'bucket-later' }
             };
 
+            const priorityConfig = {
+                high: { label: 'High', class: 'priority-high' },
+                medium: { label: 'Medium', class: 'priority-medium' },
+                low: { label: 'Low', class: 'priority-low' }
+            };
+
             function renderContributors(contributors) {
                 return contributors.map(name =>
                     `<span class="contributor-tag ${contributorColors[name] || 'bg-gray-100 text-gray-600'}">${name}</span>`
@@ -839,17 +857,15 @@
 
             function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex) {
                 const status = statusConfig[item.status];
+                const priority = item.priority || 'medium';
+                const priorityInfo = priorityConfig[priority];
+                const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
                 const usecase = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
 
-                // Only show due date in title for active/done statuses, or if it's explicitly set for future ones
+                // Only show due date in title for active/done statuses
                 let due = '';
                 if (item.due && !['next', 'later'].includes(item.status)) {
                     due = `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
-                } else if (item.due && ['next', 'later'].includes(item.status)) {
-                    // For future tasks, only show if it looks like a specifically set date (not a default one from normalization)
-                    // If it's just a placeholder or if the user wants it hidden, we can hide it.
-                    // For now, let's respect the user's screenshot where they want it hidden for "Later".
-                    due = '';
                 }
 
                 let contentHtml = `${item.text}${due}`;
@@ -885,7 +901,10 @@
                 <div class="item-row ${status.bucket}">
                     <div class="item-content">
                         <div class="flex items-start gap-2">
-                            <span class="status-pill ${status.class} flex-shrink-0 mt-0.5">${status.label}</span>
+                            <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
+                                <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center">${status.label}</span>
+                                <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
+                            </div>
                             <div class="text-sm text-slate-800 font-semibold leading-tight">
                                 ${contentHtml}
                                 ${cmsControls}
@@ -939,7 +958,7 @@
                                     if (!isItemInDateRange(item)) return;
 
                                     // Apply legacy date filter
-                                    if (window.currentDateFilter && window.currentDateFilter !== 'all') {
+                                    if (window.currentDateFilter && window.currentDateFilter !== 'all' && window.currentDateFilter !== 'All Entries') {
                                         if (window.currentDateFilter === 'Legacy') {
                                             if (item.publishedDate) return;
                                         } else {
@@ -982,6 +1001,9 @@
 
                         items.forEach(item => {
                             const config = statusConfig[item.status];
+                            const priority = item.priority || 'medium';
+                            const priorityInfo = priorityConfig[priority];
+                            const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
                             const trackColor = themeColors[item.trackTheme] || '#64748b';
                             const usecase = item.usecase ? `<div class="usecase-box mt-1 text-xs"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
                             const due = item.due ? `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">[${item.due}]</span>` : '';
@@ -1013,6 +1035,136 @@
                                             </span>
                                             <div class="flex items-start gap-2">
                                                 <span class="status-pill ${config.class} flex-shrink-0 mt-0.5">${config.label}</span>
+                                                <span class="status-pill ${priorityInfo.class} flex-shrink-0 mt-0.5">${priorityLabel}</span>
+                                                <div class="flex-1">${contentHtml}</div>
+                                            </div>
+                                        </div>
+                                        ${usecase}
+                                    </div>
+                                    <div class="flex flex-wrap gap-1 min-w-[100px] justify-end">
+                                        ${renderContributors(item.contributors)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        });
+
+                        html += `</div></div>`;
+                    }
+                });
+
+                container.innerHTML = html;
+            }
+
+            function renderPriorityView() {
+                const container = document.getElementById('priority-view');
+                const priorities = ['high', 'medium', 'low'];
+                const priorityTitles = {
+                    high: 'High Priority (Critical & Urgent)',
+                    medium: 'Medium Priority (Important, Standard)',
+                    low: 'Low Priority (Nice-to-have, Backlog)'
+                };
+
+                const themeColors = {
+                    blue: '#1e40af',
+                    emerald: '#065f46',
+                    violet: '#5b21b6',
+                    amber: '#92400e',
+                    rose: '#9f1239',
+                    slate: '#334155'
+                };
+
+                const subtrackNotes = {};
+                UPDATE_DATA.tracks.forEach(track => {
+                    track.subtracks.forEach(subtrack => {
+                        if (subtrack.note) subtrackNotes[subtrack.name] = subtrack.note;
+                    });
+                });
+
+                let html = '';
+
+                priorities.forEach(priority => {
+                    let items = [];
+                    UPDATE_DATA.tracks.forEach(track => {
+                        track.subtracks.forEach(subtrack => {
+                            subtrack.items.forEach(item => {
+                                const itemPriority = item.priority || 'medium';
+                                if (itemPriority === priority) {
+                                    if (!isItemInDateRange(item)) return;
+
+                                    if (window.currentDateFilter && window.currentDateFilter !== 'all') {
+                                        if (window.currentDateFilter === 'Legacy') {
+                                            if (item.publishedDate) return;
+                                        } else {
+                                            if (!item.publishedDate) return;
+                                            const d = new Date(item.publishedDate);
+                                            if (d.toLocaleString('default', { month: 'short', year: 'numeric' }) !== window.currentDateFilter) return;
+                                        }
+                                    }
+
+                                    items.push({
+                                        ...item,
+                                        track: track.name,
+                                        trackTheme: track.theme,
+                                        subtrack: subtrack.name
+                                    });
+                                }
+                            });
+                        });
+                    });
+
+                    const seen = new Set();
+                    items = items.filter(item => {
+                        const duplicate = seen.has(item.text);
+                        seen.add(item.text);
+                        return !duplicate;
+                    });
+
+                    if (items.length > 0) {
+                        const config = priorityConfig[priority];
+                        html += `
+                        <div class="status-card">
+                            <div class="${config.class} px-6 py-4 font-bold flex items-center gap-3 text-lg status-sticky-header" style="color: inherit;">
+                                <div class="w-2.5 h-2.5 rounded-full shadow-sm" style="background: currentColor;"></div>
+                                ${priorityTitles[priority]}
+                                <span class="ml-auto text-sm font-normal opacity-70">${items.length} items</span>
+                            </div>
+                            <div>
+                    `;
+
+                        items.forEach(item => {
+                            const status = statusConfig[item.status];
+                            const trackColor = themeColors[item.trackTheme] || '#64748b';
+                            const usecase = item.usecase ? `<div class="usecase-box mt-1 text-xs"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
+                            const due = item.due ? `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">[${item.due}]</span>` : '';
+                            const subtrackNote = subtrackNotes[item.subtrack];
+                            const effectiveNote = item.note || subtrackNote;
+
+                            let contentHtml = `${item.text}${due}`;
+                            if (effectiveNote) {
+                                const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+                                contentHtml = `
+                                <div class="info-wrapper">
+                                    <span class="info-text">${item.text}${due}</span>
+                                    <button class="info-btn" aria-label="More information">i</button>
+                                    <div class="tooltip-content" role="tooltip">
+                                        <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
+                                        ${cleanNote}
+                                    </div>
+                                </div>
+                            `;
+                            }
+
+                            html += `
+                            <div class="item-row hover:bg-slate-50 transition-colors">
+                                <div class="flex justify-between items-start gap-3 w-full">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-slate-800 leading-tight">
+                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-2 border border-${item.trackTheme}-200">
+                                                ${item.track} &rarr; ${item.subtrack}
+                                            </span>
+                                            <div class="flex items-start gap-2">
+                                                <span class="status-pill ${status.class} flex-shrink-0 mt-0.5">${status.label}</span>
                                                 <div class="flex-1">${contentHtml}</div>
                                             </div>
                                         </div>
@@ -1127,6 +1279,9 @@
                                 const subtrackNote = subtrackNotes[item.subtrack];
                                 const effectiveNote = item.note || subtrackNote;
                                 const trackColor = themeColors[item.trackTheme] || '#64748b';
+                                const priority = item.priority || 'medium';
+                                const priorityInfo = priorityConfig[priority];
+                                const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
 
                                 let contentHtml = `${item.text}${due}`;
                                 if (effectiveNote) {
@@ -1146,7 +1301,10 @@
                                 }
                                 html += `<li class="text-sm text-slate-700 leading-snug">
                                 ${contentHtml}
-                                <div class="mt-1 ml-3 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">${item.track} → ${item.subtrack}</div>
+                                <div class="mt-1 ml-3 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">
+                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter">${priorityLabel}</span>
+                                    ${item.track} → ${item.subtrack}
+                                </div>
                             </li>`;
                             });
                             html += `</ul></div>`;
@@ -1257,12 +1415,12 @@
 
             function exportData(format) {
                 if (format === 'csv') {
-                    let csv = 'Task ID,Track,Subtrack,Text,Status,Start Date,Due Date,Contributors,Impact\n';
+                    let csv = 'Task ID,Track,Subtrack,Text,Status,Priority,Start Date,Due Date,Contributors,Impact\n';
                     UPDATE_DATA.tracks.forEach(track => {
                         track.subtracks.forEach(subtrack => {
                             subtrack.items.forEach(item => {
                                 if (!isItemInDateRange(item)) return;
-                                csv += `"${item.id}","${track.name}","${subtrack.name}","${item.text}","${item.status}","${item.startDate}","${item.due}","${item.contributors.join('; ')}","${item.usecase || ''}"\n`;
+                                csv += `"${item.id}","${track.name}","${subtrack.name}","${item.text}","${item.status}","${item.priority || 'medium'}","${item.startDate}","${item.due}","${item.contributors.join('; ')}","${item.usecase || ''}"\n`;
                             });
                         });
                     });
@@ -1320,6 +1478,7 @@
                 // Render based on current view
                 if (view === 'track') renderTrackView();
                 if (view === 'status') renderStatusView();
+                if (view === 'priority') renderPriorityView();
                 if (view === 'contributor') renderContributorView();
                 if (view === 'gantt') renderGanttView();
             }
@@ -1375,6 +1534,7 @@
                 const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
                 if (currentView === 'track') renderTrackView();
                 if (currentView === 'status') renderStatusView();
+                if (currentView === 'priority') renderPriorityView();
                 if (currentView === 'contributor') renderContributorView();
             }
 
@@ -1534,6 +1694,12 @@
                     <option value="next" ${item.status === 'next' ? 'selected' : ''}>Next</option>
                     <option value="later" ${item.status === 'later' ? 'selected' : ''}>Later</option>
                 </select>
+                <label class="block text-sm font-bold mb-1">Priority</label>
+                <select id="edit-priority" class="cms-input">
+                    <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
+                    <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
+                    <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
+                </select>
                 <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
                 <input type="text" id="edit-contributors" value="${item.contributors.join(', ')}" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Note</label>
@@ -1622,6 +1788,12 @@
                     <option value="next">Next</option>
                     <option value="later">Later</option>
                 </select>
+                <label class="block text-sm font-bold mb-1">Priority</label>
+                <select id="edit-priority" class="cms-input">
+                    <option value="high">High</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="low">Low</option>
+                </select>
                 <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
                 <input type="text" id="edit-contributors" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Note</label>
@@ -1668,6 +1840,7 @@
                             `task-${Date.now()}`,
                         text: document.getElementById('edit-text').value,
                         status: document.getElementById('edit-status').value,
+                        priority: document.getElementById('edit-priority').value,
                         contributors: document.getElementById('edit-contributors').value.split(',').map(s => s.trim()).filter(s => s),
                         note: document.getElementById('edit-note').value,
                         usecase: document.getElementById('edit-usecase').value,
@@ -1682,6 +1855,7 @@
                     if (!item.startDate) delete item.startDate;
                     if (!item.due) delete item.due;
                     if (!item.dependencies) delete item.dependencies;
+                    if (item.priority === 'medium') delete item.priority; // Don't store default priority
 
                     if (editContext.type === 'item') {
                         UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex] = item;
@@ -1701,7 +1875,8 @@
                 }
 
                 closeCmsModal();
-                renderTrackView();
+                const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
+                switchView(currentView); // Re-render current view to reflect changes
             }
 
             function closeCmsModal() {
@@ -1791,6 +1966,7 @@
                 const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
                 if (currentView === 'track') renderTrackView();
                 if (currentView === 'status') renderStatusView();
+                if (currentView === 'priority') renderPriorityView();
                 if (currentView === 'contributor') renderContributorView();
             }
 
@@ -1958,13 +2134,12 @@
                     </div>
 
                     <div class="flex flex-col items-end gap-4">
-                        <div class="view-toggle">
-                            <button onclick="switchView('track')" id="btn-track" class="filter-btn active">By
-                                Track</button>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="switchView('track')" id="btn-track" class="filter-btn active">By Track</button>
                             <button onclick="switchView('status')" id="btn-status" class="filter-btn">By Status</button>
-                            <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By
-                                Contributor</button>
-                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart</button>
+                            <button onclick="switchView('priority')" id="btn-priority" class="filter-btn">By Priority</button>
+                            <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor</button>
+                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn bg-slate-900 text-white border-slate-900">Gantt Chart</button>
                         </div>
                     </div>
                 </div>
@@ -2044,6 +2219,7 @@
             <!-- Views -->
             <div id="track-view" class="view-section active"></div>
             <div id="status-view" class="view-section"></div>
+            <div id="priority-view" class="view-section"></div>
             <div id="contributor-view" class="view-section"></div>
             <div id="gantt-view"
                 class="view-section bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto min-h-[500px]">
