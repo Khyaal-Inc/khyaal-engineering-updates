@@ -2097,7 +2097,16 @@
                 const response = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
                     headers: { 'Authorization': `token ${githubToken}` }
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP ${response.status} ${response.statusText}` }));
+                    throw new Error(`GitHub API Error: ${errorData.message}`);
+                }
+
                 const fileData = await response.json();
+                if (typeof fileData.content !== 'string') {
+                    throw new Error('File content not found in GitHub API response.');
+                }
                 const content = atob(fileData.content);
 
                 // 2. Replace the UPDATE_DATA object in the content
