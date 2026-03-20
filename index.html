@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khyaal Engineering Update</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -25,6 +26,11 @@
             display: block;
             opacity: 1;
             transform: translateY(0);
+        }
+
+        #gantt-view.active {
+            display: flex;
+            flex-direction: column;
         }
 
         /* Status Colors */
@@ -1165,7 +1171,7 @@
                     const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
                     
                     // Filter items by date if a filter is active
-                    let items = subtrack.items;
+                    let items = subtrack.items.filter(item => isItemInDateRange(item));
                     if (window.currentDateFilter && window.currentDateFilter !== 'all') {
                         items = items.filter(item => {
                             if (window.currentDateFilter === 'Legacy') return !item.publishedDate;
@@ -1284,10 +1290,13 @@
                 let items = [];
                 UPDATE_DATA.tracks.forEach(track => {
                     track.subtracks.forEach(subtrack => {
-                        subtrack.items.forEach(item => {
-                            if (item.status === status) {
-                                // Apply date filter
-                                if (window.currentDateFilter && window.currentDateFilter !== 'all') {
+                    subtrack.items.forEach(item => {
+                        if (item.status === status) {
+                            // Apply advanced date filter
+                            if (!isItemInDateRange(item)) return;
+
+                            // Apply legacy date filter
+                            if (window.currentDateFilter && window.currentDateFilter !== 'all') {
                                     if (window.currentDateFilter === 'Legacy') {
                                         if (item.publishedDate) return;
                                     } else {
@@ -1385,15 +1394,15 @@
             const container = document.getElementById('contributor-view');
             const contributors = {};
             const subtrackNotes = {};
-            const subtrackTracks = {}; // Map subtrack to track theme
+            const subtrackTracks = {};
 
-            // Collect all contributors, subtrack notes and track themes
             UPDATE_DATA.tracks.forEach(track => {
                 track.subtracks.forEach(subtrack => {
                     if (subtrack.note) subtrackNotes[subtrack.name] = subtrack.note;
                     subtrackTracks[subtrack.name] = { name: track.name, theme: track.theme };
                     subtrack.items.forEach(item => {
-                        // Apply date filter
+                        if (!isItemInDateRange(item)) return;
+
                         if (window.currentDateFilter && window.currentDateFilter !== 'all') {
                             if (window.currentDateFilter === 'Legacy') {
                                 if (item.publishedDate) return;
@@ -1418,17 +1427,10 @@
             });
 
             const themeColors = {
-                blue: '#1e40af',
-                emerald: '#065f46',
-                violet: '#5b21b6',
-                amber: '#92400e',
-                rose: '#9f1239',
-                slate: '#334155'
+                blue: '#1e40af', emerald: '#065f46', violet: '#5b21b6', amber: '#92400e', rose: '#9f1239', slate: '#334155'
             };
 
-            // Sort contributors by deliverable count (highest to lowest), then alphabetically
             const sortedNames = Object.keys(contributors).sort((a, b) => {
-                // Deduplicate items for comparison
                 const getUniqueCount = (name) => {
                     const seen = new Set();
                     return contributors[name].filter(item => {
@@ -1437,20 +1439,15 @@
                         return !duplicate;
                     }).length;
                 };
-
                 const countA = getUniqueCount(a);
                 const countB = getUniqueCount(b);
-
                 if (countB !== countA) return countB - countA;
                 return a.localeCompare(b);
             });
 
             let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
-
             sortedNames.forEach(name => {
                 let items = contributors[name];
-
-                // Deduplicate items for this contributor by text
                 const seen = new Set();
                 items = items.filter(item => {
                     const duplicate = seen.has(item.text);
@@ -1459,7 +1456,6 @@
                 });
 
                 const colorClass = contributorColors[name] || 'bg-gray-600';
-
                 html += `
                     <div class="contributor-card">
                         <div class="contributor-header ${colorClass.replace('text-', 'text-white').replace('border', '')}" 
@@ -1483,7 +1479,6 @@
                                 </div>
                                 <ul class="space-y-4 pl-3.5">
                         `;
-
                         statusItems.forEach(item => {
                             const due = item.due ? ` <span class="text-xs text-orange-600 font-bold">[${item.due}]</span>` : '';
                             const subtrackNote = subtrackNotes[item.subtrack];
@@ -1506,35 +1501,156 @@
                             } else {
                                 contentHtml = `• ${item.text}${due}`;
                             }
-
                             html += `<li class="text-sm text-slate-700 leading-snug">
                                 ${contentHtml}
-                                <div class="mt-1 ml-3 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">${item.track} Ã¢ÂÂ ${item.subtrack}</div>
+                                <div class="mt-1 ml-3 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">${item.track} → ${item.subtrack}</div>
                             </li>`;
                         });
-
                         html += `</ul></div>`;
                     }
                 });
-
                 html += `</div></div>`;
             });
-
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        function renderGanttView() {
+            google.charts.load('current', { 'packages': ['gantt'] });
+            google.charts.setOnLoadCallback(drawGanttChart);
+        }
+
+        function drawGanttChart() {
+            const data = new google.visualization.DataTable();
+            data.addColumn('string', 'Task ID');
+            data.addColumn('string', 'Task Name');
+            data.addColumn('string', 'Resource');
+            data.addColumn('date', 'Start Date');
+            data.addColumn('date', 'End Date');
+            data.addColumn('number', 'Duration');
+            data.addColumn('number', 'Percent Complete');
+            data.addColumn('string', 'Dependencies');
+
+            const rows = [];
+            UPDATE_DATA.tracks.forEach(track => {
+                track.subtracks.forEach(subtrack => {
+                    subtrack.items.forEach(item => {
+                        if (!isItemInDateRange(item)) return;
+                        
+                        const start = new Date(item.startDate);
+                        const end = new Date(item.due);
+                        
+                        // Percentage based on status
+                        let percent = 0;
+                        if (item.status === 'done') percent = 100;
+                        else if (item.status === 'ongoing') percent = 50;
+                        else if (item.status === 'now') percent = 25;
+
+                        rows.push([
+                            item.id,
+                            item.text,
+                            track.name,
+                            start,
+                            end,
+                            null,
+                            percent,
+                            item.dependencies || null
+                        ]);
+                    });
+                });
+            });
+
+            if (rows.length === 0) {
+                document.getElementById('gantt-chart-container').innerHTML = '<div class="text-center py-10 text-slate-500">No tasks found for the selected date range.</div>';
+                return;
+            }
+
+            data.addRows(rows);
+
+            const options = {
+                height: rows.length * 40 + 50,
+                gantt: {
+                    trackHeight: 40,
+                    barHeight: 25,
+                    labelStyle: {
+                        fontName: 'Inter',
+                        fontSize: 12,
+                        color: '#1e293b'
+                    }
+                }
+            };
+
+            const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
+            chart.draw(data, options);
+        }
+
+        function exportData(format) {
+            if (format === 'csv') {
+                let csv = 'Task ID,Track,Subtrack,Text,Status,Start Date,Due Date,Contributors,Impact\n';
+                UPDATE_DATA.tracks.forEach(track => {
+                    track.subtracks.forEach(subtrack => {
+                        subtrack.items.forEach(item => {
+                            if (!isItemInDateRange(item)) return;
+                            csv += `"${item.id}","${track.name}","${subtrack.name}","${item.text}","${item.status}","${item.startDate}","${item.due}","${item.contributors.join('; ')}","${item.usecase || ''}"\n`;
+                        });
+                    });
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', `engineering_updates_${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function exportGantt() {
+            const container = document.getElementById('gantt-chart-container');
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                const link = document.createElement('a');
+                link.download = `gantt_chart_${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         }
 
         function switchView(view) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.filter-btn').forEach(el => el.classList.remove('active'));
 
-            document.getElementById(view + '-view').classList.add('active');
-            document.getElementById('btn-' + view).classList.add('active');
+            const targetView = document.getElementById(view + '-view');
+            const targetBtn = document.getElementById('btn-' + view);
+            
+            if (targetView) targetView.classList.add('active');
+            if (targetBtn) targetBtn.classList.add('active');
 
-            // Render if empty
-            if (view === 'track' && !document.getElementById('track-view').innerHTML) renderTrackView();
-            if (view === 'status' && !document.getElementById('status-view').innerHTML) renderStatusView();
-            if (view === 'contributor' && !document.getElementById('contributor-view').innerHTML) renderContributorView();
+            // Show/Hide Gantt specific controls
+            const exportGanttBtn = document.getElementById('export-gantt-btn');
+            if (exportGanttBtn) exportGanttBtn.classList.toggle('hidden', view !== 'gantt');
+
+            // Render based on current view
+            if (view === 'track') renderTrackView();
+            if (view === 'status') renderStatusView();
+            if (view === 'contributor') renderContributorView();
+            if (view === 'gantt') renderGanttView();
         }
 
         // CMS State
@@ -1768,8 +1884,18 @@
                 <textarea id="edit-note" class="cms-input">${item.note || ''}</textarea>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" value="${item.usecase || ''}" class="cms-input">
-                <label class="block text-sm font-bold mb-1">Due Date (Optional)</label>
-                <input type="text" id="edit-due" value="${item.due || ''}" class="cms-input">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Start Date</label>
+                        <input type="date" id="edit-startDate" value="${item.startDate || ''}" class="cms-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Due Date</label>
+                        <input type="date" id="edit-due" value="${item.due || ''}" class="cms-input">
+                    </div>
+                </div>
+                <label class="block text-sm font-bold mb-1">Dependencies (IDs, comma separated)</label>
+                <input type="text" id="edit-dependencies" value="${item.dependencies || ''}" class="cms-input" placeholder="e.g., website-1, auth-2">
             `;
             document.getElementById('cms-modal').classList.add('active');
         }
@@ -1801,8 +1927,18 @@
                 <textarea id="edit-note" class="cms-input"></textarea>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" class="cms-input">
-                <label class="block text-sm font-bold mb-1">Due Date (Optional)</label>
-                <input type="text" id="edit-due" class="cms-input">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Start Date</label>
+                        <input type="date" id="edit-startDate" class="cms-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Due Date</label>
+                        <input type="date" id="edit-due" class="cms-input">
+                    </div>
+                </div>
+                <label class="block text-sm font-bold mb-1">Dependencies (IDs, comma separated)</label>
+                <input type="text" id="edit-dependencies" class="cms-input" placeholder="e.g., website-1, auth-2">
             `;
             document.getElementById('cms-modal').classList.add('active');
         }
@@ -1826,18 +1962,25 @@
         function saveCmsChanges() {
             if (editContext.type === 'item' || editContext.type === 'item-new') {
                 const item = {
+                    id: editContext.type === 'item' ? 
+                        (UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex].id || `task-${Date.now()}`) : 
+                        `task-${Date.now()}`,
                     text: document.getElementById('edit-text').value,
                     status: document.getElementById('edit-status').value,
                     contributors: document.getElementById('edit-contributors').value.split(',').map(s => s.trim()).filter(s => s),
                     note: document.getElementById('edit-note').value,
                     usecase: document.getElementById('edit-usecase').value,
+                    startDate: document.getElementById('edit-startDate').value,
                     due: document.getElementById('edit-due').value,
-                    publishedDate: new Date().toISOString().split('T')[0] // Auto-track publication date
+                    dependencies: document.getElementById('edit-dependencies').value,
+                    publishedDate: new Date().toISOString().split('T')[0]
                 };
                 
                 if (!item.note) delete item.note;
                 if (!item.usecase) delete item.usecase;
+                if (!item.startDate) delete item.startDate;
                 if (!item.due) delete item.due;
+                if (!item.dependencies) delete item.dependencies;
 
                 if (editContext.type === 'item') {
                     UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex] = item;
@@ -1943,9 +2086,106 @@
 
         // Initialize
         window.onload = () => {
+            normalizeData();
             initCms();
             renderTrackView();
         };
+
+        function normalizeData() {
+            const today = new Date().toISOString().split('T')[0];
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            
+            UPDATE_DATA.tracks.forEach(track => {
+                track.subtracks.forEach(subtrack => {
+                    subtrack.items.forEach((item, index) => {
+                        if (!item.id) item.id = `${track.id}-${subtrack.name.toLowerCase().replace(/\s/g, '-')}-${index}`;
+                        if (!item.startDate) item.startDate = today;
+                        if (!item.due) item.due = nextWeek;
+                    });
+                });
+            });
+        }
+
+        // Advanced Date Filtering
+        let activeDateFilter = {
+            type: 'all',
+            start: null,
+            end: null
+        };
+
+        function applyDatePreset() {
+            const preset = document.getElementById('date-range-preset').value;
+            const customInputs = document.getElementById('custom-date-inputs');
+            
+            activeDateFilter.type = preset;
+            if (customInputs) customInputs.classList.toggle('hidden', preset !== 'custom');
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (preset === 'today') {
+                activeDateFilter.start = new Date(today);
+                activeDateFilter.end = new Date(today);
+            } else if (preset === 'this-week') {
+                const first = today.getDate() - today.getDay();
+                const last = first + 6;
+                activeDateFilter.start = new Date(new Date(today).setDate(first));
+                activeDateFilter.end = new Date(new Date(today).setDate(last));
+            } else if (preset === 'this-month') {
+                activeDateFilter.start = new Date(today.getFullYear(), today.getMonth(), 1);
+                activeDateFilter.end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            } else if (preset === 'all') {
+                activeDateFilter.start = null;
+                activeDateFilter.end = null;
+            }
+            
+            filterData();
+        }
+
+        function filterData() {
+            if (activeDateFilter.type === 'custom') {
+                const startStr = document.getElementById('filter-start-date').value;
+                const endStr = document.getElementById('filter-end-date').value;
+                activeDateFilter.start = startStr ? new Date(startStr) : null;
+                activeDateFilter.end = endStr ? new Date(endStr) : null;
+            }
+            
+            const activeSection = document.querySelector('.view-section.active');
+            if (activeSection) {
+                const currentView = activeSection.id.replace('-view', '');
+                switchView(currentView);
+            }
+        }
+
+        function isItemInDateRange(item) {
+            if (activeDateFilter.type === 'all') return true;
+            
+            // Check both startDate and due date
+            const checkDate = (dateStr) => {
+                if (!dateStr) return null;
+                if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    return new Date(dateStr);
+                }
+                // Fallback for "23 Mar" style
+                const currentYear = new Date().getFullYear();
+                const d = new Date(`${dateStr} ${currentYear}`);
+                return isNaN(d.getTime()) ? null : d;
+            };
+
+            const itemStart = checkDate(item.startDate);
+            const itemEnd = checkDate(item.due);
+            
+            if (!itemStart && !itemEnd) return true;
+            
+            const filterStart = activeDateFilter.start;
+            const filterEnd = activeDateFilter.end;
+            
+            // If item falls anywhere within the filter range
+            const startInRange = filterStart ? (itemEnd ? itemEnd >= filterStart : true) : true;
+            const endInRange = filterEnd ? (itemStart ? itemStart <= filterEnd : true) : true;
+            
+            return startInRange && endInRange;
+        }
     </script>
 
     <!-- CMS Modal -->
@@ -1997,7 +2237,42 @@
                         <button onclick="switchView('track')" id="btn-track" class="filter-btn active">By Track</button>
                         <button onclick="switchView('status')" id="btn-status" class="filter-btn">By Status</button>
                         <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor</button>
+                        <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Advanced Date Filters -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Due Date Filter</label>
+                    <select id="date-range-preset" onchange="applyDatePreset()" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                        <option value="all">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="this-week">This Week</option>
+                        <option value="this-month">This Month</option>
+                        <option value="custom">Custom Range...</option>
+                    </select>
+                </div>
+                <div id="custom-date-inputs" class="hidden flex gap-2 flex-1 min-w-[300px]">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">From</label>
+                        <input type="date" id="filter-start-date" onchange="filterData()" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">To</label>
+                        <input type="date" id="filter-end-date" onchange="filterData()" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportData('csv')" class="cms-btn cms-btn-secondary px-3 py-2 text-xs flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        CSV
+                    </button>
+                    <button id="export-gantt-btn" onclick="exportGantt()" class="hidden cms-btn cms-btn-secondary px-3 py-2 text-xs flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Image
+                    </button>
                 </div>
             </div>
 
@@ -2030,6 +2305,9 @@
         <div id="track-view" class="view-section active"></div>
         <div id="status-view" class="view-section"></div>
         <div id="contributor-view" class="view-section"></div>
+        <div id="gantt-view" class="view-section bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto min-h-[500px]">
+            <div id="gantt-chart-container" style="min-width: 800px;"></div>
+        </div>
 
         <!-- Footer -->
         <div class="text-center text-slate-400 text-sm py-8 mt-8 border-t border-slate-200">
