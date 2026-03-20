@@ -1495,7 +1495,7 @@
                                 const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
                                 contentHtml = `
                                     <div class="info-wrapper">
-                                        <span class="info-text">Ã¢ÂÂ¢ ${item.text}${due}</span>
+                                        <span class="info-text">• ${item.text}${due}</span>
                                         <button class="info-btn" aria-label="More information">i</button>
                                         <div class="tooltip-content" role="tooltip">
                                             <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
@@ -1504,7 +1504,7 @@
                                     </div>
                                 `;
                             } else {
-                                contentHtml = `Ã¢ÂÂ¢ ${item.text}${due}`;
+                                contentHtml = `• ${item.text}${due}`;
                             }
 
                             html += `<li class="text-sm text-slate-700 leading-snug">
@@ -1548,6 +1548,15 @@
             repoName: 'khyaal-engineering-updates',
             filePath: 'index.html'
         };
+
+        // Helper functions for UTF-8 Base64 (fixes gibberish root cause)
+        function toBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
+        function fromBase64(b64) {
+            return decodeURIComponent(escape(atob(b64)));
+        }
 
         function initCms() {
             const params = new URLSearchParams(window.location.search);
@@ -1608,7 +1617,7 @@
                     throw new Error(`GitHub API Error: ${errorData.message}`);
                 }
                 const fileData = await response.json();
-                const baseContent = atob(fileData.content);
+                const baseContent = fromBase64(fileData.content);
 
                 // 2. Generate the archive content using the CURRENT in-memory data.
                 const archiveDataString = JSON.stringify(UPDATE_DATA, null, 12);
@@ -1629,7 +1638,7 @@
                     },
                     body: JSON.stringify({
                         message: `Archive: ${UPDATE_DATA.metadata.dateRange}`,
-                        content: btoa(unescape(encodeURIComponent(archiveFileContent)))
+                        content: toBase64(archiveFileContent)
                     })
                 });
                 if (!archiveResponse.ok) { throw new Error('Failed to create archive file on GitHub.'); }
@@ -1658,7 +1667,7 @@
                     },
                     body: JSON.stringify({
                         message: 'CMS: Clear entries after archive',
-                        content: btoa(unescape(encodeURIComponent(newIndexFileContent))),
+                        content: toBase64(newIndexFileContent),
                         sha: fileData.sha
                     })
                 });
@@ -1698,7 +1707,7 @@
                 if (typeof fileData.content !== 'string') {
                     throw new Error('File content not found in GitHub API response.');
                 }
-                const content = atob(fileData.content);
+                const content = fromBase64(fileData.content);
 
                 // 2. Replace the UPDATE_DATA object in the content
                 const dataString = JSON.stringify(UPDATE_DATA, null, 12);
@@ -1717,7 +1726,7 @@
                     },
                     body: JSON.stringify({
                         message: 'CMS: Update content entries',
-                        content: btoa(unescape(encodeURIComponent(newContent))),
+                        content: toBase64(newContent),
                         sha: fileData.sha
                     })
                 });
@@ -1844,7 +1853,7 @@
                 document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
                 document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
                 document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
-                document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} Ã¢ÂÂ¢ ${UPDATE_DATA.metadata.dateRange}`;
+                document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} • ${UPDATE_DATA.metadata.dateRange}`;
             }
             
             closeCmsModal();
@@ -1979,7 +1988,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-4xl font-bold text-slate-900 tracking-tight" id="page-title">Khyaal Engineering Update</h1>
-                    <p class="text-slate-600 mt-2 text-lg" id="page-date">Feb 1 Ã¢ÂÂ Mar 18, 2026</p>
+                    <p class="text-slate-600 mt-2 text-lg" id="page-date">Feb 1 – Mar 18, 2026</p>
                     <p class="text-slate-500 text-sm mt-1" id="page-desc">Executive Update</p>
                 </div>
 
@@ -2024,7 +2033,7 @@
 
         <!-- Footer -->
         <div class="text-center text-slate-400 text-sm py-8 mt-8 border-t border-slate-200">
-            <p id="footer-text">Khyaal Engineering Update Ã¢ÂÂ¢ Feb 1 Ã¢ÂÂ Mar 18, 2026</p>
+            <p id="footer-text">Khyaal Engineering Update • Feb 1 – Mar 18, 2026</p>
             <!-- <p class="mt-1" id="footer-next">Next Review: April 1, 2026</p> -->
         </div>
     </div>
@@ -2034,7 +2043,7 @@
         document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
         document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
         document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
-        document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} Ã¢ÂÂ¢ ${UPDATE_DATA.metadata.dateRange}`;
+        document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} • ${UPDATE_DATA.metadata.dateRange}`;
         document.getElementById('footer-next').textContent = `Next Review: ${UPDATE_DATA.metadata.nextReview}`;
     </script>
 </body>

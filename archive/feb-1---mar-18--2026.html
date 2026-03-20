@@ -2185,7 +2185,7 @@
                                 const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
                                 contentHtml = `
                                     <div class="info-wrapper">
-                                        <span class="info-text">Ã¢ÂÂ¢ ${item.text}${due}</span>
+                                        <span class="info-text">• ${item.text}${due}</span>
                                         <button class="info-btn" aria-label="More information">i</button>
                                         <div class="tooltip-content" role="tooltip">
                                             <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
@@ -2194,7 +2194,7 @@
                                     </div>
                                 `;
                             } else {
-                                contentHtml = `Ã¢ÂÂ¢ ${item.text}${due}`;
+                                contentHtml = `• ${item.text}${due}`;
                             }
 
                             html += `<li class="text-sm text-slate-700 leading-snug">
@@ -2534,7 +2534,7 @@
                 document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
                 document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
                 document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
-                document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} Ã¢ÂÂ¢ ${UPDATE_DATA.metadata.dateRange}`;
+                document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} • ${UPDATE_DATA.metadata.dateRange}`;
             }
             
             closeCmsModal();
@@ -2641,7 +2641,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 class="text-4xl font-bold text-slate-900 tracking-tight" id="page-title">Khyaal Engineering Update</h1>
-                    <p class="text-slate-600 mt-2 text-lg" id="page-date">Feb 1 Ã¢ÂÂ Mar 18, 2026</p>
+                    <p class="text-slate-600 mt-2 text-lg" id="page-date">Feb 1 – Mar 18, 2026</p>
                     <p class="text-slate-500 text-sm mt-1" id="page-desc">Executive Update</p>
                 </div>
 
@@ -2686,7 +2686,7 @@
 
         <!-- Footer -->
         <div class="text-center text-slate-400 text-sm py-8 mt-8 border-t border-slate-200">
-            <p id="footer-text">Khyaal Engineering Update Ã¢ÂÂ¢ Feb 1 Ã¢ÂÂ Mar 18, 2026</p>
+            <p id="footer-text">Khyaal Engineering Update • Feb 1 – Mar 18, 2026</p>
             <!-- <p class="mt-1" id="footer-next">Next Review: April 1, 2026</p> -->
         </div>
     </div>
@@ -2696,7 +2696,7 @@
         document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
         document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
         document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
-        document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} Ã¢ÂÂ¢ ${UPDATE_DATA.metadata.dateRange}`;
+        document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} • ${UPDATE_DATA.metadata.dateRange}`;
         document.getElementById('footer-next').textContent = `Next Review: ${UPDATE_DATA.metadata.nextReview}`;
     </script>
 </body>
