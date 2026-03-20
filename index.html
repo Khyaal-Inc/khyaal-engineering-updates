@@ -616,10 +616,59 @@
                 justify-content: flex-start;
             }
         }
+
+        /* Loading Overlay */
+        #auth-loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            z-index: 5000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0f172a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
 <body class="p-4 md:p-8 text-slate-800">
+
+    <div id="auth-loading">
+        <div class="loader"></div>
+        <p class="text-slate-500 font-medium animate-pulse">Loading Updates...</p>
+    </div>
+
+    <!-- Early session check to prevent flicker -->
+    <script>
+        (function() {
+            const SITE_AUTH_KEY = 'khyaal_site_auth';
+            if (localStorage.getItem(SITE_AUTH_KEY)) {
+                // If we have a session, hide the login card immediately
+                document.write('<style>#auth-gatekeeper { display: none !important; }</style>');
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('auth-loading').style.display = 'flex';
+                });
+            }
+        })();
+    </script>
 
     <!-- Basic Auth Gatekeeper -->
     <div id="auth-gatekeeper">
@@ -640,7 +689,7 @@
                     style="padding: 0.75rem;">
                 <button onclick="checkBasicAuth()" class="cms-btn cms-btn-primary w-full py-3">Unlock Content</button>
             </div>
-            <div id="auth-error" class="text-red-500 text-xs mt-4 hidden">Invalid password. Please try again.</div>
+            <div id="auth-message" class="text-red-500 text-xs mt-4">Please enter password to view updates</div>
         </div>
     </div>
 
@@ -1574,12 +1623,21 @@
                         if (archives.length > 0) {
                             html += '<div class="flex flex-wrap gap-2 items-center mt-4 pt-4 border-t border-slate-100 w-full">';
                             html += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Historical Snapshots:</span>';
+                            
+                            // Add "Back to Current" if viewing an archive
+                            if (window.loadingArchive) {
+                                html += `<button onclick="window.location.search=''" class="archive-btn bg-slate-900 border-slate-900 text-white p-2 rounded text-sm hover:bg-slate-800">← Back to Live Updates</button>`;
+                            }
+
                             archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
                                 // Clean up name for display (e.g., feb-1---mar-18--2026.json -> Feb 1 – Mar 18, 2026)
                                 let displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim();
                                 displayName = displayName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-                                html += `<button onclick="loadArchive('${file.name}')" class="archive-btn bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-800 p-2 rounded text-sm">${displayName}</button>`;
+                                const isActive = window.loadingArchive && window.loadingArchive.includes(file.name);
+                                const activeClass = isActive ? 'ring-2 ring-amber-500 ring-offset-2 font-bold' : '';
+
+                                html += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-800 p-2 rounded text-sm">${displayName}</button>`;
                             });
                             html += '</div>';
                         }
@@ -1608,22 +1666,10 @@
             }
 
             // Initialize
-            window.onload = () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const archiveFile = urlParams.get('archive');
-                
-                if (archiveFile) {
-                    window.loadingArchive = archiveFile;
-                }
-                
-                localStorage.removeItem(SITE_AUTH_KEY); 
-            };
+
 
             async function loadArchive(fileName) {
-                const confirm = window.confirm(`Load historical snapshot: ${fileName}?`);
-                if (confirm) {
-                    window.location.search = `?archive=archive/${fileName}`;
-                }
+                window.location.search = `?archive=archive/${fileName}`;
             }
 
             function normalizeData() {
@@ -1897,9 +1943,19 @@
                 return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             }
 
-            async function checkBasicAuth() {
-                const password = document.getElementById('site-password').value.trim();
-                const hashedInput = await sha256(password);
+            async function checkBasicAuth(cachedHash = null) {
+                const passwordInput = document.getElementById('site-password');
+                const authMessage = document.getElementById('auth-message');
+                let hashedInput;
+
+                if (cachedHash) {
+                    hashedInput = cachedHash;
+                } else {
+                    const password = passwordInput.value.trim();
+                    if (!password) return;
+                    hashedInput = await sha256(password);
+                }
+
                 const githubToken = localStorage.getItem('GITHUB_CMS_TOKEN') || '';
 
                 if (!LAMBDA_URL) {
@@ -1909,6 +1965,8 @@
                 }
 
                 try {
+                    if (!cachedHash) authMessage.innerText = 'Authenticating...';
+                    
                     const response = await fetch(`${LAMBDA_URL}?cb=${Date.now()}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1923,25 +1981,25 @@
 
                     if (result.authenticated && result.data) {
                         UPDATE_DATA = result.data; // Store the secure data in memory
-                        localStorage.setItem(SITE_AUTH_KEY, 'true');
+                        localStorage.setItem(SITE_AUTH_KEY, hashedInput); // Store hash for persistence
                         showProtectedContent();
                     } else if (result.authenticated && result.error) {
                         // Correct password but token missing/invalid
-                        document.getElementById('auth-message').innerText = result.error + ' (Please set token in CMS settings)';
-                        // Allow them in anyway if we want them to see the empty state? 
-                        // No, better to keep it locked if data fetch failed.
+                        authMessage.innerText = result.error + ' (Please set token in CMS settings)';
                     } else {
-                        document.getElementById('auth-message').innerText = 'Invalid password. Please try again.';
+                        authMessage.innerText = 'Invalid password. Please try again.';
+                        localStorage.removeItem(SITE_AUTH_KEY);
                     }
                 } catch (error) {
                     console.error('Error during authentication:', error);
-                    alert('An error occurred during authentication. Please try again.');
+                    if (!cachedHash) alert('An error occurred during authentication. Please try again.');
                 }
             }
 
             function showProtectedContent() {
                 if (!UPDATE_DATA) return;
 
+                document.getElementById('auth-loading').style.display = 'none';
                 document.getElementById('auth-gatekeeper').classList.add('hidden');
                 document.getElementById('main-content').classList.add('visible');
 
@@ -1967,6 +2025,24 @@
                 localStorage.removeItem(SITE_AUTH_KEY);
                 location.reload();
             }
+
+            // Auto-login if hash is cached (starts immediately for speed)
+            const cachedHash = localStorage.getItem(SITE_AUTH_KEY);
+            if (cachedHash) {
+                checkBasicAuth(cachedHash);
+            }
+
+            // Standard initialization for other elements
+            window.onload = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const archiveFile = urlParams.get('archive');
+                
+                if (archiveFile) {
+                    window.loadingArchive = archiveFile;
+                    // If archive was specified in URL, we need to re-auth with it
+                    if (cachedHash) checkBasicAuth(cachedHash);
+                }
+            };
         </script>
 </body>
 </html>

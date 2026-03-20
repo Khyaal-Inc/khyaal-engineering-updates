@@ -37,5 +37,21 @@ To update the engineering items:
 - **Archive & Clear**: Creates a JSON snapshot in the `archive/` folder.
 - **Historical Snapshots**: These can be viewed dynamically from the main dashboard. The "template" remains the same, but the data is loaded from the archive JSON files.
 
+## 🛠️ Architecture & Performance
+
+### 🔏 Why "Loading Updates..."?
+Every time you refresh, the app must securely request the latest data from the Lambda proxy (to avoid exposing your GitHub token or data locally). This process happens in **one single trip (One Hop)**:
+
+1.  **Verification**: Your cached password hash is sent to the Lambda.
+2.  **Fetching**: If verified, the Lambda fetches the latest `data.json` from GitHub.
+3.  **Secure Delivery**: The data is returned to your browser.
+
+Most of the loading time is spent on the **GitHub data fetch**. This ensures you are always looking at the absolute latest updates synced to GitHub by any team member.
+
+### 🍪 Session Persistence
+- **Duration**: Your login hash is stored in `localStorage` **indefinitely**. It survives browser restarts.
+- **Auto-Login**: The app is optimized to detect this hash and start the data fetch **immediately** when the page starts to parse, providing a flicker-free "always-on" experience.
+- **Lock Site**: Click the "Lock Site" button at any time to clear your local session and re-enable the password prompt.
+
 ---
 © 2026 Khyaal Inc.
