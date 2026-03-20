@@ -1170,8 +1170,14 @@
                     html += `<div>`;
                     const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
                     
+                    // Map items to include their original index for correct editing
+                    let itemsWithIndex = subtrack.items.map((item, originalIndex) => ({
+                        ...item,
+                        originalIndex
+                    }));
+
                     // Filter items by date if a filter is active
-                    let items = subtrack.items.filter(item => isItemInDateRange(item));
+                    let items = itemsWithIndex.filter(item => isItemInDateRange(item));
                     if (window.currentDateFilter && window.currentDateFilter !== 'all') {
                         items = items.filter(item => {
                             if (window.currentDateFilter === 'Legacy') return !item.publishedDate;
@@ -1182,8 +1188,8 @@
                     }
 
                     const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-                    sortedItems.forEach((item, itemIndex) => {
-                        html += renderItem(item, subtrack.note, trackIndex, subtrackIndex, itemIndex);
+                    sortedItems.forEach((item) => {
+                        html += renderItem(item, subtrack.note, trackIndex, subtrackIndex, item.originalIndex);
                     });
                     
                     if (isAuthenticated) {
