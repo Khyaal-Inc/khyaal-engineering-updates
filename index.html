@@ -1441,7 +1441,9 @@
                     html += `<div class="subtrack-title" style="border-left-color: ${accentColor}">${subtrack.name}</div>`;
 
                     html += `<div>`;
-                    subtrack.items.forEach(item => {
+                    const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
+                    const sortedItems = subtrack.items.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+                    sortedItems.forEach(item => {
                         html += renderItem(item, subtrack.note);
                     });
                     html += `</div></div>`;
