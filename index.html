@@ -617,6 +617,54 @@
             }
         }
 
+        /* Dependency Picker */
+        .dependency-picker {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            background: #f8fafc;
+        }
+        .dependency-search {
+            width: 100%;
+            padding: 0.4rem 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .dependency-list {
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .dependency-item {
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            background: white;
+            text-align: left;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dependency-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .dependency-item-id {
+            font-family: monospace;
+            color: #94a3b8;
+            font-size: 0.65rem;
+        }
+
         /* Loading Overlay */
         #auth-loading {
             display: none;
@@ -809,6 +857,7 @@
 
                 if (effectiveNote) {
                     const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+                    const idHTML = isAuthenticated ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
                     contentHtml = `
                     <div class="info-wrapper">
                         <span class="info-text">${item.text}${due}</span>
@@ -816,6 +865,7 @@
                         <div class="tooltip-content" role="tooltip">
                             <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
                             ${cleanNote}
+                            ${idHTML}
                         </div>
                     </div>
                 `;
@@ -824,7 +874,7 @@
                 let cmsControls = '';
                 if (isAuthenticated) {
                     cmsControls = `
-                    <div class="mt-2 flex gap-2">
+                    <div class="mt-2 flex items-center gap-2">
                         <span onclick="openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-edit-btn">Edit</span>
                         <span onclick="deleteItem(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-delete-btn">Delete</span>
                     </div>
@@ -959,7 +1009,7 @@
                                     <div class="flex-1">
                                         <div class="text-sm font-semibold text-slate-800 leading-tight">
                                             <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-2 border border-${item.trackTheme}-200">
-                                                ${item.track} Ã¢ÂÂ ${item.subtrack}
+                                                ${item.track} &rarr; ${item.subtrack}
                                             </span>
                                             <div class="flex items-start gap-2">
                                                 <span class="status-pill ${config.class} flex-shrink-0 mt-0.5">${config.label}</span>
@@ -1124,26 +1174,48 @@
                 data.addColumn('number', 'Percent Complete');
                 data.addColumn('string', 'Dependencies');
 
-                const rows = [];
+                // First pass: collect IDs that will be rendered
+                const renderedIds = new Set();
                 UPDATE_DATA.tracks.forEach(track => {
                     track.subtracks.forEach(subtrack => {
                         subtrack.items.forEach(item => {
                             if (!isItemInDateRange(item)) return;
+                            if (item.startDate && item.due) {
+                                const start = new Date(item.startDate);
+                                const end = new Date(item.due);
+                                if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                                    renderedIds.add(item.id);
+                                }
+                            }
+                        });
+                    });
+                });
 
-                            // Skip items without both dates in Gantt chart
-                            if (!item.startDate || !item.due) return;
+                const rows = [];
+                UPDATE_DATA.tracks.forEach(track => {
+                    track.subtracks.forEach(subtrack => {
+                        subtrack.items.forEach(item => {
+                            if (!renderedIds.has(item.id)) return;
 
                             const start = new Date(item.startDate);
                             const end = new Date(item.due);
 
-                            // Ensure dates are valid
-                            if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
-
                             // Percentage based on status
                             let percent = 0;
                             if (item.status === 'done') percent = 100;
-                            else if (item.status === 'ongoing') percent = 50;
+                            else if (item.status === 'ongoing') percent = 75;
                             else if (item.status === 'now') percent = 25;
+
+                            // Filter dependencies: only include those that are also being rendered
+                            let cleanDeps = null;
+                            if (item.dependencies) {
+                                const depList = item.dependencies.split(',')
+                                    .map(d => d.trim())
+                                    .filter(d => d && renderedIds.has(d));
+                                if (depList.length > 0) {
+                                    cleanDeps = depList.join(',');
+                                }
+                            }
 
                             rows.push([
                                 item.id,
@@ -1153,7 +1225,7 @@
                                 end,
                                 null,
                                 percent,
-                                item.dependencies || null
+                                cleanDeps
                             ]);
                         });
                     });
@@ -1438,6 +1510,18 @@
                 const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
                 editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
 
+                // Get all items for the dependency picker
+                let allItems = [];
+                UPDATE_DATA.tracks.forEach(t => {
+                    t.subtracks.forEach(s => {
+                        s.items.forEach(i => {
+                            if (i.id !== item.id) { // Don't depend on self
+                                allItems.push({ id: i.id, text: i.text });
+                            }
+                        });
+                    });
+                });
+
                 document.getElementById('modal-title').innerText = 'Edit Item';
                 document.getElementById('modal-form').innerHTML = `
                 <label class="block text-sm font-bold mb-1">Text</label>
@@ -1466,11 +1550,56 @@
                         <input type="date" id="edit-due" value="${item.due || ''}" class="cms-input">
                     </div>
                 </div>
-                <label class="block text-sm font-bold mb-1">Dependencies (IDs, comma separated)</label>
+                
+                <label class="block text-sm font-bold mb-1">Dependencies</label>
                 <input type="text" id="edit-dependencies" value="${item.dependencies || ''}" class="cms-input" placeholder="e.g., website-1, auth-2">
+                
+                <div class="dependency-picker">
+                    <input type="text" class="dependency-search" placeholder="Search tasks to add as dependency..." onkeyup="filterDependencies(this.value)">
+                    <div class="dependency-list" id="dependency-picker-list">
+                        ${allItems.map(i => `
+                            <button type="button" class="dependency-item" onclick="addDependency('${i.id}')" title="${i.text}">
+                                <span class="truncate pr-2">${i.text}</span>
+                                <span class="dependency-item-id">ID: ${i.id}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
             `;
                 document.getElementById('cms-modal').classList.add('active');
             }
+
+            function filterDependencies(query) {
+                const q = query.toLowerCase();
+                const items = document.querySelectorAll('.dependency-item');
+                items.forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    item.style.display = text.includes(q) ? 'flex' : 'none';
+                });
+            }
+
+            function addDependency(id) {
+                const input = document.getElementById('edit-dependencies');
+                let current = input.value.trim();
+                
+                // Don't add if already there
+                if (current.includes(id)) return;
+
+                if (current) {
+                    input.value = current + ', ' + id;
+                } else {
+                    input.value = id;
+                }
+                
+                // Visual feedback
+                const btn = Array.from(document.querySelectorAll('.dependency-item')).find(el => el.innerHTML.includes(id));
+                if (btn) {
+                    const originalBg = btn.style.background;
+                    btn.style.background = '#dcfce7';
+                    setTimeout(() => btn.style.background = originalBg, 500);
+                }
+            }
+
 
             function deleteItem(trackIndex, subtrackIndex, itemIndex) {
                 if (confirm('Are you sure you want to delete this item?')) {
@@ -1811,8 +1940,7 @@
                                 style="background-color: #d97706;">Archive & Clear</button>
                             <button onclick="openMetadataEdit()" class="cms-btn cms-btn-secondary">Edit
                                 Metadata</button>
-                            <button onclick="logoutSite()" class="cms-btn cms-btn-secondary">Lock Site</button>
-                            <button onclick="logoutCms()" class="cms-btn cms-btn-secondary">Logout CMS</button>
+                            <button onclick="logoutAll()" class="cms-btn cms-btn-secondary">Logout</button>
                         </div>
                     </div>
                     <div id="cms-status" class="text-sm text-slate-500"></div>
@@ -2021,8 +2149,9 @@
                 renderTrackView();
             }
 
-            function logoutSite() {
+            function logoutAll() {
                 localStorage.removeItem(SITE_AUTH_KEY);
+                localStorage.removeItem('gh_pat');
                 location.reload();
             }
 
