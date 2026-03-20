@@ -249,24 +249,24 @@
         }
 
         .subtrack-title::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f172a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0.5;
+            display: none;
         }
 
         /* Item Styling */
         .item-row {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
             display: flex;
-            justify-content: space-between;
             align-items: flex-start;
-            gap: 1rem;
+            gap: 1.5rem;
             transition: background-color 0.2s;
+        }
+        .item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 0;
         }
 
         .item-row:hover {
@@ -622,11 +622,68 @@
                 flex-direction: column;
                 gap: 0.75rem;
             }
+        }
 
-            .contributors {
-                width: 100%;
-                justify-content: flex-start;
-            }
+        .search-container {
+            position: relative;
+            margin: 1.25rem auto;
+            width: 100%;
+            max-width: 600px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.65rem 1rem 0.65rem 3.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.25rem;
+            pointer-events: none;
+        }
+
+        /* Progress Bar - Global */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            position: relative;
+            border: 1px solid #cbd5e1;
+        }
+        .progress-fill {
+            height: 100% !important;
+            background-color: #3b82f6;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+            border-radius: 0 4px 4px 0;
+        }
+        .progress-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .contributors {
+            width: 100%;
+            justify-content: flex-start;
         }
 
         /* Dependency Picker */
@@ -804,11 +861,42 @@
                 UPDATE_DATA.tracks.forEach((track, trackIndex) => {
                     const accentColor = themeColors[track.theme] || '#0f172a';
                     html += `<div class="track-card" style="border-color: ${accentColor}">`;
-                    html += `<div class="track-header" style="background: linear-gradient(135deg, ${accentColor} 0%, #1e293b 100%)">${track.name}</div>`;
+                    html += `
+                        <div class="track-header" style="background: linear-gradient(135deg, ${accentColor} 0%, #1e293b 100%)">
+                            <div class="flex justify-between items-center w-full">
+                                <span>${track.name}</span>
+                                <div class="flex gap-2">
+                                    ${isAuthenticated ? `
+                                    <button onclick="addSubtrack(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors font-bold">Add Subtrack</button>
+                                    <button onclick="openTrackEdit(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors">Edit</button>
+                                    <button onclick="deleteTrack(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors">Delete</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
                     track.subtracks.forEach((subtrack, subtrackIndex) => {
                         html += `<div class="subtrack-section">`;
-                        html += `<div class="subtrack-title" style="border-left-color: ${accentColor}">${subtrack.name}</div>`;
+                        html += `
+                            <div class="subtrack-title flex justify-between items-center px-4 py-2.5 bg-slate-50 rounded-xl group/sub mb-0.5 cursor-pointer" onclick="toggleSubtrack('${track.name}', '${subtrack.name}')" style="border-left: 8px solid ${accentColor}">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 text-lg">${subtrack.name}</span>
+                                </div>
+                                <div class="flex gap-2 items-center">
+                                    ${window.isAuthenticated === true ? `
+                                    <div class="flex gap-1">
+                                        <button onclick="event.stopPropagation(); addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md hover:bg-emerald-100 font-bold border border-emerald-100 shadow-sm">Add Item</button>
+                                        <button onclick="event.stopPropagation(); openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-md hover:bg-blue-100 font-bold border border-blue-100 shadow-sm">Edit</button>
+                                        <button onclick="event.stopPropagation(); deleteSubtrack(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-red-50 text-red-700 px-2 py-1 rounded-md hover:bg-red-100 font-bold border border-red-100 shadow-sm">Delete</button>
+                                    </div>
+                                    ` : ''}
+                                    <span class="ml-2 text-slate-400">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                                    </span>
+                                </div>
+                            </div>
+                        `;
 
                         html += `<div>`;
                         const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
@@ -828,6 +916,29 @@
                                 const d = new Date(item.publishedDate);
                                 return d.toLocaleString('default', { month: 'short', year: 'numeric' }) === window.currentDateFilter;
                             });
+                        }
+
+                        // Apply Global Search
+                        items = items.filter(item => isItemInSearch(item));
+
+                        // Calculate Subtrack Progress
+                        const totalItems = subtrack.items.length;
+                        const doneItems = subtrack.items.filter(i => i.status === 'done').length;
+                        const percent = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+                        const progressHtml = `
+                            <div class="mt-2 mb-4">
+                                <div class="flex justify-between items-end mb-1">
+                                    <span class="progress-label">Subtrack Completion</span>
+                                    <span class="text-[10px] font-bold text-slate-500">${percent}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-fill" style="width: ${percent}%; background-color: ${accentColor} !important; min-width: ${percent > 0 ? '4px' : '0'}"></div>
+                                </div>
+                            </div>
+                        `;
+
+                        if (items.length > 0 || globalSearchQuery === '') {
+                            html += progressHtml;
                         }
 
                         const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
@@ -890,9 +1001,9 @@
                 let cmsControls = '';
                 if (isAuthenticated) {
                     cmsControls = `
-                    <div class="mt-2 flex items-center gap-2">
-                        <span onclick="openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-edit-btn">Edit</span>
-                        <span onclick="deleteItem(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-delete-btn">Delete</span>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <span onclick="event.stopPropagation(); openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
+                        <span onclick="event.stopPropagation(); deleteItem(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
                     </div>
                 `;
                 }
@@ -900,20 +1011,33 @@
                 return `
                 <div class="item-row ${status.bucket}">
                     <div class="item-content">
-                        <div class="flex items-start gap-2">
-                            <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
-                                <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center">${status.label}</span>
-                                <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
+                        <div class="flex justify-between items-start w-full gap-4">
+                            <div class="flex items-start gap-4 flex-1">
+                                <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-1">
+                                    <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
+                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
+                                </div>
+                                <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
+                                    <div class="mb-1">${contentHtml}</div>
+                                    <div class="mb-2">${usecase}</div>
+                                    ${cmsControls}
+                                </div>
                             </div>
-                            <div class="text-sm text-slate-800 font-semibold leading-tight">
-                                ${contentHtml}
-                                ${cmsControls}
+                            <div class="flex-shrink-0">
+                                <div class="flex flex-wrap justify-end gap-1">
+                                    ${renderContributors(item.contributors)}
+                                </div>
                             </div>
                         </div>
-                        ${usecase}
-                    </div>
-                    <div class="contributors flex flex-wrap gap-1 justify-end pt-1">
-                        ${renderContributors(item.contributors)}
+                        ${item.mediaUrl ? `
+                            <div class="mt-2 group relative inline-block">
+                                <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">
+                                    <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
+                                         onerror="this.style.display='none'">
+                                </a>
+                                <div class="hidden group-hover:block absolute -top-8 left-0 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-10">Click to view full image</div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -1027,22 +1151,32 @@
 
                             html += `
                             <div class="item-row hover:bg-slate-50 transition-colors">
-                                <div class="flex justify-between items-start gap-3 w-full">
+                                <div class="flex justify-between items-start w-full gap-4">
                                     <div class="flex-1">
                                         <div class="text-sm font-semibold text-slate-800 leading-tight">
-                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-2 border border-${item.trackTheme}-200">
+                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-${item.trackTheme}-200">
                                                 ${item.track} &rarr; ${item.subtrack}
                                             </span>
-                                            <div class="flex items-start gap-2">
-                                                <span class="status-pill ${config.class} flex-shrink-0 mt-0.5">${config.label}</span>
-                                                <span class="status-pill ${priorityInfo.class} flex-shrink-0 mt-0.5">${priorityLabel}</span>
-                                                <div class="flex-1">${contentHtml}</div>
+                                            <div class="flex items-start gap-4">
+                                                <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
+                                                    <span class="status-pill ${config.class} min-w-[54px] text-center">${config.label}</span>
+                                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${priorityLabel}</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="mb-1">${contentHtml}</div>
+                                                    <div class="mb-2">${usecase}</div>
+                                                    <div class="flex items-center gap-3 mt-1.5">
+                                                        <span onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
+                                                        <span onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        ${usecase}
                                     </div>
-                                    <div class="flex flex-wrap gap-1 min-w-[100px] justify-end">
-                                        ${renderContributors(item.contributors)}
+                                    <div class="flex-shrink-0 pt-1">
+                                        <div class="flex flex-wrap justify-end gap-1">
+                                            ${renderContributors(item.contributors)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1157,21 +1291,32 @@
 
                             html += `
                             <div class="item-row hover:bg-slate-50 transition-colors">
-                                <div class="flex justify-between items-start gap-3 w-full">
+                                <div class="flex justify-between items-start w-full gap-4">
                                     <div class="flex-1">
                                         <div class="text-sm font-semibold text-slate-800 leading-tight">
-                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-2 border border-${item.trackTheme}-200">
+                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-${item.trackTheme}-200">
                                                 ${item.track} &rarr; ${item.subtrack}
                                             </span>
-                                            <div class="flex items-start gap-2">
-                                                <span class="status-pill ${status.class} flex-shrink-0 mt-0.5">${status.label}</span>
-                                                <div class="flex-1">${contentHtml}</div>
+                                            <div class="flex items-start gap-4">
+                                                <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
+                                                    <span class="status-pill ${status.class} min-w-[54px] text-center">${status.label}</span>
+                                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${priorityLabel}</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="mb-1">${contentHtml}</div>
+                                                    <div class="mb-2">${usecase}</div>
+                                                    <div class="flex items-center gap-3 mt-1.5">
+                                                        <span onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
+                                                        <span onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        ${usecase}
                                     </div>
-                                    <div class="flex flex-wrap gap-1 min-w-[100px] justify-end">
-                                        ${renderContributors(item.contributors)}
+                                    <div class="flex-shrink-0 pt-1">
+                                        <div class="flex flex-wrap justify-end gap-1">
+                                            ${renderContributors(item.contributors)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1296,16 +1441,28 @@
                                         </div>
                                     </div>
                                 `;
-                                } else {
-                                    contentHtml = `• ${item.text}${due}`;
-                                }
-                                html += `<li class="text-sm text-slate-700 leading-snug">
-                                ${contentHtml}
-                                <div class="mt-1 ml-3 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">
-                                    <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter">${priorityLabel}</span>
-                                    ${item.track} → ${item.subtrack}
-                                </div>
-                            </li>`;
+                            }
+
+                                    const mediaHtml = item.mediaUrl ? `
+                                        <div class="mt-2 group relative inline-block">
+                                            <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
+                                                 onclick="window.open('${item.mediaUrl}', '_blank')" 
+                                                 onerror="this.style.display='none'">
+                                            <div class="hidden group-hover:block absolute -top-8 left-0 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-10">Click to view full image</div>
+                                        </div>
+                                    ` : '';
+
+                                    html += `
+                                    <li class="text-sm text-slate-700 leading-snug">
+                                        <div class="flex flex-col gap-1">
+                                            <div class="font-medium">${contentHtml}</div>
+                                            ${mediaHtml}
+                                            <div class="mt-1 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">
+                                                <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter">${priorityLabel}</span>
+                                                ${item.track} → ${item.subtrack}
+                                            </div>
+                                        </div>
+                                    </li>`;
                             });
                             html += `</ul></div>`;
                         }
@@ -1338,7 +1495,13 @@
                     track.subtracks.forEach(subtrack => {
                         subtrack.items.forEach(item => {
                             if (!isItemInDateRange(item)) return;
-                            if (item.startDate && item.due) {
+                            const isMilestone = item.text.toLowerCase().includes('launch') || item.text.toLowerCase().includes('milestone');
+                            if (isMilestone) {
+                                const mDate = item.startDate ? new Date(item.startDate) : (item.due ? new Date(item.due) : null);
+                                if (mDate && !isNaN(mDate.getTime())) {
+                                    renderedIds.add(item.id);
+                                }
+                            } else if (item.startDate && item.due) {
                                 const start = new Date(item.startDate);
                                 const end = new Date(item.due);
                                 if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
@@ -1355,8 +1518,18 @@
                         subtrack.items.forEach(item => {
                             if (!renderedIds.has(item.id)) return;
 
-                            const start = new Date(item.startDate);
-                            const end = new Date(item.due);
+                            const isMilestone = item.text.toLowerCase().includes('launch') || item.text.toLowerCase().includes('milestone');
+                            let start = item.startDate ? new Date(item.startDate) : new Date(item.due);
+                            let end = item.due ? new Date(item.due) : new Date(item.startDate);
+
+                            if (isMilestone) {
+                                if (!item.startDate) start = end;
+                                if (!item.due) end = start;
+                            }
+
+                            // If it's a milestone (start and end are same or close, or specific flag)
+                            // In Google Charts Gantt, a milestone is a task with duration 0.
+                            const duration = isMilestone ? 0 : null; // Google Gantt uses end date if duration is null
 
                             // Percentage based on status
                             let percent = 0;
@@ -1381,13 +1554,30 @@
                                 track.name,
                                 start,
                                 end,
-                                null,
+                                duration,
                                 percent,
                                 cleanDeps
                             ]);
                         });
                     });
                 });
+
+                // Add Global Milestones from metadata if any
+                if (UPDATE_DATA.metadata.milestones) {
+                    UPDATE_DATA.metadata.milestones.forEach((m, idx) => {
+                        const mDate = new Date(m.date);
+                        data.addRow([
+                            `ms-${idx}`,
+                            m.text,
+                            'Milestone',
+                            mDate,
+                            mDate,
+                            0,
+                            100,
+                            null
+                        ]);
+                    });
+                }
 
                 if (rows.length === 0) {
                     document.getElementById('gantt-chart-container').innerHTML = '<div class="text-center py-10 text-slate-500">No tasks found for the selected date range.</div>';
@@ -1483,6 +1673,33 @@
                 if (view === 'gantt') renderGanttView();
             }
 
+            let globalSearchQuery = '';
+            function filterBySearch(query) {
+                globalSearchQuery = query.toLowerCase();
+                const activeSection = document.querySelector('.view-section.active');
+                if (activeSection) {
+                    const currentView = activeSection.id.replace('-view', '');
+                    switchView(currentView);
+                }
+            }
+
+            function isItemInSearch(item) {
+                if (!globalSearchQuery) return true;
+                const text = item.text.toLowerCase();
+                const note = (item.note || '').toLowerCase();
+                const usecase = (item.usecase || '').toLowerCase();
+                const contributors = (item.contributors || []).join(' ').toLowerCase();
+                const track = (item.track || '').toLowerCase();
+                const subtrack = (item.subtrack || '').toLowerCase();
+                
+                return text.includes(globalSearchQuery) || 
+                       note.includes(globalSearchQuery) || 
+                       usecase.includes(globalSearchQuery) || 
+                       contributors.includes(globalSearchQuery) ||
+                       track.includes(globalSearchQuery) ||
+                       subtrack.includes(globalSearchQuery);
+            }
+
             // CMS State
             let isCmsMode = false;
             let isAuthenticated = false;
@@ -1525,6 +1742,7 @@
 
                 githubToken = token;
                 localStorage.setItem('gh_pat', token);
+                window.isAuthenticated = true;
                 isAuthenticated = true;
 
                 document.getElementById('cms-auth-section').classList.add('hidden');
@@ -1666,6 +1884,59 @@
             }
 
             // CRUD Helpers
+            function addItem(trackIndex, subtrackIndex) {
+                editContext = { type: 'item-new', trackIndex, subtrackIndex };
+                document.getElementById('modal-title').innerText = 'Add New Item';
+                document.getElementById('modal-form').innerHTML = `
+                <label class="block text-sm font-bold mb-1">Task Title</label>
+                <input type="text" id="edit-text" class="cms-input" placeholder="e.g. Implement feature X">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Status</label>
+                        <select id="edit-status" class="cms-input">
+                            <option value="done">Done</option>
+                            <option value="now">Now</option>
+                            <option value="ongoing">On-Going</option>
+                            <option value="next">Next</option>
+                            <option value="later">Later</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Priority</label>
+                        <select id="edit-priority" class="cms-input">
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
+                <input type="text" id="edit-contributors" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Note / Description</label>
+                <textarea id="edit-note" class="cms-input"></textarea>
+                <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
+                <input type="text" id="edit-usecase" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Image/Media URL</label>
+                <input type="text" id="edit-mediaUrl" class="cms-input" placeholder="https://example.com/image.png">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Start Date</label>
+                        <input type="date" id="edit-startDate" class="cms-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Due Date</label>
+                        <input type="text" id="edit-due" class="cms-input" placeholder="e.g. March 30">
+                    </div>
+                </div>
+                <label class="block text-sm font-bold mb-1">Dependencies (Task IDs, comma separated)</label>
+                <div class="relative">
+                    <input type="text" id="edit-dependencies" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
+                    <div id="dependency-picker" class="dependency-picker"></div>
+                </div>
+            `;
+                document.getElementById('cms-modal').classList.add('active');
+            }
+
             function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
                 const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
                 editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
@@ -1706,6 +1977,8 @@
                 <textarea id="edit-note" class="cms-input">${item.note || ''}</textarea>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" value="${item.usecase || ''}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Image/Media URL</label>
+                <input type="text" id="edit-mediaUrl" value="${item.mediaUrl || ''}" class="cms-input" placeholder="https://example.com/image.png">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-sm font-bold mb-1">Start Date</label>
@@ -1800,6 +2073,8 @@
                 <textarea id="edit-note" class="cms-input"></textarea>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Image/Media URL</label>
+                <input type="text" id="edit-mediaUrl" class="cms-input" placeholder="https://example.com/image.png">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-sm font-bold mb-1">Start Date</label>
@@ -1832,6 +2107,70 @@
                 document.getElementById('cms-modal').classList.add('active');
             }
 
+            function openTrackEdit(trackIndex) {
+                const track = UPDATE_DATA.tracks[trackIndex];
+                editContext = { type: 'track', trackIndex };
+
+                document.getElementById('modal-title').innerText = 'Edit Track';
+                document.getElementById('modal-form').innerHTML = `
+                <label class="block text-sm font-bold mb-1">Track Name</label>
+                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Theme (blue, emerald, violet, amber, rose, slate)</label>
+                <input type="text" id="edit-track-theme" value="${track.theme}" class="cms-input">
+            `;
+                document.getElementById('cms-modal').classList.add('active');
+            }
+
+            function addTrack() {
+                const newTrack = {
+                    id: `track-${Date.now()}`,
+                    name: "New Track",
+                    theme: "slate",
+                    subtracks: []
+                };
+                UPDATE_DATA.tracks.push(newTrack);
+                renderTrackView();
+                openTrackEdit(UPDATE_DATA.tracks.length - 1);
+            }
+
+            function deleteTrack(trackIndex) {
+                if (confirm('Are you sure you want to delete this ENTIRE track and all its subtracks?')) {
+                    UPDATE_DATA.tracks.splice(trackIndex, 1);
+                    renderTrackView();
+                }
+            }
+
+            function openSubtrackEdit(trackIndex, subtrackIndex) {
+                const subtrack = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex];
+                editContext = { type: 'subtrack', trackIndex, subtrackIndex };
+
+                document.getElementById('modal-title').innerText = 'Edit Subtrack';
+                document.getElementById('modal-form').innerHTML = `
+                <label class="block text-sm font-bold mb-1">Subtrack Name</label>
+                <input type="text" id="edit-subtrack-name" value="${subtrack.name}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Default Note</label>
+                <textarea id="edit-subtrack-note" class="cms-input">${subtrack.note || ''}</textarea>
+            `;
+                document.getElementById('cms-modal').classList.add('active');
+            }
+
+            function addSubtrack(trackIndex) {
+                const newSubtrack = {
+                    name: "New Subtrack",
+                    items: []
+                };
+                UPDATE_DATA.tracks[trackIndex].subtracks.push(newSubtrack);
+                renderTrackView();
+                openSubtrackEdit(trackIndex, UPDATE_DATA.tracks[trackIndex].subtracks.length - 1);
+            }
+
+            function deleteSubtrack(trackIndex, subtrackIndex) {
+                if (confirm('Are you sure you want to delete this subtrack and all its items?')) {
+                    UPDATE_DATA.tracks[trackIndex].subtracks.splice(subtrackIndex, 1);
+                    renderTrackView();
+                }
+            }
+
             function saveCmsChanges() {
                 if (editContext.type === 'item' || editContext.type === 'item-new') {
                     const item = {
@@ -1844,6 +2183,7 @@
                         contributors: document.getElementById('edit-contributors').value.split(',').map(s => s.trim()).filter(s => s),
                         note: document.getElementById('edit-note').value,
                         usecase: document.getElementById('edit-usecase').value,
+                        mediaUrl: document.getElementById('edit-mediaUrl').value,
                         startDate: document.getElementById('edit-startDate').value,
                         due: document.getElementById('edit-due').value,
                         dependencies: document.getElementById('edit-dependencies').value,
@@ -1862,6 +2202,12 @@
                     } else {
                         UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items.push(item);
                     }
+                } else if (editContext.type === 'track') {
+                    UPDATE_DATA.tracks[editContext.trackIndex].name = document.getElementById('edit-track-name').value;
+                    UPDATE_DATA.tracks[editContext.trackIndex].theme = document.getElementById('edit-track-theme').value;
+                } else if (editContext.type === 'subtrack') {
+                    UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].name = document.getElementById('edit-subtrack-name').value;
+                    UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].note = document.getElementById('edit-subtrack-note').value;
                 } else if (editContext.type === 'metadata') {
                     UPDATE_DATA.metadata.title = document.getElementById('edit-title').value;
                     UPDATE_DATA.metadata.dateRange = document.getElementById('edit-dateRange').value;
@@ -2114,12 +2460,15 @@
                                 class="cms-btn cms-btn-primary">Save to GitHub</button>
                             <button onclick="archiveAndClear()" id="archive-btn" class="cms-btn cms-btn-primary"
                                 style="background-color: #d97706;">Archive & Clear</button>
-                            <button onclick="openMetadataEdit()" class="cms-btn cms-btn-secondary">Edit
-                                Metadata</button>
+                            <div class="flex gap-2">
+                            <button onclick="addTrack()" class="cms-btn cms-btn-primary">Add Track</button>
+                            <button onclick="openMetadataEdit()" class="cms-btn cms-btn-secondary">Settings</button>
                             <button onclick="logoutAll()" class="cms-btn cms-btn-secondary">Logout</button>
                         </div>
                     </div>
-                    <div id="cms-status" class="text-sm text-slate-500"></div>
+                </div>
+            </div>
+                <div id="cms-status" class="text-sm text-slate-500"></div>
                 </div>
             </div>
 
@@ -2139,12 +2488,18 @@
                             <button onclick="switchView('status')" id="btn-status" class="filter-btn">By Status</button>
                             <button onclick="switchView('priority')" id="btn-priority" class="filter-btn">By Priority</button>
                             <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor</button>
-                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn bg-slate-900 text-white border-slate-900">Gantt Chart</button>
+                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Advanced Date Filters -->
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="search" placeholder="Search tasks, contributors, or notes..." 
+                        class="search-input" onkeyup="filterBySearch(this.value)">
+                </div>
+
                 <div
                     class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
                     <div class="flex-1 min-w-[200px]">
