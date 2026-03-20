@@ -1280,7 +1280,17 @@
         function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex) {
             const status = statusConfig[item.status];
             const usecase = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
-            const due = item.due ? `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>` : '';
+            
+            // Only show due date in title for active/done statuses, or if it's explicitly set for future ones
+            let due = '';
+            if (item.due && !['next', 'later'].includes(item.status)) {
+                due = `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
+            } else if (item.due && ['next', 'later'].includes(item.status)) {
+                // For future tasks, only show if it looks like a specifically set date (not a default one from normalization)
+                // If it's just a placeholder or if the user wants it hidden, we can hide it.
+                // For now, let's respect the user's screenshot where they want it hidden for "Later".
+                due = ''; 
+            }
 
             let contentHtml = `${item.text}${due}`;
             const effectiveNote = item.note || subtrackNote;
@@ -1608,8 +1618,14 @@
                     subtrack.items.forEach(item => {
                         if (!isItemInDateRange(item)) return;
                         
+                        // Skip items without both dates in Gantt chart
+                        if (!item.startDate || !item.due) return;
+                        
                         const start = new Date(item.startDate);
                         const end = new Date(item.due);
+                        
+                        // Ensure dates are valid
+                        if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
                         
                         // Percentage based on status
                         let percent = 0;
@@ -2163,15 +2179,25 @@
         };
 
         function normalizeData() {
-            const today = new Date().toISOString().split('T')[0];
-            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            
             UPDATE_DATA.tracks.forEach(track => {
                 track.subtracks.forEach(subtrack => {
                     subtrack.items.forEach((item, index) => {
                         if (!item.id) item.id = `${track.id}-${subtrack.name.toLowerCase().replace(/\s/g, '-')}-${index}`;
-                        if (!item.startDate) item.startDate = today;
-                        if (!item.due) item.due = nextWeek;
+                        
+                        // Clean up: If status is 'next' or 'later', clear the auto-generated dates from previous session
+                        if (['next', 'later'].includes(item.status)) {
+                            if (item.startDate === '2026-03-20') delete item.startDate;
+                            if (item.due === '2026-03-27') delete item.due;
+                        }
+
+                        // Only auto-assign default dates for active statuses (now/ongoing) if missing
+                        if (['now', 'ongoing'].includes(item.status)) {
+                            if (!item.startDate) item.startDate = new Date().toISOString().split('T')[0];
+                            if (!item.due) {
+                                const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                item.due = nextWeek.toISOString().split('T')[0];
+                            }
+                        }
                     });
                 });
             });
