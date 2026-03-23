@@ -303,6 +303,20 @@
                                                                       "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
                                                                       "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data.",
                                                                       "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "task-1774264006638",
+                                                                      "text": "Fix Journey first node identification flag",
+                                                                      "status": "now",
+                                                                      "priority": "high",
+                                                                      "contributors": [
+                                                                                "Subhrajit"
+                                                                      ],
+                                                                      "note": "- Validate that exactly one node has fromTriggerNode: true before a journey can be saved/published in the journey builder\n- Show an error/warning to the user if no entry point is set — block saving until it's fixed",
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-24",
+                                                                      "due": "2026-03-27",
+                                                                      "publishedDate": "2026-03-23"
                                                             }
                                                   ]
                                         },
