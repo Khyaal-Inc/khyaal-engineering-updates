@@ -313,6 +313,7 @@
                                                                                 "Subhrajit"
                                                                       ],
                                                                       "note": "- Validate that exactly one node has fromTriggerNode: true before a journey can be saved/published in the journey builder\n- Show an error/warning to the user if no entry point is set — block saving until it's fixed",
+                                                                      "usecase": "Show an error/warning to the user if no entry point is set — block saving until it's fixed",
                                                                       "mediaUrl": "",
                                                                       "startDate": "2026-03-24",
                                                                       "due": "2026-03-27",
