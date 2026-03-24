@@ -575,6 +575,18 @@
                                                                                 "Raj"
                                                                       ],
                                                                       "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "task-1774333172957",
+                                                                      "text": "Script for local environment of GCP",
+                                                                      "status": "ongoing",
+                                                                      "contributors": [
+                                                                                "Raj"
+                                                                      ],
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-24",
+                                                                      "due": "2026-03-27",
+                                                                      "publishedDate": "2026-03-24"
                                                             }
                                                   ]
                                         }
