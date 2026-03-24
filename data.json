@@ -233,19 +233,6 @@
                                                                       "publishedDate": "2026-03-20"
                                                             },
                                                             {
-                                                                      "id": "platform-api-7",
-                                                                      "text": "Centerstage: Chat / Messenger backend",
-                                                                      "status": "next",
-                                                                      "contributors": [
-                                                                                "Manish"
-                                                                      ],
-                                                                      "note": "Planning the backend for chat features.",
-                                                                      "usecase": "Enables future messaging support.",
-                                                                      "startDate": "2026-03-30",
-                                                                      "due": "2026-04-03",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
                                                                       "id": "platform-api-8",
                                                                       "text": "Support for app-code authentication in API",
                                                                       "status": "later",
@@ -579,7 +566,7 @@
                                                             {
                                                                       "id": "task-1774333172957",
                                                                       "text": "Script for local environment of GCP",
-                                                                      "status": "ongoing",
+                                                                      "status": "now",
                                                                       "contributors": [
                                                                                 "Raj"
                                                                       ],
