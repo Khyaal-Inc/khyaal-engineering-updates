@@ -168,7 +168,7 @@
                                                             {
                                                                       "id": "platform-50above50-crm-0",
                                                                       "text": "Zoho CRM Data Migration",
-                                                                      "status": "ongoing",
+                                                                      "status": "now",
                                                                       "contributors": [
                                                                                 "Manish"
                                                                       ],
@@ -192,7 +192,7 @@
                                                             {
                                                                       "id": "platform-api-0",
                                                                       "text": "Membership status sync via Razorpay to Pulse",
-                                                                      "status": "ongoing",
+                                                                      "status": "now",
                                                                       "contributors": [
                                                                                 "Manish"
                                                                       ],
