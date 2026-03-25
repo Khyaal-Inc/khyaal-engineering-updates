@@ -40,6 +40,7 @@
                                                                       "publishedDate": "2026-03-20"
                                                             },
                                                             {
+                                                                      "id": "platform-website-2",
                                                                       "text": "Missing Pulse events tracking",
                                                                       "status": "now",
                                                                       "contributors": [
@@ -47,9 +48,11 @@
                                                                       ],
                                                                       "note": "Adding missing user activity tracking.",
                                                                       "usecase": "Improves reporting and journey analysis.",
-                                                                      "id": "platform-website-2",
+                                                                      "mediaUrl": "",
                                                                       "startDate": "2026-03-20",
-                                                                      "due": "2026-03-27"
+                                                                      "due": "2026-03-27",
+                                                                      "dependencies": "identity events aren't showing up in pulse dashboard",
+                                                                      "publishedDate": "2026-03-25"
                                                             },
                                                             {
                                                                       "id": "platform-website-3",
@@ -165,15 +168,17 @@
                                                             {
                                                                       "id": "platform-50above50-crm-0",
                                                                       "text": "Zoho CRM Data Migration",
-                                                                      "status": "now",
+                                                                      "status": "ongoing",
                                                                       "contributors": [
                                                                                 "Manish"
                                                                       ],
                                                                       "note": "Enhancing the speed and reliability of CRM data synchronization during migration.",
                                                                       "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making.",
+                                                                      "mediaUrl": "",
                                                                       "startDate": "2026-03-20",
                                                                       "due": "2026-03-24",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "dependencies": "zoho-crm customer support",
+                                                                      "publishedDate": "2026-03-25"
                                                             }
                                                   ]
                                         },
@@ -187,15 +192,16 @@
                                                             {
                                                                       "id": "platform-api-0",
                                                                       "text": "Membership status sync via Razorpay to Pulse",
-                                                                      "status": "now",
+                                                                      "status": "ongoing",
                                                                       "contributors": [
                                                                                 "Manish"
                                                                       ],
-                                                                      "note": "Capturing all membership status updates (e.g., initiated, charged, started, cancelled, expired) and sending them to Pulse via Razorpay webhook triggers.",
+                                                                      "note": "update: pushed on dev and shared the reference file to reefaq for testing journey based on the above implemented event.\n\nCapturing all membership status updates (e.g., initiated, charged, started, cancelled, expired) and sending them to Pulse via Razorpay webhook triggers.",
                                                                       "usecase": "Provides complete visibility of the user membership lifecycle for better tracking, automation, and engagement.",
+                                                                      "mediaUrl": "https://khyaal.atlassian.net/wiki/x/AQAXI",
                                                                       "startDate": "2026-03-20",
                                                                       "due": "2026-03-23",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "publishedDate": "2026-03-25"
                                                             },
                                                             {
                                                                       "id": "platform-api-4",
@@ -233,6 +239,19 @@
                                                                       "publishedDate": "2026-03-20"
                                                             },
                                                             {
+                                                                      "id": "platform-api-7",
+                                                                      "text": "Centerstage: Chat / Messenger backend",
+                                                                      "status": "next",
+                                                                      "contributors": [
+                                                                                "Manish"
+                                                                      ],
+                                                                      "note": "Planning the backend for chat features.",
+                                                                      "usecase": "Enables future messaging support.",
+                                                                      "startDate": "2026-03-30",
+                                                                      "due": "2026-04-03",
+                                                                      "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
                                                                       "id": "platform-api-8",
                                                                       "text": "Support for app-code authentication in API",
                                                                       "status": "later",
@@ -254,7 +273,20 @@
                                         },
                                         {
                                                   "name": "Adhoc (Community Support, Data Extraction Support, Emailers, Others)",
-                                                  "items": []
+                                                  "items": [
+                                                            {
+                                                                      "id": "task-1774424448124",
+                                                                      "text": "25th march travel emailer",
+                                                                      "status": "done",
+                                                                      "priority": "high",
+                                                                      "contributors": [],
+                                                                      "note": "It took 1.30 hr. I started on 10.40 AM.",
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-25",
+                                                                      "due": "2026-03-25",
+                                                                      "publishedDate": "2026-03-25"
+                                                            }
+                                                  ]
                                         }
                               ]
                     },
@@ -562,18 +594,6 @@
                                                                                 "Raj"
                                                                       ],
                                                                       "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "task-1774333172957",
-                                                                      "text": "Script for local environment of GCP",
-                                                                      "status": "now",
-                                                                      "contributors": [
-                                                                                "Raj"
-                                                                      ],
-                                                                      "mediaUrl": "",
-                                                                      "startDate": "2026-03-24",
-                                                                      "due": "2026-03-27",
-                                                                      "publishedDate": "2026-03-24"
                                                             }
                                                   ]
                                         }
