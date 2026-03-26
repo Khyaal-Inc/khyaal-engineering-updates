@@ -578,13 +578,14 @@
                                                             {
                                                                       "id": "task-1774000413314",
                                                                       "text": "All application specific dashboards",
-                                                                      "status": "now",
+                                                                      "status": "done",
                                                                       "contributors": [
                                                                                 "Raj"
                                                                       ],
+                                                                      "mediaUrl": "",
                                                                       "startDate": "2026-03-20",
                                                                       "due": "2026-03-27",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "publishedDate": "2026-03-26"
                                                             },
                                                             {
                                                                       "id": "task-1774000457133",
@@ -594,6 +595,31 @@
                                                                                 "Raj"
                                                                       ],
                                                                       "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "task-1774507170965",
+                                                                      "text": "Script for local environment of GCP",
+                                                                      "status": "done",
+                                                                      "contributors": [
+                                                                                "Raj"
+                                                                      ],
+                                                                      "note": "Script for local environment of GCP for testing",
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-24",
+                                                                      "due": "2026-03-26",
+                                                                      "publishedDate": "2026-03-26"
+                                                            },
+                                                            {
+                                                                      "id": "task-1774507736813",
+                                                                      "text": "Implementation of Local Staging Setup",
+                                                                      "status": "now",
+                                                                      "contributors": [
+                                                                                "Raj"
+                                                                      ],
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-26",
+                                                                      "due": "2026-03-30",
+                                                                      "publishedDate": "2026-03-26"
                                                             }
                                                   ]
                                         }
