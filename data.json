@@ -620,6 +620,18 @@
                                                                       "startDate": "2026-03-26",
                                                                       "due": "2026-03-30",
                                                                       "publishedDate": "2026-03-26"
+                                                            },
+                                                            {
+                                                                      "id": "task-1774595770185",
+                                                                      "text": "add make test for deploying test pod to GKE",
+                                                                      "status": "done",
+                                                                      "contributors": [
+                                                                                "Raj"
+                                                                      ],
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-26",
+                                                                      "due": "2026-03-27",
+                                                                      "publishedDate": "2026-03-27"
                                                             }
                                                   ]
                                         }
