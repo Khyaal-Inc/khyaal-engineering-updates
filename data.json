@@ -539,6 +539,24 @@
                                                                       "publishedDate": "2026-03-20"
                                                             }
                                                   ]
+                                        },
+                                        {
+                                                  "name": "Intelligence Hub",
+                                                  "items": [
+                                                            {
+                                                                      "id": "task-1774621425151",
+                                                                      "text": "User 360 persona feature",
+                                                                      "status": "ongoing",
+                                                                      "contributors": [
+                                                                                "Subhrajit",
+                                                                                "Rushikesh"
+                                                                      ],
+                                                                      "usecase": "Show entire user persona based on 90 days lifecycle on khyaal platforms",
+                                                                      "mediaUrl": "",
+                                                                      "publishedDate": "2026-03-27"
+                                                            }
+                                                  ],
+                                                  "note": ""
                                         }
                               ]
                     },
