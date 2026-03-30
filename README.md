@@ -10,7 +10,7 @@
 
 | View | Description |
 |---|---|
-| **By Track** | Items grouped by product track (Platform, Pulse, DevOps…) and subtrack |
+| **Tracks** | Items grouped by product track (Platform, Pulse, DevOps…) and subtrack |
 | **🏃 Sprints** | Sprints / Cycles with progress bars, velocity, and assigned items |
 | **By Status** | Items grouped by status level, including user-defined Custom Statuses |
 | **By Priority** | Items grouped by High / Medium / Low priority |
