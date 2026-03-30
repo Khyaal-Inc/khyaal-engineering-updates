@@ -494,7 +494,7 @@ let UPDATE_DATA = null;
                 const id = `comments-${trackIndex}-${subtrackIndex}-${itemIndex}`;
                 const el = document.getElementById(id);
                 if (!el) return;
-                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                el.classList.toggle('hidden');
             }
 
             function addComment(trackIndex, subtrackIndex, itemIndex) {
@@ -507,17 +507,27 @@ let UPDATE_DATA = null;
                 item.comments.push(comment);
                 input.value = '';
                 logChange('Comment Added', item.text.substring(0, 40));
+                
                 // Re-render comment thread in place
                 const thread = document.getElementById(`thread-${trackIndex}-${subtrackIndex}-${itemIndex}`);
                 if (thread) thread.innerHTML = renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex);
+                
+                // Update comment count button
+                const btn = document.getElementById(`comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                if (btn) btn.innerHTML = `💬 ${item.comments.length} Comments`;
             }
 
             function deleteComment(trackIndex, subtrackIndex, itemIndex, commentId) {
                 const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
                 item.comments = (item.comments || []).filter(c => c.id !== commentId);
                 logChange('Comment Deleted', item.text.substring(0, 40));
+                
                 const thread = document.getElementById(`thread-${trackIndex}-${subtrackIndex}-${itemIndex}`);
                 if (thread) thread.innerHTML = renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex);
+                
+                // Update comment count button
+                const btn = document.getElementById(`comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                if (btn) btn.innerHTML = `💬 ${(item.comments || []).length} Comments`;
             }
 
             function renderCommentThread(comments, ti, si, ii) {
@@ -527,11 +537,7 @@ let UPDATE_DATA = null;
                         <div class="comment-meta">${c.author} · ${new Date(c.timestamp).toLocaleString()}
                         ${isAuthenticated ? `<span class="cursor-pointer text-red-400 ml-2" onclick="deleteComment(${ti},${si},${ii},'${c.id}')">✕</span>` : ''}
                         </div>
-                    </div>`).join('') +
-                    (isAuthenticated ? `<div class="flex gap-2 mt-2">
-                        <input id="comment-input-${ti}-${si}-${ii}" class="comment-input flex-1" placeholder="Add a note...">
-                        <button onclick="addComment(${ti},${si},${ii})" class="cms-btn-sm">Add</button>
-                    </div>` : '');
+                    </div>`).join('') || '<div class="text-slate-400 text-xs italic">No comments yet.</div>';
             }
 
             // ===============================================================
@@ -887,7 +893,7 @@ let UPDATE_DATA = null;
                                     </div>
                                     <div class="mb-2">${usecase}</div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <button onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments||[]).length} Comments</button>
+                                        <button id="comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments||[]).length} Comments</button>
                                         ${cmsControls ? `<div>${cmsControls}</div>` : ''}
                                     </div>
                                     <div id="comments-${trackIndex}-${subtrackIndex}-${itemIndex}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
