@@ -763,6 +763,109 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Blocker / Risk flag */
+        .blocker-strip {
+            background: #fff1f2;
+            border-left: 4px solid #ef4444;
+            padding: 0.35rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .blocker-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        /* Tag / Label pills */
+        .tag-pill {
+            font-size: 0.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            white-space: nowrap;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .tag-tech-debt { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+        .tag-bug { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
+        .tag-feature { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .tag-compliance { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+        .tag-customer { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+
+        /* Due date warning */
+        .due-overdue { color: #dc2626; font-weight: 900; }
+        .due-warning { color: #d97706; font-weight: 900; }
+
+        /* Empty subtrack state */
+        .empty-subtrack {
+            padding: 1.5rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        /* Drag-and-drop */
+        .item-row.dragging { opacity: 0.4; border: 2px dashed #94a3b8; }
+        .subtrack-section.drag-over { background: rgba(59,130,246,0.06) !important; outline: 2px dashed #3b82f6; outline-offset: -4px; }
+
+        /* Backlog view */
+        #backlog-view .backlog-track-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 2px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        .backlog-count-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 900;
+            padding: 0.1rem 0.45rem;
+            border-radius: 9999px;
+            margin-left: 0.3rem;
+            vertical-align: middle;
+        }
+        .promote-btn {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+            background: #ecfdf5;
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .promote-btn:hover { background: #d1fae5; }
+        .send-to-backlog-btn {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .send-to-backlog-btn:hover { background: #f3f4f6; color: #374151; }
     </style>
 </head>
 
@@ -840,10 +943,47 @@
             };
 
             function renderContributors(contributors) {
-                return contributors.map(name =>
+                return (contributors || []).map(name =>
                     `<span class="contributor-tag ${contributorColors[name] || 'bg-gray-100 text-gray-600'}">${name}</span>`
                 ).join('');
             }
+
+            // ------ Helper: Due-date badge with overdue/warning colouring ------
+            function renderDueDateBadge(item) {
+                if (!item.due || ['next', 'later'].includes(item.status) || item.status === 'done') return '';
+                const dueDate = new Date(item.due);
+                if (isNaN(dueDate.getTime())) return `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
+                const today = new Date(); today.setHours(0,0,0,0);
+                const diffDays = Math.floor((dueDate - today) / 86400000);
+                if (diffDays < 0) return `<span class="ml-1 text-[0.65rem] due-overdue">&#9888; Overdue (${item.due})</span>`;
+                if (diffDays <= 2) return `<span class="ml-1 text-[0.65rem] due-warning">&#128336; Due Soon (${item.due})</span>`;
+                return `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
+            }
+
+            // ------ Helper: Tag pills ------
+            const tagClasses = {
+                'tech-debt': 'tag-tech-debt', 'bug': 'tag-bug', 'feature': 'tag-feature',
+                'compliance': 'tag-compliance', 'customer': 'tag-customer'
+            };
+            function renderTagPills(tags) {
+                if (!tags || !tags.length) return '';
+                return tags.map(t => {
+                    const key = t.toLowerCase().replace(/\s+/g, '-');
+                    return `<span class="tag-pill ${tagClasses[key] || ''}">${t}</span>`;
+                }).join(' ');
+            }
+
+            // ------ Helper: Highlight search matches in text ------
+            function highlightSearch(text) {
+                if (!globalSearchQuery || !text) return text;
+                const escaped = globalSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:#fef9c3;padding:0 1px;border-radius:2px;">$1</mark>');
+            }
+
+            // ------ Subtrack collapse state persistence via sessionStorage ------
+            function getCollapseKey(trackId, subtrackName) { return `khyaal_col_${trackId}_${subtrackName.replace(/\s/g,'_')}`; }
+            function isSubtrackCollapsed(trackId, subtrackName) { return sessionStorage.getItem(getCollapseKey(trackId, subtrackName)) === '1'; }
+            function setSubtrackCollapsed(trackId, subtrackName, v) { sessionStorage.setItem(getCollapseKey(trackId, subtrackName), v ? '1' : '0'); }
 
             function renderTrackView() {
                 const container = document.getElementById('track-view');
@@ -877,16 +1017,25 @@
                     `;
 
                     track.subtracks.forEach((subtrack, subtrackIndex) => {
-                        // Calculate Subtrack Progress early (exclude 'later')
+                        // Calculate Subtrack Progress early (exclude 'later' and backlog items)
                         const activeItemsSub = subtrack.items.filter(i => i.status !== 'later');
                         const totalActiveSub = activeItemsSub.length;
                         const doneItemsSub = activeItemsSub.filter(i => i.status === 'done').length;
                         const percent = totalActiveSub > 0 ? Math.round((doneItemsSub / totalActiveSub) * 100) : 0;
+                        const blockerCount = subtrack.items.filter(i => i.blocker).length;
 
-                        html += `<div class="subtrack-section">`;
+                        // Use track.id (not name) to avoid icon ID collisions across tracks
+                        const iconId = `icon-${track.id || trackIndex}-${subtrackIndex}`;
+                        const collapsed = isSubtrackCollapsed(track.id || String(trackIndex), subtrack.name);
+                        const rotateClass = collapsed ? 'style="transform:rotate(-90deg)"' : '';
+
+                        html += `<div class="subtrack-section" data-track="${trackIndex}" data-sub="${subtrackIndex}"
+                            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                            ondragleave="this.classList.remove('drag-over')"
+                            ondrop="handleDrop(event, ${trackIndex}, ${subtrackIndex}); this.classList.remove('drag-over')">`;
                         html += `
                             <div class="subtrack-title flex justify-between items-center px-4 py-3 mb-1 cursor-pointer transition-all duration-300 rounded-r-lg group/sub" 
-                                 onclick="toggleSubtrack('${track.name}', '${subtrack.name}')"
+                                 onclick="toggleSubtrack('${track.id || trackIndex}', '${subtrack.name}', '${iconId}')"
                                  style="border-left: 6px solid ${accentColor}; 
                                         background: linear-gradient(to right, ${accentColor}18 ${percent}%, #f8fafc ${percent}%);
                                         box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
@@ -894,6 +1043,7 @@
                                 <div class="flex items-center gap-4 flex-1 min-w-0">
                                     <span class="font-black text-slate-900 text-lg truncate">${subtrack.name}</span>
                                     <span class="flex-shrink-0 text-[11px] font-black text-slate-600 bg-white/90 px-2.5 py-1 rounded-full border border-slate-200 shadow-sm tracking-wider">${percent}%</span>
+                                    ${blockerCount > 0 ? `<span class="flex-shrink-0 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">&#128274; ${blockerCount} blocker${blockerCount > 1 ? 's' : ''}</span>` : ''}
                                 </div>
 
                                 <div class="flex gap-2 items-center flex-shrink-0">
@@ -905,13 +1055,13 @@
                                     </div>
                                     ` : ''}
                                     <span class="ml-2 text-slate-400">
-                                        <svg class="w-5 h-5 transition-transform duration-200" id="icon-${track.name}-${subtrack.name}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                                        <svg class="w-5 h-5 transition-transform duration-200" id="${iconId}" ${rotateClass} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                                     </span>
                                 </div>
                             </div>
                         `;
 
-                        html += `<div>`;
+                        html += `<div id="body-${iconId}" ${collapsed ? 'style="display:none"' : ''}>`;
                         const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
 
                         // Map items to include their original index for correct editing
@@ -934,14 +1084,14 @@
                         // Apply Global Search
                         items = items.filter(item => isItemInSearch(item));
 
-                        if (items.length > 0) {
-                            // Unified Progress is now in the header
-                        }
-
                         const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-                        sortedItems.forEach((item) => {
-                            html += renderItem(item, subtrack.note, trackIndex, subtrackIndex, item.originalIndex);
-                        });
+                        if (sortedItems.length === 0) {
+                            html += `<div class="empty-subtrack">No items yet${window.currentDateFilter && window.currentDateFilter !== 'all' ? ' for this filter' : ''}.</div>`;
+                        } else {
+                            sortedItems.forEach((item) => {
+                                html += renderItem(item, subtrack.note, trackIndex, subtrackIndex, item.originalIndex);
+                            });
+                        }
 
                         if (isAuthenticated) {
                             html += `
@@ -963,20 +1113,42 @@
                 container.innerHTML = html;
             }
 
+            function toggleSubtrack(trackId, subtrackName, iconId) {
+                const body = document.getElementById('body-' + iconId);
+                const icon = document.getElementById(iconId);
+                if (!body) return;
+                const isNowCollapsed = body.style.display !== 'none';
+                body.style.display = isNowCollapsed ? 'none' : '';
+                if (icon) icon.style.transform = isNowCollapsed ? 'rotate(-90deg)' : '';
+                setSubtrackCollapsed(trackId, subtrackName, isNowCollapsed);
+            }
+
+            // Drag-and-drop: move item across subtracks
+            let dragSource = null;
+            function handleDrop(event, targetTrackIndex, targetSubtrackIndex) {
+                event.preventDefault();
+                if (!dragSource) return;
+                const { trackIndex: sT, subtrackIndex: sS, itemIndex: sI } = dragSource;
+                if (sT === targetTrackIndex && sS === targetSubtrackIndex) { dragSource = null; return; }
+                const [item] = UPDATE_DATA.tracks[sT].subtracks[sS].items.splice(sI, 1);
+                UPDATE_DATA.tracks[targetTrackIndex].subtracks[targetSubtrackIndex].items.push(item);
+                dragSource = null;
+                renderTrackView();
+                updateBacklogBadge();
+            }
+
             function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex) {
                 const status = statusConfig[item.status];
                 const priority = item.priority || 'medium';
                 const priorityInfo = priorityConfig[priority];
                 const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
                 const usecase = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
+                const due = renderDueDateBadge(item);
+                const tags = renderTagPills(item.tags);
+                const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
 
-                // Only show due date in title for active/done statuses
-                let due = '';
-                if (item.due && !['next', 'later'].includes(item.status)) {
-                    due = `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
-                }
-
-                let contentHtml = `${item.text}${due}`;
+                const displayText = highlightSearch(item.text);
+                let contentHtml = `${displayText}${due}`;
                 const effectiveNote = item.note || subtrackNote;
 
                 if (effectiveNote) {
@@ -984,7 +1156,7 @@
                     const idHTML = isAuthenticated ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
                     contentHtml = `
                     <div class="info-wrapper">
-                        <span class="info-text">${item.text}${due}</span>
+                        <span class="info-text">${displayText}${due}</span>
                         <button class="info-btn" aria-label="More information">i</button>
                         <div class="tooltip-content" role="tooltip">
                             <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
@@ -998,15 +1170,21 @@
                 let cmsControls = '';
                 if (isAuthenticated) {
                     cmsControls = `
-                    <div class="flex items-center gap-3 mt-1.5">
+                    <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                         <span onclick="event.stopPropagation(); openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                         <span onclick="event.stopPropagation(); deleteItem(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
+                        <button onclick="event.stopPropagation(); sendToBacklog(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="send-to-backlog-btn">→ Backlog</button>
+                        <button onclick="event.stopPropagation(); toggleBlocker(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="send-to-backlog-btn ${item.blocker ? 'text-red-600 border-red-200 bg-red-50' : ''}">${item.blocker ? '&#128275; Unblock' : '&#128274; Flag Blocker'}</button>
                     </div>
                 `;
                 }
 
                 return `
-                <div class="item-row ${status.bucket}">
+                ${blockerStrip}
+                <div class="item-row ${status.bucket}"
+                    draggable="${isAuthenticated ? 'true' : 'false'}"
+                    ondragstart="if(${isAuthenticated}){dragSource={trackIndex:${trackIndex},subtrackIndex:${subtrackIndex},itemIndex:${itemIndex}};this.classList.add('dragging');}"
+                    ondragend="this.classList.remove('dragging')">
                     <div class="item-content">
                         <div class="flex justify-between items-start w-full gap-4">
                             <div class="flex items-start gap-4 flex-1">
@@ -1016,6 +1194,7 @@
                                 </div>
                                 <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                                     <div class="mb-1">${contentHtml}</div>
+                                    ${tags ? `<div class="flex flex-wrap gap-1 mb-1">${tags}</div>` : ''}
                                     <div class="mb-2">${usecase}</div>
                                     ${cmsControls}
                                 </div>
@@ -1039,6 +1218,7 @@
                 </div>
             `;
             }
+
 
             function renderStatusView() {
                 const container = document.getElementById('status-view');
@@ -1168,10 +1348,11 @@
                                                 <div class="flex-1">
                                                     <div class="mb-1">${contentHtml}</div>
                                                     <div class="mb-2">${usecase}</div>
-                                                    <div class="flex items-center gap-3 mt-1.5">
+                                                    ${isAuthenticated ? `<div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                                         <span onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                                                         <span onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
-                                                    </div>
+                                                        <button onclick="event.stopPropagation(); sendToBacklog(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="send-to-backlog-btn">&rarr; Backlog</button>
+                                                    </div>` : ''}
                                                 </div>
                                             </div>
                                         </div>
@@ -1314,10 +1495,11 @@
                                                 <div class="flex-1">
                                                     <div class="mb-1">${contentHtml}</div>
                                                     <div class="mb-2">${usecase}</div>
-                                                    <div class="flex items-center gap-3 mt-1.5">
+                                                    ${isAuthenticated ? `<div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                                         <span onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                                                         <span onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
-                                                    </div>
+                                                        <button onclick="event.stopPropagation(); sendToBacklog(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="send-to-backlog-btn">&rarr; Backlog</button>
+                                                    </div>` : ''}
                                                 </div>
                                             </div>
                                         </div>
@@ -1674,12 +1856,18 @@
                 const exportGanttBtn = document.getElementById('export-gantt-btn');
                 if (exportGanttBtn) exportGanttBtn.classList.toggle('hidden', view !== 'gantt');
 
+                // Show/Hide Backlog specific header
+                const backlogHeader = document.getElementById('backlog-view-header');
+                if (backlogHeader) backlogHeader.classList.toggle('hidden', view !== 'backlog');
+
                 // Render based on current view
                 if (view === 'track') renderTrackView();
                 if (view === 'status') renderStatusView();
                 if (view === 'priority') renderPriorityView();
                 if (view === 'contributor') renderContributorView();
                 if (view === 'gantt') renderGanttView();
+                if (view === 'backlog') renderBacklogView();
+                if (view === 'backlog') updateBacklogBadge();
             }
 
             let globalSearchQuery = '';
@@ -1988,7 +2176,7 @@
                     <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                 </select>
                 <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
-                <input type="text" id="edit-contributors" value="${item.contributors.join(', ')}" class="cms-input">
+                <input type="text" id="edit-contributors" value="${(item.contributors || []).join(', ')}" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Note</label>
                 <textarea id="edit-note" class="cms-input">${item.note || ''}</textarea>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
@@ -2005,10 +2193,24 @@
                         <input type="date" id="edit-due" value="${item.due || ''}" class="cms-input">
                     </div>
                 </div>
-                
-                <label class="block text-sm font-bold mb-1">Dependencies</label>
-                <input type="text" id="edit-dependencies" value="${item.dependencies || ''}" class="cms-input" placeholder="e.g., website-1, auth-2">
-                
+                <label class="block text-sm font-bold mb-1">Tags (comma separated, e.g. bug, tech-debt, feature)</label>
+                <input type="text" id="edit-tags" value="${(item.tags || []).join(', ')}" class="cms-input" placeholder="bug, tech-debt, feature">
+                <label class="block text-sm font-bold mb-1">Blocker Note (leave blank if not a blocker)</label>
+                <input type="text" id="edit-blockerNote" value="${item.blockerNote || ''}" class="cms-input" placeholder="Describe blocker...">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Move to Track</label>
+                        <select id="edit-move-track" class="cms-input" onchange="updateMoveSubtrackOpts(this.value)">
+                            ${UPDATE_DATA.tracks.map((t, ti) => `<option value="${ti}" ${ti === trackIndex ? 'selected' : ''}>${t.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Move to Subtrack</label>
+                        <select id="edit-move-subtrack" class="cms-input">
+                            ${UPDATE_DATA.tracks[trackIndex].subtracks.map((s, si) => `<option value="${si}" ${si === subtrackIndex ? 'selected' : ''}>${s.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
                 <div class="dependency-picker">
                     <input type="text" class="dependency-search" placeholder="Search tasks to add as dependency..." onkeyup="filterDependencies(this.value)">
                     <div class="dependency-list" id="dependency-picker-list">
@@ -2060,7 +2262,172 @@
                 if (confirm('Are you sure you want to delete this item?')) {
                     UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items.splice(itemIndex, 1);
                     renderTrackView();
+                    updateBacklogBadge();
                 }
+            }
+
+            // Send any item to the Backlog subtrack of its track
+            function sendToBacklog(trackIndex, subtrackIndex, itemIndex) {
+                const track = UPDATE_DATA.tracks[trackIndex];
+                let backlogIdx = track.subtracks.findIndex(s => s.name === 'Backlog');
+                if (backlogIdx === -1) {
+                    track.subtracks.push({ name: 'Backlog', items: [] });
+                    backlogIdx = track.subtracks.length - 1;
+                }
+                const [item] = track.subtracks[subtrackIndex].items.splice(itemIndex, 1);
+                track.subtracks[backlogIdx].items.push(item);
+                const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
+                switchView(currentView);
+                updateBacklogBadge();
+            }
+
+            // Toggle blocker flag on an item
+            function toggleBlocker(trackIndex, subtrackIndex, itemIndex) {
+                const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
+                if (item.blocker) {
+                    delete item.blocker;
+                    delete item.blockerNote;
+                } else {
+                    const note = prompt('Optional: Describe the blocker (leave blank to skip):', '');
+                    item.blocker = true;
+                    if (note) item.blockerNote = note;
+                }
+                renderTrackView();
+            }
+
+            // Update the backlog badge count on the tab button
+            function updateBacklogBadge() {
+                let count = 0;
+                UPDATE_DATA.tracks.forEach(t => {
+                    const bl = t.subtracks.find(s => s.name === 'Backlog');
+                    if (bl) count += bl.items.length;
+                });
+                const badge = document.getElementById('backlog-tab-badge');
+                if (badge) {
+                    badge.textContent = count > 0 ? count : '';
+                    badge.style.display = count > 0 ? 'inline' : 'none';
+                }
+            }
+
+            // Render all Backlog subtracks grouped by track
+            function renderBacklogView() {
+                const container = document.getElementById('backlog-view');
+                const themeColors = {
+                    blue: '#1e40af', emerald: '#065f46', violet: '#5b21b6',
+                    amber: '#92400e', rose: '#9f1239', slate: '#334155'
+                };
+                let html = '';
+                let totalItems = 0;
+
+                UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                    const accentColor = themeColors[track.theme] || '#0f172a';
+                    const backlogSubtracks = track.subtracks
+                        .map((s, si) => ({ subtrack: s, si }))
+                        .filter(({ subtrack }) => subtrack.name === 'Backlog');
+
+                    let trackItems = [];
+                    backlogSubtracks.forEach(({ subtrack, si }) => {
+                        subtrack.items.forEach((item, ii) => {
+                            trackItems.push({ ...item, _si: si, _ii: ii });
+                        });
+                    });
+
+                    if (trackItems.length === 0) return;
+                    totalItems += trackItems.length;
+
+                    // Sort by priority
+                    const pOrder = { high: 0, medium: 1, low: 2 };
+                    trackItems.sort((a, b) => (pOrder[a.priority || 'medium'] - pOrder[b.priority || 'medium']));
+
+                    html += `<div class="backlog-track-card">
+                        <div class="track-header" style="background: linear-gradient(135deg, ${accentColor} 0%, #1e293b 100%)">
+                            ${track.name} Backlog <span class="backlog-count-badge">${trackItems.length}</span>
+                        </div>
+                        <div>`;
+
+                    trackItems.forEach(item => {
+                        const status = statusConfig[item.status] || statusConfig['later'];
+                        const priority = item.priority || 'medium';
+                        const priorityInfo = priorityConfig[priority];
+                        const due = renderDueDateBadge(item);
+                        const tags = renderTagPills(item.tags);
+                        const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || ''}</div>` : '';
+
+                        // Build Move To Subtrack options (all non-Backlog subtracks)
+                        const moveOpts = track.subtracks.map((s, si) =>
+                            s.name !== 'Backlog' ? `<option value="${si}">${s.name}</option>` : ''
+                        ).join('');
+
+                        const cmsCtrl = isAuthenticated ? `
+                            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                <button onclick="promoteBacklogItem(${trackIndex}, ${item._si}, ${item._ii})" class="promote-btn">&#8679; Promote to Next</button>
+                                <select id="move-sel-${trackIndex}-${item._si}-${item._ii}" class="text-xs border border-slate-200 rounded px-1 py-0.5">
+                                    <option value="">Move to subtrack...</option>${moveOpts}
+                                </select>
+                                <button onclick="moveFromBacklog(${trackIndex}, ${item._si}, ${item._ii})" class="send-to-backlog-btn">Move</button>
+                                <span onclick="deleteItem(${trackIndex}, ${item._si}, ${item._ii}); renderBacklogView();" class="text-[11px] text-red-600 cursor-pointer font-bold underline">Delete</span>
+                            </div>` : '';
+
+                        html += `${blockerStrip}
+                        <div class="item-row bucket-later">
+                            <div class="item-content">
+                                <div class="flex justify-between items-start w-full gap-4">
+                                    <div class="flex items-start gap-4 flex-1">
+                                        <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-1">
+                                            <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
+                                            <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priority}</span>
+                                        </div>
+                                        <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
+                                            <div class="mb-1">${highlightSearch(item.text)}${due}</div>
+                                            ${tags ? `<div class="flex flex-wrap gap-1 mb-1">${tags}</div>` : ''}
+                                            ${item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : ''}
+                                            ${cmsCtrl}
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="flex flex-wrap justify-end gap-1">${renderContributors(item.contributors)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div></div>`;
+                });
+
+                if (totalItems === 0) {
+                    html = `<div class="text-center py-16 text-slate-400">
+                        <div class="text-4xl mb-4">&#10003;</div>
+                        <p class="font-semibold text-lg">Backlog is empty!</p>
+                        <p class="text-sm mt-1">Use "→ Backlog" on any item to park it here.</p>
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+            }
+
+            // Promote a backlog item to "next" status and move it to the first non-Backlog subtrack
+            function promoteBacklogItem(trackIndex, subtrackIndex, itemIndex) {
+                const track = UPDATE_DATA.tracks[trackIndex];
+                const [item] = track.subtracks[subtrackIndex].items.splice(itemIndex, 1);
+                item.status = 'next';
+                // Move to first non-backlog subtrack
+                const targetSub = track.subtracks.find(s => s.name !== 'Backlog');
+                if (targetSub) targetSub.items.push(item);
+                else track.subtracks[subtrackIndex].items.unshift(item); // fallback
+                renderBacklogView();
+                updateBacklogBadge();
+            }
+
+            // Move a backlog item to a selected subtrack
+            function moveFromBacklog(trackIndex, subtrackIndex, itemIndex) {
+                const sel = document.getElementById(`move-sel-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                const targetSi = parseInt(sel.value);
+                if (isNaN(targetSi)) { alert('Please select a subtrack to move to.'); return; }
+                const [item] = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items.splice(itemIndex, 1);
+                UPDATE_DATA.tracks[trackIndex].subtracks[targetSi].items.push(item);
+                renderBacklogView();
+                updateBacklogBadge();
             }
 
             function addItem(trackIndex, subtrackIndex) {
@@ -2202,10 +2569,15 @@
                         mediaUrl: document.getElementById('edit-mediaUrl').value,
                         startDate: document.getElementById('edit-startDate').value,
                         due: document.getElementById('edit-due').value,
-                        dependencies: document.getElementById('edit-dependencies').value,
-                        publishedDate: new Date().toISOString().split('T')[0]
+                        dependencies: (document.getElementById('edit-dependencies') || {}).value,
+                        publishedDate: new Date().toISOString().split('T')[0],
+                        tags: ((document.getElementById('edit-tags') || {}).value || '').split(',').map(s => s.trim()).filter(s => s),
+                        blockerNote: ((document.getElementById('edit-blockerNote') || {}).value || '').trim(),
                     };
 
+                    if (item.blockerNote) item.blocker = true;
+                    else { delete item.blocker; delete item.blockerNote; }
+                    if (!item.tags || !item.tags.length) delete item.tags;
                     if (!item.note) delete item.note;
                     if (!item.usecase) delete item.usecase;
                     if (!item.startDate) delete item.startDate;
@@ -2213,8 +2585,21 @@
                     if (!item.dependencies) delete item.dependencies;
                     if (item.priority === 'medium') delete item.priority; // Don't store default priority
 
+                    // Handle Move-to-Track/Subtrack
+                    const moveTrackEl = document.getElementById('edit-move-track');
+                    const moveSubEl = document.getElementById('edit-move-subtrack');
+                    const targetTi = moveTrackEl ? parseInt(moveTrackEl.value) : editContext.trackIndex;
+                    const targetSi = moveSubEl ? parseInt(moveSubEl.value) : editContext.subtrackIndex;
+
                     if (editContext.type === 'item') {
-                        UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex] = item;
+                        const srcItems = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items;
+                        if (targetTi !== editContext.trackIndex || targetSi !== editContext.subtrackIndex) {
+                            // Move to different subtrack
+                            srcItems.splice(editContext.itemIndex, 1);
+                            UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(item);
+                        } else {
+                            srcItems[editContext.itemIndex] = item;
+                        }
                     } else {
                         UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items.push(item);
                     }
@@ -2237,6 +2622,7 @@
                 }
 
                 closeCmsModal();
+                updateBacklogBadge();
                 const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
                 switchView(currentView); // Re-render current view to reflect changes
             }
@@ -2245,6 +2631,17 @@
                 document.getElementById('cms-modal').classList.remove('active');
                 editContext = null;
             }
+
+            // Update move-to-subtrack options when move-to-track changes
+            function updateMoveSubtrackOpts(trackIndex) {
+                const subSel = document.getElementById('edit-move-subtrack');
+                if (!subSel) return;
+                const ti = parseInt(trackIndex);
+                subSel.innerHTML = UPDATE_DATA.tracks[ti].subtracks.map((s, si) =>
+                    `<option value="${si}">${s.name}</option>`
+                ).join('');
+            }
+
 
             // Archive Management
             async function initArchiveFilter() {
@@ -2505,6 +2902,7 @@
                             <button onclick="switchView('priority')" id="btn-priority" class="filter-btn">By Priority</button>
                             <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor</button>
                             <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart</button>
+                            <button onclick="switchView('backlog')" id="btn-backlog" class="filter-btn">&#128218; Backlog<span id="backlog-tab-badge" class="backlog-count-badge" style="display:none"></span></button>
                         </div>
                     </div>
                 </div>
@@ -2596,6 +2994,7 @@
                 class="view-section bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto min-h-[500px]">
                 <div id="gantt-chart-container" style="min-width: 800px;"></div>
             </div>
+            <div id="backlog-view" class="view-section"></div>
 
             <!-- Footer -->
             <div class="text-center text-slate-400 text-sm py-8 mt-8 border-t border-slate-200">
@@ -2694,6 +3093,7 @@
                 initCms();
                 initArchiveFilter();
                 renderTrackView();
+                updateBacklogBadge();
             }
 
             function logoutAll() {
