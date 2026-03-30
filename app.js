@@ -10,6 +10,15 @@ const contributorColors = {
     "External": "bg-gray-100 text-gray-600 border border-gray-200"
 };
 
+const themeColors = {
+    blue: '#1e40af',      // Stronger Blue for accessibility
+    emerald: '#065f46',   // Stronger Emerald
+    violet: '#5b21b6',    // Stronger Violet
+    amber: '#92400e',     // Stronger Amber
+    rose: '#9f1239',      // Stronger Rose
+    slate: '#334155'      // Stronger Slate
+};
+
 const statusConfig = {
     done: { label: 'Done', class: 'badge-done', bucket: 'bucket-done' },
     now: { label: 'Now', class: 'badge-now', bucket: 'bucket-now' },
@@ -678,15 +687,6 @@ function renderTrackView() {
     const container = document.getElementById('track-view');
     let html = '';
 
-    const themeColors = {
-        blue: '#1e40af',      // Stronger Blue for accessibility
-        emerald: '#065f46',   // Stronger Emerald
-        violet: '#5b21b6',    // Stronger Violet
-        amber: '#92400e',     // Stronger Amber
-        rose: '#9f1239',      // Stronger Rose
-        slate: '#334155'      // Stronger Slate
-    };
-
     const activeTeam = getActiveTeam();
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
         if (activeTeam && activeTeam !== track.name) return;
@@ -952,14 +952,7 @@ function renderStatusView() {
         });
     }
 
-    const themeColors = {
-        blue: '#1e40af',
-        emerald: '#065f46',
-        violet: '#5b21b6',
-        amber: '#92400e',
-        rose: '#9f1239',
-        slate: '#334155'
-    };
+
 
     const subtrackNotes = {};
     UPDATE_DATA.tracks.forEach(track => {
@@ -1078,14 +1071,7 @@ function renderPriorityView() {
         low: 'Low Priority (Nice-to-have, Backlog)'
     };
 
-    const themeColors = {
-        blue: '#1e40af',
-        emerald: '#065f46',
-        violet: '#5b21b6',
-        amber: '#92400e',
-        rose: '#9f1239',
-        slate: '#334155'
-    };
+
 
     const subtrackNotes = {};
     UPDATE_DATA.tracks.forEach(track => {
@@ -1277,10 +1263,10 @@ function renderContributorView() {
                                 <ul class="space-y-4 pl-3.5">`;
                 statusItems.forEach(item => {
                     const effectiveNote = item.note || subtrackNotes[item.subtrack];
-                    let contentHtml = `${item.text}${renderDueDateBadge(item)}`;
+                    let contentHtml = `${highlightSearch(item.text)}${renderDueDateBadge(item)}`;
                     if (effectiveNote) {
                         const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
-                        contentHtml = `<div class="info-wrapper"><span class="info-text">• ${item.text}${renderDueDateBadge(item)}</span><button class="info-btn">i</button><div class="tooltip-content"><span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>${cleanNote}</div></div>`;
+                        contentHtml = `<div class="info-wrapper"><span class="info-text">• ${highlightSearch(item.text)}${renderDueDateBadge(item)}</span><button class="info-btn">i</button><div class="tooltip-content" role="tooltip"><span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>${cleanNote}</div></div>`;
                     }
                     html += `<li class="text-sm text-slate-700 leading-snug">
                                     <div class="flex flex-col gap-1">
@@ -2112,10 +2098,6 @@ function updateBacklogBadge() {
 // Render all Backlog subtracks grouped by track
 function renderBacklogView() {
     const container = document.getElementById('backlog-view');
-    const themeColors = {
-        blue: '#1e40af', emerald: '#065f46', violet: '#5b21b6',
-        amber: '#92400e', rose: '#9f1239', slate: '#334155'
-    };
     let html = '';
     let totalItems = 0;
 
