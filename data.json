@@ -28,16 +28,25 @@
                                                             {
                                                                       "id": "platform-website-1",
                                                                       "text": "Rajkot event",
-                                                                      "status": "now",
+                                                                      "status": "done",
                                                                       "contributors": [
                                                                                 "Subhrajit",
                                                                                 "Vivek"
                                                                       ],
                                                                       "note": "Created a dedicated page for the event.",
                                                                       "usecase": "Helps users register and access event details easily.",
+                                                                      "mediaUrl": "",
                                                                       "startDate": "2026-03-18",
                                                                       "due": "2026-03-20",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "publishedDate": "2026-03-30",
+                                                                      "comments": [
+                                                                                {
+                                                                                          "id": "c-1774874570274",
+                                                                                          "text": "It's live - by @Gautam",
+                                                                                          "author": "PM",
+                                                                                          "timestamp": "2026-03-30T12:42:50.274Z"
+                                                                                }
+                                                                      ]
                                                             },
                                                             {
                                                                       "id": "platform-website-2",
