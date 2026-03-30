@@ -69,16 +69,16 @@
                                                             {
                                                                       "id": "platform-website-4",
                                                                       "text": "CMS modular blocks",
-                                                                      "status": "now",
+                                                                      "status": "next",
                                                                       "contributors": [
                                                                                 "Subhrajit",
                                                                                 "Vivek"
                                                                       ],
                                                                       "note": "Creating reusable page sections.",
                                                                       "usecase": "Speeds up website content creation.",
+                                                                      "mediaUrl": "",
                                                                       "startDate": "2026-03-23",
-                                                                      "due": "2026-03-27",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "publishedDate": "2026-03-30"
                                                             },
                                                             {
                                                                       "id": "platform-website-5",
@@ -109,20 +109,15 @@
                                                             {
                                                                       "id": "platform-website-7",
                                                                       "text": "Template-based event pages",
-                                                                      "status": "later",
-                                                                      "contributors": [],
+                                                                      "status": "next",
+                                                                      "contributors": [
+                                                                                "Subhrajit",
+                                                                                "Vivek"
+                                                                      ],
                                                                       "note": "Planning reusable event page designs.",
                                                                       "usecase": "Makes future event pages faster to build.",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "platform-website-8",
-                                                                      "text": "Events listing and joining via Web Zoom SDK",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
-                                                                      "usecase": "1. Display upcoming events on the website.2. User selects an event to join.3. System generates a unique session token (JWT) for the user.4. Token can be retrieved via scanning QR code or app code.",
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "mediaUrl": "",
+                                                                      "publishedDate": "2026-03-30"
                                                             }
                                                   ]
                                         },
@@ -149,15 +144,6 @@
                                                                       "contributors": [],
                                                                       "note": "Fixing issues found in security testing.",
                                                                       "usecase": "Improves website security.",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "platform-50above50-website-2",
-                                                                      "text": "In-app transition",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Planning the move into the app journey.",
-                                                                      "usecase": "Gives users a smoother app experience.",
                                                                       "publishedDate": "2026-03-20"
                                                             }
                                                   ]
@@ -204,15 +190,6 @@
                                                                       "publishedDate": "2026-03-25"
                                                             },
                                                             {
-                                                                      "id": "platform-api-4",
-                                                                      "text": "VAPT fixes implementation",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Fixing security findings in the API.",
-                                                                      "usecase": "Improves platform safety.",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
                                                                       "id": "platform-api-5",
                                                                       "text": "Centerstage API",
                                                                       "status": "now",
@@ -237,37 +214,6 @@
                                                                       "startDate": "2026-03-25",
                                                                       "due": "2026-03-27",
                                                                       "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "platform-api-7",
-                                                                      "text": "Centerstage: Chat / Messenger backend",
-                                                                      "status": "next",
-                                                                      "contributors": [
-                                                                                "Manish"
-                                                                      ],
-                                                                      "note": "Planning the backend for chat features.",
-                                                                      "usecase": "Enables future messaging support.",
-                                                                      "startDate": "2026-03-30",
-                                                                      "due": "2026-04-03",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "platform-api-8",
-                                                                      "text": "Support for app-code authentication in API",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
-                                                                      "usecase": "1. User generates a temporary app code from the mobile app.2. User submits the app code to the API endpoint.3. API validates the code and issues a short-lived JWT token.",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "platform-api-9",
-                                                                      "text": "Streaks",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
-                                                                      "usecase": "1. Track daily/weekly participation of users in events or platform activities.2. Increment streak count when user performs the required action consecutively.3. Show streaks on user dashboard to motivate engagement.4. Optionally, provide rewards or badges for achieving streak milestones.5. Reset streak if the user misses a day/session.",
-                                                                      "publishedDate": "2026-03-20"
                                                             }
                                                   ]
                                         },
@@ -290,7 +236,44 @@
                                         },
                                         {
                                                   "name": "Backlog",
-                                                  "items": [],
+                                                  "items": [
+                                                            {
+                                                                      "id": "platform-api-9",
+                                                                      "text": "Streaks",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
+                                                                      "usecase": "1. Track daily/weekly participation of users in events or platform activities.2. Increment streak count when user performs the required action consecutively.3. Show streaks on user dashboard to motivate engagement.4. Optionally, provide rewards or badges for achieving streak milestones.5. Reset streak if the user misses a day/session.",
+                                                                      "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "platform-api-8",
+                                                                      "text": "Support for app-code authentication in API",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
+                                                                      "usecase": "1. User generates a temporary app code from the mobile app.2. User submits the app code to the API endpoint.3. API validates the code and issues a short-lived JWT token.",
+                                                                      "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "platform-50above50-website-2",
+                                                                      "text": "In-app transition",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Planning the move into the app journey.",
+                                                                      "usecase": "Gives users a smoother app experience.",
+                                                                      "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "platform-website-8",
+                                                                      "text": "Events listing and joining via Web Zoom SDK",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
+                                                                      "usecase": "1. Display upcoming events on the website.2. User selects an event to join.3. System generates a unique session token (JWT) for the user.4. Token can be retrieved via scanning QR code or app code.",
+                                                                      "publishedDate": "2026-03-20"
+                                                            }
+                                                  ],
                                                   "note": ""
                                         }
                               ]
@@ -319,15 +302,6 @@
                                         {
                                                   "name": "Journey",
                                                   "items": [
-                                                            {
-                                                                      "id": "pulse-journey-0",
-                                                                      "text": "Custom Expression Support in Journey",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
-                                                                      "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data.",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
                                                             {
                                                                       "id": "task-1774264006638",
                                                                       "text": "Fix Journey first node identification flag",
@@ -406,15 +380,6 @@
                                                                       "usecase": "Helps review calls, improve quality, and maintain records for training and compliance.",
                                                                       "startDate": "2026-03-18",
                                                                       "due": "2026-03-27",
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
-                                                                      "id": "pulse-ai-agents-4",
-                                                                      "text": "AI Assistant 2.0",
-                                                                      "status": "later",
-                                                                      "contributors": [],
-                                                                      "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
-                                                                      "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support.",
                                                                       "publishedDate": "2026-03-20"
                                                             }
                                                   ]
@@ -533,6 +498,30 @@
                                         },
                                         {
                                                   "name": "Flow",
+                                                  "items": []
+                                        },
+                                        {
+                                                  "name": "Intelligence Hub",
+                                                  "items": [
+                                                            {
+                                                                      "id": "task-1774621425151",
+                                                                      "text": "User 360 persona feature",
+                                                                      "status": "now",
+                                                                      "contributors": [
+                                                                                "Subhrajit",
+                                                                                "Rushikesh"
+                                                                      ],
+                                                                      "usecase": "Show entire user persona based on 90 days lifecycle on khyaal platforms",
+                                                                      "mediaUrl": "",
+                                                                      "startDate": "2026-03-30",
+                                                                      "due": "2026-04-06",
+                                                                      "publishedDate": "2026-03-30"
+                                                            }
+                                                  ],
+                                                  "note": ""
+                                        },
+                                        {
+                                                  "name": "Backlog",
                                                   "items": [
                                                             {
                                                                       "id": "pulse-flow-0",
@@ -542,32 +531,26 @@
                                                                       "note": "Introducing personalization within flows using user data and behavior.",
                                                                       "usecase": "Enables dynamic, user-specific journeys to improve engagement and outcomes.",
                                                                       "publishedDate": "2026-03-20"
-                                                            }
-                                                  ]
-                                        },
-                                        {
-                                                  "name": "Intelligence Hub",
-                                                  "items": [
+                                                            },
                                                             {
-                                                                      "id": "task-1774621425151",
-                                                                      "text": "User 360 persona feature",
-                                                                      "status": "ongoing",
-                                                                      "contributors": [
-                                                                                "Subhrajit",
-                                                                                "Rushikesh"
-                                                                      ],
-                                                                      "usecase": "Show entire user persona based on 90 days lifecycle on khyaal platforms",
-                                                                      "mediaUrl": "",
-                                                                      "publishedDate": "2026-03-27",
-                                                                      "startDate": "2026-03-30",
-                                                                      "due": "2026-04-06"
+                                                                      "id": "pulse-ai-agents-4",
+                                                                      "text": "AI Assistant 2.0",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
+                                                                      "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support.",
+                                                                      "publishedDate": "2026-03-20"
+                                                            },
+                                                            {
+                                                                      "id": "pulse-journey-0",
+                                                                      "text": "Custom Expression Support in Journey",
+                                                                      "status": "later",
+                                                                      "contributors": [],
+                                                                      "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
+                                                                      "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data.",
+                                                                      "publishedDate": "2026-03-20"
                                                             }
                                                   ],
-                                                  "note": ""
-                                        },
-                                        {
-                                                  "name": "Backlog",
-                                                  "items": [],
                                                   "note": ""
                                         }
                               ]
@@ -618,15 +601,6 @@
                                                                       "publishedDate": "2026-03-26"
                                                             },
                                                             {
-                                                                      "id": "task-1774000457133",
-                                                                      "text": "Move Qdrant and Assistant Service from AWS to GCP",
-                                                                      "status": "next",
-                                                                      "contributors": [
-                                                                                "Raj"
-                                                                      ],
-                                                                      "publishedDate": "2026-03-20"
-                                                            },
-                                                            {
                                                                       "id": "task-1774507170965",
                                                                       "text": "Script for local environment of GCP",
                                                                       "status": "done",
@@ -667,7 +641,18 @@
                                         },
                                         {
                                                   "name": "Backlog",
-                                                  "items": [],
+                                                  "items": [
+                                                            {
+                                                                      "id": "task-1774000457133",
+                                                                      "text": "Move Qdrant and Assistant Service from AWS to GCP",
+                                                                      "status": "later",
+                                                                      "contributors": [
+                                                                                "Raj"
+                                                                      ],
+                                                                      "mediaUrl": "",
+                                                                      "publishedDate": "2026-03-30"
+                                                            }
+                                                  ],
                                                   "note": ""
                                         }
                               ]
