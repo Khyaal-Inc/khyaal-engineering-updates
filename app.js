@@ -1997,7 +1997,7 @@ let UPDATE_DATA = null;
                 <div class="dependency-picker">
                     <input type="text" class="dependency-search" placeholder="Search tasks to add as dependency..." onkeyup="filterDependencies(this.value)">
                     <div class="dependency-list" id="dependency-picker-list">
-                        ${allItems.map(i => `
+                        ${currentAllItems.map(i => `
                             <button type="button" class="dependency-item" onclick="addDependency('${i.id}')" title="${i.text}">
                                 <span class="truncate pr-2">${i.text}</span>
                                 <span class="dependency-item-id">ID: ${i.id}</span>
@@ -2245,7 +2245,7 @@ let UPDATE_DATA = null;
                 const track = UPDATE_DATA.tracks[trackIndex];
                 editContext = { type: 'track', trackIndex };
 
-                document.getElementById('modal-title').innerText = 'Edit Track';
+                document.getElementById('modal-title').innerText = 'Edit Team (Track)';
                 document.getElementById('modal-form').innerHTML = `
                 <label class="block text-sm font-bold mb-1">Track Name</label>
                 <input type="text" id="edit-track-name" value="${track.name}" class="cms-input">
@@ -2393,6 +2393,20 @@ let UPDATE_DATA = null;
                     } else {
                         UPDATE_DATA.metadata.sprints.push({ id: `sprint-${Date.now()}`, name, start, end, goal });
                         logChange('Add Sprint', name);
+                    }
+
+                } else if (editContext.type === 'release') {
+                    if (!UPDATE_DATA.metadata.releases) UPDATE_DATA.metadata.releases = [];
+                    const name = document.getElementById('edit-release-name').value.trim();
+                    const targetDate = document.getElementById('edit-release-date').value;
+                    const goal = document.getElementById('edit-release-goal').value.trim();
+                    if (editContext.releaseId) {
+                        const idx = UPDATE_DATA.metadata.releases.findIndex(r => r.id === editContext.releaseId);
+                        if (idx !== -1) UPDATE_DATA.metadata.releases[idx] = { id: editContext.releaseId, name, targetDate, goal };
+                        logChange('Edit Release', name);
+                    } else {
+                        UPDATE_DATA.metadata.releases.push({ id: `rel-${Date.now()}`, name, targetDate, goal });
+                        logChange('Add Release', name);
                     }
 
                 } else if (editContext.type === 'track') {
