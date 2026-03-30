@@ -1045,10 +1045,62 @@
 
             // ------ Helper: Highlight search matches in text ------
             function highlightSearch(text) {
-                if (!globalSearchQuery || !text) return text;
+                if (!text) return text;
+                // Parse @mentions
+                let parsed = text.replace(/@([A-Za-z0-9_ -]+)/g, '<mark class="bg-blue-100 text-blue-800 font-bold px-1 rounded">@$1</mark>');
+                if (!globalSearchQuery) return parsed;
                 const escaped = globalSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:#fef9c3;padding:0 1px;border-radius:2px;">$1</mark>');
+                return parsed.replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:#fef9c3;padding:0 1px;border-radius:2px;">$1</mark>');
             }
+
+            // ===============================================================
+            // EXPORT & DIGEST
+            // ===============================================================
+            function exportToCSV() {
+                let csv = 'Track,Subtrack,Item ID,Title,Status,Priority,Contributors,Sprint,Released In,Blocker,Tags,Due\n';
+                UPDATE_DATA.tracks.forEach(t => {
+                    t.subtracks.forEach(s => {
+                        s.items.forEach(i => {
+                            const esc = (str) => `"${(str || '').replace(/"/g, '""')}"`;
+                            csv += `${esc(t.name)},${esc(s.name)},${esc(i.id)},${esc(i.text)},${esc(i.status)},${esc(i.priority)},${esc((i.contributors||[]).join(';'))},${esc(i.sprintId)},${esc(i.releasedIn)},${i.blocker ? 'Yes' : 'No'},${esc((i.tags||[]).join(';'))},${esc(i.due)}\n`;
+                        });
+                    });
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none'; a.href = url; a.download = 'Khyaal_Updates_Export.csv';
+                document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url);
+                logChange('Export', 'Downloaded CSV');
+            }
+
+            function generateDigest() {
+                const today = new Date().toLocaleDateString();
+                let text = `*Khyaal Engineering Digest (${today})*\n\n`;
+                let doneItems = [];
+                let nowItems = [];
+                let blockers = [];
+                
+                UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
+                    if (i.status === 'done') doneItems.push(`- [${t.name}] ${i.text}`);
+                    if (i.status === 'now') nowItems.push(`- [${t.name}] ${i.text} ${i.contributors ? '(' + i.contributors.join(', ') + ')' : ''}`);
+                    if (i.blocker) blockers.push(`- 🔴 [${t.name}] ${i.text} (Blocked: ${i.blockerNote || 'No details'})`);
+                })));
+
+                if (blockers.length) text += `*🚨 BLOCKERS:*\n${blockers.join('\\n')}\n\n`;
+                text += `*✅ RECENTLY SHIPPED:*\n${doneItems.slice(0,10).join('\\n')}${doneItems.length > 10 ? '\\n...and more!' : ''}\n\n`;
+                text += `*🚀 IN FLIGHT (NOW):*\n${nowItems.slice(0,15).join('\\n')}\n`;
+
+                alert("Digest generated! Sending to clipboard...");
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("✅ Digest copied to clipboard! You can paste it into Slack.");
+                }).catch(err => {
+                    prompt("Failed to copy automatically. Copy the text below:", text.replace(/\\n/g, '\n'));
+                });
+                logChange('Digest Generated', 'Copied to clipboard');
+            }
+
+
 
             // ===============================================================
             // CONTRIBUTOR AUTOCOMPLETE
@@ -1245,7 +1297,7 @@
                     const bl = t.subtracks.find(s => s.name === 'Backlog');
                     if (bl) counts.backlog += bl.items.length;
                 });
-                ['track','status','priority','contributor','gantt','backlog','sprint','releases'].forEach(v => {
+                ['track','status','priority','contributor','gantt','backlog','sprint','releases','dependency'].forEach(v => {
                     const el = document.getElementById(`tab-count-${v}`);
                     if (el) el.textContent = counts[v] || '';
                 });
@@ -1263,7 +1315,10 @@
                     html = `<div class="text-center py-16 text-slate-400">
                         <div class="text-4xl mb-4">🏃</div>
                         <p class="text-lg font-semibold">No sprints yet</p>
-                        ${isAuthenticated ? `<p class="text-sm mt-1">Click <strong>Add Sprint</strong> to create your first sprint.</p>` : ''}
+                        ${isAuthenticated ? `
+                        <p class="text-sm mt-1 mb-4">Click below to create your first sprint.</p>
+                        <button onclick="openSprintEdit()" class="filter-btn active" style="margin:auto; display:inline-block">Add Sprint</button>
+                        ` : ''}
                     </div>`;
                     container.innerHTML = html; return;
                 }
@@ -1272,6 +1327,10 @@
                 UPDATE_DATA.tracks.forEach((t, ti) => t.subtracks.forEach((s, si) => s.items.forEach((item, ii) => {
                     allItems.push({ ...item, _ti: ti, _si: si, _ii: ii });
                 })));
+
+                html += `<div class="mb-4 text-right">
+                    ${isAuthenticated ? `<button onclick="openSprintEdit()" class="filter-btn active">➕ Add New Sprint</button>` : ''}
+                </div>`;
 
                 sprints.forEach(sprint => {
                     const sprintItems = allItems.filter(i => i.sprintId === sprint.id);
@@ -1345,6 +1404,67 @@
                 logChange('Delete Sprint', sprintId);
                 closeCmsModal(); renderSprintView(); updateTabCounts();
             }
+
+            // ===============================================================
+            // DEPENDENCY GRAPH VIEW
+            // ===============================================================
+            function renderDependencyView() {
+                const container = document.getElementById('dependency-view');
+                if (!container) return;
+
+                let relations = [];
+                let itemNames = {};
+                let hasDependencies = false;
+
+                UPDATE_DATA.tracks.forEach(track => {
+                    track.subtracks.forEach(subtrack => {
+                        subtrack.items.forEach(item => {
+                            const esc = (s) => (s||'').replace(/"/g, "'").substring(0, 30) + '...';
+                            itemNames[item.id] = esc(item.text);
+                            if (item.dependencies) {
+                                hasDependencies = true;
+                                const deps = item.dependencies.split(',').map(d => d.trim()).filter(d => d);
+                                deps.forEach(depId => {
+                                    if (depId) relations.push(`${depId} --> ${item.id}`);
+                                });
+                            }
+                        });
+                    });
+                });
+
+                if (!hasDependencies && relations.length === 0) {
+                    container.innerHTML = `<div class="text-center py-16 text-slate-400">
+                        <div class="text-4xl mb-4">🕸️</div>
+                        <p class="text-lg font-semibold">No dependencies mapped yet</p>
+                        <p class="text-sm mt-1">Add "Dependencies (Task IDs)" in the Item Edit modal to build the graph.</p>
+                    </div>`;
+                    return;
+                }
+
+                let digraph = `graph TD\n`;
+                // Add nodes first to define their text
+                Object.keys(itemNames).forEach(id => {
+                    digraph += `    ${id}["${itemNames[id]}"]\n`;
+                });
+                // Add relations
+                relations.forEach(r => {
+                    digraph += `    ${r}\n`;
+                });
+
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-xl border border-slate-200">
+                        <div class="mermaid" id="mermaid-graph">
+                            ${digraph}
+                        </div>
+                    </div>
+                `;
+
+                // Render mermaid if loaded
+                if (window.mermaid) {
+                    try { mermaid.init(undefined, document.querySelectorAll('.mermaid')); } catch(e) {}
+                }
+            }
+
 
             // ===============================================================
             // PM COMMENTS / NOTES
@@ -2280,12 +2400,13 @@
 
             function exportData(format) {
                 if (format === 'csv') {
-                    let csv = 'Task ID,Track,Subtrack,Text,Status,Priority,Start Date,Due Date,Contributors,Impact\n';
+                    let csv = 'Task ID,Track,Subtrack,Text,Status,Priority,Start Date,Due Date,Contributors,Sprint,Released In,Blocker,Tags,Impact\n';
                     UPDATE_DATA.tracks.forEach(track => {
                         track.subtracks.forEach(subtrack => {
                             subtrack.items.forEach(item => {
                                 if (!isItemInDateRange(item)) return;
-                                csv += `"${item.id}","${track.name}","${subtrack.name}","${item.text}","${item.status}","${item.priority || 'medium'}","${item.startDate}","${item.due}","${item.contributors.join('; ')}","${item.usecase || ''}"\n`;
+                                const esc = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
+                                csv += `${esc(item.id)},${esc(track.name)},${esc(subtrack.name)},${esc(item.text)},${esc(item.status)},${esc(item.priority || 'medium')},${esc(item.startDate)},${esc(item.due)},${esc((item.contributors||[]).join('; '))},${esc(item.sprintId)},${esc(item.releasedIn)},${item.blocker ? 'Yes' : 'No'},${esc((item.tags||[]).join('; '))},${esc(item.usecase)}\n`;
                             });
                         });
                     });
@@ -2298,6 +2419,32 @@
                     link.click();
                     document.body.removeChild(link);
                 }
+            }
+
+            function generateDigest() {
+                const today = new Date().toLocaleDateString();
+                let text = `*Khyaal Engineering Digest (${today})*\n\n`;
+                let doneItems = [];
+                let nowItems = [];
+                let blockers = [];
+                
+                UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
+                    if (i.status === 'done') doneItems.push(`- [${t.name}] ${i.text}`);
+                    if (i.status === 'now') nowItems.push(`- [${t.name}] ${i.text} ${i.contributors && i.contributors.length ? '(' + i.contributors.join(', ') + ')' : ''}`);
+                    if (i.blocker) blockers.push(`- 🔴 [${t.name}] ${i.text} (Blocked: ${i.blockerNote || 'No details'})`);
+                })));
+
+                if (blockers.length) text += `*🚨 BLOCKERS:*\n${blockers.join('\\n')}\n\n`;
+                text += `*✅ RECENTLY SHIPPED:*\n${doneItems.slice(0,10).join('\\n')}${doneItems.length > 10 ? '\\n...and more!' : ''}\n\n`;
+                text += `*🚀 IN FLIGHT (NOW):*\n${nowItems.slice(0,15).join('\\n')}\n`;
+
+                alert("Digest generated! Sending to clipboard...");
+                navigator.clipboard.writeText(text.replace(/\\n/g, '\n')).then(() => {
+                    alert("✅ Digest copied to clipboard! You can paste it into Slack.");
+                }).catch(err => {
+                    prompt("Failed to copy automatically. Copy the text below:", text.replace(/\\n/g, '\n'));
+                });
+                logChange('Digest Generated', 'Copied to clipboard');
             }
 
             function exportGantt() {
@@ -2353,6 +2500,7 @@
                 if (view === 'backlog') { renderBacklogView(); updateBacklogBadge(); }
                 if (view === 'sprint') renderSprintView();
                 if (view === 'releases') renderReleasesView();
+                if (view === 'dependency') renderDependencyView();
                 buildTagFilterBar();
                 updateTabCounts();
             }
@@ -2630,10 +2778,21 @@
                         <input type="text" id="edit-due" class="cms-input" placeholder="e.g. March 30">
                     </div>
                 </div>
-                <label class="block text-sm font-bold mb-1">Dependencies (Task IDs, comma separated)</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Tags (comma separated)</label>
+                        <input type="text" id="edit-tags" class="cms-input" placeholder="e.g. bug, tech-debt">
+                    </div>
+                </div>
+                <label class="block text-sm font-bold mb-1 mt-2">Dependencies (Task IDs, comma separated)</label>
                 <div class="relative">
                     <input type="text" id="edit-dependencies" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
                     <div id="dependency-picker" class="dependency-picker"></div>
+                </div>
+                <div class="mt-4 p-3 border border-red-500/30 rounded-lg bg-red-500/5">
+                    <label class="block text-sm font-bold text-red-400 mb-1">🔒 Blocker Note (Optional)</label>
+                    <input type="text" id="edit-blockerNote" class="cms-input" placeholder="If blocked, describe why...">
+                    <p class="text-[10px] text-slate-400 mt-1">Adding text here will automatically red-flag this item as blocked.</p>
                 </div>
             `;
                 document.getElementById('cms-modal').classList.add('active');
@@ -3427,6 +3586,7 @@
                             <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor<span id="tab-count-contributor" class="tab-count"></span></button>
                             <button onclick="switchView('releases')" id="btn-releases" class="filter-btn">📦 Releases<span id="tab-count-releases" class="tab-count"></span></button>
                             <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart<span id="tab-count-gantt" class="tab-count"></span></button>
+                            <button onclick="switchView('dependency')" id="btn-dependency" class="filter-btn">🕸️ Dependencies<span id="tab-count-dependency" class="tab-count"></span></button>
                             <button onclick="switchView('backlog')" id="btn-backlog" class="filter-btn">&#128218; Backlog<span id="tab-count-backlog" class="backlog-count-badge" style="margin-left:4px"></span></button>
                         </div>
                     </div>
@@ -3471,7 +3631,11 @@
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            CSV
+                            Export CSV
+                        </button>
+                        <button onclick="generateDigest()"
+                            class="cms-btn cms-btn-secondary px-3 py-2 text-xs flex items-center gap-1">
+                            📋 Slack Digest
                         </button>
                         <button id="export-gantt-btn" onclick="exportGantt()"
                             class="hidden cms-btn cms-btn-secondary px-3 py-2 text-xs flex items-center gap-1">
@@ -3513,6 +3677,7 @@
             <!-- Views -->
             <div id="track-view" class="view-section active"></div>
             <div id="sprint-view" class="view-section"></div>
+            <div id="dependency-view" class="view-section"></div>
             <div id="status-view" class="view-section"></div>
             <div id="priority-view" class="view-section"></div>
             <div id="contributor-view" class="view-section"></div>
@@ -3651,5 +3816,11 @@
                 }
             };
         </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: { primaryColor: '#f1f5f9', lineColor: '#94a3b8' } });
+        });
+    </script>
 </body>
 </html>
