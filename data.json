@@ -78,7 +78,6 @@
                                                                       "usecase": "Speeds up website content creation.",
                                                                       "mediaUrl": "",
                                                                       "startDate": "2026-03-23",
-                                                                      "due": "2026-03-27",
                                                                       "publishedDate": "2026-03-30"
                                                             },
                                                             {
@@ -646,11 +645,12 @@
                                                             {
                                                                       "id": "task-1774000457133",
                                                                       "text": "Move Qdrant and Assistant Service from AWS to GCP",
-                                                                      "status": "next",
+                                                                      "status": "later",
                                                                       "contributors": [
                                                                                 "Raj"
                                                                       ],
-                                                                      "publishedDate": "2026-03-20"
+                                                                      "mediaUrl": "",
+                                                                      "publishedDate": "2026-03-30"
                                                             }
                                                   ],
                                                   "note": ""
