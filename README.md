@@ -6,15 +6,17 @@
 
 ## ✨ Feature Overview
 
-### 📊 Five Viewing Modes
+### 📊 Eight Viewing Modes
 
 | View | Description |
 |---|---|
 | **By Track** | Items grouped by product track (Platform, Pulse, DevOps…) and subtrack |
+| **🏃 Sprints** | Sprints / Cycles with progress bars, velocity, and assigned items |
 | **By Status** | Items grouped by status level across all tracks |
 | **By Priority** | Items grouped by High / Medium / Low priority |
 | **By Contributor** | Items grouped by team member |
-| **Gantt Chart** | Timeline view of all dated items (exportable as PNG) |
+| **📦 Releases** | Items grouped by their target Release Version |
+| **Gantt Chart** | Timeline view of all dated items with a "Today" marker |
 | **📚 Backlog** | Dedicated PM backlog view — all parked items, grouped by track |
 
 ### 🎯 Item Statuses
@@ -25,213 +27,101 @@
 - ⚪ **Later** — Future Roadmap  
 
 ### 🏷️ Item Fields
-Each item supports: title, status, priority, contributors, note, impact/usecase, image/media URL, start date, due date, dependencies, **tags**, **blocker flag**, and **blocker note**.
+Each item supports: title, status, priority, **contributors (autocomplete)**, note, impact/usecase, image/media URL, start date, due date, dependencies, **tags**, **blocker flag**, **blocker note**, **sprint assignment**, **release version**, and **PM comments**.
 
 ---
 
-## 📚 Backlog Management (PM Feature)
+## 🏃 Sprint & Release Management (PM Features)
 
-The **Backlog** tab aggregates all items from every track's Backlog subtrack into a single PM-facing view.
+### Sprints / Cycles
+- **Sprint View**: See all active, upcoming, and ended sprints.
+- Each sprint shows a progress bar (`done` vs `total`), active date range, and carryover warnings.
+- CMS Mode: **Add Sprint**, **Edit Sprint**, and assign items to sprints via the Item Edit modal.
+- Active sprint assignments show as a `🏃 Sprint Name` pill on the item row.
 
-### Actions Available
-- **→ Backlog** button on any item (in CMS mode) — parks the item in the track's Backlog  
-- **⬆ Promote to Next** — moves a backlog item to `Next` status in the first active subtrack  
-- **Move to subtrack** — select a destination subtrack and click Move  
-- **Backlog count badge** — a red badge on the tab shows total backlog items across all tracks  
+### Releases
+- Items can be assigned a `Released In` version (e.g., `v2.4.1`) in the CMS modal.
+- **Releases View** groups all items by version for release planning.
+
+---
+
+## 📚 Backlog & Bulk Management
+
+### Backlog Management
+The **Backlog** tab aggregates all parked items from every track into a single PM-facing view.
+- **→ Backlog** button on any item (in CMS mode) parks it instantly.
+- **⬆ Promote** moves a backlog item to `Next` status in the first active subtrack.
+
+### Bulk Operations
+- In Track View (CMS mode), click the **checkbox** next to any items to reveal the **Bulk Action Bar**.
+- Multi-select items and apply:
+  - **Bulk Status Update**
+  - **Bulk Priority Update**
+  - **Bulk Send to Backlog**
+  - **Bulk Delete**
 
 ---
 
 ## 🔀 Moving Items Across Subtracks
 
-Two ways to move items between subtracks:
-
-### 1. Drag and Drop (Track View)
-In CMS mode, every item row is **draggable**. Drag it and drop onto any other subtrack section. The item moves instantly and the view re-renders.
-
-### 2. Edit Modal — Move To Track / Subtrack
-Open an item's Edit modal:
-1. Change the **Move to Track** dropdown  
-2. Change the **Move to Subtrack** dropdown  
-3. Click **Apply Changes** — the item is removed from its current location and added to the target  
+1. **Drag and Drop**: In CMS mode, drag any item row and drop it onto another subtrack.
+2. **Edit Modal**: Open an item's Edit modal, change the **Move to Track** / **Move to Subtrack** dropdowns, and save.
 
 ---
 
-## 🚦 PM Tools & Signals
+## 🚦 PM Signals & Collaboration
+
+### Contributor Autocomplete
+- The CMS modal uses a **tag-input widget** for contributors. Start typing a name, and an autocomplete dropdown will appear populated by all existing team members.
+
+### PM Comments / Notes
+- Each item supports a timestamped comment thread. 
+- Click the `💬 [count]` button under an item to open the thread. Add notes without editing the item description.
 
 ### Blocker / Risk Flag
-- In CMS mode, click **🔒 Flag Blocker** on any item to mark it as a blocker  
-- Optionally describe the blocker in a note (via the Edit modal's Blocker Note field)  
-- Blocked items show a red **🔒 Blocker** strip above the item row  
-- Subtrack headers show a blocker count badge (e.g., `🔒 2 blockers`)  
+- Click **🔒 Flag Blocker** to mark an item as blocked.
+- Blocked items show a red **🔒 Blocker** strip above the row and bump subtrack header alert badges.
 
 ### Due Date Warnings
-- **⚠ Overdue (red)** — item due date has passed  
-- **🕐 Due Soon (orange)** — item due within 2 days  
-- Normal due dates shown in orange text  
+- **🔴 Overdue** — item due date has passed.
+- **🟠 Due Soon** — item due within 2 days.
 
-### Item Tags / Labels
-Items support comma-separated tags in the Edit modal. Display-only pills appear on each item row.
-
-| Tag | Color |
-|---|---|
-| `bug` | Red |
-| `tech-debt` | Purple |
-| `feature` | Blue |
-| `compliance` | Orange |
-| `customer` | Green |
-
-### Search Highlighting
-The global search bar highlights matching text in yellow across all item titles in the current view.
+### Item Tags & Filtering
+- Add custom tags via the Edit modal (e.g., `bug`, `tech-debt`, `feature`).
+- Use the **Tag Filter Bar** at the top of the page to instantly filter all views by a specific tag.
 
 ---
 
-## 🔎 Filtering & Search
+## 🔎 Search & Auditing
 
-| Filter | Description |
+| Feature | Description |
 |---|---|
-| **Global Search** | Matches across title, note, impact, contributor, track, subtrack |
-| **Due Date Presets** | Today / This Week / This Month / Custom Range |
-| **Archive Filter** | Filter by publish month (e.g. Feb 2026, Mar 2026) |
-| **Historical Snapshots** | Load past archived data from the `archive/` folder |
-
----
-
-## 📤 Export
-
-| Export | How |
-|---|---|
-| **CSV** | Click the `↓ CSV` button — exports all visible items |
-| **Gantt PNG** | Switch to Gantt view, then click `↓ Image` |
+| **Global Search** | Matches text and highlights keywords in yellow. Press `/` to focus. |
+| **Keyboard Shortcuts** | Press `1`-`8` to switch view tabs. Press `Esc` to close modals. |
+| **Audit Log (Session)** | Click the 📜 icon in the bottom right to see a live Changelog of all edits made during your session. |
 
 ---
 
 ## 🔐 Authentication & Security
 
-This project uses a **Zero-Deploy** architecture. A password-gated AWS Lambda proxy fetches `data.json` from GitHub at runtime — no token is ever exposed to the browser.
+This project uses a **Zero-Deploy** architecture. A password-gated AWS Lambda proxy fetches `data.json` from GitHub at runtime.
 
-### Initial Setup (One-time)
+### Setup (One-time)
+1. Run `sh deploy_auth.sh`
+2. Run `aws lambda update-function-configuration --function-name khyaal-auth-gatekeeper --environment "Variables={GITHUB_TOKEN=your_token_here}" --region ap-south-1`
+3. Set `LAMBDA_URL` in `index.html`.
 
-1. **Deploy the Gateway**:
-   ```bash
-   sh deploy_auth.sh
-   ```
-2. **Add your GitHub Token** to Lambda:
-   ```bash
-   aws lambda update-function-configuration \
-     --function-name khyaal-auth-gatekeeper \
-     --environment "Variables={GITHUB_TOKEN=your_token_here}" \
-     --region ap-south-1
-   ```
-3. **Update `index.html`**: Set `LAMBDA_URL` to the output of `deploy_auth.sh`.
-
-### Session Persistence
-- Password hash is stored in `localStorage` indefinitely (survives restarts)
-- Auto-login on page load if cached hash is present
-- Click **Logout** to clear session
+Password hash is cached in `localStorage` for seamless reloads.
 
 ---
 
 ## ✍️ CMS — Content Management
 
-Access the CMS by adding `?cms=true` to the URL and authenticating with a GitHub PAT.
+Access the CMS by appending `?cms=true` to the URL.
 
-### Item Operations
-| Action | How |
-|---|---|
-| **Add Item** | Click `Add Item` button in a subtrack header |
-| **Edit Item** | CMS mode: `Edit` link on the item row |
-| **Delete Item** | CMS mode: `Delete` link on the item row |
-| **→ Backlog** | CMS mode: sends item to track's Backlog subtrack |
-| **🔒 Flag Blocker** | CMS mode: marks item as a blocker (with optional note) |
-| **Move Item** | Edit modal → Move to Track + Move to Subtrack dropdowns |
-| **Drag & Drop** | Drag item row to any other subtrack drop zone |
-
-### Track & Subtrack Operations
-- **Add Track** — button in CMS header  
-- **Edit / Delete Track** — buttons in track header (CMS mode)  
-- **Add / Edit / Delete Subtrack** — buttons in subtrack header (CMS mode)  
-
-### Saving Changes
-Click **Save to GitHub** in the CMS dashboard to commit the in-memory data to `data.json` on GitHub. Changes are live immediately (no deployment needed).
-
----
-
-## 📂 Archiving & Snapshots
-
-### Archive & Clear
-Click **Archive & Clear** to:
-1. Save a JSON snapshot of the current data to `archive/<date-range>.json`
-2. Clear all `done` items from the live data
-3. Reset the date range label
-
-### Viewing Historical Snapshots
-Historical archive buttons appear in the Archive filter bar. Click any snapshot to load that data.
-
----
-
-## 🏗️ Architecture
-
-```
-index.html          ← Single-file app: UI + JS rendering + CMS controls
-data.json           ← Source of truth (served via Lambda)
-archive/            ← Historical snapshot JSON files
-deploy_auth.sh      ← One-time Lambda deployment script
-```
-
-### Data Structure
-```json
-{
-  "metadata": { "title": "...", "dateRange": "...", "description": "..." },
-  "tracks": [
-    {
-      "id": "platform",
-      "name": "Platform",
-      "theme": "blue",
-      "subtracks": [
-        {
-          "name": "Core",
-          "items": [
-            {
-              "id": "task-123",
-              "text": "Item title",
-              "status": "now",
-              "priority": "high",
-              "contributors": ["Alice"],
-              "tags": ["feature"],
-              "blocker": true,
-              "blockerNote": "Waiting on infra",
-              "note": "...",
-              "usecase": "...",
-              "startDate": "2026-03-01",
-              "due": "2026-03-30",
-              "dependencies": "task-100",
-              "publishedDate": "2026-03-01"
-            }
-          ]
-        },
-        { "name": "Backlog", "items": [] }
-      ]
-    }
-  ]
-}
-```
-
-### How Loading Works
-1. Cached password hash sent to Lambda (one HTTP hop)
-2. Lambda verifies hash, fetches latest `data.json` from GitHub
-3. Data returned to browser and rendered client-side
-
----
-
-## 🎨 Status Legend
-
-| Status | Color | Meaning |
-|---|---|---|
-| Done | 🟢 Emerald | Shipped & live |
-| Now | 🔵 Blue | Active development |
-| On-Going | 🟡 Amber | Continuous ops |
-| Next | 🟠 Orange | Immediate pipeline |
-| Later | ⚪ Gray | Future roadmap / Backlog |
+- **Add/Edit/Delete** tracks, subtracks, items, and sprints.
+- Modals are **mobile-friendly** and perform strict form validation on required fields before saving.
+- Click **Save to GitHub** in the CMS header to commit in-memory data to `data.json` on GitHub.
 
 ---
 

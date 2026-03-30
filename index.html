@@ -866,6 +866,76 @@
             transition: all 0.15s;
         }
         .send-to-backlog-btn:hover { background: #f3f4f6; color: #374151; }
+
+        /* Contributor tag-input */
+        .tag-input-wrapper { border:1px solid #e2e8f0; border-radius:8px; padding:6px 8px; background:#fff; display:flex; flex-wrap:wrap; gap:4px; cursor:text; min-height:36px; }
+        .tag-input-wrapper:focus-within { border-color:#3b82f6; box-shadow:0 0 0 2px #bfdbfe; }
+        .contributor-tag { display:flex; align-items:center; gap:3px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:9999px; padding:2px 8px; font-size:0.7rem; font-weight:700; }
+        .contributor-tag-remove { cursor:pointer; opacity:0.6; font-size:0.85rem; line-height:1; }
+        .contributor-tag-remove:hover { opacity:1; }
+        .tag-input-field { border:none; outline:none; font-size:0.8rem; background:transparent; min-width:80px; flex:1; }
+        .contributor-dropdown { position:absolute; z-index:200; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.1); max-height:160px; overflow-y:auto; width:100%; }
+        .contributor-dropdown-item { padding:6px 12px; font-size:0.8rem; cursor:pointer; color:#1e293b; }
+        .contributor-dropdown-item:hover { background:#f1f5f9; }
+
+        /* Sprint */
+        .sprint-card { background:#fff; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:1.5rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+        .sprint-header { background:linear-gradient(135deg,#1e40af,#1e293b); color:white; padding:1rem 1.5rem; display:flex; align-items:center; gap:1rem; }
+        .sprint-badge { background:rgba(255,255,255,0.2); border-radius:9999px; padding:2px 10px; font-size:0.65rem; font-weight:800; letter-spacing:0.06em; }
+        .sprint-progress-bar { height:6px; background:#e2e8f0; border-radius:9999px; overflow:hidden; margin-top:6px; }
+        .sprint-progress-fill { height:100%; background:linear-gradient(90deg,#22c55e,#16a34a); border-radius:9999px; transition:width 0.4s; }
+        .sprint-chip { display:inline-block; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:9999px; font-size:0.6rem; font-weight:800; padding:1px 7px; margin-left:4px; vertical-align:middle; }
+        .sprint-item-row { padding:0.6rem 1.5rem; border-bottom:1px solid #f1f5f9; font-size:0.82rem; color:#334155; }
+        .sprint-item-row:last-child { border-bottom:none; }
+
+        /* Comments */
+        .comment-thread { background:#f8fafc; border-top:1px solid #e2e8f0; padding:0.75rem 1rem; }
+        .comment-item { background:white; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; margin-bottom:6px; font-size:0.78rem; color:#334155; }
+        .comment-meta { font-size:0.65rem; color:#94a3b8; margin-top:3px; }
+        .comment-input { border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:0.8rem; width:100%; outline:none; }
+        .comment-input:focus { border-color:#3b82f6; }
+        .comments-btn { font-size:0.68rem; font-weight:700; color:#6366f1; cursor:pointer; background:none; border:1px solid #e0e7ff; border-radius:6px; padding:1px 8px; margin-left:4px; }
+
+        /* Release tracking */
+        .release-card { background:#fff; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:1.5rem; overflow:hidden; }
+        .release-header { background:linear-gradient(135deg,#7c3aed,#1e293b); color:white; padding:1rem 1.5rem; font-weight:800; font-size:1rem; }
+        .release-badge { display:inline-block; background:#fdf4ff; color:#7e22ce; border:1px solid #e9d5ff; border-radius:9999px; font-size:0.62rem; font-weight:900; padding:1px 8px; margin-left:4px; vertical-align:middle; }
+
+        /* Bulk select */
+        .bulk-bar { position:fixed; bottom:0; left:0; right:0; background:#1e293b; color:white; padding:12px 24px; display:flex; align-items:center; gap:12px; z-index:500; box-shadow:0 -4px 20px rgba(0,0,0,0.25); transform:translateY(100%); transition:transform 0.25s; }
+        .bulk-bar.active { transform:translateY(0); }
+        .bulk-bar select { background:#334155; color:white; border:1px solid #475569; border-radius:6px; padding:4px 8px; font-size:0.8rem; }
+        .bulk-bar button { background:#475569; border:none; color:white; border-radius:6px; padding:5px 12px; font-size:0.78rem; font-weight:700; cursor:pointer; transition:background 0.15s; }
+        .bulk-bar button:hover { background:#64748b; }
+        .bulk-bar button.danger { background:#7f1d1d; }
+        .bulk-bar button.danger:hover { background:#991b1b; }
+        .item-checkbox { width:14px; height:14px; cursor:pointer; accent-color:#3b82f6; flex-shrink:0; }
+
+        /* Tag filter bar */
+        .tag-filter-bar { display:flex; flex-wrap:wrap; gap:6px; padding:8px 0 4px; }
+        .tag-filter-pill { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; padding:3px 10px; border-radius:9999px; cursor:pointer; border:1.5px solid #e2e8f0; background:#f8fafc; color:#64748b; transition:all 0.15s; }
+        .tag-filter-pill:hover { background:#f1f5f9; }
+        .tag-filter-pill.active { background:#1e40af; color:white; border-color:#1e40af; }
+        .tag-filter-pill.clear { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+
+        /* Tab count badge */
+        .tab-count { font-size:0.6rem; background:rgba(100,116,139,0.15); color:#64748b; border-radius:9999px; padding:1px 6px; margin-left:4px; font-weight:700; }
+        .filter-btn.active .tab-count { background:rgba(255,255,255,0.25); color:white; }
+
+        /* Keyboard shortcut hint */
+        .kb-hint { font-size:0.62rem; color:#94a3b8; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; font-family:monospace; }
+
+        /* Changelog panel */
+        .changelog-panel { position:fixed; bottom:70px; right:16px; width:320px; background:white; border-radius:12px; border:1.5px solid #e2e8f0; box-shadow:0 8px 30px rgba(0,0,0,0.12); z-index:490; max-height:300px; overflow:hidden; display:flex; flex-direction:column; transform:translateY(20px); opacity:0; pointer-events:none; transition:all 0.2s; }
+        .changelog-panel.open { transform:translateY(0); opacity:1; pointer-events:all; }
+        .changelog-header { background:#1e293b; color:white; padding:8px 14px; font-size:0.8rem; font-weight:700; display:flex; justify-content:space-between; border-radius:10px 10px 0 0; }
+        .changelog-body { overflow-y:auto; flex:1; padding:8px 0; }
+        .changelog-entry { padding:5px 14px; font-size:0.72rem; color:#334155; border-bottom:1px solid #f1f5f9; }
+        .changelog-time { color:#94a3b8; font-size:0.65rem; }
+        .changelog-toggle { position:fixed; bottom:16px; right:16px; background:#1e293b; color:white; border:none; border-radius:50%; width:42px; height:42px; font-size:1.1rem; cursor:pointer; z-index:491; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+
+        /* Mobile CMS modal */
+        #cms-modal .modal-inner { max-height:90vh; overflow-y:auto; }
     </style>
 </head>
 
@@ -980,6 +1050,417 @@
                 return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark style="background:#fef9c3;padding:0 1px;border-radius:2px;">$1</mark>');
             }
 
+            // ===============================================================
+            // CONTRIBUTOR AUTOCOMPLETE
+            // ===============================================================
+            let ALL_CONTRIBUTORS = [];
+            let _selectedContributors = [];
+
+            function buildContributorList() {
+                const set = new Set();
+                (UPDATE_DATA.tracks || []).forEach(t =>
+                    t.subtracks.forEach(s =>
+                        s.items.forEach(i =>
+                            (i.contributors || []).forEach(c => { if (c.trim()) set.add(c.trim()); })
+                        )
+                    )
+                );
+                ALL_CONTRIBUTORS = Array.from(set).sort();
+            }
+
+            function renderContributorTagInput(containerId, initial = []) {
+                _selectedContributors = [...initial];
+                const wrap = document.getElementById(containerId);
+                if (!wrap) return;
+                wrap.innerHTML = '';
+                _selectedContributors.forEach(name => {
+                    wrap.insertAdjacentHTML('beforeend',
+                        `<span class="contributor-tag">${name}<span class="contributor-tag-remove" onclick="removeContributorTag('${name}','${containerId}')">✕</span></span>`);
+                });
+                const inputWrap = document.createElement('div');
+                inputWrap.style.position = 'relative'; inputWrap.style.flex = '1';
+                inputWrap.innerHTML = `<input id="contrib-input-${containerId}" class="tag-input-field" placeholder="Type name..." autocomplete="off"
+                    oninput="filterContributorDropdown(this.value,'${containerId}')"
+                    onkeydown="handleContribKey(event,'${containerId}')">
+                    <div id="contrib-dd-${containerId}" class="contributor-dropdown" style="display:none"></div>`;
+                wrap.appendChild(inputWrap);
+            }
+
+            function filterContributorDropdown(query, containerId) {
+                const dd = document.getElementById(`contrib-dd-${containerId}`);
+                if (!dd) return;
+                const q = query.toLowerCase().trim();
+                const matches = ALL_CONTRIBUTORS.filter(c => c.toLowerCase().includes(q) && !_selectedContributors.includes(c));
+                if (!q || !matches.length) { dd.style.display = 'none'; return; }
+                dd.innerHTML = matches.slice(0, 8).map(c =>
+                    `<div class="contributor-dropdown-item" onclick="addContributorTag('${c}','${containerId}')">${c}</div>`
+                ).join('');
+                dd.style.display = 'block';
+            }
+
+            function handleContribKey(e, containerId) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = e.target.value.trim().replace(/,+$/, '');
+                    if (val) addContributorTag(val, containerId);
+                }
+            }
+
+            function addContributorTag(name, containerId) {
+                if (!name || _selectedContributors.includes(name)) return;
+                _selectedContributors.push(name);
+                if (!ALL_CONTRIBUTORS.includes(name)) ALL_CONTRIBUTORS.push(name);
+                renderContributorTagInput(containerId, _selectedContributors);
+            }
+
+            function removeContributorTag(name, containerId) {
+                _selectedContributors = _selectedContributors.filter(c => c !== name);
+                renderContributorTagInput(containerId, _selectedContributors);
+            }
+
+            function getSelectedContributors() { return [..._selectedContributors]; }
+
+            // ===============================================================
+            // CHANGELOG (in-session audit log)
+            // ===============================================================
+            let CHANGELOG = [];
+            function logChange(action, detail) {
+                CHANGELOG.unshift({ action, detail, time: new Date().toLocaleTimeString() });
+                if (CHANGELOG.length > 50) CHANGELOG.pop();
+                const badge = document.getElementById('changelog-count');
+                if (badge) badge.textContent = CHANGELOG.length;
+                const body = document.getElementById('changelog-body');
+                if (body) body.innerHTML = CHANGELOG.map(e =>
+                    `<div class="changelog-entry"><strong>${e.action}</strong> — ${e.detail}<div class="changelog-time">${e.time}</div></div>`
+                ).join('');
+            }
+            function toggleChangelog() {
+                document.getElementById('changelog-panel').classList.toggle('open');
+            }
+
+            // ===============================================================
+            // TAG FILTER
+            // ===============================================================
+            let activeTagFilter = null;
+            function setTagFilter(tag) {
+                activeTagFilter = (activeTagFilter === tag) ? null : tag;
+                buildTagFilterBar();
+                const view = document.querySelector('.view-section.active');
+                if (view) switchView(view.id.replace('-view', ''));
+            }
+            function isItemMatchingTagFilter(item) {
+                if (!activeTagFilter) return true;
+                return (item.tags || []).some(t => t.toLowerCase() === activeTagFilter.toLowerCase());
+            }
+            function buildTagFilterBar() {
+                const bar = document.getElementById('tag-filter-bar');
+                if (!bar) return;
+                const allTags = new Set();
+                (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => (i.tags || []).forEach(tg => allTags.add(tg)))));
+                if (!allTags.size) { bar.innerHTML = ''; return; }
+                bar.innerHTML = [...allTags].map(tg =>
+                    `<span class="tag-filter-pill${activeTagFilter === tg ? ' active' : ''}" onclick="setTagFilter('${tg}')">${tg}</span>`
+                ).join('') + (activeTagFilter ? `<span class="tag-filter-pill clear" onclick="setTagFilter(null)">✕ Clear</span>` : '');
+            }
+
+            // ===============================================================
+            // BULK OPERATIONS
+            // ===============================================================
+            let selectedItems = new Set();
+            function toggleItemSelect(key, el) {
+                if (el.checked) selectedItems.add(key);
+                else selectedItems.delete(key);
+                updateBulkBar();
+            }
+            function updateBulkBar() {
+                const bar = document.getElementById('bulk-action-bar');
+                if (!bar) return;
+                if (selectedItems.size > 0) {
+                    bar.classList.add('active');
+                    const cnt = document.getElementById('bulk-count');
+                    if (cnt) cnt.textContent = `${selectedItems.size} selected`;
+                } else { bar.classList.remove('active'); }
+            }
+            function parseBulkKey(key) {
+                const [ti, si, ii] = key.split('-').map(Number);
+                return { trackIndex: ti, subtrackIndex: si, itemIndex: ii };
+            }
+            function bulkUpdateStatus(status) {
+                selectedItems.forEach(key => {
+                    const { trackIndex: ti, subtrackIndex: si, itemIndex: ii } = parseBulkKey(key);
+                    UPDATE_DATA.tracks[ti].subtracks[si].items[ii].status = status;
+                });
+                logChange('Bulk Status', `${selectedItems.size} items → ${status}`);
+                selectedItems.clear(); updateBulkBar(); renderTrackView(); updateTabCounts();
+            }
+            function bulkUpdatePriority(priority) {
+                selectedItems.forEach(key => {
+                    const { trackIndex: ti, subtrackIndex: si, itemIndex: ii } = parseBulkKey(key);
+                    UPDATE_DATA.tracks[ti].subtracks[si].items[ii].priority = priority;
+                });
+                logChange('Bulk Priority', `${selectedItems.size} items → ${priority}`);
+                selectedItems.clear(); updateBulkBar(); renderTrackView(); updateTabCounts();
+            }
+            function bulkSendToBacklog() {
+                // Process in reverse order to keep indices valid
+                const sorted = [...selectedItems].map(k => { const p = parseBulkKey(k); return p; })
+                    .sort((a, b) => b.itemIndex - a.itemIndex);
+                sorted.forEach(({ trackIndex: ti, subtrackIndex: si, itemIndex: ii }) => {
+                    const track = UPDATE_DATA.tracks[ti];
+                    let bi = track.subtracks.findIndex(s => s.name === 'Backlog');
+                    if (bi === -1) { track.subtracks.push({ name: 'Backlog', items: [] }); bi = track.subtracks.length - 1; }
+                    const [item] = track.subtracks[si].items.splice(ii, 1);
+                    track.subtracks[bi].items.push(item);
+                });
+                logChange('Bulk → Backlog', `${selectedItems.size} items moved`);
+                selectedItems.clear(); updateBulkBar(); renderTrackView(); updateBacklogBadge(); updateTabCounts();
+            }
+            function bulkDelete() {
+                if (!confirm(`Delete ${selectedItems.size} items?`)) return;
+                const sorted = [...selectedItems].map(k => parseBulkKey(k)).sort((a, b) => b.itemIndex - a.itemIndex);
+                sorted.forEach(({ trackIndex: ti, subtrackIndex: si, itemIndex: ii }) => {
+                    UPDATE_DATA.tracks[ti].subtracks[si].items.splice(ii, 1);
+                });
+                logChange('Bulk Delete', `${selectedItems.size} items deleted`);
+                selectedItems.clear(); updateBulkBar(); renderTrackView(); updateBacklogBadge(); updateTabCounts();
+            }
+
+            // ===============================================================
+            // TAB COUNT BADGES
+            // ===============================================================
+            function updateTabCounts() {
+                let allItems = [];
+                (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => allItems.push(i))));
+                const counts = {
+                    track: allItems.length,
+                    status: allItems.length,
+                    priority: allItems.length,
+                    contributor: allItems.length,
+                    gantt: allItems.filter(i => i.startDate || i.due).length,
+                    backlog: 0,
+                    sprint: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints ? UPDATE_DATA.metadata.sprints.length : 0),
+                    releases: allItems.filter(i => i.releasedIn).length
+                };
+                (UPDATE_DATA.tracks || []).forEach(t => {
+                    const bl = t.subtracks.find(s => s.name === 'Backlog');
+                    if (bl) counts.backlog += bl.items.length;
+                });
+                ['track','status','priority','contributor','gantt','backlog','sprint','releases'].forEach(v => {
+                    const el = document.getElementById(`tab-count-${v}`);
+                    if (el) el.textContent = counts[v] || '';
+                });
+            }
+
+            // ===============================================================
+            // SPRINT / CYCLE MANAGEMENT
+            // ===============================================================
+            function renderSprintView() {
+                const container = document.getElementById('sprint-view');
+                if (!container) return;
+                const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
+                let html = '';
+                if (!sprints.length) {
+                    html = `<div class="text-center py-16 text-slate-400">
+                        <div class="text-4xl mb-4">🏃</div>
+                        <p class="text-lg font-semibold">No sprints yet</p>
+                        ${isAuthenticated ? `<p class="text-sm mt-1">Click <strong>Add Sprint</strong> to create your first sprint.</p>` : ''}
+                    </div>`;
+                    container.innerHTML = html; return;
+                }
+                const today = new Date(); today.setHours(0,0,0,0);
+                let allItems = [];
+                UPDATE_DATA.tracks.forEach((t, ti) => t.subtracks.forEach((s, si) => s.items.forEach((item, ii) => {
+                    allItems.push({ ...item, _ti: ti, _si: si, _ii: ii });
+                })));
+
+                sprints.forEach(sprint => {
+                    const sprintItems = allItems.filter(i => i.sprintId === sprint.id);
+                    const done = sprintItems.filter(i => i.status === 'done').length;
+                    const total = sprintItems.length;
+                    const pct = total ? Math.round((done / total) * 100) : 0;
+                    const end = new Date(sprint.end); end.setHours(23,59,59);
+                    const carryover = sprintItems.filter(i => i.status !== 'done' && end < today);
+                    const isCurrent = new Date(sprint.start) <= today && today <= end;
+                    const statusLabel = isCurrent ? '🟢 Active' : (end < today ? '🔴 Ended' : '⏳ Upcoming');
+                    html += `<div class="sprint-card">
+                        <div class="sprint-header">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-lg">${sprint.name}</span>
+                                    <span class="sprint-badge">${statusLabel}</span>
+                                    ${isAuthenticated ? `<button onclick="openSprintEdit('${sprint.id}')" class="sprint-badge cursor-pointer hover:bg-white/30">✏ Edit</button>` : ''}
+                                </div>
+                                <div class="text-xs opacity-75 mt-1">${sprint.start} → ${sprint.end}${sprint.goal ? ` · ${sprint.goal}` : ''}</div>
+                                <div class="sprint-progress-bar mt-2"><div class="sprint-progress-fill" style="width:${pct}%"></div></div>
+                                <div class="text-xs opacity-75 mt-1">${done}/${total} done (${pct}%)${carryover.length ? ` · ⚠ ${carryover.length} carryover` : ''}</div>
+                            </div>
+                        </div>
+                        <div>
+                            ${sprintItems.length ? sprintItems.map(item => {
+                                const due = renderDueDateBadge(item);
+                                const pInfo = priorityConfig[item.priority || 'medium'];
+                                return `<div class="sprint-item-row flex items-center gap-3">
+                                    <span class="status-pill ${statusConfig[item.status]?.class || ''} text-[9px] min-w-[44px] text-center">${statusConfig[item.status]?.label || item.status}</span>
+                                    <span class="status-pill ${pInfo.class} text-[8px] uppercase font-black">${item.priority || 'med'}</span>
+                                    <span class="flex-1">${item.text}${due}</span>
+                                    ${(item.contributors || []).slice(0,3).map(c => `<span class="contributor-avatar">${c.charAt(0).toUpperCase()}</span>`).join('')}
+                                </div>`;
+                            }).join('') : `<div class="sprint-item-row text-slate-400 italic">No items assigned to this sprint</div>`}
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            }
+
+            function openSprintEdit(sprintId) {
+                const sprints = (UPDATE_DATA.metadata.sprints || []);
+                const sprint = sprintId ? sprints.find(s => s.id === sprintId) : null;
+                editContext = { type: 'sprint', sprintId };
+                document.getElementById('modal-title').innerText = sprint ? 'Edit Sprint' : 'Add Sprint';
+                document.getElementById('modal-form').innerHTML = `
+                <label class="block text-sm font-bold mb-1">Sprint Name</label>
+                <input type="text" id="edit-sprint-name" class="cms-input" value="${sprint ? sprint.name : ''}" placeholder="e.g. Sprint 23">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block text-sm font-bold mb-1">Start Date</label>
+                    <input type="date" id="edit-sprint-start" class="cms-input" value="${sprint ? sprint.start : ''}"></div>
+                    <div><label class="block text-sm font-bold mb-1">End Date</label>
+                    <input type="date" id="edit-sprint-end" class="cms-input" value="${sprint ? sprint.end : ''}"></div>
+                </div>
+                <label class="block text-sm font-bold mb-1">Sprint Goal</label>
+                <textarea id="edit-sprint-goal" class="cms-input">${sprint ? (sprint.goal || '') : ''}</textarea>
+                ${sprint ? `<button onclick="deleteSprint('${sprint.id}')" class="mt-2 text-red-600 text-xs underline">Delete Sprint</button>` : ''}
+                `;
+                document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
+            }
+
+            function deleteSprint(sprintId) {
+                if (!confirm('Delete this sprint?')) return;
+                UPDATE_DATA.metadata.sprints = (UPDATE_DATA.metadata.sprints || []).filter(s => s.id !== sprintId);
+                UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => { if (i.sprintId === sprintId) delete i.sprintId; })));
+                logChange('Delete Sprint', sprintId);
+                closeCmsModal(); renderSprintView(); updateTabCounts();
+            }
+
+            // ===============================================================
+            // PM COMMENTS / NOTES
+            // ===============================================================
+            function toggleComments(trackIndex, subtrackIndex, itemIndex) {
+                const id = `comments-${trackIndex}-${subtrackIndex}-${itemIndex}`;
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            }
+
+            function addComment(trackIndex, subtrackIndex, itemIndex) {
+                const input = document.getElementById(`comment-input-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                const text = input ? input.value.trim() : '';
+                if (!text) return;
+                const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
+                if (!item.comments) item.comments = [];
+                const comment = { id: `c-${Date.now()}`, text, author: 'PM', timestamp: new Date().toISOString() };
+                item.comments.push(comment);
+                input.value = '';
+                logChange('Comment Added', item.text.substring(0, 40));
+                // Re-render comment thread in place
+                const thread = document.getElementById(`thread-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                if (thread) thread.innerHTML = renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex);
+            }
+
+            function deleteComment(trackIndex, subtrackIndex, itemIndex, commentId) {
+                const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
+                item.comments = (item.comments || []).filter(c => c.id !== commentId);
+                logChange('Comment Deleted', item.text.substring(0, 40));
+                const thread = document.getElementById(`thread-${trackIndex}-${subtrackIndex}-${itemIndex}`);
+                if (thread) thread.innerHTML = renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex);
+            }
+
+            function renderCommentThread(comments, ti, si, ii) {
+                return (comments || []).map(c => `
+                    <div class="comment-item">
+                        ${c.text}
+                        <div class="comment-meta">${c.author} · ${new Date(c.timestamp).toLocaleString()}
+                        ${isAuthenticated ? `<span class="cursor-pointer text-red-400 ml-2" onclick="deleteComment(${ti},${si},${ii},'${c.id}')">✕</span>` : ''}
+                        </div>
+                    </div>`).join('') +
+                    (isAuthenticated ? `<div class="flex gap-2 mt-2">
+                        <input id="comment-input-${ti}-${si}-${ii}" class="comment-input flex-1" placeholder="Add a note...">
+                        <button onclick="addComment(${ti},${si},${ii})" class="cms-btn-sm">Add</button>
+                    </div>` : '');
+            }
+
+            // ===============================================================
+            // RELEASE TRACKING
+            // ===============================================================
+            function renderReleasesView() {
+                const container = document.getElementById('releases-view');
+                if (!container) return;
+                const relMap = {};
+                UPDATE_DATA.tracks.forEach((t, ti) => t.subtracks.forEach((s, si) => s.items.forEach((item, ii) => {
+                    if (item.releasedIn) {
+                        if (!relMap[item.releasedIn]) relMap[item.releasedIn] = [];
+                        relMap[item.releasedIn].push({ ...item, _ti: ti, _si: si, _ii: ii });
+                    }
+                })));
+                const versions = Object.keys(relMap).sort().reverse();
+                if (!versions.length) {
+                    container.innerHTML = `<div class="text-center py-16 text-slate-400"><div class="text-4xl mb-4">📦</div><p class="text-lg font-semibold">No releases tracked yet</p><p class="text-sm mt-1">Add a "Released In" version to items via the Edit modal.</p></div>`;
+                    return;
+                }
+                container.innerHTML = versions.map(ver => `
+                    <div class="release-card">
+                        <div class="release-header">📦 ${ver} <span class="release-badge">${relMap[ver].length} items</span></div>
+                        <div>${relMap[ver].map(item => {
+                            const s = statusConfig[item.status] || {};
+                            return `<div class="sprint-item-row flex items-center gap-3">
+                                <span class="status-pill ${s.class || ''} text-[9px] min-w-[44px] text-center">${s.label || item.status}</span>
+                                <span class="flex-1">${item.text}</span>
+                                <span class="text-xs text-slate-400">${UPDATE_DATA.tracks[item._ti].name}</span>
+                            </div>`;
+                        }).join('')}</div>
+                    </div>`).join('');
+            }
+
+            // ===============================================================
+            // KEYBOARD SHORTCUTS
+            // ===============================================================
+            function setupKeyboardShortcuts() {
+                document.addEventListener('keydown', e => {
+                    if (document.getElementById('cms-modal').classList.contains('active')) return;
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                    const viewMap = { '1':'track','2':'status','3':'priority','4':'contributor','5':'gantt','6':'backlog','7':'sprint','8':'releases' };
+                    if (viewMap[e.key]) { e.preventDefault(); switchView(viewMap[e.key]); return; }
+                    if (e.key === '/') { e.preventDefault(); const s = document.getElementById('global-search'); if (s) { s.focus(); s.select(); } }
+                    if (e.key === 'Escape') { closeCmsModal(); }
+                });
+            }
+
+            // ===============================================================
+            // CMS FORM VALIDATION
+            // ===============================================================
+            function validateCmsForm() {
+                const textEl = document.getElementById('edit-text');
+                const sprintNameEl = document.getElementById('edit-sprint-name');
+                let valid = true;
+                document.querySelectorAll('.cms-field-error').forEach(el => el.remove());
+                if (textEl && !textEl.value.trim()) {
+                    textEl.style.borderColor = '#ef4444';
+                    textEl.insertAdjacentHTML('afterend', '<p class="cms-field-error text-red-500 text-xs mt-1">Title is required</p>');
+                    valid = false;
+                }
+                if (sprintNameEl && !sprintNameEl.value.trim()) {
+                    sprintNameEl.style.borderColor = '#ef4444';
+                    sprintNameEl.insertAdjacentHTML('afterend', '<p class="cms-field-error text-red-500 text-xs mt-1">Sprint name is required</p>');
+                    valid = false;
+                }
+                return valid;
+            }
+
+
             // ------ Subtrack collapse state persistence via sessionStorage ------
             function getCollapseKey(trackId, subtrackName) { return `khyaal_col_${trackId}_${subtrackName.replace(/\s/g,'_')}`; }
             function isSubtrackCollapsed(trackId, subtrackName) { return sessionStorage.getItem(getCollapseKey(trackId, subtrackName)) === '1'; }
@@ -1017,6 +1498,7 @@
                     `;
 
                     track.subtracks.forEach((subtrack, subtrackIndex) => {
+                        subtrack.items = subtrack.items.filter(isItemMatchingTagFilter);
                         // Calculate Subtrack Progress early (exclude 'later' and backlog items)
                         const activeItemsSub = subtrack.items.filter(i => i.status !== 'later');
                         const totalActiveSub = activeItemsSub.length;
@@ -1253,6 +1735,7 @@
                     let items = [];
                     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
                         track.subtracks.forEach((subtrack, subtrackIndex) => {
+                        subtrack.items = subtrack.items.filter(isItemMatchingTagFilter);
                             subtrack.items.forEach((item, itemIndex) => {
                                 if (item.status === status) {
                                     // Apply advanced date filter
@@ -1405,6 +1888,7 @@
                     let items = [];
                     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
                         track.subtracks.forEach((subtrack, subtrackIndex) => {
+                        subtrack.items = subtrack.items.filter(isItemMatchingTagFilter);
                             subtrack.items.forEach((item, itemIndex) => {
                                 const itemPriority = item.priority || 'medium';
                                 if (itemPriority === priority) {
@@ -1866,8 +2350,11 @@
                 if (view === 'priority') renderPriorityView();
                 if (view === 'contributor') renderContributorView();
                 if (view === 'gantt') renderGanttView();
-                if (view === 'backlog') renderBacklogView();
-                if (view === 'backlog') updateBacklogBadge();
+                if (view === 'backlog') { renderBacklogView(); updateBacklogBadge(); }
+                if (view === 'sprint') renderSprintView();
+                if (view === 'releases') renderReleasesView();
+                buildTagFilterBar();
+                updateTabCounts();
             }
 
             let globalSearchQuery = '';
@@ -2114,10 +2601,21 @@
                         </select>
                     </div>
                 </div>
-                <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
-                <input type="text" id="edit-contributors" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Contributors</label>
+                <div class="relative"><div id="contrib-tag-input-edit" class="tag-input-wrapper cms-input" style="height:auto"></div></div>
+                <input type="hidden" id="edit-contributors" value="">
                 <label class="block text-sm font-bold mb-1">Note / Description</label>
                 <textarea id="edit-note" class="cms-input"></textarea>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Sprint</label>
+                        <select id="edit-sprintId" class="cms-input"><option value="">-- None --</option>${(UPDATE_DATA.metadata.sprints||[]).map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Released In</label>
+                        <input type="text" id="edit-releasedIn" class="cms-input" placeholder="e.g. v2.4.1">
+                    </div>
+                </div>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Image/Media URL</label>
@@ -2139,6 +2637,11 @@
                 </div>
             `;
                 document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
             }
 
             function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
@@ -2175,10 +2678,21 @@
                     <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
                     <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                 </select>
-                <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
-                <input type="text" id="edit-contributors" value="${(item.contributors || []).join(', ')}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Contributors</label>
+                <div class="relative"><div id="contrib-tag-input-edit" class="tag-input-wrapper cms-input" style="height:auto"></div></div>
+                <input type="hidden" id="edit-contributors" value="${(item.contributors || []).join(', ')}">
                 <label class="block text-sm font-bold mb-1">Note</label>
                 <textarea id="edit-note" class="cms-input">${item.note || ''}</textarea>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Sprint</label>
+                        <select id="edit-sprintId" class="cms-input"><option value="">-- None --</option>${(UPDATE_DATA.metadata.sprints||[]).map(s=>`<option value="${s.id}" ${item.sprintId===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1">Released In</label>
+                        <input type="text" id="edit-releasedIn" value="${item.releasedIn || ''}" class="cms-input" placeholder="e.g. v2.4.1">
+                    </div>
+                </div>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
                 <input type="text" id="edit-usecase" value="${item.usecase || ''}" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Image/Media URL</label>
@@ -2224,6 +2738,11 @@
                 </div>
             `;
                 document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
             }
 
             function filterDependencies(query) {
@@ -2430,49 +2949,7 @@
                 updateBacklogBadge();
             }
 
-            function addItem(trackIndex, subtrackIndex) {
-                editContext = { type: 'item-new', trackIndex, subtrackIndex };
-                document.getElementById('modal-title').innerText = 'Add New Item';
-                document.getElementById('modal-form').innerHTML = `
-                <label class="block text-sm font-bold mb-1">Text</label>
-                <input type="text" id="edit-text" class="cms-input">
-                <label class="block text-sm font-bold mb-1">Status</label>
-                <select id="edit-status" class="cms-input">
-                    <option value="done">Done</option>
-                    <option value="now">Now</option>
-                    <option value="ongoing">On-Going</option>
-                    <option value="next">Next</option>
-                    <option value="later">Later</option>
-                </select>
-                <label class="block text-sm font-bold mb-1">Priority</label>
-                <select id="edit-priority" class="cms-input">
-                    <option value="high">High</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="low">Low</option>
-                </select>
-                <label class="block text-sm font-bold mb-1">Contributors (comma separated)</label>
-                <input type="text" id="edit-contributors" class="cms-input">
-                <label class="block text-sm font-bold mb-1">Note</label>
-                <textarea id="edit-note" class="cms-input"></textarea>
-                <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
-                <input type="text" id="edit-usecase" class="cms-input">
-                <label class="block text-sm font-bold mb-1">Image/Media URL</label>
-                <input type="text" id="edit-mediaUrl" class="cms-input" placeholder="https://example.com/image.png">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-sm font-bold mb-1">Start Date</label>
-                        <input type="date" id="edit-startDate" class="cms-input">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1">Due Date</label>
-                        <input type="date" id="edit-due" class="cms-input">
-                    </div>
-                </div>
-                <label class="block text-sm font-bold mb-1">Dependencies (IDs, comma separated)</label>
-                <input type="text" id="edit-dependencies" class="cms-input" placeholder="e.g., website-1, auth-2">
-            `;
-                document.getElementById('cms-modal').classList.add('active');
-            }
+            
 
             function openMetadataEdit() {
                 const meta = UPDATE_DATA.metadata;
@@ -2488,6 +2965,11 @@
                 <input type="text" id="edit-description" value="${meta.description}" class="cms-input">
             `;
                 document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
             }
 
             function openTrackEdit(trackIndex) {
@@ -2502,6 +2984,11 @@
                 <input type="text" id="edit-track-theme" value="${track.theme}" class="cms-input">
             `;
                 document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
             }
 
             function addTrack() {
@@ -2535,6 +3022,11 @@
                 <textarea id="edit-subtrack-note" class="cms-input">${subtrack.note || ''}</textarea>
             `;
                 document.getElementById('cms-modal').classList.add('active');
+                setTimeout(() => {
+                    const existing = document.getElementById('edit-contributors');
+                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                }, 10);
             }
 
             function addSubtrack(trackIndex) {
@@ -2555,15 +3047,26 @@
             }
 
             function saveCmsChanges() {
+                if (!validateCmsForm()) return;
+
                 if (editContext.type === 'item' || editContext.type === 'item-new') {
+                    // Prefer tag-input widget; fall back to the hidden text input
+                    const contribFromWidget = getSelectedContributors();
+                    const contribFromText = ((document.getElementById('edit-contributors') || {}).value || '');
+                    const contributors = contribFromWidget.length ? contribFromWidget
+                        : contribFromText.split(',').map(s => s.trim()).filter(s => s);
+
+                    const sprintIdEl = document.getElementById('edit-sprintId');
+                    const releasedInEl = document.getElementById('edit-releasedIn');
+
                     const item = {
                         id: editContext.type === 'item' ?
                             (UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex].id || `task-${Date.now()}`) :
                             `task-${Date.now()}`,
-                        text: document.getElementById('edit-text').value,
+                        text: document.getElementById('edit-text').value.trim(),
                         status: document.getElementById('edit-status').value,
                         priority: document.getElementById('edit-priority').value,
-                        contributors: document.getElementById('edit-contributors').value.split(',').map(s => s.trim()).filter(s => s),
+                        contributors,
                         note: document.getElementById('edit-note').value,
                         usecase: document.getElementById('edit-usecase').value,
                         mediaUrl: document.getElementById('edit-mediaUrl').value,
@@ -2573,6 +3076,8 @@
                         publishedDate: new Date().toISOString().split('T')[0],
                         tags: ((document.getElementById('edit-tags') || {}).value || '').split(',').map(s => s.trim()).filter(s => s),
                         blockerNote: ((document.getElementById('edit-blockerNote') || {}).value || '').trim(),
+                        sprintId: sprintIdEl ? sprintIdEl.value : undefined,
+                        releasedIn: releasedInEl ? releasedInEl.value.trim() : undefined,
                     };
 
                     if (item.blockerNote) item.blocker = true;
@@ -2583,7 +3088,9 @@
                     if (!item.startDate) delete item.startDate;
                     if (!item.due) delete item.due;
                     if (!item.dependencies) delete item.dependencies;
-                    if (item.priority === 'medium') delete item.priority; // Don't store default priority
+                    if (!item.sprintId) delete item.sprintId;
+                    if (!item.releasedIn) delete item.releasedIn;
+                    if (item.priority === 'medium') delete item.priority;
 
                     // Handle Move-to-Track/Subtrack
                     const moveTrackEl = document.getElementById('edit-move-track');
@@ -2594,15 +3101,31 @@
                     if (editContext.type === 'item') {
                         const srcItems = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items;
                         if (targetTi !== editContext.trackIndex || targetSi !== editContext.subtrackIndex) {
-                            // Move to different subtrack
                             srcItems.splice(editContext.itemIndex, 1);
                             UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(item);
-                        } else {
-                            srcItems[editContext.itemIndex] = item;
-                        }
+                        } else { srcItems[editContext.itemIndex] = item; }
+                        logChange('Edit Item', item.text.substring(0, 40));
                     } else {
                         UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items.push(item);
+                        logChange('Add Item', item.text.substring(0, 40));
                     }
+                    buildContributorList();
+
+                } else if (editContext.type === 'sprint') {
+                    if (!UPDATE_DATA.metadata.sprints) UPDATE_DATA.metadata.sprints = [];
+                    const name = document.getElementById('edit-sprint-name').value.trim();
+                    const start = document.getElementById('edit-sprint-start').value;
+                    const end = document.getElementById('edit-sprint-end').value;
+                    const goal = document.getElementById('edit-sprint-goal').value.trim();
+                    if (editContext.sprintId) {
+                        const idx = UPDATE_DATA.metadata.sprints.findIndex(s => s.id === editContext.sprintId);
+                        if (idx !== -1) UPDATE_DATA.metadata.sprints[idx] = { id: editContext.sprintId, name, start, end, goal };
+                        logChange('Edit Sprint', name);
+                    } else {
+                        UPDATE_DATA.metadata.sprints.push({ id: `sprint-${Date.now()}`, name, start, end, goal });
+                        logChange('Add Sprint', name);
+                    }
+
                 } else if (editContext.type === 'track') {
                     UPDATE_DATA.tracks[editContext.trackIndex].name = document.getElementById('edit-track-name').value;
                     UPDATE_DATA.tracks[editContext.trackIndex].theme = document.getElementById('edit-track-theme').value;
@@ -2613,8 +3136,6 @@
                     UPDATE_DATA.metadata.title = document.getElementById('edit-title').value;
                     UPDATE_DATA.metadata.dateRange = document.getElementById('edit-dateRange').value;
                     UPDATE_DATA.metadata.description = document.getElementById('edit-description').value;
-
-                    // Update the page in real-time
                     document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
                     document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
                     document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
@@ -2623,8 +3144,10 @@
 
                 closeCmsModal();
                 updateBacklogBadge();
+                buildTagFilterBar();
+                updateTabCounts();
                 const currentView = document.querySelector('.view-section.active').id.replace('-view', '');
-                switchView(currentView); // Re-render current view to reflect changes
+                switchView(currentView);
             }
 
             function closeCmsModal() {
@@ -2897,12 +3420,14 @@
 
                     <div class="flex flex-col items-end gap-4">
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="switchView('track')" id="btn-track" class="filter-btn active">By Track</button>
-                            <button onclick="switchView('status')" id="btn-status" class="filter-btn">By Status</button>
-                            <button onclick="switchView('priority')" id="btn-priority" class="filter-btn">By Priority</button>
-                            <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor</button>
-                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart</button>
-                            <button onclick="switchView('backlog')" id="btn-backlog" class="filter-btn">&#128218; Backlog<span id="backlog-tab-badge" class="backlog-count-badge" style="display:none"></span></button>
+                            <button onclick="switchView('track')" id="btn-track" class="filter-btn active">By Track<span id="tab-count-track" class="tab-count"></span></button>
+                            <button onclick="switchView('sprint')" id="btn-sprint" class="filter-btn">🏃 Sprints<span id="tab-count-sprint" class="tab-count"></span></button>
+                            <button onclick="switchView('status')" id="btn-status" class="filter-btn">By Status<span id="tab-count-status" class="tab-count"></span></button>
+                            <button onclick="switchView('priority')" id="btn-priority" class="filter-btn">By Priority<span id="tab-count-priority" class="tab-count"></span></button>
+                            <button onclick="switchView('contributor')" id="btn-contributor" class="filter-btn">By Contributor<span id="tab-count-contributor" class="tab-count"></span></button>
+                            <button onclick="switchView('releases')" id="btn-releases" class="filter-btn">📦 Releases<span id="tab-count-releases" class="tab-count"></span></button>
+                            <button onclick="switchView('gantt')" id="btn-gantt" class="filter-btn">Gantt Chart<span id="tab-count-gantt" class="tab-count"></span></button>
+                            <button onclick="switchView('backlog')" id="btn-backlog" class="filter-btn">&#128218; Backlog<span id="tab-count-backlog" class="backlog-count-badge" style="margin-left:4px"></span></button>
                         </div>
                     </div>
                 </div>
@@ -2987,9 +3512,11 @@
 
             <!-- Views -->
             <div id="track-view" class="view-section active"></div>
+            <div id="sprint-view" class="view-section"></div>
             <div id="status-view" class="view-section"></div>
             <div id="priority-view" class="view-section"></div>
             <div id="contributor-view" class="view-section"></div>
+            <div id="releases-view" class="view-section"></div>
             <div id="gantt-view"
                 class="view-section bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto min-h-[500px]">
                 <div id="gantt-chart-container" style="min-width: 800px;"></div>
@@ -3090,10 +3617,14 @@
 
                 // Initialize data and CMS if not already done
                 normalizeData();
+                buildContributorList();
+                setupKeyboardShortcuts();
                 initCms();
                 initArchiveFilter();
                 renderTrackView();
                 updateBacklogBadge();
+                buildTagFilterBar();
+                updateTabCounts();
             }
 
             function logoutAll() {
