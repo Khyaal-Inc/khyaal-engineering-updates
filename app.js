@@ -34,12 +34,12 @@ let UPDATE_DATA = null;
             function renderDueDateBadge(item) {
                 if (!item.due || ['next', 'later'].includes(item.status) || item.status === 'done') return '';
                 const dueDate = new Date(item.due);
-                if (isNaN(dueDate.getTime())) return `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
+                if (isNaN(dueDate.getTime())) return `<span class="ml-2 inline-flex items-center gap-1 font-bold text-[10px] text-orange-700">(${item.due})</span>`;
                 const today = new Date(); today.setHours(0,0,0,0);
                 const diffDays = Math.floor((dueDate - today) / 86400000);
-                if (diffDays < 0) return `<span class="ml-1 text-[0.65rem] due-overdue">&#9888; Overdue (${item.due})</span>`;
-                if (diffDays <= 2) return `<span class="ml-1 text-[0.65rem] due-warning">&#128336; Due Soon (${item.due})</span>`;
-                return `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">(${item.due})</span>`;
+                if (diffDays < 0) return `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded bg-red-100 text-red-800 font-bold text-[10px] uppercase tracking-wider">&#9888; Overdue (${item.due})</span>`;
+                if (diffDays <= 2) return `<span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px] uppercase tracking-wider">&#128336; Due Soon (${item.due})</span>`;
+                return `<span class="ml-2 inline-flex items-center gap-1 font-bold text-[10px] text-orange-700">(${item.due})</span>`;
             }
 
             // ------ Helper: Tag pills ------
@@ -130,6 +130,67 @@ let UPDATE_DATA = null;
                     )
                 );
                 ALL_CONTRIBUTORS = Array.from(set).sort();
+            }
+
+            let ALL_TAGS_MODAL = [];
+            let _selectedTags = [];
+            function buildTagsModalList() {
+                const set = new Set();
+                (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => (i.tags || []).forEach(tg => set.add(tg)))));
+                ALL_TAGS_MODAL = Array.from(set).sort();
+            }
+
+            function renderTagsTagInput(containerId, initial = []) {
+                _selectedTags = [...initial];
+                const wrap = document.getElementById(containerId);
+                if (!wrap) return;
+                wrap.innerHTML = '';
+                _selectedTags.forEach(name => {
+                    wrap.insertAdjacentHTML('beforeend',
+                        `<span class="tag-pill">${name}<span class="contributor-tag-remove ml-1 bg-white/50 px-1 rounded cursor-pointer" onclick="removeTagsTag('${name}','${containerId}')">✕</span></span>`);
+                });
+                const inputWrap = document.createElement('div');
+                inputWrap.style.position = 'relative'; inputWrap.style.flex = '1';
+                inputWrap.style.minWidth = '120px';
+                inputWrap.innerHTML = `<input id="tags-input-${containerId}" class="cms-input !mb-0 !border-0 bg-transparent focus:ring-0" placeholder="Add tag..." autocomplete="off"
+                    oninput="filterTagsDropdown(this.value,'${containerId}')"
+                    onkeydown="handleTagsKey(event,'${containerId}')">
+                    <div id="tags-dd-${containerId}" class="contributor-dropdown p-1" style="display:none"></div>`;
+                wrap.appendChild(inputWrap);
+            }
+
+            function filterTagsDropdown(query, containerId) {
+                const dd = document.getElementById(`tags-dd-${containerId}`);
+                if (!dd) return;
+                const q = query.toLowerCase().trim();
+                const matches = ALL_TAGS_MODAL.filter(c => c.toLowerCase().includes(q) && !_selectedTags.includes(c));
+                if (!q || (!matches.length && q.length < 2)) { dd.style.display = 'none'; return; }
+                let html = matches.slice(0, 8).map(c => `<div class="p-1.5 px-2 hover:bg-slate-100 cursor-pointer rounded text-xs font-bold uppercase tracking-wider text-slate-700" onclick="addTagsTag('${c}','${containerId}')">${c}</div>`).join('');
+                if (q && !matches.includes(q) && !_selectedTags.includes(q)) {
+                    html += `<div class="p-1.5 px-2 hover:bg-blue-50 cursor-pointer rounded text-xs font-bold uppercase tracking-wider text-blue-700 mt-1 border-t border-slate-100 pt-2">+ Create "${q}"</div>`;
+                }
+                dd.innerHTML = html;
+                dd.style.display = 'block';
+            }
+
+            function handleTagsKey(e, containerId) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = e.target.value.trim().replace(/,+$/, '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                    if (val) addTagsTag(val, containerId);
+                }
+            }
+
+            function addTagsTag(name, containerId) {
+                if (!name || _selectedTags.includes(name)) return;
+                _selectedTags.push(name);
+                if (!ALL_TAGS_MODAL.includes(name)) ALL_TAGS_MODAL.push(name);
+                renderTagsTagInput(containerId, _selectedTags);
+            }
+
+            function removeTagsTag(name, containerId) {
+                _selectedTags = _selectedTags.filter(n => n !== name);
+                renderTagsTagInput(containerId, _selectedTags);
             }
 
             function renderContributorTagInput(containerId, initial = []) {
@@ -815,7 +876,8 @@ let UPDATE_DATA = null;
                 const priority = item.priority || 'medium';
                 const priorityInfo = priorityConfig[priority];
                 const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
-                const usecase = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
+                const usecaseRaw = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
+                const usecase = highlightSearch(usecaseRaw);
                 const due = renderDueDateBadge(item);
                 const tags = renderTagPills(item.tags);
                 const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
@@ -825,7 +887,8 @@ let UPDATE_DATA = null;
                 const effectiveNote = item.note || subtrackNote;
 
                 if (effectiveNote) {
-                    const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+                    let cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+                    cleanNote = highlightSearch(cleanNote);
                     const idHTML = isAuthenticated ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
                     contentHtml = `
                     <div class="info-wrapper">
@@ -867,9 +930,27 @@ let UPDATE_DATA = null;
                                 </div>
                                 <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                                     <div class="mb-1">${contentHtml}</div>
-                                    ${tags ? `<div class="flex flex-wrap gap-1 mb-1">${tags}</div>` : ''}
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints||[]).find(s=>s.id===item.sprintId)?.name || item.sprintId}</span>` : ''}
+                                        ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases||[]).find(r=>r.id===item.releasedIn)?.name || item.releasedIn}</span>` : ''}
+                                        ${tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
+                                    </div>
                                     <div class="mb-2">${usecase}</div>
-                                    ${cmsControls}
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments||[]).length} Comments</button>
+                                        ${cmsControls ? `<div>${cmsControls}</div>` : ''}
+                                    </div>
+                                    <div id="comments-${trackIndex}-${subtrackIndex}-${itemIndex}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
+                                        <div id="thread-${trackIndex}-${subtrackIndex}-${itemIndex}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
+                                            ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex)}
+                                        </div>
+                                        ${isAuthenticated ? `
+                                            <div class="flex gap-2 relative">
+                                                <input type="text" id="comment-input-${trackIndex}-${subtrackIndex}-${itemIndex}" placeholder="Type @ to tag contributors..." class="cms-input flex-1 !mb-0 text-xs" onkeyup="if(event.key==='Enter') addComment(${trackIndex},${subtrackIndex},${itemIndex})">
+                                                <button onclick="addComment(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-btn cms-btn-primary !px-3 !py-1 flex-shrink-0 text-xs shadow-sm">Post</button>
+                                            </div>
+                                        ` : ''}
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex-shrink-0">
@@ -897,12 +978,21 @@ let UPDATE_DATA = null;
                 const container = document.getElementById('status-view');
                 const statuses = ['done', 'now', 'ongoing', 'next', 'later'];
                 const statusTitles = {
-                    done: 'Done (Shipped & Live)',
-                    now: 'Now (Active Development)',
-                    ongoing: 'On-Going (Continuous Operations)',
-                    next: 'Next (Immediate Pipeline)',
-                    later: 'Later (Future Roadmap)'
+                    done: 'Done',
+                    now: 'Now',
+                    ongoing: 'On-Going',
+                    next: 'Next',
+                    later: 'Later'
                 };
+                
+                if (UPDATE_DATA.metadata && UPDATE_DATA.metadata.customStatuses) {
+                    UPDATE_DATA.metadata.customStatuses.forEach(cs => {
+                        if (!statuses.includes(cs.id)) {
+                            statuses.push(cs.id);
+                            statusTitles[cs.id] = cs.label;
+                        }
+                    });
+                }
 
                 const themeColors = {
                     blue: '#1e40af',
@@ -1339,6 +1429,71 @@ let UPDATE_DATA = null;
                 container.innerHTML = html;
             }
 
+            function renderDependencyView() {
+                const container = document.getElementById('dependency-view');
+                if (!container) return;
+                
+                let mermaidSyntax = 'graph TD\\n';
+                let hasDependencies = false;
+                const activeTeam = getActiveTeam();
+                const nodes = new Map();
+                const edges = [];
+
+                UPDATE_DATA.tracks.forEach(track => {
+                    if (activeTeam && activeTeam !== track.name) return;
+                    track.subtracks.forEach(subtrack => {
+                        subtrack.items.forEach(item => {
+                            if (item.status === 'done' || item.status === 'later') return; // Hide shipped or far-future tasks from dependency clustering
+
+                            const safeId = item.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+                            const label = item.text.replace(/["\\\\]/g, '').replace(/[^a-zA-Z0-9 .,!?_-]/g, '').substring(0, 40) + '...';
+                            let nodeStyle = '';
+                            if (item.status === 'now') nodeStyle = 'style ' + safeId + ' fill:#dbeafe,stroke:#1e40af,color:#1e3a8a';
+                            else if (item.status === 'ongoing') nodeStyle = 'style ' + safeId + ' fill:#f3e8ff,stroke:#6b21a8,color:#581c87';
+                            else if (item.status === 'next') nodeStyle = 'style ' + safeId + ' fill:#fef3c7,stroke:#b45309,color:#92400e';
+                            
+                            nodes.set(safeId, { label, style: nodeStyle });
+
+                            if (item.dependencies) {
+                                const deps = item.dependencies.split(',').map(d => d.trim()).filter(d => d);
+                                deps.forEach(dep => {
+                                    const safeDepId = dep.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                    edges.push(`${safeDepId} --> ${safeId}`);
+                                    hasDependencies = true;
+                                });
+                            }
+                        });
+                    });
+                });
+
+                if (!hasDependencies) {
+                    container.innerHTML = '<div class="flex flex-col items-center justify-center p-16 text-slate-400 font-medium text-lg"><i class="fas fa-project-diagram text-4xl mb-4 text-slate-300"></i>No active cross-task dependencies tracked.</div>';
+                    return;
+                }
+
+                nodes.forEach((data, id) => {
+                    mermaidSyntax += `    ${id}["${data.label}"]\\n`;
+                    if (data.style) mermaidSyntax += `    ${data.style}\\n`;
+                });
+
+                edges.forEach(edge => {
+                    mermaidSyntax += `    ${edge}\\n`;
+                });
+
+                container.innerHTML = `<div class="bg-white border border-slate-200 rounded-lg p-6 w-full min-h-[500px] shadow-sm overflow-auto flex justify-center"><div class="mermaid">${mermaidSyntax}</div></div>`;
+
+                if (window.mermaid) {
+                    // Slight delay to allow DOM to attach
+                    setTimeout(() => {
+                        try {
+                            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                        } catch(e) { console.error('Mermaid render error: ', e); }
+                    }, 50);
+                }
+            }
+
+            // Draw a red reference line for 'Today' on top of the Gantt chart
+
             function renderGanttView() {
                 google.charts.load('current', { 'packages': ['gantt'] });
                 google.charts.setOnLoadCallback(drawGanttChart);
@@ -1453,7 +1608,7 @@ let UPDATE_DATA = null;
                 data.addRows(rows);
 
                 const options = {
-                    height: rows.length * 40 + 50,
+                    height: rows.length * 40 + 80,
                     gantt: {
                         trackHeight: 40,
                         barHeight: 25,
@@ -1466,6 +1621,19 @@ let UPDATE_DATA = null;
                 };
 
                 const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
+                
+                // Add a dynamic "Today" milestone so PMs can track current progress easily
+                data.addRow([
+                    'gantt-marker-today',
+                    '📍 TODAY',
+                    'Milestone',
+                    new Date(),
+                    new Date(),
+                    0,
+                    100,
+                    null
+                ]);
+
                 chart.draw(data, options);
             }
 
@@ -1612,26 +1780,24 @@ let UPDATE_DATA = null;
 
             function showDependencyPicker() {
                 const picker = document.getElementById('dependency-picker');
-                if (!picker) return;
-                picker.style.display = 'block';
-                renderDependencyOptions(currentAllItems);
+                if (picker) picker.style.display = 'block';
             }
             function filterDependencies(query) {
                 const q = query.toLowerCase();
-                const filtered = currentAllItems.filter(i => i.id.toLowerCase().includes(q) || i.text.toLowerCase().includes(q));
-                renderDependencyOptions(filtered);
-            }
-            function renderDependencyOptions(list) {
-                const picker = document.getElementById('dependency-picker');
-                if (!list.length) { picker.innerHTML = '<div class="p-2 text-xs text-slate-400">No matching tasks found.</div>'; return; }
-                picker.innerHTML = list.map(i => `<div class="dependency-option" onclick="addDependency('${i.id}')"><span class="font-bold text-slate-700">${i.id}</span> <span class="text-slate-500 truncate">${i.text}</span></div>`).join('');
+                const items = document.querySelectorAll('.dependency-item');
+                items.forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    item.style.display = text.includes(q) ? 'flex' : 'none';
+                });
             }
             function addDependency(id) {
                 const input = document.getElementById('edit-dependencies');
+                if (!input) return;
                 let deps = input.value.split(',').map(s=>s.trim()).filter(Boolean);
                 if (!deps.includes(id)) deps.push(id);
                 input.value = deps.join(', ');
-                document.getElementById('dependency-picker').style.display = 'none';
+                const picker = document.getElementById('dependency-picker');
+                if (picker) picker.style.display = 'none';
                 input.focus();
             }
             document.addEventListener('click', (e) => {
@@ -1829,6 +1995,12 @@ let UPDATE_DATA = null;
             // CRUD Helpers
             function addItem(trackIndex, subtrackIndex) {
                 editContext = { type: 'item-new', trackIndex, subtrackIndex };
+                
+                currentAllItems = [];
+                UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
+                    currentAllItems.push({ id: i.id, text: i.text });
+                })));
+
                 document.getElementById('modal-title').innerText = 'Add New Item';
                 document.getElementById('modal-form').innerHTML = `
                 <label class="block text-sm font-bold mb-1">Task Title</label>
@@ -1861,11 +2033,11 @@ let UPDATE_DATA = null;
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <div>
                         <label class="block text-sm font-bold mb-1">Sprint</label>
-                        <select id="edit-sprintId" class="cms-input"><option value="">-- None --</option>${(UPDATE_DATA.metadata.sprints||[]).map(s=>`<option value="${s.id}" ${item.sprintId===s.id?'selected':''}>${s.name}</option>`).join('')}</select>
+                        <select id="edit-sprintId" class="cms-input"><option value="">-- None --</option>${(UPDATE_DATA.metadata.sprints||[]).map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1">Released In</label>
-                        <select id="edit-releasedIn" class="cms-input"><option value="">-- Unreleased --</option>${(UPDATE_DATA.metadata.releases||[]).map(r=>`<option value="${r.id}" ${item.releasedIn===r.id?'selected':''}>${r.name}</option>`).join('')}</select>
+                        <select id="edit-releasedIn" class="cms-input"><option value="">-- Unreleased --</option>${(UPDATE_DATA.metadata.releases||[]).map(r=>`<option value="${r.id}">${r.name}</option>`).join('')}</select>
                     </div>
                 </div>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
@@ -1883,15 +2055,26 @@ let UPDATE_DATA = null;
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-sm font-bold mb-1">Tags (comma separated)</label>
-                        <input type="text" id="edit-tags" class="cms-input" placeholder="e.g. bug, tech-debt">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold mb-1">Tags</label>
+                        <div id="tags-tag-input-edit" class="cms-input" style="min-height: 40px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px;"></div>
+                        <input type="hidden" id="edit-tags" value="">
                     </div>
                 </div>
                 <label class="block text-sm font-bold mb-1 mt-2">Dependencies (Task IDs, comma separated)</label>
                 <div class="relative">
                     <input type="text" id="edit-dependencies" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
-                    <div id="dependency-picker" class="dependency-picker"></div>
+                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; bottom:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:50;">
+                        <input type="text" class="dependency-search sticky top-0 bg-white border-b border-slate-200" style="padding:4px; font-size:10px; width:100%; box-sizing:border-box;" placeholder="Search task..." onkeyup="filterDependencies(this.value)">
+                        <div class="dependency-list" id="dependency-picker-list">
+                            ${currentAllItems.map(i => `
+                                <button type="button" class="dependency-item w-full text-left px-2 py-1 text-[10px] hover:bg-slate-100 flex justify-between border-b border-slate-50" onclick="addDependency('${i.id}')" title="${i.text}">
+                                    <span class="truncate pr-2 font-bold">${i.text.substring(0,30)}</span>
+                                    <span class="dependency-item-id text-slate-400 font-mono">${i.id}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
                 <div class="mt-4 p-3 border border-red-500/30 rounded-lg bg-red-500/5">
                     <label class="block text-sm font-bold text-red-400 mb-1">🔒 Blocker Note (Optional)</label>
@@ -1900,11 +2083,6 @@ let UPDATE_DATA = null;
                 </div>
             `;
                 document.getElementById('cms-modal').classList.add('active');
-                
-                currentAllItems = [];
-                UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
-                    currentAllItems.push({ id: i.id, text: i.text });
-                })));
 
                 setTimeout(() => {
                     const existing = document.getElementById('edit-contributors');
@@ -1959,7 +2137,7 @@ let UPDATE_DATA = null;
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1">Released In</label>
-                        <input type="text" id="edit-releasedIn" value="${item.releasedIn || ''}" class="cms-input" placeholder="e.g. v2.4.1">
+                        <select id="edit-releasedIn" class="cms-input"><option value="">-- Unreleased --</option>${(UPDATE_DATA.metadata.releases||[]).map(r=>`<option value="${r.id}" ${item.releasedIn===r.id?'selected':''}>${r.name}</option>`).join('')}</select>
                     </div>
                 </div>
                 <label class="block text-sm font-bold mb-1">Impact/Usecase</label>
@@ -1976,8 +2154,9 @@ let UPDATE_DATA = null;
                         <input type="date" id="edit-due" value="${item.due || ''}" class="cms-input">
                     </div>
                 </div>
-                <label class="block text-sm font-bold mb-1">Tags (comma separated, e.g. bug, tech-debt, feature)</label>
-                <input type="text" id="edit-tags" value="${(item.tags || []).join(', ')}" class="cms-input" placeholder="bug, tech-debt, feature">
+                <label class="block text-sm font-bold mb-1">Tags</label>
+                <div id="tags-tag-input-edit" class="cms-input" style="min-height: 40px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 4px;"></div>
+                <input type="hidden" id="edit-tags" value="${(item.tags || []).join(', ')}">
                 <label class="block text-sm font-bold mb-1">Blocker Note (leave blank if not a blocker)</label>
                 <input type="text" id="edit-blockerNote" value="${item.blockerNote || ''}" class="cms-input" placeholder="Describe blocker...">
                 <div class="grid grid-cols-2 gap-2">
@@ -1994,15 +2173,19 @@ let UPDATE_DATA = null;
                         </select>
                     </div>
                 </div>
-                <div class="dependency-picker">
-                    <input type="text" class="dependency-search" placeholder="Search tasks to add as dependency..." onkeyup="filterDependencies(this.value)">
-                    <div class="dependency-list" id="dependency-picker-list">
-                        ${currentAllItems.map(i => `
-                            <button type="button" class="dependency-item" onclick="addDependency('${i.id}')" title="${i.text}">
-                                <span class="truncate pr-2">${i.text}</span>
-                                <span class="dependency-item-id">ID: ${i.id}</span>
-                            </button>
-                        `).join('')}
+                <label class="block text-sm font-bold mt-2 mb-1">Dependencies (Task IDs, comma separated)</label>
+                <div class="relative">
+                    <input type="text" id="edit-dependencies" value="${item.dependencies || ''}" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
+                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; bottom:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:50;">
+                        <input type="text" class="dependency-search sticky top-0 bg-white border-b border-slate-200" style="padding:4px; font-size:10px; width:100%; box-sizing:border-box;" placeholder="Search task..." onkeyup="filterDependencies(this.value)">
+                        <div class="dependency-list" id="dependency-picker-list">
+                            ${currentAllItems.map(i => `
+                                <button type="button" class="dependency-item w-full text-left px-2 py-1 text-[10px] hover:bg-slate-100 flex justify-between border-b border-slate-50" onclick="addDependency('${i.id}')" title="${i.text}">
+                                    <span class="truncate pr-2 font-bold">${i.text.substring(0,30)}</span>
+                                    <span class="dependency-item-id text-slate-400 font-mono">${i.id}</span>
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -2014,36 +2197,7 @@ let UPDATE_DATA = null;
                 }, 10);
             }
 
-            function filterDependencies(query) {
-                const q = query.toLowerCase();
-                const items = document.querySelectorAll('.dependency-item');
-                items.forEach(item => {
-                    const text = item.innerText.toLowerCase();
-                    item.style.display = text.includes(q) ? 'flex' : 'none';
-                });
-            }
 
-            function addDependency(id) {
-                const input = document.getElementById('edit-dependencies');
-                let current = input.value.trim();
-                
-                // Don't add if already there
-                if (current.includes(id)) return;
-
-                if (current) {
-                    input.value = current + ', ' + id;
-                } else {
-                    input.value = id;
-                }
-                
-                // Visual feedback
-                const btn = Array.from(document.querySelectorAll('.dependency-item')).find(el => el.innerHTML.includes(id));
-                if (btn) {
-                    const originalBg = btn.style.background;
-                    btn.style.background = '#dcfce7';
-                    setTimeout(() => btn.style.background = originalBg, 500);
-                }
-            }
 
 
             function deleteItem(trackIndex, subtrackIndex, itemIndex) {
@@ -2232,6 +2386,10 @@ let UPDATE_DATA = null;
                 <input type="text" id="edit-dateRange" value="${meta.dateRange}" class="cms-input">
                 <label class="block text-sm font-bold mb-1">Description</label>
                 <input type="text" id="edit-description" value="${meta.description}" class="cms-input">
+                
+                <label class="block text-sm font-bold mt-4 mb-1">Custom Statuses (JSON format)</label>
+                <textarea id="edit-customStatuses" class="cms-input font-mono text-xs p-2 bg-slate-50 border-slate-300" rows="5" placeholder='[{"id":"review","label":"In Review","class":"review","bucket":"bucket-review"}]'>${JSON.stringify(meta.customStatuses || [], null, 2)}</textarea>
+                <p class="text-[10px] text-slate-500 mb-4 font-normal">Define new status lanes. Required properties: id, label, class, bucket.</p>
             `;
                 document.getElementById('cms-modal').classList.add('active');
                 setTimeout(() => {
@@ -2328,6 +2486,10 @@ let UPDATE_DATA = null;
                     const sprintIdEl = document.getElementById('edit-sprintId');
                     const releasedInEl = document.getElementById('edit-releasedIn');
 
+                    const tagsFromWidget = _selectedTags;
+                    const tagsFromText = ((document.getElementById('edit-tags') || {}).value || '');
+                    const tags = tagsFromWidget.length ? tagsFromWidget : tagsFromText.split(',').map(s => s.trim()).filter(s => s);
+
                     const item = {
                         id: editContext.type === 'item' ?
                             (UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex].id || `task-${Date.now()}`) :
@@ -2343,7 +2505,7 @@ let UPDATE_DATA = null;
                         due: document.getElementById('edit-due').value,
                         dependencies: (document.getElementById('edit-dependencies') || {}).value,
                         publishedDate: new Date().toISOString().split('T')[0],
-                        tags: ((document.getElementById('edit-tags') || {}).value || '').split(',').map(s => s.trim()).filter(s => s),
+                        tags,
                         blockerNote: ((document.getElementById('edit-blockerNote') || {}).value || '').trim(),
                         sprintId: sprintIdEl ? sprintIdEl.value : undefined,
                         releasedIn: releasedInEl ? releasedInEl.value.trim() : undefined,
@@ -2419,6 +2581,13 @@ let UPDATE_DATA = null;
                     UPDATE_DATA.metadata.title = document.getElementById('edit-title').value;
                     UPDATE_DATA.metadata.dateRange = document.getElementById('edit-dateRange').value;
                     UPDATE_DATA.metadata.description = document.getElementById('edit-description').value;
+                    let parsedStatuses = [];
+                    try {
+                        const raw = document.getElementById('edit-customStatuses').value.trim();
+                        if (raw) parsedStatuses = JSON.parse(raw);
+                    } catch(e) { alert("Invalid JSON in Custom Statuses"); return; }
+                    UPDATE_DATA.metadata.customStatuses = parsedStatuses;
+                    
                     document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
                     document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
                     document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
@@ -2549,10 +2718,29 @@ let UPDATE_DATA = null;
             }
 
             function normalizeData() {
-                UPDATE_DATA.tracks.forEach(track => {
+                const filterEl = document.getElementById('global-team-filter');
+                if (filterEl && !filterEl.dataset.populated) {
+                    const teams = Array.from(new Set(UPDATE_DATA.tracks.filter(tr => tr.name).map(tr => tr.name)));
+                    if (teams.length > 0) {
+                        const currentVal = filterEl.value;
+                        filterEl.innerHTML = '<option value="">🌍 All Teams</option>' + teams.map(n => `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`).join('');
+                        filterEl.dataset.populated = "true";
+                    }
+                }
+
+                if (UPDATE_DATA.metadata && UPDATE_DATA.metadata.customStatuses) {
+                    UPDATE_DATA.metadata.customStatuses.forEach(cs => {
+                        statusConfig[cs.id] = { label: cs.label, class: cs.class, bucket: cs.bucket };
+                    });
+                }
+                UPDATE_DATA.tracks.forEach((track, trackIndex) => {
                     track.subtracks.forEach(subtrack => {
                         subtrack.items.forEach((item, index) => {
-                            if (!item.id) item.id = `${track.id}-${subtrack.name.toLowerCase().replace(/\s/g, '-')}-${index}`;
+                            if (!item.id) {
+                                const safeTrackId = (track.id || track.name || 'track').toLowerCase().replace(/\s/g, '');
+                                const safeSubtrackName = (subtrack.name || 'sub').toLowerCase().replace(/\s/g, '-');
+                                item.id = `${safeTrackId}-${safeSubtrackName}-${index}`;
+                            }
 
                             // Clean up: If status is 'next' or 'later', clear the auto-generated dates from previous session
                             if (['next', 'later'].includes(item.status)) {

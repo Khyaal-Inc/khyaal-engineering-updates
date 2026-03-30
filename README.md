@@ -12,22 +12,26 @@
 |---|---|
 | **By Track** | Items grouped by product track (Platform, Pulse, DevOps…) and subtrack |
 | **🏃 Sprints** | Sprints / Cycles with progress bars, velocity, and assigned items |
-| **By Status** | Items grouped by status level across all tracks |
+| **By Status** | Items grouped by status level, including user-defined Custom Statuses |
 | **By Priority** | Items grouped by High / Medium / Low priority |
 | **By Contributor** | Items grouped by team member |
 | **📦 Releases** | Items grouped by their target Release Version |
 | **Gantt Chart** | Timeline view of all dated items with a "Today" marker |
+| **🕸️ Dependencies** | A Mermaid.js powered visual node-graph showing cross-task blocking relationships |
 | **📚 Backlog** | Dedicated PM backlog view — all parked items, grouped by track |
 
-### 🎯 Item Statuses
+### 🎯 Item Statuses & Tags
+By default, Khyaal Engineering Updates ships with 5 statuses:
 - 🟢 **Done** — Shipped & Live  
 - 🔵 **Now** — Active Development  
 - 🟡 **On-Going** — Continuous Operations  
 - 🟠 **Next** — Immediate Pipeline  
 - ⚪ **Later** — Future Roadmap  
 
+> **Note**: Product Managers can define **Custom Statuses** iteratively via the *Settings (Metadata)* modal by pasting a JSON configuration mapping ids to colors/buckets! Custom views automatically regenerate.
+
 ### 🏷️ Item Fields
-Each item supports: title, status, priority, **contributors (autocomplete)**, note, impact/usecase, image/media URL, start date, due date, dependencies, **tags**, **blocker flag**, **blocker note**, **sprint assignment**, **release version**, and **PM comments**.
+Each item supports: title, status, priority, **contributors (autocomplete)**, note, impact/usecase, image/media URL, start date, due date (with overdue warnings), dependencies (with visual rendering), **tags (autocomplete)**, **blocker flag**, **blocker note**, **sprint assignment**, **release version**, and **PM comments**.
 
 ---
 
