@@ -155,6 +155,9 @@ let UPDATE_DATA = null;
                 inputWrap.innerHTML = `<input id="tags-input-${containerId}" class="cms-input !mb-0 !border-0 bg-transparent focus:ring-0" placeholder="Add tag..." autocomplete="off"
                     oninput="filterTagsDropdown(this.value,'${containerId}')"
                     onkeydown="handleTagsKey(event,'${containerId}')">
+                    <div id="tags-palette-${containerId}" class="flex flex-wrap gap-1 mb-2 mt-1">
+                        ${['feature', 'bug', 'tech-debt', 'compliance', 'customer', 'blocker'].map(t => `<span class="tag-pill cursor-pointer hover:scale-105 transition-transform" onclick="addTagsTag('${t}','${containerId}')">+ ${t}</span>`).join('')}
+                    </div>
                     <div id="tags-dd-${containerId}" class="contributor-dropdown p-1" style="display:none"></div>`;
                 wrap.appendChild(inputWrap);
             }
@@ -481,62 +484,7 @@ let UPDATE_DATA = null;
             // ===============================================================
             // DEPENDENCY GRAPH VIEW
             // ===============================================================
-            function renderDependencyView() {
-                const container = document.getElementById('dependency-view');
-                if (!container) return;
-
-                let relations = [];
-                let itemNames = {};
-                let hasDependencies = false;
-
-                UPDATE_DATA.tracks.forEach(track => {
-                    track.subtracks.forEach(subtrack => {
-                        subtrack.items.forEach(item => {
-                            const esc = (s) => (s||'').replace(/"/g, "'").substring(0, 30) + '...';
-                            itemNames[item.id] = esc(item.text);
-                            if (item.dependencies) {
-                                hasDependencies = true;
-                                const deps = item.dependencies.split(',').map(d => d.trim()).filter(d => d);
-                                deps.forEach(depId => {
-                                    if (depId) relations.push(`${depId} --> ${item.id}`);
-                                });
-                            }
-                        });
-                    });
-                });
-
-                if (!hasDependencies && relations.length === 0) {
-                    container.innerHTML = `<div class="text-center py-16 text-slate-400">
-                        <div class="text-4xl mb-4">🕸️</div>
-                        <p class="text-lg font-semibold">No dependencies mapped yet</p>
-                        <p class="text-sm mt-1">Add "Dependencies (Task IDs)" in the Item Edit modal to build the graph.</p>
-                    </div>`;
-                    return;
-                }
-
-                let digraph = `graph TD\n`;
-                // Add nodes first to define their text
-                Object.keys(itemNames).forEach(id => {
-                    digraph += `    ${id}["${itemNames[id]}"]\n`;
-                });
-                // Add relations
-                relations.forEach(r => {
-                    digraph += `    ${r}\n`;
-                });
-
-                container.innerHTML = `
-                    <div class="bg-white p-6 rounded-xl border border-slate-200">
-                        <div class="mermaid" id="mermaid-graph">
-                            ${digraph}
-                        </div>
-                    </div>
-                `;
-
-                // Render mermaid if loaded
-                if (window.mermaid) {
-                    try { mermaid.init(undefined, document.querySelectorAll('.mermaid')); } catch(e) {}
-                }
-            }
+            // --- Removed duplicate renderDependencyView ---
 
 
             // ===============================================================
@@ -731,7 +679,9 @@ let UPDATE_DATA = null;
                     slate: '#334155'      // Stronger Slate
                 };
 
+                const activeTeam = getActiveTeam();
                 UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                    if (activeTeam && activeTeam !== track.name) return;
                     const accentColor = themeColors[track.theme] || '#0f172a';
                     html += `<div class="track-card" style="border-color: ${accentColor}">`;
                     html += `
@@ -1011,49 +961,32 @@ let UPDATE_DATA = null;
                 });
 
                 let html = '';
+                const activeTeam = getActiveTeam();
 
                 statuses.forEach(status => {
                     let items = [];
                     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                        if (activeTeam && activeTeam !== track.name) return;
                         track.subtracks.forEach((subtrack, subtrackIndex) => {
-                        subtrack.items = subtrack.items.filter(isItemMatchingTagFilter);
-                            subtrack.items.forEach((item, itemIndex) => {
+                            subtrack.items.filter(isItemMatchingTagFilter).forEach((item, itemIndex) => {
                                 if (item.status === status) {
-                                    // Apply advanced date filter
                                     if (!isItemInDateRange(item)) return;
-
-                                    // Apply legacy date filter
                                     if (window.currentDateFilter && window.currentDateFilter !== 'all' && window.currentDateFilter !== 'All Entries') {
-                                        if (window.currentDateFilter === 'Legacy') {
-                                            if (item.publishedDate) return;
-                                        } else {
+                                        if (window.currentDateFilter === 'Legacy') { if (item.publishedDate) return; }
+                                        else {
                                             if (!item.publishedDate) return;
                                             const d = new Date(item.publishedDate);
                                             if (d.toLocaleString('default', { month: 'short', year: 'numeric' }) !== window.currentDateFilter) return;
                                         }
                                     }
-
-                                    items.push({
-                                        ...item,
-                                        track: track.name,
-                                        trackTheme: track.theme,
-                                        subtrack: subtrack.name,
-                                        trackIndex,
-                                        subtrackIndex,
-                                        itemIndex
-                                    });
+                                    items.push({ ...item, track: track.name, trackTheme: track.theme, subtrack: subtrack.name, trackIndex, subtrackIndex, itemIndex });
                                 }
                             });
                         });
                     });
 
-                    // Deduplicate items by text
                     const seen = new Set();
-                    items = items.filter(item => {
-                        const duplicate = seen.has(item.text);
-                        seen.add(item.text);
-                        return !duplicate;
-                    });
+                    items = items.filter(i => { const d = seen.has(i.text); seen.add(i.text); return !d; });
 
                     if (items.length > 0) {
                         const config = statusConfig[status];
@@ -1064,30 +997,24 @@ let UPDATE_DATA = null;
                                 ${statusTitles[status]}
                                 <span class="ml-auto text-sm font-normal opacity-90">${items.length} items</span>
                             </div>
-                            <div>
+                            <div class="p-1">
                     `;
 
                         items.forEach(item => {
-                            const config = statusConfig[item.status];
-                            const priority = item.priority || 'medium';
-                            const priorityInfo = priorityConfig[priority];
-                            const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
                             const trackColor = themeColors[item.trackTheme] || '#64748b';
-                            const usecase = item.usecase ? `<div class="usecase-box mt-1 text-xs"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
-                            const due = item.due ? `<span class="ml-1 text-[0.65rem] font-bold text-orange-700">[${item.due}]</span>` : '';
-                            const subtrackNote = subtrackNotes[item.subtrack];
-                            const effectiveNote = item.note || subtrackNote;
-
-                            let contentHtml = `${item.text}${due}`;
+                            const effectiveNote = item.note || subtrackNotes[item.subtrack];
+                            let contentHtml = `${highlightSearch(item.text)}${renderDueDateBadge(item)}`;
                             if (effectiveNote) {
                                 const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+                                const idHTML = isAuthenticated ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
                                 contentHtml = `
                                 <div class="info-wrapper">
-                                    <span class="info-text">${item.text}${due}</span>
-                                    <button class="info-btn" aria-label="More information">i</button>
+                                    <span class="info-text">${highlightSearch(item.text)}${renderDueDateBadge(item)}</span>
+                                    <button class="info-btn">i</button>
                                     <div class="tooltip-content" role="tooltip">
                                         <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
                                         ${cleanNote}
+                                        ${idHTML}
                                     </div>
                                 </div>
                             `;
@@ -1098,24 +1025,20 @@ let UPDATE_DATA = null;
                                 <div class="flex justify-between items-start w-full gap-4">
                                     <div class="flex-1">
                                         <div class="text-sm font-semibold text-slate-800 leading-tight">
-                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-${item.trackTheme}-200">
+                                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
                                                 ${item.track} &rarr; ${item.subtrack}
                                             </span>
                                             <div class="flex items-start gap-4">
                                                 <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-0.5">
-                                                    <span class="status-pill ${config.class} min-w-[54px] text-center">${config.label}</span>
-                                                    ${(() => {
-                                                        const pInfo = priorityConfig[item.priority || 'medium'];
-                                                        return `<span class="status-pill ${pInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter text-center">${pInfo.label}</span>`;
-                                                    })()}
+                                                    <span class="status-pill ${statusConfig[item.status].class} min-w-[54px] text-center">${statusConfig[item.status].label}</span>
+                                                    <span class="status-pill ${priorityConfig[item.priority||'medium'].class} text-[9px] py-0 px-1 opacity-80 uppercase font-black text-center">${priorityConfig[item.priority||'medium'].label}</span>
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="mb-1">${contentHtml}</div>
-                                                    <div class="mb-2">${usecase}</div>
+                                                    <div class="mb-2">${item.usecase ? `<div class="usecase-box mt-1 text-xs font-normal"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : ''}</div>
                                                     ${isAuthenticated ? `<div class="flex items-center gap-3 mt-1.5 flex-wrap">
                                                         <span onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                                                         <span onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
-                                                        <button onclick="event.stopPropagation(); sendToBacklog(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="send-to-backlog-btn">&rarr; Backlog</button>
                                                     </div>` : ''}
                                                 </div>
                                             </div>
@@ -1165,9 +1088,11 @@ let UPDATE_DATA = null;
 
                 let html = '';
 
+                const activeTeam = getActiveTeam();
                 priorities.forEach(priority => {
                     let items = [];
                     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                        if (activeTeam && activeTeam !== track.name) return;
                         track.subtracks.forEach((subtrack, subtrackIndex) => {
                         subtrack.items = subtrack.items.filter(isItemMatchingTagFilter);
                             subtrack.items.forEach((item, itemIndex) => {
@@ -1226,12 +1151,12 @@ let UPDATE_DATA = null;
                             const subtrackNote = subtrackNotes[item.subtrack];
                             const effectiveNote = item.note || subtrackNote;
 
-                            let contentHtml = `${item.text}${due}`;
+                            let contentHtml = `${highlightSearch(item.text)}${due}`;
                             if (effectiveNote) {
                                 const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
                                 contentHtml = `
                                 <div class="info-wrapper">
-                                    <span class="info-text">${item.text}${due}</span>
+                                    <span class="info-text">${highlightSearch(item.text)}${due}</span>
                                     <button class="info-btn" aria-label="More information">i</button>
                                     <div class="tooltip-content" role="tooltip">
                                         <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
@@ -1288,152 +1213,90 @@ let UPDATE_DATA = null;
 
             function renderContributorView() {
                 const container = document.getElementById('contributor-view');
+                if (!container) return;
                 const contributors = {};
                 const subtrackNotes = {};
-                const subtrackTracks = {};
+                const activeTeam = getActiveTeam();
 
                 UPDATE_DATA.tracks.forEach(track => {
+                    if (activeTeam && activeTeam !== track.name) return;
                     track.subtracks.forEach(subtrack => {
                         if (subtrack.note) subtrackNotes[subtrack.name] = subtrack.note;
-                        subtrackTracks[subtrack.name] = { name: track.name, theme: track.theme };
                         subtrack.items.forEach(item => {
                             if (!isItemInDateRange(item)) return;
-
                             if (window.currentDateFilter && window.currentDateFilter !== 'all') {
-                                if (window.currentDateFilter === 'Legacy') {
-                                    if (item.publishedDate) return;
-                                } else {
+                                if (window.currentDateFilter === 'Legacy') { if (item.publishedDate) return; }
+                                else {
                                     if (!item.publishedDate) return;
                                     const d = new Date(item.publishedDate);
                                     if (d.toLocaleString('default', { month: 'short', year: 'numeric' }) !== window.currentDateFilter) return;
                                 }
                             }
-
-                            item.contributors.forEach(name => {
+                            (item.contributors || []).forEach(name => {
                                 if (!contributors[name]) contributors[name] = [];
-                                contributors[name].push({
-                                    ...item,
-                                    track: track.name,
-                                    trackTheme: track.theme,
-                                    subtrack: subtrack.name
-                                });
+                                contributors[name].push({ ...item, track: track.name, trackTheme: track.theme, subtrack: subtrack.name });
                             });
                         });
                     });
                 });
 
-                const themeColors = {
-                    blue: '#1e40af', emerald: '#065f46', violet: '#5b21b6', amber: '#92400e', rose: '#9f1239', slate: '#334155'
-                };
-
                 const sortedNames = Object.keys(contributors).sort((a, b) => {
-                    const getUniqueCount = (name) => {
-                        const seen = new Set();
-                        return contributors[name].filter(item => {
-                            const duplicate = seen.has(item.text);
-                            seen.add(item.text);
-                            return !duplicate;
-                        }).length;
-                    };
-                    const countA = getUniqueCount(a);
-                    const countB = getUniqueCount(b);
-                    if (countB !== countA) return countB - countA;
-                    return a.localeCompare(b);
+                    const getUnique = (n) => { const seen = new Set(); return contributors[n].filter(i => { const d = seen.has(i.text); seen.add(i.text); return !d; }).length; };
+                    const countA = getUnique(a), countB = getUnique(b);
+                    return countB !== countA ? countB - countA : a.localeCompare(b);
                 });
 
                 let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">';
                 sortedNames.forEach(name => {
-                    let items = contributors[name];
                     const seen = new Set();
-                    items = items.filter(item => {
-                        const duplicate = seen.has(item.text);
-                        seen.add(item.text);
-                        return !duplicate;
-                    });
-
+                    const items = contributors[name].filter(i => { const d = seen.has(i.text); seen.add(i.text); return !d; });
                     const colorClass = contributorColors[name] || 'bg-gray-600';
-                    html += `
-                    <div class="contributor-card">
-                        <div class="contributor-header ${colorClass.replace('text-', 'text-white').replace('border', '')}" 
-                             style="background: linear-gradient(135deg, var(--tw-gradient-from, #4f46e5), var(--tw-gradient-to, #7c3aed));">
+                    html += `<div class="contributor-card">
+                        <div class="contributor-header ${colorClass.replace('text-', 'text-white').replace('border', '')}" style="background: linear-gradient(135deg, var(--tw-gradient-from, #4f46e5), var(--tw-gradient-to, #7c3aed));">
                             <h3 class="font-bold text-xl relative z-10">${name}</h3>
                             <p class="text-white/80 text-sm relative z-10">${items.length} deliverables</p>
                         </div>
-                        <div class="p-5 space-y-8">
-                `;
-
-                    const statuses = ['done', 'now', 'ongoing', 'next', 'later'];
-                    statuses.forEach(status => {
+                        <div class="p-5 space-y-8">`;
+                    
+                    ['done', 'now', 'ongoing', 'next', 'later'].forEach(status => {
                         const statusItems = items.filter(i => i.status === status);
                         if (statusItems.length > 0) {
-                            const config = statusConfig[status];
-                            html += `
-                            <div class="status-section">
+                            html += `<div class="status-section">
                                 <div class="status-header" style="color: ${status === 'done' ? '#166534' : status === 'now' ? '#1e40af' : status === 'ongoing' ? '#92400e' : status === 'next' ? '#9a3412' : '#374151'}">
                                     <div class="w-1.5 h-1.5 rounded-full" style="background: currentColor"></div>
-                                    ${config.label} (${statusItems.length})
+                                    ${statusConfig[status].label} (${statusItems.length})
                                 </div>
-                                <ul class="space-y-4 pl-3.5">
-                        `;
+                                <ul class="space-y-4 pl-3.5">`;
                             statusItems.forEach(item => {
-                                const due = item.due ? ` <span class="text-xs text-orange-600 font-bold">[${item.due}]</span>` : '';
-                                const subtrackNote = subtrackNotes[item.subtrack];
-                                const effectiveNote = item.note || subtrackNote;
-                                const trackColor = themeColors[item.trackTheme] || '#64748b';
-                                const priority = item.priority || 'medium';
-                                const priorityInfo = priorityConfig[priority];
-                                const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
-
-                                let contentHtml = `${item.text}${due}`;
+                                const effectiveNote = item.note || subtrackNotes[item.subtrack];
+                                let contentHtml = `${item.text}${renderDueDateBadge(item)}`;
                                 if (effectiveNote) {
                                     const cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
-                                    contentHtml = `
-                                    <div class="info-wrapper">
-                                        <span class="info-text">• ${item.text}${due}</span>
-                                        <button class="info-btn" aria-label="More information">i</button>
-                                        <div class="tooltip-content" role="tooltip">
-                                            <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
-                                            ${cleanNote}
+                                    contentHtml = `<div class="info-wrapper"><span class="info-text">• ${item.text}${renderDueDateBadge(item)}</span><button class="info-btn">i</button><div class="tooltip-content"><span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>${cleanNote}</div></div>`;
+                                }
+                                html += `<li class="text-sm text-slate-700 leading-snug">
+                                    <div class="flex flex-col gap-1">
+                                        <div class="font-medium">${contentHtml}</div>
+                                        ${item.mediaUrl ? `<div class="mt-2 group relative inline-block"><img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105" onclick="window.open('${item.mediaUrl}', '_blank')" onerror="this.style.display='none'"></div>` : ''}
+                                        <div class="mt-1 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${themeColors[item.trackTheme] || '#64748b'}">
+                                            <span class="status-pill ${priorityConfig[item.priority||'medium'].class} text-[9px] py-0 px-1 opacity-80 uppercase font-black">${priorityConfig[item.priority||'medium'].label}</span>
+                                            ${item.track} → ${item.subtrack}
                                         </div>
                                     </div>
-                                `;
-                            }
-
-                                    const mediaHtml = item.mediaUrl ? `
-                                        <div class="mt-2 group relative inline-block">
-                                            <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
-                                                 onclick="window.open('${item.mediaUrl}', '_blank')" 
-                                                 onerror="this.style.display='none'">
-                                            <div class="hidden group-hover:block absolute -top-8 left-0 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-10">Click to view full image</div>
-                                        </div>
-                                    ` : '';
-
-                                    html += `
-                                    <li class="text-sm text-slate-700 leading-snug">
-                                        <div class="flex flex-col gap-1">
-                                            <div class="font-medium">${contentHtml}</div>
-                                            ${mediaHtml}
-                                            <div class="mt-1 text-[0.6rem] font-bold uppercase tracking-wider opacity-80" style="color: ${trackColor}">
-                                                <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter">${priorityLabel}</span>
-                                                ${item.track} → ${item.subtrack}
-                                            </div>
-                                        </div>
-                                    </li>`;
+                                </li>`;
                             });
                             html += `</ul></div>`;
                         }
                     });
                     html += `</div></div>`;
                 });
-                html += '</div>';
-                container.innerHTML = html;
+                container.innerHTML = html + '</div>';
             }
 
             function renderDependencyView() {
                 const container = document.getElementById('dependency-view');
                 if (!container) return;
-                
-                let mermaidSyntax = 'graph TD\\n';
+                let mermaidSyntax = 'graph TD\n';
                 let hasDependencies = false;
                 const activeTeam = getActiveTeam();
                 const nodes = new Map();
@@ -1443,23 +1306,19 @@ let UPDATE_DATA = null;
                     if (activeTeam && activeTeam !== track.name) return;
                     track.subtracks.forEach(subtrack => {
                         subtrack.items.forEach(item => {
-                            if (item.status === 'done' || item.status === 'later') return; // Hide shipped or far-future tasks from dependency clustering
-
+                            if (item.status === 'done' || item.status === 'later') return;
                             const safeId = item.id.replace(/[^a-zA-Z0-9_-]/g, '_');
                             const label = item.text.replace(/["\\\\]/g, '').replace(/[^a-zA-Z0-9 .,!?_-]/g, '').substring(0, 40) + '...';
                             let nodeStyle = '';
                             if (item.status === 'now') nodeStyle = 'style ' + safeId + ' fill:#dbeafe,stroke:#1e40af,color:#1e3a8a';
                             else if (item.status === 'ongoing') nodeStyle = 'style ' + safeId + ' fill:#f3e8ff,stroke:#6b21a8,color:#581c87';
                             else if (item.status === 'next') nodeStyle = 'style ' + safeId + ' fill:#fef3c7,stroke:#b45309,color:#92400e';
-                            
                             nodes.set(safeId, { label, style: nodeStyle });
 
                             if (item.dependencies) {
-                                const deps = item.dependencies.split(',').map(d => d.trim()).filter(d => d);
-                                deps.forEach(dep => {
-                                    const safeDepId = dep.replace(/[^a-zA-Z0-9_-]/g, '_');
-                                    edges.push(`${safeDepId} --> ${safeId}`);
-                                    hasDependencies = true;
+                                hasDependencies = true;
+                                item.dependencies.split(',').map(d => d.trim()).filter(d => d).forEach(dep => {
+                                    edges.push(`${dep.replace(/[^a-zA-Z0-9_-]/g, '_')} --> ${safeId}`);
                                 });
                             }
                         });
@@ -1472,23 +1331,14 @@ let UPDATE_DATA = null;
                 }
 
                 nodes.forEach((data, id) => {
-                    mermaidSyntax += `    ${id}["${data.label}"]\\n`;
-                    if (data.style) mermaidSyntax += `    ${data.style}\\n`;
+                    mermaidSyntax += `    ${id}["${data.label}"]\n`;
+                    if (data.style) mermaidSyntax += `    ${data.style}\n`;
                 });
-
-                edges.forEach(edge => {
-                    mermaidSyntax += `    ${edge}\\n`;
-                });
+                edges.forEach(edge => { mermaidSyntax += `    ${edge}\n`; });
 
                 container.innerHTML = `<div class="bg-white border border-slate-200 rounded-lg p-6 w-full min-h-[500px] shadow-sm overflow-auto flex justify-center"><div class="mermaid">${mermaidSyntax}</div></div>`;
-
                 if (window.mermaid) {
-                    // Slight delay to allow DOM to attach
-                    setTimeout(() => {
-                        try {
-                            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                        } catch(e) { console.error('Mermaid render error: ', e); }
-                    }, 50);
+                    setTimeout(() => { try { mermaid.init(undefined, document.querySelectorAll('.mermaid')); } catch(e) {} }, 50);
                 }
             }
 
@@ -1512,7 +1362,9 @@ let UPDATE_DATA = null;
 
                 // First pass: collect IDs that will be rendered
                 const renderedIds = new Set();
+                const activeTeam = getActiveTeam();
                 UPDATE_DATA.tracks.forEach(track => {
+                    if (activeTeam && activeTeam !== track.name) return;
                     track.subtracks.forEach(subtrack => {
                         subtrack.items.forEach(item => {
                             if (!isItemInDateRange(item)) return;
@@ -1587,18 +1439,13 @@ let UPDATE_DATA = null;
                 if (UPDATE_DATA.metadata.milestones) {
                     UPDATE_DATA.metadata.milestones.forEach((m, idx) => {
                         const mDate = new Date(m.date);
-                        data.addRow([
-                            `ms-${idx}`,
-                            m.text,
-                            'Milestone',
-                            mDate,
-                            mDate,
-                            0,
-                            100,
-                            null
-                        ]);
+                        data.addRow([ `ms-${idx}`, m.text, 'Milestone', mDate, mDate, 0, 100, null ]);
                     });
                 }
+                
+                // Add TODAY milestone
+                const today = new Date();
+                data.addRow([ 'today-milestone', 'TODAY', 'Milestone', today, today, 0, 100, null ]);
 
                 if (rows.length === 0) {
                     document.getElementById('gantt-chart-container').innerHTML = '<div class="text-center py-10 text-slate-500">No tasks found for the selected date range.</div>';
@@ -2064,7 +1911,7 @@ let UPDATE_DATA = null;
                 <label class="block text-sm font-bold mb-1 mt-2">Dependencies (Task IDs, comma separated)</label>
                 <div class="relative">
                     <input type="text" id="edit-dependencies" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
-                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; bottom:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:50;">
+                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; top:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:100; margin-top:4px; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:8px;">
                         <input type="text" class="dependency-search sticky top-0 bg-white border-b border-slate-200" style="padding:4px; font-size:10px; width:100%; box-sizing:border-box;" placeholder="Search task..." onkeyup="filterDependencies(this.value)">
                         <div class="dependency-list" id="dependency-picker-list">
                             ${currentAllItems.map(i => `
@@ -2085,9 +1932,8 @@ let UPDATE_DATA = null;
                 document.getElementById('cms-modal').classList.add('active');
 
                 setTimeout(() => {
-                    const existing = document.getElementById('edit-contributors');
-                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
-                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                    renderContributorTagInput('contrib-tag-input-edit', []);
+                    renderTagsTagInput('tags-tag-input-edit', []);
                 }, 10);
             }
 
@@ -2176,7 +2022,7 @@ let UPDATE_DATA = null;
                 <label class="block text-sm font-bold mt-2 mb-1">Dependencies (Task IDs, comma separated)</label>
                 <div class="relative">
                     <input type="text" id="edit-dependencies" value="${item.dependencies || ''}" class="cms-input" placeholder="task-123, task-456" onfocus="showDependencyPicker()" oninput="filterDependencies(this.value)">
-                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; bottom:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:50;">
+                    <div id="dependency-picker" class="dependency-picker" style="display:none; position:absolute; top:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; z-index:100; margin-top:4px; box-shadow:0 4px 12px rgba(0,0,0,0.15); border-radius:8px;">
                         <input type="text" class="dependency-search sticky top-0 bg-white border-b border-slate-200" style="padding:4px; font-size:10px; width:100%; box-sizing:border-box;" placeholder="Search task..." onkeyup="filterDependencies(this.value)">
                         <div class="dependency-list" id="dependency-picker-list">
                             ${currentAllItems.map(i => `
@@ -2191,9 +2037,13 @@ let UPDATE_DATA = null;
             `;
                 document.getElementById('cms-modal').classList.add('active');
                 setTimeout(() => {
-                    const existing = document.getElementById('edit-contributors');
-                    const initial = existing && existing.value ? existing.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
-                    renderContributorTagInput('contrib-tag-input-edit', initial);
+                    const existingContribs = document.getElementById('edit-contributors');
+                    const initialContribs = existingContribs && existingContribs.value ? existingContribs.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderContributorTagInput('contrib-tag-input-edit', initialContribs);
+
+                    const existingTags = document.getElementById('edit-tags');
+                    const initialTags = existingTags && existingTags.value ? existingTags.value.split(',').map(s=>s.trim()).filter(s=>s) : [];
+                    renderTagsTagInput('tags-tag-input-edit', initialTags);
                 }, 10);
             }
 
@@ -2261,7 +2111,9 @@ let UPDATE_DATA = null;
                 let html = '';
                 let totalItems = 0;
 
+                const activeTeam = getActiveTeam();
                 UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+                    if (activeTeam && activeTeam !== track.name) return;
                     const accentColor = themeColors[track.theme] || '#0f172a';
                     const backlogSubtracks = track.subtracks
                         .map((s, si) => ({ subtrack: s, si }))
