@@ -248,30 +248,45 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                             </div>
 
                             ${isGrooming ? `
-                                <div class="mt-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50 grid grid-cols-1 sm:grid-cols-3 gap-3" onclick="event.stopPropagation()">
+                                <div class="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4" onclick="event.stopPropagation()">
                                     <div>
-                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Priority</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Priority</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
                                             <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
                                             <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Epic</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Epic</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Epic</option>
                                             ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Horizon</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🏃 Sprint</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'sprintId', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                            <option value="">No Sprint</option>
+                                            ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">📦 Release</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'releasedIn', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                            <option value="">No Release</option>
+                                            ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}" ${item.releasedIn === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🎯 Horizon</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">None</option>
-                                            <option value="1M" ${item.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
-                                            <option value="3M" ${item.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
-                                            <option value="6M" ${item.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
-                                            <option value="1Y" ${item.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
+                                            ${((UPDATE_DATA.metadata && UPDATE_DATA.metadata.roadmap) || [
+                                                { id: '1M', label: 'Now (Immediate / 1 Month)' },
+                                                { id: '3M', label: 'Next (Strategic / 3 Months)' },
+                                                { id: '6M', label: 'Later (Future / 6 Months)' }
+                                            ]).map(h => `<option value="${h.id}" ${item.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
                                         </select>
                                     </div>
                                 </div>
@@ -869,45 +884,45 @@ function renderWorkflowView() {
 
     const pmSteps = [
         {
-            title: 'Define Annual Vision',
-            desc: 'Define the high-level capabilities (Epics) you want the product to achieve over the next year.',
-            why: 'Epics form the strategic backbone. They give developers context to understand why their individual tasks are important.',
-            how: 'Click "Add Strategic Epic", fill in the business value, and assign an owner.',
-            action: { label: 'Go to Epics', view: 'epics' }
+            title: 'Strategic Epic Vision',
+            desc: 'The foundation of the Product Pulse. Define high-level business goals and capabilities.',
+            why: 'Epics provide the "Why" behind the work. They give the team purpose and a strategic north star.',
+            how: 'In the Epics view, add a new Epic, define its business value, and assign a health status.',
+            action: { label: 'Define Epics', view: 'epics' }
         },
         {
-            title: 'Break Down Milestones & Horizons',
-            desc: 'Decide when parts of the Vision will be tackled (1 Month, 3 Months, 6 Months, or 1 Year).',
-            why: 'Engineering needs clear priorities to focus on the immediate future rather than getting overwhelmed by the 1-year view.',
-            how: 'Group tasks into the Roadmap columns and assign Planning Horizons via the edit modal.',
-            action: { label: 'Go to Roadmap', view: 'roadmap' }
+            title: 'Strategic Roadmap',
+            desc: 'Align your Epics and tasks into strategic timeframes (Now vs. Next vs. Later).',
+            why: 'A roadmap provides predictability for stakeholders and prevents context-switching for the team.',
+            how: 'Review the Roadmap view and move items into the strategic buckets based on quarterly priority.',
+            action: { label: 'Manage Roadmap', view: 'roadmap' }
         },
         {
             title: 'Backlog Grooming',
-            desc: 'Break down Epics into actionable engineering tasks and organize them.',
-            why: 'The Backlog is the holding tank for all unassigned work. If tasks sit here unprioritized, the team will run out of structured work.',
-            how: 'Assign each item a Priority, a Planning Horizon (e.g., 1M), and link it to its parent Epic using the Edit modal.',
+            desc: 'Break your vision down into actionable engineering tasks for the execution teams.',
+            why: 'Grooming ensures that tasks are "ready" for development, reducing friction during the sprint.',
+            how: 'Enter Grooming Mode in the Backlog. Assign priorities, refine descriptions, and link items to Epics.',
             action: { label: 'Inspect Backlog', view: 'backlog' }
         },
         {
-            title: 'Sprint Planning',
-            desc: 'Commit to the exact tasks the team will complete over the next 2-week Sprint.',
-            why: 'Sprints create focused delivery windows and shield developers from changing requirements mid-cycle.',
-            how: 'Add a Sprint, then move top items from the Backlog into the Sprint using the task Edit modal.',
-            action: { label: 'Manage Sprints', view: 'sprint' }
+            title: 'Sprint Commitment',
+            desc: 'Commit to a specific set of deliverables for the next 2-week execution window.',
+            why: 'Sprints create high-velocity focus and provide a clear definition of "Done" for each cycle.',
+            how: 'Create a new Sprint and move high-priority groomed tasks into it using the Grooming selectors.',
+            action: { label: 'Start Sprint', view: 'sprint' }
         },
         {
-            title: 'Monitor Progress & Unblock',
-            desc: 'Oversee the execution without micromanaging.',
-            why: 'PMs need a high-level view to ensure tasks are moving across states (Now to Done) and no blockers are jeopardizing the Sprint Goal.',
-            how: 'Check the By Contributor view for daily progression, and look at the top of the dashboard for the red Global Blocker Strip.',
-            action: { label: 'View Status', view: 'contributor' }
+            title: 'Monitor & Unblock',
+            desc: 'Oversee execution health and proactively resolve impediments.',
+            why: 'Proactive unblocking preserves the Sprint Goal and keeps the Engineering Pulse healthy.',
+            how: 'Check the Contributor cards for daily movement and the Global Blocker Strip for immediate action.',
+            action: { label: 'View Health', view: 'contributor' }
         }
     ];
 
     const devSteps = [
         {
-            title: 'Find Your Work',
+            title: 'Find Your Focus',
             desc: 'See exactly what tasks are assigned to you for the current cycle.',
             why: 'You should never have to hunt across tracks to figure out what you need to do today.',
             how: 'Filter the dashboard to your Track or just look at your card in the "By Contributor" view.',
@@ -915,23 +930,23 @@ function renderWorkflowView() {
         },
         {
             title: 'Start the Engine',
-            desc: 'Signal to the PM and the team that you have started working on a feature/bug.',
-            why: 'Real-time status updates prevent duplicate work and stop PMs from asking "what is the update on this?"',
-            how: 'Click the task row to open the editor, change the Status to "Now", and save.',
+            desc: 'Signal to the team that you have started working on a task.',
+            why: 'Real-time status updates prevent duplicate work and stop PMs from asking for daily manual status reports.',
+            how: 'Click the task row to open the editor (or use Grooming Mode), change the Status to "Now", and save.',
             action: { label: 'View Board', view: 'track' }
         },
         {
-            title: 'Signal Blockers & Dependencies',
+            title: 'Signal Blockers Early',
             desc: 'Raise a flag immediately if you are stuck waiting on another team or external factor.',
             why: 'Hiding blockers derails Sprint commitments. Flagging early allows the PM to escalate and unblock you.',
-            how: 'Edit your task, write the issue in the "Blocker Reason" field, and link dependent tasks in the "Dependencies" widget.',
+            how: 'Click "Flag Blocker" on any task and add a reason. This triggers the Global Blocker alert.',
             action: { label: 'View Dependencies', view: 'dependency' }
         },
         {
             title: 'Close the Loop',
             desc: 'Complete the task and provide handover context.',
-            why: 'Closing tasks automatically drives the progress bar of the overarching Sprint and PM Epic.',
-            how: 'Change the Status to "Done", add a Note with the PR link or deployment details, and Save to GitHub.',
+            why: 'Closing tasks automatically updates the health of the overarching Epics and Sprints.',
+            how: 'Change status to "Done", add a note with relevant links, and Save to GitHub.',
             action: { label: 'View Deliverables', view: 'releases' }
         }
     ];

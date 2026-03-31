@@ -284,7 +284,18 @@ function setupKeyboardShortcuts() {
         const modal = document.getElementById('cms-modal');
         if (modal && modal.classList.contains('active')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        const viewMap = { '1': 'track', '2': 'status', '3': 'priority', '4': 'contributor', '5': 'gantt', '6': 'backlog', '7': 'sprint', '8': 'releases' };
+        const viewMap = { 
+            '1': 'epics', 
+            '2': 'roadmap', 
+            '3': 'backlog', 
+            '4': 'sprint', 
+            '5': 'track', 
+            '6': 'releases', 
+            '7': 'status', 
+            '8': 'priority', 
+            '9': 'contributor',
+            '0': 'dependency'
+        };
         if (viewMap[e.key]) { e.preventDefault(); switchView(viewMap[e.key]); return; }
         if (e.key === '/') { e.preventDefault(); const s = document.querySelector('.search-input'); if (s) { s.focus(); s.select(); } }
     });
