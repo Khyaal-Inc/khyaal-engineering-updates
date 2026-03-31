@@ -200,6 +200,7 @@ function switchView(view) {
     if (vSection) vSection.classList.add('active');
 
     if (view === 'track') renderTrackView();
+    if (view === 'workflow') renderWorkflowView();
     if (view === 'roadmap') renderRoadmapView();
     if (view === 'epics') renderEpicsView();
     if (view === 'status') renderStatusView();

@@ -761,3 +761,155 @@ function renderEpicsView() {
     html += '</div>';
     container.innerHTML = html;
 }
+
+let currentWorkflowTab = 'pm';
+
+function setWorkflowTab(tab) {
+    currentWorkflowTab = tab;
+    if (document.getElementById('workflow-view').classList.contains('active')) {
+        renderWorkflowView();
+    }
+}
+
+function renderWorkflowView() {
+    const container = document.getElementById('workflow-view');
+    if (!container) return;
+
+    const pmSteps = [
+        {
+            title: 'Define Annual Vision',
+            desc: 'Define the high-level capabilities (Epics) you want the product to achieve over the next year.',
+            why: 'Epics form the strategic backbone. They give developers context to understand why their individual tasks are important.',
+            how: 'Click "Add Strategic Epic", fill in the business value, and assign an owner.',
+            action: { label: 'Go to Epics', view: 'epics' }
+        },
+        {
+            title: 'Break Down Milestones & Horizons',
+            desc: 'Decide when parts of the Vision will be tackled (1 Month, 3 Months, 6 Months, or 1 Year).',
+            why: 'Engineering needs clear priorities to focus on the immediate future rather than getting overwhelmed by the 1-year view.',
+            how: 'Group tasks into the Roadmap columns and assign Planning Horizons via the edit modal.',
+            action: { label: 'Go to Roadmap', view: 'roadmap' }
+        },
+        {
+            title: 'Backlog Grooming',
+            desc: 'Break down Epics into actionable engineering tasks and organize them.',
+            why: 'The Backlog is the holding tank for all unassigned work. If tasks sit here unprioritized, the team will run out of structured work.',
+            how: 'Assign each item a Priority, a Planning Horizon (e.g., 1M), and link it to its parent Epic using the Edit modal.',
+            action: { label: 'Inspect Backlog', view: 'backlog' }
+        },
+        {
+            title: 'Sprint Planning',
+            desc: 'Commit to the exact tasks the team will complete over the next 2-week Sprint.',
+            why: 'Sprints create focused delivery windows and shield developers from changing requirements mid-cycle.',
+            how: 'Add a Sprint, then move top items from the Backlog into the Sprint using the task Edit modal.',
+            action: { label: 'Manage Sprints', view: 'sprint' }
+        },
+        {
+            title: 'Monitor Progress & Unblock',
+            desc: 'Oversee the execution without micromanaging.',
+            why: 'PMs need a high-level view to ensure tasks are moving across states (Now to Done) and no blockers are jeopardizing the Sprint Goal.',
+            how: 'Check the By Contributor view for daily progression, and look at the top of the dashboard for the red Global Blocker Strip.',
+            action: { label: 'View Status', view: 'contributor' }
+        }
+    ];
+
+    const devSteps = [
+        {
+            title: 'Find Your Work',
+            desc: 'See exactly what tasks are assigned to you for the current cycle.',
+            why: 'You should never have to hunt across tracks to figure out what you need to do today.',
+            how: 'Filter the dashboard to your Track or just look at your card in the "By Contributor" view.',
+            action: { label: 'See My Tasks', view: 'contributor' }
+        },
+        {
+            title: 'Start the Engine',
+            desc: 'Signal to the PM and the team that you have started working on a feature/bug.',
+            why: 'Real-time status updates prevent duplicate work and stop PMs from asking "what is the update on this?"',
+            how: 'Click the task row to open the editor, change the Status to "Now", and save.',
+            action: { label: 'View Board', view: 'track' }
+        },
+        {
+            title: 'Signal Blockers & Dependencies',
+            desc: 'Raise a flag immediately if you are stuck waiting on another team or external factor.',
+            why: 'Hiding blockers derails Sprint commitments. Flagging early allows the PM to escalate and unblock you.',
+            how: 'Edit your task, write the issue in the "Blocker Reason" field, and link dependent tasks in the "Dependencies" widget.',
+            action: { label: 'View Dependencies', view: 'dependency' }
+        },
+        {
+            title: 'Close the Loop',
+            desc: 'Complete the task and provide handover context.',
+            why: 'Closing tasks automatically drives the progress bar of the overarching Sprint and PM Epic.',
+            how: 'Change the Status to "Done", add a Note with the PR link or deployment details, and Save to GitHub.',
+            action: { label: 'View Deliverables', view: 'releases' }
+        }
+    ];
+
+    const activeSteps = currentWorkflowTab === 'pm' ? pmSteps : devSteps;
+
+    let html = `
+        <div class="max-w-4xl mx-auto py-8 mb-24 px-4 sm:px-0">
+            <div class="mb-10 text-center bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">How It Works</h2>
+                <p class="text-slate-500 mt-2 text-lg">A step-by-step guide to managing the engineering pipeline.</p>
+                
+                <div class="flex justify-center mt-8">
+                    <div class="bg-slate-100 p-1.5 rounded-xl inline-flex shadow-inner">
+                        <button onclick="setWorkflowTab('pm')" class="${currentWorkflowTab === 'pm' ? 'bg-white text-indigo-700 shadow border border-slate-200/50 font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'} px-8 py-3 rounded-lg text-sm transition-all focus:outline-none flex items-center gap-2">👨‍💼 Product Managers</button>
+                        <button onclick="setWorkflowTab('dev')" class="${currentWorkflowTab === 'dev' ? 'bg-white text-indigo-700 shadow border border-slate-200/50 font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'} px-8 py-3 rounded-lg text-sm transition-all focus:outline-none flex items-center gap-2">👩‍💻 Developers</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative pl-0 md:pl-2">
+                <div class="hidden md:block absolute left-10 top-8 bottom-8 w-1 bg-indigo-100/60 rounded-full"></div>
+                <div class="space-y-8 relative z-10 w-full overflow-hidden">
+    `;
+
+    activeSteps.forEach((step, index) => {
+        html += `
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 group">
+                <div class="hidden md:flex flex-shrink-0 w-16 h-16 bg-white border-4 border-indigo-50 shadow-sm rounded-2xl items-center justify-center group-hover:border-indigo-200 group-hover:shadow-md transition-all text-2xl font-black text-indigo-400 relative z-10 mt-3 transform group-hover:scale-105 group-hover:text-indigo-600">
+                    ${index + 1}
+                </div>
+                
+                <div class="flex-1 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm group-hover:shadow-lg transition-all relative overflow-hidden group-hover:-translate-y-1 duration-300">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-400 opacity-50 group-hover:bg-indigo-600 group-hover:opacity-100 transition-all"></div>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start mb-8 md:pl-2">
+                        <div>
+                            <span class="text-[10px] font-bold text-indigo-500 tracking-widest uppercase mb-2 block bg-indigo-50 inline-block px-2 py-1 rounded-md">Step ${index + 1}</span>
+                            <h3 class="text-2xl font-bold text-slate-800">${step.title}</h3>
+                        </div>
+                        <button onclick="switchView('${step.action.view}')" class="mt-4 md:mt-0 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-600 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto">
+                            ${step.action.label} 
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-6 text-sm text-slate-600 md:pl-2">
+                        <div class="flex gap-4 items-start pb-4 border-b border-slate-100">
+                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🎯</div>
+                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1">The Goal</strong> ${step.desc}</div>
+                        </div>
+                        <div class="flex gap-4 items-start bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">
+                            <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-lg flex-shrink-0 opacity-80 text-amber-500 border border-amber-100">💡</div>
+                            <div class="flex-1 pt-1"><strong class="text-amber-900 block mb-1">Why it matters</strong> <span class="text-amber-800/90 leading-relaxed">${step.why}</span></div>
+                        </div>
+                        <div class="flex gap-4 items-start pt-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🛠️</div>
+                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1">How to do it</strong> ${step.how}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
