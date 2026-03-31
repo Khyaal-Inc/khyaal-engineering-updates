@@ -1018,3 +1018,141 @@ body {
 
         /* Mobile CMS modal */
         #cms-modal .modal-inner { max-height:90vh; overflow-y:auto; }
+
+        /* ======= ROADMAP VIEW ======= */
+        .roadmap-horizon-column {
+            min-height: 300px;
+            transition: box-shadow 0.2s;
+        }
+        .roadmap-horizon-column:hover {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+        }
+        .roadmap-card {
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .roadmap-card:hover {
+            transform: translateY(-1px);
+        }
+        .roadmap-progress-bar {
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* Horizon pill badges on task items */
+        .horizon-pill {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            padding: 1px 6px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+        .horizon-pill.h-1m { background: #d1fae5; color: #065f46; }
+        .horizon-pill.h-3m { background: #dbeafe; color: #1e40af; }
+        .horizon-pill.h-6m { background: #ede9fe; color: #5b21b6; }
+        .horizon-pill.h-1y { background: #fef3c7; color: #92400e; }
+        /* Health status badges */
+        .health-on-track  { color: #065f46; background: #d1fae5; }
+        .health-at-risk   { color: #92400e; background: #fef3c7; }
+        .health-overdue   { color: #9f1239; background: #fee2e2; }
+        .health-planned   { color: #475569; background: #f1f5f9; }
+        /* Roadmap backlog filter tabs */
+        .horizon-tab {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            border: 1.5px solid transparent;
+            color: #64748b;
+            background: transparent;
+        }
+        .horizon-tab:hover { background: #f1f5f9; }
+        .horizon-tab.active { background: #1e293b; color: white; }
+        .horizon-tab.h-1m.active { background: #10b981; color: white; }
+        .horizon-tab.h-3m.active { background: #3b82f6; color: white; }
+        .horizon-tab.h-6m.active { background: #8b5cf6; color: white; }
+        .horizon-tab.h-1y.active { background: #f59e0b; color: white; }
+
+        /* Roadmap Grid */
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            align-items: start;
+            margin-top: 2rem;
+        }
+
+        .roadmap-column {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .roadmap-column-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .epic-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .epic-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .epic-progress-bar {
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .epic-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: width 0.6s ease-out;
+        }
+
+        .horizon-badge {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            background: white;
+            border: 1px solid currentColor;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .horizon-1m { color: #2563eb; border-color: #2563eb; background: #eff6ff; }
+        .horizon-3m { color: #7c3aed; border-color: #7c3aed; background: #f5f3ff; }
+        .horizon-6m { color: #db2777; border-color: #db2777; background: #fdf2f8; }
+        .horizon-1y { color: #d97706; border-color: #d97706; background: #fffbeb; }
+
+        .epic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
+        }

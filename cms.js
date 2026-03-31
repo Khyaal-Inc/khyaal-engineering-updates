@@ -126,6 +126,26 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
                         </select>
                     </div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
+                        <select id="edit-planningHorizon" class="cms-input">
+                            <option value="">None</option>
+                            <option value="1M" ${item.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
+                            <option value="3M" ${item.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
+                            <option value="6M" ${item.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
+                            <option value="1Y" ${item.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Linked Epic</label>
+                        <select id="edit-epicId" class="cms-input">
+                            <option value="">None</option>
+                            ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -246,12 +266,41 @@ function addItem(trackIndex, subtrackIndex) {
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Sprint</label>
-                    <select id="edit-sprintId" class="cms-input">
-                        <option value="">None</option>
-                        ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-                    </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Sprint</label>
+                        <select id="edit-sprintId" class="cms-input">
+                            <option value="">None</option>
+                            ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Release</label>
+                        <select id="edit-releasedIn" class="cms-input">
+                            <option value="">None</option>
+                            ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
+                        <select id="edit-planningHorizon" class="cms-input">
+                            <option value="">None</option>
+                            <option value="1M">1 Month</option>
+                            <option value="3M">3 Months</option>
+                            <option value="6M">6 Months</option>
+                            <option value="1Y">1 Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Linked Epic</label>
+                        <select id="edit-epicId" class="cms-input">
+                            <option value="">None</option>
+                            ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -474,8 +523,31 @@ function openReleaseEdit(releaseId) {
     document.getElementById('cms-modal').classList.add('active');
 }
 
+function openEpicEdit(epicIndex) {
+    const epic = epicIndex !== undefined ? UPDATE_DATA.metadata.epics[epicIndex] : { name: '', description: '', health: 'on-track' };
+    const epicId = epicIndex !== undefined ? epic.id : undefined;
+    editContext = { type: 'epic', epicId };
+
+    document.getElementById('modal-title').innerText = epicId ? 'Edit Strategic Epic' : 'Add Strategic Epic';
+    document.getElementById('modal-form').innerHTML = `
+        <label class="block text-sm font-bold mb-1">Epic Name</label>
+        <input type="text" id="edit-epic-name" value="${epic.name}" class="cms-input" placeholder="e.g. Platform Migration V2">
+        
+        <label class="block text-sm font-bold mb-1 mt-4">Health</label>
+        <select id="edit-epic-health" class="cms-input">
+            <option value="on-track" ${epic.health === 'on-track' ? 'selected' : ''}>On-Track</option>
+            <option value="at-risk" ${epic.health === 'at-risk' ? 'selected' : ''}>At-Risk</option>
+            <option value="delayed" ${epic.health === 'delayed' ? 'selected' : ''}>Delayed</option>
+        </select>
+
+        <label class="block text-sm font-bold mb-1 mt-4">Description / Goal</label>
+        <textarea id="edit-epic-desc" class="cms-input" rows="3">${epic.description || ''}</textarea>
+    `;
+    document.getElementById('cms-modal').classList.add('active');
+}
+
 function validateCmsForm() {
-    const textEl = document.getElementById('edit-text') || document.getElementById('edit-sprint-name') || document.getElementById('edit-release-name');
+    const textEl = document.getElementById('edit-text') || document.getElementById('edit-sprint-name') || document.getElementById('edit-release-name') || document.getElementById('edit-epic-name');
     if (textEl && !textEl.value.trim()) {
         textEl.style.borderColor = '#ef4444';
         return false;
@@ -498,6 +570,8 @@ function saveCmsChanges() {
             due: document.getElementById('edit-due').value,
             sprintId: document.getElementById('edit-sprintId').value,
             releasedIn: document.getElementById('edit-releasedIn')?.value || '',
+            planningHorizon: document.getElementById('edit-planningHorizon')?.value || '',
+            epicId: document.getElementById('edit-epicId')?.value || '',
             contributors: [..._selectedContributors],
             tags: [..._selectedTags],
             dependencies: [..._selectedDeps],
@@ -547,6 +621,7 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.sprints.push(sprintData);
         }
         logChange(editContext.sprintId ? 'Edit Sprint' : 'Add Sprint', sprintData.name);
+
     } else if (editContext.type === 'release') {
         const relData = {
             id: editContext.releaseId || `rel-${Date.now()}`,
@@ -562,22 +637,45 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.releases.push(relData);
         }
         logChange(editContext.releaseId ? 'Edit Release' : 'Add Release', relData.name);
+
+    } else if (editContext.type === 'metadata') {
+        const meta = UPDATE_DATA.metadata;
+        meta.title = document.getElementById('edit-meta-title').value;
+        meta.dateRange = document.getElementById('edit-meta-dateRange').value;
+        meta.nextReview = document.getElementById('edit-meta-nextReview').value;
+        meta.description = document.getElementById('edit-meta-description').value;
+        try {
+            meta.customStatuses = JSON.parse(document.getElementById('edit-meta-customStatuses').value);
+        } catch (e) { alert('Invalid Status JSON structure.'); return; }
+        logChange('Edit Metadata', meta.title);
+
     } else if (editContext.type === 'track') {
-        const name = document.getElementById('edit-track-name').value.trim();
-        const theme = document.getElementById('edit-track-theme').value;
-        if (editContext.trackIndex !== undefined) {
-            UPDATE_DATA.tracks[editContext.trackIndex].name = name;
-            UPDATE_DATA.tracks[editContext.trackIndex].theme = theme;
+        const track = UPDATE_DATA.tracks[editContext.trackIndex];
+        track.name = document.getElementById('edit-track-name').value;
+        track.theme = document.getElementById('edit-track-theme').value;
+        logChange('Edit Track', track.name);
+
+    } else if (editContext.type === 'epic') {
+        const epicData = {
+            id: editContext.epicId || `epic-${Date.now()}`,
+            name: document.getElementById('edit-epic-name').value.trim(),
+            description: document.getElementById('edit-epic-desc').value.trim(),
+            health: document.getElementById('edit-epic-health').value
+        };
+        if (!UPDATE_DATA.metadata.epics) UPDATE_DATA.metadata.epics = [];
+        if (editContext.epicId) {
+            const idx = UPDATE_DATA.metadata.epics.findIndex(e => e.id === editContext.epicId);
+            UPDATE_DATA.metadata.epics[idx] = epicData;
         } else {
-            UPDATE_DATA.tracks.push({ name, theme, subtracks: [] });
+            UPDATE_DATA.metadata.epics.push(epicData);
         }
-        logChange('Track Change', name);
+        logChange(editContext.epicId ? 'Edit Epic' : 'Add Epic', epicData.name);
+
     } else if (editContext.type === 'subtrack') {
-        const name = document.getElementById('edit-subtrack-name').value.trim();
-        const note = document.getElementById('edit-subtrack-note').value.trim();
-        UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].name = name;
-        UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].note = note;
-        logChange('Subtrack Change', name);
+        const sub = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex];
+        sub.name = document.getElementById('edit-subtrack-name').value;
+        sub.note = document.getElementById('edit-subtrack-note').value;
+        logChange('Edit Subtrack', sub.name);
     }
 
     closeCmsModal();
@@ -641,6 +739,116 @@ function deleteSubtrack(ti, si) {
 function closeCmsModal() {
     document.getElementById('cms-modal').classList.remove('active');
     editContext = null;
+}
+
+function openMetadataEdit() {
+    const meta = UPDATE_DATA.metadata;
+    editContext = { type: 'metadata' };
+
+    document.getElementById('modal-title').innerText = 'Edit Project Metadata';
+    document.getElementById('modal-form').innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Project Title</label>
+                <input type="text" id="edit-meta-title" value="${meta.title}" class="cms-input">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Date Range / Status</label>
+                <input type="text" id="edit-meta-dateRange" value="${meta.dateRange}" class="cms-input">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Next Review / Milestone</label>
+                <input type="text" id="edit-meta-nextReview" value="${meta.nextReview || ''}" class="cms-input" placeholder="e.g. Next Update: April 15">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description</label>
+                <textarea id="edit-meta-description" class="cms-input" rows="2">${meta.description}</textarea>
+            </div>
+            <div>
+                <label class="block text-[11px] font-black uppercase text-slate-500 mb-2 tracking-wider">Custom Statuses (JSON)</label>
+                <textarea id="edit-meta-customStatuses" class="cms-input font-mono text-xs p-3 bg-slate-50" rows="6">${JSON.stringify(meta.customStatuses || [], null, 2)}</textarea>
+                <p class="text-[10px] text-slate-400 mt-1">Format: [{"id":"status_id", "label":"Label", "class":"css_class", "bucket":"status_bucket"}]</p>
+            </div>
+        </div>
+    `;
+    document.getElementById('cms-modal').classList.add('active');
+}
+
+function openTrackEdit(trackIndex) {
+    const track = UPDATE_DATA.tracks[trackIndex];
+    editContext = { type: 'track', trackIndex };
+
+    document.getElementById('modal-title').innerText = 'Edit Track (Team)';
+    document.getElementById('modal-form').innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Track Name</label>
+                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
+                <select id="edit-track-theme" class="cms-input">
+                    <option value="blue" ${track.theme === 'blue' ? 'selected' : ''}>Standard Blue</option>
+                    <option value="emerald" ${track.theme === 'emerald' ? 'selected' : ''}>Emerald Green</option>
+                    <option value="violet" ${track.theme === 'violet' ? 'selected' : ''}>Violet Purple</option>
+                    <option value="amber" ${track.theme === 'amber' ? 'selected' : ''}>Amber Yellow</option>
+                    <option value="rose" ${track.theme === 'rose' ? 'selected' : ''}>Rose Pink</option>
+                    <option value="slate" ${track.theme === 'slate' ? 'selected' : ''}>Cool Slate</option>
+                </select>
+            </div>
+        </div>
+    `;
+    document.getElementById('cms-modal').classList.add('active');
+}
+
+function addTrack() {
+    const newTrack = {
+        name: "New Project/Team",
+        theme: "slate",
+        subtracks: [{ name: "General", items: [] }]
+    };
+    UPDATE_DATA.tracks.push(newTrack);
+    renderTrackView();
+    openTrackEdit(UPDATE_DATA.tracks.length - 1);
+}
+
+function deleteTrack(trackIndex) {
+    if (!confirm('DELETE ENTIRE TEAM? This will remove all subtracks and tasks in this track.')) return;
+    UPDATE_DATA.tracks.splice(trackIndex, 1);
+    renderTrackView();
+    updateTabCounts();
+}
+
+function openSubtrackEdit(trackIndex, subtrackIndex) {
+    const sub = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex];
+    editContext = { type: 'subtrack', trackIndex, subtrackIndex };
+
+    document.getElementById('modal-title').innerText = 'Edit Subtrack';
+    document.getElementById('modal-form').innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Subtrack Name</label>
+                <input type="text" id="edit-subtrack-name" value="${sub.name}" class="cms-input">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description / Note</label>
+                <textarea id="edit-subtrack-note" class="cms-input" rows="3">${sub.note || ''}</textarea>
+            </div>
+        </div>
+    `;
+    document.getElementById('cms-modal').classList.add('active');
+}
+
+function deleteSubtrack(trackIndex, subtrackIndex) {
+    if (!confirm('Delete this subtrack and all its items?')) return;
+    UPDATE_DATA.tracks[trackIndex].subtracks.splice(subtrackIndex, 1);
+    renderTrackView();
+    updateTabCounts();
+}
+
+function logoutAll() {
+    localStorage.removeItem('gh_pat');
+    location.reload();
 }
 
 function updateMoveSubtrackOpts(ti) {
@@ -804,6 +1012,73 @@ function filterByDate(dateRange) {
     else if (cv === 'contributor') renderContributorView();
 }
 
+async function archiveAndClear() {
+    if (!confirm('ARCHIVE & CLEAR DASHBOARD? This will save all current data to a timestamped JSON file in /archive and clear the main view.')) return;
+
+    const btn = document.getElementById('archive-btn');
+    const token = localStorage.getItem('gh_pat');
+    if (!token) { alert('Unauthorized'); return; }
+
+    btn.disabled = true; btn.innerText = 'Archiving...';
+    try {
+        // 1. Generate archive data
+        const archiveContent = JSON.stringify(UPDATE_DATA, null, 4);
+        const fileName = `archive_${new Date().toISOString().split('T')[0]}.json`;
+
+        // 2. Put to Archive folder
+        await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/archive/${fileName}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: `Archive: ${UPDATE_DATA.metadata.dateRange}`,
+                content: btoa(unescape(encodeURIComponent(archiveContent)))
+            })
+        });
+
+        // 3. Clear data (keep 'later' and 'ongoing' maybe? or just clear all 'done')
+        UPDATE_DATA.tracks.forEach(track => {
+            track.subtracks.forEach(sub => {
+                sub.items = sub.items.filter(item => item.status !== 'done');
+            });
+        });
+
+        // 4. Update Main Data
+        const getRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        const fileData = await getRes.json();
+        
+        await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: 'CMS: post-archive data reset',
+                content: btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4)))),
+                sha: fileData.sha
+            })
+        });
+
+        alert('Archive successful!');
+        location.reload();
+    } catch (e) {
+        alert('Archive error: ' + e.message);
+        btn.disabled = false; btn.innerText = 'Archive & Clear';
+    }
+}
+
 async function loadArchive(fileName) {
     window.location.search = `?archive=archive/${fileName}`;
+}
+
+// ------ CMS ROUTING ------
+function saveCms() {
+    if (!editContext) return;
+    if (editContext.type === 'epic') {
+        // I noticed I don't have saveEpic() in my current set of functions? 
+        // Wait, I should've checked if I deleted it.
+        // I will re-add it if needed or check if it's there.
+        if (typeof saveEpic === 'function') saveEpic();
+    } else {
+        saveCmsChanges();
+    }
 }

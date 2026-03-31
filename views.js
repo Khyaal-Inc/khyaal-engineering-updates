@@ -641,3 +641,123 @@ function drawGanttChart() {
 
     chart.draw(data, options);
 }
+
+// ------ Roadmap View ------
+function renderRoadmapView() {
+    const container = document.getElementById('roadmap-view');
+    const horizons = ['1M', '3M', '6M', '1Y'];
+    const horizonLabels = { '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year' };
+    
+    let html = '<div class="roadmap-grid">';
+    
+    horizons.forEach(h => {
+        let items = [];
+        UPDATE_DATA.tracks.forEach((track, ti) => {
+            track.subtracks.forEach((subtrack, si) => {
+                subtrack.items.forEach((item, ii) => {
+                    if (item.planningHorizon === h && isItemMatchingTagFilter(item) && isItemInSearch(item)) {
+                        items.push({ ...item, trackName: track.name, trackTheme: track.theme, ti, si, ii });
+                    }
+                });
+            });
+        });
+
+        const colorClass = h === '1M' ? 'horizon-1m' : h === '3M' ? 'horizon-3m' : h === '6M' ? 'horizon-6m' : 'horizon-1y';
+        
+        html += `
+            <div class="roadmap-column">
+                <div class="roadmap-column-header flex justify-between items-center">
+                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">${horizonLabels[h]}</h3>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${items.length}</span>
+                </div>
+                <div class="p-3 space-y-3 flex-1 overflow-y-auto">
+        `;
+
+        if (items.length === 0) {
+            html += '<div class="text-center py-10 text-slate-300 text-[11px] italic">No items planned.</div>';
+        } else {
+            items.forEach(item => {
+                const epic = (UPDATE_DATA.metadata.epics || []).find(e => e.id === item.epicId);
+                const trackColor = themeColors[item.trackTheme] || '#64748b';
+                
+                html += `
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group" onclick="openItemEdit(${item.ti}, ${item.si}, ${item.ii})">
+                        <div class="flex justify-between items-start mb-2">
+                             <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border border-slate-100">
+                                ${item.trackName}
+                            </span>
+                             <span class="status-pill ${statusConfig[item.status].class} text-[8px] px-1.5 py-0 uppercase">${item.status}</span>
+                        </div>
+                        <div class="text-[12px] font-bold text-slate-800 leading-snug group-hover:text-blue-600 transition-colors mb-2">${item.text}</div>
+                        ${epic ? `<div class="text-[9px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">🎯 ${epic.name}</div>` : ''}
+                    </div>
+                `;
+            });
+        }
+        html += '</div></div>';
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ------ Epics View ------
+function renderEpicsView() {
+    const container = document.getElementById('epics-view');
+    const epics = UPDATE_DATA.metadata.epics || [];
+    
+    let html = isAuthenticated ? `<div class="mb-6 flex justify-end"><button onclick="openEpicEdit()" class="filter-btn active">➕ Add Strategic Epic</button></div>` : '';
+    
+    if (epics.length === 0) {
+        container.innerHTML = html + '<div class="text-center py-20 text-slate-300 italic">No strategic epics defined yet.</div>';
+        return;
+    }
+
+    html += '<div class="epic-grid">';
+    epics.forEach((epic, index) => {
+        const epicItems = [];
+        UPDATE_DATA.tracks.forEach((t, ti) => t.subtracks.forEach((s, si) => s.items.forEach((item, ii) => {
+            if (item.epicId === epic.id && isItemMatchingTagFilter(item) && isItemInSearch(item)) epicItems.push({ ...item, ti, si, ii });
+        })));
+
+        const total = epicItems.length;
+        const done = epicItems.filter(i => i.status === 'done').length;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+        const health = epic.health || 'on-track';
+        const healthClass = health === 'at-risk' ? 'bg-red-100 text-red-700' : health === 'delayed' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
+
+        html += `
+            <div class="epic-card">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-black text-lg text-slate-900 group-hover:text-blue-600 cursor-pointer" onclick="openEpicEdit(${index})">${epic.name}</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">${epic.description || 'No description provided.'}</p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${healthClass}">${health}</span>
+                </div>
+                
+                <div class="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">
+                    <span>Progress</span>
+                    <span>${percent}% (${done}/${total} tasks)</span>
+                </div>
+                <div class="epic-progress-bar">
+                    <div class="epic-progress-fill" style="width: ${percent}%"></div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 max-h-32 overflow-y-auto pr-1">
+                    ${epicItems.map(item => `
+                        <div class="flex items-center gap-2 group/task cursor-pointer p-1 rounded hover:bg-slate-50 transition-colors" onclick="openItemEdit(${item.ti}, ${item.si}, ${item.ii})">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover/task:bg-blue-500 transition-colors"></span>
+                            <span class="text-[11px] text-slate-700 truncate flex-1 font-medium">${item.text}</span>
+                            <span class="${statusConfig[item.status].class} px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider">${item.status}</span>
+                        </div>
+                    `).join('')}
+                    ${total === 0 ? '<div class="text-[10px] italic text-slate-300">No tasks linked.</div>' : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}

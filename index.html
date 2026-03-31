@@ -69,7 +69,7 @@
                 <div id="modal-form"></div>
                 <div class="flex justify-end gap-2 mt-6">
                     <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-                    <button onclick="saveCmsChanges()" class="cms-btn cms-btn-primary">Apply Changes</button>
+                    <button onclick="saveCms()" class="cms-btn cms-btn-primary">Apply Changes</button>
                 </div>
             </div>
         </div>
@@ -123,6 +123,10 @@
                     <div class="flex flex-wrap justify-end gap-2">
                         <button onclick="switchView('track')" id="btn-track" class="filter-btn active">Tracks<span
                                 id="tab-count-track" class="tab-count"></span></button>
+                        <button onclick="switchView('roadmap')" id="btn-roadmap" class="filter-btn">🗺️ Roadmap<span
+                                id="tab-count-roadmap" class="tab-count hidden"></span></button>
+                        <button onclick="switchView('epics')" id="btn-epics" class="filter-btn">🎯 Epics<span
+                                id="tab-count-epics" class="tab-count"></span></button>
                         <button onclick="switchView('sprint')" id="btn-sprint" class="filter-btn">🏃 Sprints<span
                                 id="tab-count-sprint" class="tab-count"></span></button>
                         <button onclick="switchView('releases')" id="btn-releases" class="filter-btn">📦 Releases<span
@@ -244,6 +248,8 @@
 
         <!-- Views -->
         <div id="track-view" class="view-section active"></div>
+        <div id="roadmap-view" class="view-section"></div>
+        <div id="epics-view" class="view-section"></div>
         <div id="sprint-view" class="view-section"></div>
         <div id="dependency-view" class="view-section"></div>
         <div id="status-view" class="view-section"></div>
