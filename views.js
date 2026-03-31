@@ -605,12 +605,11 @@ function renderEpicsView() {
 function renderRoadmapView() {
     const container = document.getElementById('roadmap-view');
     if (!container) return;
-    
     const data = window.UPDATE_DATA || {};
     const roadmapDefs = (data.metadata && data.metadata.roadmap) || [
-        { id: '1M', label: '1 Month', color: 'blue' },
-        { id: '3M', label: '3 Months', color: 'indigo' },
-        { id: '6M', label: '6 Months', color: 'slate' }
+        { id: '1M', label: 'Now (Immediate / 1 Month)', color: 'blue' },
+        { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
+        { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
     ];
     
     let html = shouldShowManagement() ? `

@@ -130,6 +130,11 @@
                 "impact": "Personalized user experience, scalable event management, seamless authentication",
                 "status": "planned"
             }
+        ],
+        "roadmap": [
+            { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue" },
+            { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo" },
+            { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate" }
         ]
     },
     "tracks": [

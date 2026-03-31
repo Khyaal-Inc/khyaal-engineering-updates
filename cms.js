@@ -569,9 +569,9 @@ function openEpicEdit(epicIndex) {
 function openRoadmapEdit(id) {
     if (!UPDATE_DATA.metadata.roadmap) {
         UPDATE_DATA.metadata.roadmap = [
-            { id: '1M', label: '1 Month', color: 'blue' },
-            { id: '3M', label: '3 Months', color: 'indigo' },
-            { id: '6M', label: '6 Months', color: 'slate' }
+            { id: '1M', label: 'Now (Immediate / 1 Month)', color: 'blue' },
+            { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
+            { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
         ];
     }
     const horizon = id ? UPDATE_DATA.metadata.roadmap.find(r => r.id === id) : { id: '', label: '', color: 'blue' };
@@ -752,9 +752,9 @@ function saveCmsChanges() {
         };
         if (!UPDATE_DATA.metadata.roadmap) {
              UPDATE_DATA.metadata.roadmap = [
-                { id: '1M', label: '1 Month', color: 'blue' },
-                { id: '3M', label: '3 Months', color: 'indigo' },
-                { id: '6M', label: '6 Months', color: 'slate' }
+                { id: '1M', label: 'Now (Immediate / 1 Month)', color: 'blue' },
+                { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
+                { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
             ];
         }
         if (editContext.roadmapId) {
