@@ -932,7 +932,7 @@ function renderWorkflowView() {
     let html = `
         <div class="max-w-4xl mx-auto py-8 mb-24 px-4 sm:px-0">
             <div class="mb-10 text-center bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
-                <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">How It Works</h2>
+                <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Engineering Playbook</h2>
                 <p class="text-slate-500 mt-2 text-lg">A step-by-step guide to managing the engineering pipeline.</p>
                 
                 <div class="flex justify-center mt-8">
