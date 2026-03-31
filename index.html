@@ -18,16 +18,33 @@
         <p class="text-slate-500 font-medium animate-pulse">Loading Updates...</p>
     </div>
 
-    <!-- Early session check to prevent flicker -->
     <script>
+        // Global Auth & Load Orchestrator
         (function () {
             const SITE_AUTH_KEY = 'khyaal_site_auth';
+            
+            const initLocalLoad = () => {
+                fetch('./data.json?v=' + Date.now())
+                    .then(r => r.json())
+                    .then(data => {
+                        window.UPDATE_DATA = data;
+                        localStorage.setItem(SITE_AUTH_KEY, 'true');
+                        window.isAuthenticated = true;
+                        
+                        // Wait for DOM to be ready and all scripts to be loaded
+                        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                            if (typeof initDashboard === 'function') initDashboard();
+                        } else {
+                            window.addEventListener('DOMContentLoaded', () => {
+                                if (typeof initDashboard === 'function') initDashboard();
+                            });
+                        }
+                    })
+                    .catch(e => console.log('Local load fallback:', e));
+            };
+
             if (localStorage.getItem(SITE_AUTH_KEY)) {
-                // If we have a session, hide the login card immediately
-                document.write('<style>#auth-gatekeeper { display: none !important; }</style>');
-                document.addEventListener('DOMContentLoaded', function () {
-                    document.getElementById('auth-loading').style.display = 'flex';
-                });
+                initLocalLoad();
             }
         })();
     </script>
@@ -54,10 +71,9 @@
             <div id="auth-message" class="text-red-500 text-xs mt-4">Please enter password to view updates</div>
         </div>
     </div>
-
-    <div id="main-content">
-        <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
-        <script src="core.js"></script>
+    
+    <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
+    <script src="core.js"></script>
         <script src="views.js"></script>
         <script src="cms.js"></script>
         <script src="app.js"></script>
@@ -75,7 +91,7 @@
         </div>
 
         <!-- UI Layout -->
-        <div class="max-w-7xl mx-auto">
+        <div id="main-content" class="max-w-7xl mx-auto">
             <!-- CMS Controls -->
             <div id="cms-controls">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">

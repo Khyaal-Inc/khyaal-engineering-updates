@@ -51,26 +51,41 @@ function normalizeData() {
 // ------ CORE APP INITIALIZATION ------
 // This is called by index.html after a successful basic auth login
 function initDashboard() {
-    if (!UPDATE_DATA) return;
+    console.log('🚀 initDashboard() called');
+    console.log('📊 UPDATE_DATA:', UPDATE_DATA);
+    
+    if (!UPDATE_DATA) {
+        console.error('❌ UPDATE_DATA is null or undefined');
+        return;
+    }
 
     // 1. Sync metadata to UI
+    console.log('🔄 Syncing metadata to UI...');
     syncMetadataToUI();
-
+    
     // 2. Prep data structures
+    console.log('🔧 Normalizing data...');
     normalizeData();
+    
+    // 3. Build contributor list
+    console.log('👥 Building contributor list...');
     buildContributorList(); // from core.js
     
-    // 3. Setup global behaviors
+    // 4. Setup global behaviors
+    console.log('⚙️ Setting up global behaviors...');
     setupKeyboardShortcuts(); // from core.js
     initCms(); // from cms.js
-    initArchiveFilter(); // from core.js/cms.js (actually needs to be in views.js or core.js)
     
-    // 4. Initial Render
+    // 4. Initial Render - Default to Epics View
+    console.log('🎨 Initial render - defaulting to epics view');
+    switchView('epics'); // Default to epics view
     renderTrackView(); // from views.js
     updateBacklogBadge(); // from cms.js
     buildTagFilterBar(); // from core.js
     updateTabCounts(); // from core.js
     renderBlockerStrip(); // from core.js
+    
+    console.log('✅ Dashboard initialization complete');
 }
 
 function syncMetadataToUI() {

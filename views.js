@@ -466,6 +466,17 @@ function renderContributorView() {
 let groomingMode = false;
 function toggleGroomingMode() {
     groomingMode = !groomingMode;
+    renderTrackView(); // from views.js
+    updateBacklogBadge(); // from cms.js
+    buildTagFilterBar(); // from core.js
+    updateTabCounts(); // from core.js
+    renderBlockerStrip(); // from core.js
+    
+    // Force render epics view after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        console.log('🎯 Forcing epics view render...');
+        switchView('epics');
+    }, 500);
     renderBacklogView();
 }
 
@@ -507,6 +518,105 @@ function renderBacklogView() {
         html += `</div></div>`;
     });
     container.innerHTML = totalItems ? html : '<div class="text-center py-20 text-slate-400">Backlog is empty</div>';
+}
+
+// ------ Epics View ------
+function renderEpicsView() {
+    const container = document.getElementById('epics-view');
+    if (!container) return;
+    
+    // Explicitly use window.UPDATE_DATA
+    const data = window.UPDATE_DATA || {};
+    const epics = (data.metadata && data.metadata.epics) || [];
+    
+    console.log('🔍 renderEpicsView debugging:', {
+        dataFound: !!data,
+        metadataFound: !!data.metadata,
+        epicsCount: epics.length
+    });
+
+    let html = '';
+    
+    if (epics.length === 0) {
+        container.innerHTML = `<div class="text-center py-20 text-slate-400">
+            No epics defined in metadata.epics. 
+            <br><small>Data source: ${data.metadata ? 'Object present' : 'Object missing'}</small>
+        </div>`;
+        return;
+    }
+
+    epics.forEach(e => {
+        const epicItems = findItemsByMetadataId('epicId', e.id);
+        const doneCount = epicItems.filter(i => i.status === 'done').length;
+        const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
+        
+        html += `
+            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
+                <div class="p-6 bg-slate-50 border-b">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="font-black text-2xl text-slate-900">${e.name}</div>
+                            <div class="text-sm font-bold text-slate-500 mt-1">Goal: ${e.track || e.description || e.objective || ''} | ${e.timeline || ''}</div>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Health</div>
+                             <span class="px-2 py-1 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' ? 'amber' : 'rose')}-700 rounded text-xs font-bold uppercase tracking-wider">${e.health || 'Normal'}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-between text-xs font-black text-slate-500 mb-2 uppercase tracking-widest">
+                            <span>Progress</span>
+                            <span>${progress}% (${doneCount}/${epicItems.length})</span>
+                        </div>
+                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-600 transition-all duration-500" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2 space-y-4">
+                    ${renderGroupedItems(epicItems)}
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html;
+}
+
+// ------ Roadmap View ------
+function renderRoadmapView() {
+    const container = document.getElementById('roadmap-view');
+    if (!container) return;
+    
+    // Explicitly use window.UPDATE_DATA
+    const data = window.UPDATE_DATA || {};
+    
+    // Support either metadata-defined roadmap or fallback horizons
+    const roadmapDefs = (data.metadata && data.metadata.roadmap) || [
+        { id: '1M', label: '1 Month (Now)', color: 'blue' },
+        { id: '3M', label: '3 Months (Next)', color: 'indigo' },
+        { id: '6M', label: '6 Months (Later)', color: 'slate' }
+    ];
+    
+    let html = '';
+    roadmapDefs.forEach(h => {
+        const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
+        if (horizonItems.length === 0) return;
+
+        html += `
+            <div class="roadmap-section mb-10">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="h-[2px] flex-1 bg-slate-100"></div>
+                    <div class="px-4 py-2 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current">
+                        ${h.label || h.name}
+                    </div>
+                    <div class="h-[2px] flex-1 bg-slate-100"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                    ${renderGroupedItems(horizonItems)}
+                </div>
+            </div>`;
+    });
+    
+    container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use Grooming Mode in Backlog to assign Planning Horizons.</div>';
 }
 
 // ------ Sprint View ------
@@ -585,7 +695,8 @@ function renderReleasesView() {
 // ------ AGGREGATION HELPERS ------
 function findItemsByMetadataId(key, value) {
     const found = [];
-    UPDATE_DATA.tracks.forEach((track, ti) => {
+    const data = window.UPDATE_DATA || { tracks: [] };
+    data.tracks.forEach((track, ti) => {
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 if (item[key] === value) {
@@ -731,21 +842,29 @@ function renderRoadmapView() {
     });
     
     html += '</div>';
-    container.innerHTML = html;
-}
-
-// ------ Epics View ------
+    
 function renderEpicsView() {
+    console.log('🎯 renderEpicsView() called');
+    console.log('📊 UPDATE_DATA:', UPDATE_DATA);
+    console.log('📊 UPDATE_DATA.metadata:', UPDATE_DATA.metadata);
+    console.log('📊 UPDATE_DATA.metadata.epics:', UPDATE_DATA.metadata.epics);
+    
     const container = document.getElementById('epics-view');
     const epics = UPDATE_DATA.metadata.epics || [];
+    
+    console.log('🎯 Found epics:', epics);
+    console.log('🎯 Container found:', container);
     
     let html = isAuthenticated ? `<div class="mb-6 flex justify-end"><button onclick="openEpicEdit()" class="filter-btn active">➕ Add Strategic Epic</button></div>` : '';
     
     if (epics.length === 0) {
+        console.log('❌ No epics found, showing empty state');
         container.innerHTML = html + '<div class="text-center py-20 text-slate-300 italic">No strategic epics defined yet.</div>';
+    console.log('✅ Found epics, rendering grid');
         return;
     }
-
+    
+    console.log(`✅ Found ${epics.length} epics, rendering grid`);
     html += '<div class="epic-grid">';
     epics.forEach((epic, index) => {
         const epicItems = [];
@@ -943,6 +1062,7 @@ function renderWorkflowView() {
             </div>
         </div>
     `;
-
+    
     container.innerHTML = html;
+}
 }

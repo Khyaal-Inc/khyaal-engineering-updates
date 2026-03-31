@@ -1,4 +1,4 @@
-let UPDATE_DATA = null;
+// UPDATE_DATA is global, provided by index.html initialization
 let globalSearchQuery = '';
 let isAuthenticated = false; // Will be set by auth logic
 
@@ -177,13 +177,15 @@ function updateTabCounts() {
         gantt: allItems.filter(i => i.startDate || i.due).length,
         backlog: 0,
         sprint: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints ? UPDATE_DATA.metadata.sprints.length : 0),
+        epics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.epics ? UPDATE_DATA.metadata.epics.length : 0),
+        roadmap: allItems.filter(i => i.planningHorizon).length,
         releases: allItems.filter(i => i.releasedIn).length
     };
     (UPDATE_DATA.tracks || []).forEach(t => {
         const bl = t.subtracks.find(s => s.name === 'Backlog');
         if (bl) counts.backlog += bl.items.length;
     });
-    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency'].forEach(v => {
+    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency', 'epics', 'roadmap'].forEach(v => {
         const el = document.getElementById(`tab-count-${v}`);
         if (el) el.textContent = counts[v] || '';
     });
@@ -192,13 +194,14 @@ function updateTabCounts() {
 function switchView(view) {
     document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-
+    
     const btn = document.getElementById(`btn-${view}`);
     if (btn) btn.classList.add('active');
     
     const vSection = document.getElementById(`${view}-view`);
     if (vSection) vSection.classList.add('active');
-
+    
+    // Render the appropriate view
     if (view === 'track') renderTrackView();
     if (view === 'workflow') renderWorkflowView();
     if (view === 'roadmap') renderRoadmapView();
