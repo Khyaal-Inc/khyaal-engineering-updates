@@ -1190,3 +1190,314 @@ body {
             border-left-color: #6366f1 !important;
             background-color: #f5f3ff !important;
         }
+/* ========================================
+   MODE-SPECIFIC STYLING
+   ======================================== */
+
+/* Mode Switcher */
+.mode-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+    background: white;
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e2e8f0;
+}
+
+.mode-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mode-btn:hover {
+    background: #f1f5f9;
+}
+
+.mode-btn.active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* PM Mode - Blue Theme */
+.mode-btn.mode-pm {
+    color: #1e40af;
+    background: #eff6ff;
+}
+
+.mode-btn.mode-pm.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+/* Developer Mode - Green Theme */
+.mode-btn.mode-dev {
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.mode-btn.mode-dev.active {
+    background: #16a34a;
+    color: white;
+    border-color: #16a34a;
+}
+
+/* Executive Mode - Purple Theme */
+.mode-btn.mode-exec {
+    color: #6b21a8;
+    background: #faf5ff;
+}
+
+.mode-btn.mode-exec.active {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+/* Kanban Board Styling */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.kanban-column {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    min-height: 500px;
+    border: 2px solid #e2e8f0;
+}
+
+.kanban-column-header {
+    font-weight: 800;
+    font-size: 0.875rem;
+    color: #1e293b;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: grab;
+    transition: all 0.2s;
+}
+
+.kanban-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+}
+
+/* OKR Styling */
+.okr-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.okr-objective {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.okr-key-result {
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.okr-progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.okr-progress-fill {
+    height: 100%;
+    transition: width 0.4s;
+    border-radius: 4px;
+}
+
+/* Analytics Dashboard */
+.analytics-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.analytics-kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.analytics-kpi-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #1e293b;
+    line-height: 1;
+    margin: 0.5rem 0;
+}
+
+.analytics-kpi-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+/* Capacity Planning */
+.capacity-member-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e2e8f0;
+}
+
+.capacity-utilization-bar {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.capacity-utilization-fill {
+    height: 100%;
+    transition: width 0.4s;
+    border-radius: 6px;
+}
+
+.capacity-overload {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+/* My Tasks View (Developer Focus) */
+.my-tasks-section {
+    margin-bottom: 2rem;
+}
+
+.my-tasks-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.my-tasks-card.blocked {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.my-tasks-card.due-today {
+    border-left-color: #f59e0b;
+}
+
+/* Executive Dashboard */
+.executive-summary-card {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+}
+
+.dashboard-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.dashboard-metric {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-metric-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.dashboard-metric-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+}
+
+/* Responsive Design for Modes */
+@media (max-width: 768px) {
+    .mode-switcher {
+        top: 10px;
+        right: 10px;
+        flex-direction: column;
+    }
+    
+    .mode-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Hidden views for mode filtering */
+.view-hidden {
+    display: none !important;
+}

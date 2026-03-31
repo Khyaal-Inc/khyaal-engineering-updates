@@ -3,6 +3,11 @@
         "title": "Khyaal Engineering Pulse",
         "dateRange": "23rd March - 3rd April 2026",
         "description": "Executive Updates",
+        "modes": {
+            "default": "pm",
+            "devDefaultView": "my-tasks",
+            "execDefaultView": "dashboard"
+        },
         "epics": [
             {
                 "id": "platform-modernization",
@@ -14,7 +19,8 @@
                 "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
                 "timeline": "Feb 1 - Apr 10, 2026",
                 "health": "on-track",
-                "status": "in_progress"
+                "status": "in_progress",
+                "linkedOKR": "okr-q1-2026-platform"
             },
             {
                 "id": "analytics-intelligence",
@@ -26,7 +32,8 @@
                 "successMetrics": "Data-driven decisions 80%+, AI conversion 15%+, recommendation accuracy 85%+",
                 "timeline": "Feb 1 - Apr 10, 2026",
                 "health": "on-track",
-                "status": "in_progress"
+                "status": "in_progress",
+                "linkedOKR": "okr-q1-2026-analytics"
             },
             {
                 "id": "infrastructure-optimization",
@@ -38,21 +45,162 @@
                 "successMetrics": "Infrastructure cost savings 30%+, system uptime 99.9%+, security response < 1hr",
                 "timeline": "Feb 1 - Apr 10, 2026",
                 "health": "on-track",
-                "status": "in_progress"
+                "status": "in_progress",
+                "linkedOKR": "okr-q1-2026-infrastructure"
+            }
+        ],
+        "okrs": [
+            {
+                "id": "okr-q1-2026-platform",
+                "quarter": "Q1 2026",
+                "objective": "Modernize platform infrastructure and achieve security excellence",
+                "owner": "Platform Team",
+                "keyResults": [
+                    {
+                        "id": "kr-platform-1",
+                        "description": "Migrate 100% of legacy pages to new platform",
+                        "target": 29,
+                        "current": 29,
+                        "unit": "pages",
+                        "progress": 100,
+                        "status": "achieved",
+                        "linkedEpic": "platform-modernization"
+                    },
+                    {
+                        "id": "kr-platform-2",
+                        "description": "Achieve 95%+ security compliance (VAPT findings)",
+                        "target": 95,
+                        "current": 92,
+                        "unit": "%",
+                        "progress": 97,
+                        "status": "on-track",
+                        "linkedEpic": "platform-modernization"
+                    },
+                    {
+                        "id": "kr-platform-3",
+                        "description": "Launch $99 subscription tier with payment processing",
+                        "target": 1,
+                        "current": 1,
+                        "unit": "launch",
+                        "progress": 100,
+                        "status": "achieved",
+                        "linkedEpic": "platform-modernization"
+                    }
+                ],
+                "overallProgress": 99
+            },
+            {
+                "id": "okr-q1-2026-analytics",
+                "quarter": "Q1 2026",
+                "objective": "Build data-driven decision foundation with AI capabilities",
+                "owner": "Pulse Team",
+                "keyResults": [
+                    {
+                        "id": "kr-analytics-1",
+                        "description": "Launch Gold Tier analytics dashboards",
+                        "target": 1,
+                        "current": 0,
+                        "unit": "launch",
+                        "progress": 85,
+                        "status": "on-track",
+                        "linkedEpic": "analytics-intelligence"
+                    },
+                    {
+                        "id": "kr-analytics-2",
+                        "description": "AI Sales Agent achieving 15%+ conversion rate",
+                        "target": 15,
+                        "current": 0,
+                        "unit": "%",
+                        "progress": 60,
+                        "status": "on-track",
+                        "linkedEpic": "analytics-intelligence"
+                    },
+                    {
+                        "id": "kr-analytics-3",
+                        "description": "Recommendation engine with 85%+ accuracy",
+                        "target": 85,
+                        "current": 0,
+                        "unit": "%",
+                        "progress": 70,
+                        "status": "on-track",
+                        "linkedEpic": "analytics-intelligence"
+                    }
+                ],
+                "overallProgress": 72
+            },
+            {
+                "id": "okr-q1-2026-infrastructure",
+                "quarter": "Q1 2026",
+                "objective": "Reduce infrastructure costs and improve reliability",
+                "owner": "DevOps Team",
+                "keyResults": [
+                    {
+                        "id": "kr-infra-1",
+                        "description": "Achieve 30% cost reduction vs. baseline",
+                        "target": 30,
+                        "current": 22,
+                        "unit": "%",
+                        "progress": 73,
+                        "status": "on-track",
+                        "linkedEpic": "infrastructure-optimization"
+                    },
+                    {
+                        "id": "kr-infra-2",
+                        "description": "Maintain 99.9%+ system uptime",
+                        "target": 99.9,
+                        "current": 99.95,
+                        "unit": "%",
+                        "progress": 100,
+                        "status": "achieved",
+                        "linkedEpic": "infrastructure-optimization"
+                    },
+                    {
+                        "id": "kr-infra-3",
+                        "description": "Security incident response time <1 hour",
+                        "target": 1,
+                        "current": 0.5,
+                        "unit": "hours",
+                        "progress": 100,
+                        "status": "achieved",
+                        "linkedEpic": "infrastructure-optimization"
+                    }
+                ],
+                "overallProgress": 91
             }
         ],
         "sprints": [
+            {
+                "id": "sprint-1",
+                "name": "Foundation Sprint",
+                "startDate": "2026-02-01",
+                "endDate": "2026-02-14",
+                "goal": "Establish platform foundation and security baseline",
+                "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
+                "plannedPoints": 45,
+                "completedPoints": 38,
+                "status": "completed"
+            },
+            {
+                "id": "sprint-2",
+                "name": "Migration Sprint",
+                "startDate": "2026-02-15",
+                "endDate": "2026-02-28",
+                "goal": "Complete legacy page migration and launch subscription",
+                "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
+                "plannedPoints": 50,
+                "completedPoints": 45,
+                "status": "completed"
+            },
             {
                 "id": "sprint-3",
                 "name": "Security & AI Sprint",
                 "startDate": "2026-03-01",
                 "endDate": "2026-03-14",
                 "goal": "Launch subscription service and initiate AI agent development",
-                "tracks": [
-                    "Khyaal Platform",
-                    "Pulse",
-                    "DevOps"
-                ]
+                "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
+                "plannedPoints": 52,
+                "completedPoints": 48,
+                "status": "completed"
             },
             {
                 "id": "sprint-4",
@@ -60,11 +208,10 @@
                 "startDate": "2026-03-15",
                 "endDate": "2026-03-28",
                 "goal": "Complete security compliance and launch analytics capabilities",
-                "tracks": [
-                    "Khyaal Platform",
-                    "Pulse",
-                    "DevOps"
-                ]
+                "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
+                "plannedPoints": 55,
+                "completedPoints": null,
+                "status": "active"
             },
             {
                 "id": "sprint-5",
@@ -72,11 +219,10 @@
                 "startDate": "2026-03-29",
                 "endDate": "2026-04-11",
                 "goal": "Launch advanced features and complete integration work",
-                "tracks": [
-                    "Khyaal Platform",
-                    "Pulse",
-                    "DevOps"
-                ]
+                "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
+                "plannedPoints": 60,
+                "completedPoints": null,
+                "status": "planned"
             }
         ],
         "releases": [
@@ -84,57 +230,71 @@
                 "id": "v2.1-platform-foundation",
                 "name": "v2.1 Platform Foundation",
                 "targetDate": "2026-02-28",
-                "tracks": [
-                    "Khyaal Platform"
-                ],
-                "features": "29 legacy pages migrated, 99 subscription launch, basic security",
+                "tracks": ["Khyaal Platform"],
+                "features": "29 legacy pages migrated, $99 subscription launch, basic security",
                 "successCriteria": "All pages migrated with 30% performance improvement, subscription processing payments",
                 "impact": "Improved user experience, new revenue stream, security baseline",
-                "status": "completed"
+                "status": "completed",
+                "linkedEpic": "platform-modernization"
             },
             {
                 "id": "v2.2-security-hardening",
                 "name": "v2.2 Security Hardening",
                 "targetDate": "2026-03-20",
-                "tracks": [
-                    "Khyaal Platform",
-                    "DevOps"
-                ],
+                "tracks": ["Khyaal Platform", "DevOps"],
                 "features": "VAPT completion, crypto redirect fixes, security monitoring",
                 "successCriteria": "All critical VAPT issues resolved, security monitoring active",
                 "impact": "Enhanced security posture, compliance achievement",
-                "status": "completed"
+                "status": "completed",
+                "linkedEpic": "platform-modernization"
             },
             {
                 "id": "v3.0-analytics-intelligence",
                 "name": "v3.0 Analytics Intelligence",
                 "targetDate": "2026-03-27",
-                "tracks": [
-                    "Pulse"
-                ],
+                "tracks": ["Pulse"],
                 "features": "Gold Tier analytics, AI Sales Agent pilot, CDP dashboards",
                 "successCriteria": "Analytics dashboards deployed, AI agent pilot running with 10%+ conversion",
                 "impact": "Data-driven decisions, AI-powered sales, comprehensive analytics",
-                "status": "in_progress"
+                "status": "in_progress",
+                "linkedEpic": "analytics-intelligence"
             },
             {
                 "id": "v3.1-personalization-engine",
                 "name": "v3.1 Personalization Engine",
                 "targetDate": "2026-04-10",
-                "tracks": [
-                    "Khyaal Platform",
-                    "Pulse"
-                ],
+                "tracks": ["Khyaal Platform", "Pulse"],
                 "features": "Recommendation engines, template-based events, app-code authentication",
                 "successCriteria": "Recommendation accuracy 85%+, event templates deployed, authentication working",
                 "impact": "Personalized user experience, scalable event management, seamless authentication",
-                "status": "planned"
+                "status": "planned",
+                "linkedEpic": "analytics-intelligence"
             }
         ],
         "roadmap": [
             { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue" },
             { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo" },
             { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate" }
+        ],
+        "capacity": {
+            "teamMembers": [
+                { "name": "Subhrajit", "capacity": 13, "track": "Khyaal Platform", "role": "Full Stack Engineer" },
+                { "name": "Vivek", "capacity": 8, "track": "Khyaal Platform", "role": "Frontend Engineer" },
+                { "name": "Manish", "capacity": 13, "track": "Khyaal Platform", "role": "Backend Engineer" },
+                { "name": "Nikhil", "capacity": 13, "track": "Pulse", "role": "Data Engineer" },
+                { "name": "Rushikesh", "capacity": 13, "track": "Pulse", "role": "ML Engineer" },
+                { "name": "Susmit", "capacity": 8, "track": "Pulse", "role": "AI Engineer" },
+                { "name": "Pritish", "capacity": 5, "track": "Pulse", "role": "AI Specialist" },
+                { "name": "Raj", "capacity": 13, "track": "DevOps", "role": "DevOps Engineer" }
+            ],
+            "totalCapacity": 86
+        },
+        "velocityHistory": [
+            { "sprintId": "sprint-1", "planned": 45, "completed": 38, "velocity": 84, "dates": "Feb 1-14, 2026" },
+            { "sprintId": "sprint-2", "planned": 50, "completed": 45, "velocity": 90, "dates": "Feb 15-28, 2026" },
+            { "sprintId": "sprint-3", "planned": 52, "completed": 48, "velocity": 92, "dates": "Mar 1-14, 2026" },
+            { "sprintId": "sprint-4", "planned": 55, "completed": null, "velocity": null, "dates": "Mar 15-28, 2026", "forecast": 51 },
+            { "sprintId": "sprint-5", "planned": 60, "completed": null, "velocity": null, "dates": "Mar 29-Apr 11, 2026", "forecast": 55 }
         ]
     },
     "tracks": [
@@ -147,31 +307,45 @@
                     "name": "Website",
                     "items": [
                         {
+                            "id": "platform-website-captcha",
                             "text": "Captcha implementation",
                             "status": "now",
-                            "contributors": [
-                                "Subhrajit"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 3,
+                            "contributors": ["Subhrajit"],
                             "note": "Adding a bot check on forms.",
                             "usecase": "Reduces spam and fake submissions.",
+                            "acceptanceCriteria": [
+                                "Captcha appears on all public forms",
+                                "Bot submissions are blocked",
+                                "User experience remains smooth"
+                            ],
+                            "effortLevel": "low",
+                            "impactLevel": "medium",
                             "mediaUrl": "",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
                             "planningHorizon": "1M",
                             "epicId": "platform-modernization",
-                            "sprintId": "sprint-3",
+                            "sprintId": "sprint-4",
                             "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "platform-website-0",
                             "text": "Rajkot event",
                             "status": "done",
-                            "contributors": [
-                                "Subhrajit",
-                                "Vivek"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Subhrajit", "Vivek"],
                             "note": "Created a dedicated page for the event.",
                             "usecase": "Helps users register and access event details easily.",
+                            "acceptanceCriteria": [
+                                "Event page is live",
+                                "Registration form works",
+                                "Event details are accurate"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-18",
                             "due": "2026-03-20",
@@ -193,15 +367,22 @@
                             "id": "platform-website-2",
                             "text": "Missing Pulse events tracking",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Manish"],
                             "note": "Adding missing user activity tracking.",
                             "usecase": "Improves reporting and journey analysis.",
+                            "acceptanceCriteria": [
+                                "All user events are tracked",
+                                "Events appear in Pulse dashboard",
+                                "No data loss during tracking"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "dependencies": "identity events aren't showing up in pulse dashboard",
+                            "dependencies": ["pulse-cdp-3"],
                             "publishedDate": "2026-03-25",
                             "planningHorizon": "1M",
                             "epicId": "analytics-intelligence",
@@ -212,11 +393,18 @@
                             "id": "platform-website-3",
                             "text": "Legacy migration alerts and reporting",
                             "status": "next",
-                            "contributors": [
-                                "Subhrajit"
-                            ],
+                            "priority": "low",
+                            "storyPoints": 3,
+                            "contributors": ["Subhrajit"],
                             "note": "Automating updates during migration work.",
                             "usecase": "Keeps teams informed with less manual work.",
+                            "acceptanceCriteria": [
+                                "Automated alerts are sent",
+                                "Reports are generated automatically",
+                                "Notifications work reliably"
+                            ],
+                            "effortLevel": "low",
+                            "impactLevel": "low",
                             "startDate": "2026-03-23",
                             "publishedDate": "2026-03-20",
                             "planningHorizon": "1M",
@@ -228,12 +416,18 @@
                             "id": "platform-website-4",
                             "text": "CMS modular blocks",
                             "status": "next",
-                            "contributors": [
-                                "Subhrajit",
-                                "Vivek"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 8,
+                            "contributors": ["Subhrajit", "Vivek"],
                             "note": "Creating reusable page sections.",
                             "usecase": "Speeds up website content creation.",
+                            "acceptanceCriteria": [
+                                "At least 5 reusable blocks created",
+                                "Blocks can be drag-dropped",
+                                "Content team can use without dev help"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-23",
                             "publishedDate": "2026-03-30",
@@ -246,48 +440,72 @@
                             "id": "platform-website-5",
                             "text": "VAPT fixes remediation",
                             "status": "now",
-                            "contributors": [
-                                "Vivek"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Vivek"],
                             "note": "Closing security issues found in testing.",
                             "usecase": "Strengthens website safety.",
+                            "acceptanceCriteria": [
+                                "All critical VAPT issues resolved",
+                                "Medium issues addressed",
+                                "Security scan passes"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-23",
                             "due": "2026-03-27",
                             "publishedDate": "2026-03-20",
                             "planningHorizon": "1M",
                             "epicId": "platform-modernization",
-                            "sprintId": "sprint-1",
-                            "releasedIn": "v2.1-platform-foundation"
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "platform-website-6",
                             "text": "Crypto redirection security improvements",
                             "status": "now",
-                            "contributors": [
-                                "Vivek"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Vivek"],
                             "note": "Adding stronger redirect protection.",
                             "usecase": "Prevents wrong or unsafe redirects.",
+                            "acceptanceCriteria": [
+                                "Redirect validation is in place",
+                                "Malicious redirects are blocked",
+                                "Legitimate redirects work"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "startDate": "2026-03-23",
                             "due": "2026-03-27",
                             "publishedDate": "2026-03-20",
                             "planningHorizon": "1M",
                             "epicId": "platform-modernization",
-                            "sprintId": "sprint-1",
-                            "releasedIn": "v2.1-platform-foundation"
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "platform-website-7",
                             "text": "Template-based event pages",
                             "status": "next",
-                            "contributors": [
-                                "Subhrajit",
-                                "Vivek"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 8,
+                            "contributors": ["Subhrajit", "Vivek"],
                             "note": "Planning reusable event page designs.",
                             "usecase": "Makes future event pages faster to build.",
+                            "acceptanceCriteria": [
+                                "Template system is built",
+                                "At least 3 templates created",
+                                "Events can be created in <1 hour"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
-                            "publishedDate": "2026-03-30"
+                            "publishedDate": "2026-03-30",
+                            "planningHorizon": "3M",
+                            "epicId": "platform-modernization",
+                            "sprintId": "sprint-5",
+                            "releasedIn": "v3.1-personalization-engine"
                         }
                     ]
                 },
@@ -298,11 +516,18 @@
                             "id": "platform-50above50-website-0",
                             "text": "Missing Pulse events tracking",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Manish"],
                             "note": "Adding missing activity tracking events.",
                             "usecase": "Improves campaign and funnel analysis.",
+                            "acceptanceCriteria": [
+                                "All events are tracked",
+                                "Events show in dashboard",
+                                "Funnel analysis works"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "startDate": "2026-03-23",
                             "due": "2026-03-27",
                             "publishedDate": "2026-03-20",
@@ -315,14 +540,21 @@
                             "id": "platform-50above50-website-1",
                             "text": "VAPT fixes remediation",
                             "status": "later",
+                            "priority": "low",
+                            "storyPoints": 5,
                             "contributors": [],
                             "note": "Fixing issues found in security testing.",
                             "usecase": "Improves website security.",
+                            "acceptanceCriteria": [
+                                "Security issues resolved",
+                                "VAPT scan passes"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "medium",
                             "publishedDate": "2026-03-20",
-                            "planningHorizon": "1M",
+                            "planningHorizon": "6M",
                             "epicId": "platform-modernization",
-                            "sprintId": "sprint-1",
-                            "releasedIn": "v2.1-platform-foundation"
+                            "releasedIn": "v2.2-security-hardening"
                         }
                     ]
                 },
@@ -333,16 +565,29 @@
                             "id": "platform-50above50-crm-0",
                             "text": "Zoho CRM Data Migration",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 13,
+                            "contributors": ["Manish"],
                             "note": "Enhancing the speed and reliability of CRM data synchronization during migration.",
                             "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making.",
+                            "acceptanceCriteria": [
+                                "Migration completes successfully",
+                                "Data integrity is maintained",
+                                "Sync performance improved by 50%"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-20",
                             "due": "2026-03-24",
-                            "dependencies": "zoho-crm customer support",
-                            "publishedDate": "2026-03-25"
+                            "dependencies": ["external-zoho-support"],
+                            "publishedDate": "2026-03-25",
+                            "blocker": true,
+                            "blockerNote": "Waiting on Zoho customer support response",
+                            "planningHorizon": "1M",
+                            "epicId": "platform-modernization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         }
                     ]
                 },
@@ -357,41 +602,75 @@
                             "id": "platform-api-0",
                             "text": "Membership status sync via Razorpay to Pulse",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Manish"],
                             "note": "update: pushed on dev and shared the reference file to reefaq for testing journey based on the above implemented event.\n\nCapturing all membership status updates (e.g., initiated, charged, started, cancelled, expired) and sending them to Pulse via Razorpay webhook triggers.",
                             "usecase": "Provides complete visibility of the user membership lifecycle for better tracking, automation, and engagement.",
+                            "acceptanceCriteria": [
+                                "All webhook events are captured",
+                                "Events are sent to Pulse reliably",
+                                "Journey automation works"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "https://khyaal.atlassian.net/wiki/x/AQAXI",
                             "startDate": "2026-03-20",
                             "due": "2026-03-23",
-                            "publishedDate": "2026-03-25"
+                            "publishedDate": "2026-03-25",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "platform-api-5",
                             "text": "Centerstage API",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 13,
+                            "contributors": ["Manish"],
                             "note": "Planned support for a future product area.",
                             "usecase": "Prepares for future expansion.",
+                            "acceptanceCriteria": [
+                                "API endpoints defined",
+                                "Authentication works",
+                                "Documentation complete"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "medium",
                             "startDate": "2026-03-23",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "3M",
+                            "epicId": "platform-modernization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.1-personalization-engine"
                         },
                         {
                             "id": "platform-api-6",
                             "text": "Centerstage: Queue architecture",
                             "status": "now",
-                            "contributors": [
-                                "Manish"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 8,
+                            "contributors": ["Manish"],
                             "note": "Improving how work is processed in the backend.",
                             "usecase": "Makes the system more scalable.",
+                            "acceptanceCriteria": [
+                                "Queue system is implemented",
+                                "Tasks process reliably",
+                                "Performance improves by 40%"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-25",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["platform-api-5"],
+                            "planningHorizon": "1M",
+                            "epicId": "platform-modernization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.1-personalization-engine"
                         }
                     ]
                 },
@@ -403,12 +682,18 @@
                             "text": "25th march travel emailer",
                             "status": "done",
                             "priority": "high",
+                            "storyPoints": 1,
                             "contributors": [],
                             "note": "It took 1.30 hr. I started on 10.40 AM.",
+                            "acceptanceCriteria": ["Emailer sent successfully"],
+                            "effortLevel": "low",
+                            "impactLevel": "low",
                             "mediaUrl": "",
                             "startDate": "2026-03-25",
                             "due": "2026-03-25",
-                            "publishedDate": "2026-03-25"
+                            "publishedDate": "2026-03-25",
+                            "planningHorizon": "1M",
+                            "sprintId": "sprint-4"
                         }
                     ]
                 },
@@ -419,37 +704,83 @@
                             "id": "platform-api-9",
                             "text": "Streaks",
                             "status": "later",
+                            "priority": "low",
+                            "storyPoints": 13,
                             "contributors": [],
                             "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
                             "usecase": "1. Track daily/weekly participation of users in events or platform activities.2. Increment streak count when user performs the required action consecutively.3. Show streaks on user dashboard to motivate engagement.4. Optionally, provide rewards or badges for achieving streak milestones.5. Reset streak if the user misses a day/session.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Streak tracking system implemented",
+                                "User dashboard shows streaks",
+                                "Rewards system works"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "medium",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "6M",
+                            "epicId": "platform-modernization"
                         },
                         {
                             "id": "platform-api-8",
                             "text": "Support for app-code authentication in API",
                             "status": "later",
+                            "priority": "medium",
+                            "storyPoints": 8,
                             "contributors": [],
                             "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
                             "usecase": "1. User generates a temporary app code from the mobile app.2. User submits the app code to the API endpoint.3. API validates the code and issues a short-lived JWT token.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "App code generation works",
+                                "API validates codes correctly",
+                                "JWT tokens are issued"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "3M",
+                            "epicId": "platform-modernization",
+                            "releasedIn": "v3.1-personalization-engine"
                         },
                         {
                             "id": "platform-50above50-website-2",
                             "text": "In-app transition",
                             "status": "later",
+                            "priority": "low",
+                            "storyPoints": 8,
                             "contributors": [],
                             "note": "Planning the move into the app journey.",
                             "usecase": "Gives users a smoother app experience.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Transition plan documented",
+                                "User journey mapped"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "medium",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "6M",
+                            "epicId": "platform-modernization"
                         },
                         {
                             "id": "platform-website-8",
                             "text": "Events listing and joining via Web Zoom SDK",
                             "status": "later",
+                            "priority": "medium",
+                            "storyPoints": 13,
                             "contributors": [],
                             "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
                             "usecase": "1. Display upcoming events on the website.2. User selects an event to join.3. System generates a unique session token (JWT) for the user.4. Token can be retrieved via scanning QR code or app code.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Events are listed",
+                                "Join works without OTP",
+                                "QR code auth works"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["platform-api-8"],
+                            "planningHorizon": "3M",
+                            "epicId": "platform-modernization",
+                            "releasedIn": "v3.1-personalization-engine"
                         }
                     ],
                     "note": ""
@@ -485,15 +816,25 @@
                             "text": "Fix Journey first node identification flag",
                             "status": "now",
                             "priority": "high",
-                            "contributors": [
-                                "Subhrajit"
-                            ],
+                            "storyPoints": 5,
+                            "contributors": ["Subhrajit"],
                             "note": "- Validate that exactly one node has fromTriggerNode: true before a journey can be saved/published in the journey builder\n- Show an error/warning to the user if no entry point is set — block saving until it's fixed",
                             "usecase": "Show an error/warning to the user if no entry point is set — block saving until it's fixed",
+                            "acceptanceCriteria": [
+                                "Validation prevents saving without entry node",
+                                "Error message is clear",
+                                "Journey builder UX improved"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-24",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-23"
+                            "publishedDate": "2026-03-23",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         }
                     ]
                 },
@@ -506,59 +847,101 @@
                     "items": [
                         {
                             "id": "pulse-ai-agents-0",
-                            "text": "Sales Agent – Specific Tours Pilot launch tesing, stakeholder alignment",
+                            "text": "Sales Agent – Specific Tours Pilot launch testing, stakeholder alignment",
                             "status": "now",
-                            "contributors": [
-                                "Susmit",
-                                "Pritish",
-                                "Nikhil"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Susmit", "Pritish", "Nikhil"],
                             "note": "Preparing for internal pilot testing by aligning stakeholders and refining prompts, responses, and data based on initial feedback.",
                             "usecase": "Ensures the system is validated internally before full rollout.",
+                            "acceptanceCriteria": [
+                                "Stakeholders aligned",
+                                "Pilot test complete",
+                                "Feedback incorporated"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-ai-agents-1",
                             "text": "Prompt & conversation refinement",
                             "status": "now",
-                            "contributors": [
-                                "Pritish",
-                                "Susmit"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Pritish", "Susmit"],
                             "note": "Finalizing conversation scripts including sales pitch, closure, and intent/ratings handling.",
                             "usecase": "Improves quality of conversations and increases chances of successful conversions.",
+                            "acceptanceCriteria": [
+                                "Prompts are finalized",
+                                "Conversation quality improved",
+                                "Conversion rate increased"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "startDate": "2026-03-23",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-ai-agents-0"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-ai-agents-2",
                             "text": "Plivo setup for India & recording feasibility",
                             "status": "now",
-                            "contributors": [
-                                "Susmit"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 5,
+                            "contributors": ["Susmit"],
                             "note": "Setting up Plivo for Indian numbers and checking recording support and associated costs. Manual recording remains a fallback option.",
                             "usecase": "Enables scalable calling infrastructure for India with clarity on recording capabilities.",
+                            "acceptanceCriteria": [
+                                "Plivo setup complete",
+                                "Recording feasibility assessed",
+                                "Cost analysis done"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "medium",
                             "startDate": "2026-03-18",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-ai-agents-3",
                             "text": "Call recording feasibility",
                             "status": "now",
-                            "contributors": [
-                                "Nikhil",
-                                "Susmit"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 3,
+                            "contributors": ["Nikhil", "Susmit"],
                             "note": "Exploring call recording setup with Plivo, including feasibility and cost. Manual recording is possible but requires additional effort.",
                             "usecase": "Helps review calls, improve quality, and maintain records for training and compliance.",
+                            "acceptanceCriteria": [
+                                "Recording system evaluated",
+                                "Cost-benefit analysis complete",
+                                "Implementation plan ready"
+                            ],
+                            "effortLevel": "low",
+                            "impactLevel": "medium",
                             "startDate": "2026-03-18",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-ai-agents-2"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         }
                     ]
                 },
@@ -569,103 +952,197 @@
                             "id": "pulse-cdp-0",
                             "text": "Gold Tier feature engineering",
                             "status": "now",
-                            "contributors": [
-                                "Nikhil"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Nikhil"],
                             "note": "Preparing important data features.",
                             "usecase": "Supports better analytics and predictions.",
+                            "acceptanceCriteria": [
+                                "50+ features engineered",
+                                "Features are documented",
+                                "Quality metrics met"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-25",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-cdp-1",
                             "text": "Gold Tier data models",
                             "status": "now",
-                            "contributors": [
-                                "Nikhil"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Nikhil"],
                             "note": "Defining the structure for Gold Tier data.",
                             "usecase": "Keeps data organized for use.",
+                            "acceptanceCriteria": [
+                                "Data models defined",
+                                "Schema documented",
+                                "Migration path clear"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-25",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-0"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-cdp-2",
                             "text": "Gold Tier metrics",
                             "status": "now",
-                            "contributors": [
-                                "Nikhil"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Nikhil"],
                             "note": "Defining key measures for Gold Tier.",
                             "usecase": "Helps track performance clearly.",
+                            "acceptanceCriteria": [
+                                "Metrics defined and documented",
+                                "Dashboards show metrics",
+                                "Alerts configured"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-25",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-1"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-cdp-3",
                             "text": "Dashboards",
                             "status": "now",
-                            "contributors": [
-                                "Nikhil"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Nikhil"],
                             "note": "Publishing user-facing dashboards with key metrics and insights.",
                             "usecase": "Makes data-driven insights easily accessible for teams to monitor performance and make informed decisions.",
+                            "acceptanceCriteria": [
+                                "Dashboards are live",
+                                "Real-time updates work",
+                                "User feedback is positive"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-2"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.0-analytics-intelligence"
                         },
                         {
                             "id": "pulse-cdp-4",
                             "text": "Recommendation: ML Feature Engineering",
                             "status": "now",
-                            "contributors": [
-                                "Rushikesh"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 13,
+                            "contributors": ["Rushikesh"],
                             "note": "Building and finalizing ~50 ML features including propensity, time-series, standard deviation, and averages.",
                             "usecase": "Improves model accuracy and strength of recommendations.",
+                            "acceptanceCriteria": [
+                                "50+ ML features built",
+                                "Features validated",
+                                "Model accuracy improved"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.1-personalization-engine"
                         },
                         {
+                            "id": "pulse-cdp-5",
                             "text": "Recommendation: Persona Engine Integration",
                             "status": "now",
-                            "contributors": [
-                                "Rushikesh"
-                            ],
-                            "due": "27 Mar 2026",
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Rushikesh"],
+                            "due": "2026-03-27",
                             "note": "Integrating long-term and contextual memory using Mem0 and Neo4j.",
                             "usecase": "Enables deeper personalization based on user memory and behavior.",
-                            "id": "pulse-cdp-5",
-                            "startDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Mem0 integration complete",
+                                "Neo4j setup working",
+                                "Persona engine live"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
+                            "startDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-4"],
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v3.1-personalization-engine"
                         },
                         {
                             "id": "pulse-cdp-6",
                             "text": "Recommendation: Predictive Recommendation Engine (Cold Data)",
                             "status": "next",
-                            "contributors": [
-                                "Rushikesh"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 13,
+                            "contributors": ["Rushikesh"],
                             "note": "Building recommendation models using historical (cold) data.",
                             "usecase": "Predicts user needs and preferences proactively.",
+                            "acceptanceCriteria": [
+                                "Model trained on historical data",
+                                "Prediction accuracy >80%",
+                                "System deployed to prod"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "due": "2026-04-03",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-4", "pulse-cdp-5"],
+                            "planningHorizon": "3M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-5",
+                            "releasedIn": "v3.1-personalization-engine"
                         },
                         {
                             "id": "pulse-cdp-7",
                             "text": "Recommendation: Contextual Recommendation Engine (Hot Data)",
                             "status": "next",
-                            "contributors": [
-                                "Rushikesh"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 13,
+                            "contributors": ["Rushikesh"],
                             "note": "Developing real-time recommendations based on live (hot) data.",
                             "usecase": "Delivers real-time, context-aware recommendations to improve engagement.",
+                            "acceptanceCriteria": [
+                                "Real-time processing works",
+                                "Latency <200ms",
+                                "User engagement improves"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-04-06",
                             "due": "2026-04-10",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "dependencies": ["pulse-cdp-6"],
+                            "planningHorizon": "3M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-5",
+                            "releasedIn": "v3.1-personalization-engine"
                         }
                     ]
                 },
@@ -685,15 +1162,25 @@
                             "id": "task-1774621425151",
                             "text": "User 360 persona feature",
                             "status": "now",
-                            "contributors": [
-                                "Subhrajit",
-                                "Rushikesh"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 13,
+                            "contributors": ["Subhrajit", "Rushikesh"],
                             "usecase": "Show entire user persona based on 90 days lifecycle on khyaal platforms",
+                            "acceptanceCriteria": [
+                                "360 view shows complete user data",
+                                "90-day history displayed",
+                                "Persona insights generated"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-30",
                             "due": "2026-04-06",
-                            "publishedDate": "2026-03-30"
+                            "publishedDate": "2026-03-30",
+                            "planningHorizon": "1M",
+                            "epicId": "analytics-intelligence",
+                            "sprintId": "sprint-5",
+                            "releasedIn": "v3.1-personalization-engine"
                         }
                     ],
                     "note": ""
@@ -705,28 +1192,60 @@
                             "id": "pulse-flow-0",
                             "text": "Personalization in Flow",
                             "status": "later",
+                            "priority": "low",
+                            "storyPoints": 13,
                             "contributors": [],
                             "note": "Introducing personalization within flows using user data and behavior.",
                             "usecase": "Enables dynamic, user-specific journeys to improve engagement and outcomes.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Personalization engine integrated",
+                                "User journeys adapt dynamically"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "6M",
+                            "epicId": "analytics-intelligence"
                         },
                         {
                             "id": "pulse-ai-agents-4",
                             "text": "AI Assistant 2.0",
                             "status": "later",
+                            "priority": "medium",
+                            "storyPoints": 21,
                             "contributors": [],
                             "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
                             "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Context handling improved",
+                                "Response quality increased",
+                                "User satisfaction >90%"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "6M",
+                            "epicId": "analytics-intelligence"
                         },
                         {
                             "id": "pulse-journey-0",
                             "text": "Custom Expression Support in Journey",
                             "status": "later",
+                            "priority": "low",
+                            "storyPoints": 13,
                             "contributors": [],
                             "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
                             "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data.",
-                            "publishedDate": "2026-03-20"
+                            "acceptanceCriteria": [
+                                "Expression language defined",
+                                "Builder UI supports expressions",
+                                "Dynamic branching works"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "medium",
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "6M",
+                            "epicId": "analytics-intelligence"
                         }
                     ],
                     "note": ""
@@ -742,82 +1261,144 @@
                     "name": "Infrastructure & Security",
                     "items": [
                         {
+                            "id": "devops-infrastructure-&-security-0",
                             "text": "AWS cost optimization",
                             "status": "now",
-                            "contributors": [
-                                "Raj"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 8,
+                            "contributors": ["Raj"],
                             "note": "Reducing cloud costs across environments.",
                             "usecase": "Improves cost efficiency.",
-                            "id": "devops-infrastructure-&-security-0",
+                            "acceptanceCriteria": [
+                                "Cost reduced by 30%",
+                                "Performance maintained",
+                                "Monitoring in place"
+                            ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "planningHorizon": "3M",
+                            "planningHorizon": "1M",
                             "epicId": "infrastructure-optimization",
-                            "sprintId": "sprint-1",
-                            "releasedIn": "v2.1-platform-foundation"
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "devops-infrastructure-&-security-1",
                             "text": "Khyaal Tours redirect issue investigation",
                             "status": "done",
-                            "contributors": [
-                                "Raj"
-                            ],
+                            "priority": "high",
+                            "storyPoints": 5,
+                            "contributors": ["Raj"],
                             "note": "Root cause analysis completed and potential issue identified; fix is being worked on.\n\nhttps://khyaal.atlassian.net/wiki/x/AYAKI",
                             "usecase": "Helps resolve incorrect redirection and ensures users reach the correct website.",
+                            "acceptanceCriteria": [
+                                "Root cause identified",
+                                "Fix implemented",
+                                "Issue resolved"
+                            ],
+                            "effortLevel": "medium",
+                            "impactLevel": "high",
                             "startDate": "2026-03-02",
                             "due": "2026-03-04",
-                            "publishedDate": "2026-03-20"
+                            "publishedDate": "2026-03-20",
+                            "planningHorizon": "1M",
+                            "epicId": "infrastructure-optimization",
+                            "sprintId": "sprint-3",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "task-1774000413314",
                             "text": "All application specific dashboards",
                             "status": "done",
-                            "contributors": [
-                                "Raj"
+                            "priority": "medium",
+                            "storyPoints": 8,
+                            "contributors": ["Raj"],
+                            "acceptanceCriteria": [
+                                "Dashboards deployed",
+                                "Monitoring active",
+                                "Alerts configured"
                             ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-20",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-26"
+                            "publishedDate": "2026-03-26",
+                            "planningHorizon": "1M",
+                            "epicId": "infrastructure-optimization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "task-1774507170965",
                             "text": "Script for local environment of GCP",
                             "status": "done",
-                            "contributors": [
-                                "Raj"
-                            ],
+                            "priority": "medium",
+                            "storyPoints": 3,
+                            "contributors": ["Raj"],
                             "note": "Script for local environment of GCP for testing",
+                            "acceptanceCriteria": [
+                                "Script works locally",
+                                "Documentation complete",
+                                "Team can use independently"
+                            ],
+                            "effortLevel": "low",
+                            "impactLevel": "medium",
                             "mediaUrl": "",
                             "startDate": "2026-03-24",
                             "due": "2026-03-26",
-                            "publishedDate": "2026-03-26"
+                            "publishedDate": "2026-03-26",
+                            "planningHorizon": "1M",
+                            "epicId": "infrastructure-optimization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "task-1774507736813",
                             "text": "Implementation of Local Staging Setup",
                             "status": "now",
-                            "contributors": [
-                                "Raj"
+                            "priority": "medium",
+                            "storyPoints": 8,
+                            "contributors": ["Raj"],
+                            "acceptanceCriteria": [
+                                "Staging environment works locally",
+                                "CI/CD pipeline updated",
+                                "Documentation complete"
                             ],
+                            "effortLevel": "high",
+                            "impactLevel": "high",
                             "mediaUrl": "",
                             "startDate": "2026-03-26",
                             "due": "2026-03-30",
-                            "publishedDate": "2026-03-26"
+                            "publishedDate": "2026-03-26",
+                            "planningHorizon": "1M",
+                            "epicId": "infrastructure-optimization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         },
                         {
                             "id": "task-1774595770185",
                             "text": "add make test for deploying test pod to GKE",
                             "status": "done",
-                            "contributors": [
-                                "Raj"
+                            "priority": "low",
+                            "storyPoints": 2,
+                            "contributors": ["Raj"],
+                            "acceptanceCriteria": [
+                                "Make test command works",
+                                "Pod deploys successfully",
+                                "Tests pass"
                             ],
+                            "effortLevel": "low",
+                            "impactLevel": "medium",
                             "mediaUrl": "",
                             "startDate": "2026-03-26",
                             "due": "2026-03-27",
-                            "publishedDate": "2026-03-27"
+                            "publishedDate": "2026-03-27",
+                            "planningHorizon": "1M",
+                            "epicId": "infrastructure-optimization",
+                            "sprintId": "sprint-4",
+                            "releasedIn": "v2.2-security-hardening"
                         }
                     ]
                 },
@@ -828,11 +1409,20 @@
                             "id": "task-1774000457133",
                             "text": "Move Qdrant and Assistant Service from AWS to GCP",
                             "status": "later",
-                            "contributors": [
-                                "Raj"
+                            "priority": "medium",
+                            "storyPoints": 13,
+                            "contributors": ["Raj"],
+                            "acceptanceCriteria": [
+                                "Services migrated to GCP",
+                                "Performance maintained",
+                                "Cost reduced"
                             ],
+                            "effortLevel": "high",
+                            "impactLevel": "medium",
                             "mediaUrl": "",
-                            "publishedDate": "2026-03-30"
+                            "publishedDate": "2026-03-30",
+                            "planningHorizon": "3M",
+                            "epicId": "infrastructure-optimization"
                         }
                     ],
                     "note": ""

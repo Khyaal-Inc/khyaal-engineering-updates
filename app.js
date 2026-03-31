@@ -75,10 +75,20 @@ function initDashboard() {
     console.log('⚙️ Setting up global behaviors...');
     setupKeyboardShortcuts(); // from core.js
     initCms(); // from cms.js
-    
-    // 4. Initial Render - Default to Epics View
-    console.log('🎨 Initial render - defaulting to epics view');
-    switchView('epics'); // Default to epics view
+
+    // 5. Initialize Mode System
+    console.log('🎭 Initializing mode system...');
+    if (typeof initModeSystem === 'function') {
+        initModeSystem(); // from modes.js
+    }
+
+    // 6. Initial Render - Default to mode-specific view
+    console.log('🎨 Initial render - defaulting to mode view');
+    const defaultMode = UPDATE_DATA.metadata?.modes?.default || 'pm';
+    const defaultView = defaultMode === 'pm' ? 'epics' :
+                       defaultMode === 'dev' ? 'my-tasks' :
+                       defaultMode === 'exec' ? 'dashboard' : 'epics';
+    switchView(defaultView);
     renderTrackView(); // from views.js
     updateBacklogBadge(); // from cms.js
     buildTagFilterBar(); // from core.js

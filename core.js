@@ -190,13 +190,17 @@ function updateTabCounts() {
         sprint: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints ? UPDATE_DATA.metadata.sprints.length : 0),
         epics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.epics ? UPDATE_DATA.metadata.epics.length : 0),
         roadmap: allItems.filter(i => i.planningHorizon).length,
-        releases: allItems.filter(i => i.releasedIn).length
+        releases: allItems.filter(i => i.releasedIn).length,
+        okr: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.okrs ? UPDATE_DATA.metadata.okrs.length : 0),
+        kanban: allItems.length,
+        analytics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.velocityHistory ? UPDATE_DATA.metadata.velocityHistory.length : 0),
+        capacity: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.capacity && UPDATE_DATA.metadata.capacity.teamMembers ? UPDATE_DATA.metadata.capacity.teamMembers.length : 0)
     };
     (UPDATE_DATA.tracks || []).forEach(t => {
         const bl = t.subtracks.find(s => s.name === 'Backlog');
         if (bl) counts.backlog += bl.items.length;
     });
-    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency', 'epics', 'roadmap'].forEach(v => {
+    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency', 'epics', 'roadmap', 'kanban', 'okr', 'analytics', 'capacity'].forEach(v => {
         const el = document.getElementById(`tab-count-${v}`);
         if (el) el.textContent = counts[v] || '';
     });
@@ -225,6 +229,12 @@ function switchView(view) {
     if (view === 'sprint') renderSprintView();
     if (view === 'releases') renderReleasesView();
     if (view === 'dependency') renderDependencyView();
+    if (view === 'kanban') renderKanbanView();
+    if (view === 'okr') renderOkrView();
+    if (view === 'analytics') renderAnalyticsView();
+    if (view === 'capacity') renderCapacityView();
+    if (view === 'my-tasks') renderMyTasksView();
+    if (view === 'dashboard') renderExecutiveDashboard();
     
     renderBlockerStrip();
     buildTagFilterBar();
