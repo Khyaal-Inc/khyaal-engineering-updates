@@ -59,6 +59,17 @@ function renderCommentThread(comments, ti, si, ii) {
 function renderTrackView() {
     const container = document.getElementById('track-view');
     let html = '';
+    
+    if (shouldShowManagement()) {
+        html += `
+            <div class="flex justify-end mb-6">
+                <button onclick="openTrackEdit()" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+                    <span>🏗️</span> Add New Track
+                </button>
+            </div>
+        `;
+    }
+
     const activeTeam = getActiveTeam();
 
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
@@ -452,7 +463,7 @@ function renderContributorView() {
                     </div>
                     <div class="space-y-0.5 px-1">
                         ${statusItems.map(item => `
-                            <div oncontextmenu="window.currentContextItem={ti:${item.trackIndex},si:${item.subtrackIndex},ii:${item.itemIndex}}; return false;" class="group relative flex items-center gap-2 p-1.5 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white transition-all cursor-pointer" onclick="openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})">
+                            <div oncontextmenu="window.currentContextItem={ti:${item.trackIndex},si:${item.subtrackIndex},ii:${item.itemIndex}}; return false;" class="group relative flex items-center gap-2 p-1.5 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white transition-all cursor-pointer" onclick="${shouldShowManagement() ? `openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})` : ''}">
                                 <div class="flex-1 text-[11px] font-medium text-slate-600 group-hover:text-slate-900 truncate" title="${item.text}">
                                     ${highlightSearch(item.text)}
                                 </div>
@@ -476,12 +487,6 @@ function toggleGroomingMode() {
     buildTagFilterBar(); // from core.js
     updateTabCounts(); // from core.js
     renderBlockerStrip(); // from core.js
-    
-    // Force render epics view after a short delay to ensure DOM is ready
-    setTimeout(() => {
-        console.log('🎯 Forcing epics view render...');
-        switchView('epics');
-    }, 500);
     renderBacklogView();
 }
 

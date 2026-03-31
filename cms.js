@@ -14,6 +14,15 @@ const CMS_CONFIG = {
 
 function initCms() {
     const params = new URLSearchParams(window.location.search);
+    
+    // Global modal behavior (works even in read-only mode if a modal is triggered)
+    const modal = document.getElementById('cms-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeCmsModal();
+        });
+    }
+
     if (params.get('cms') === 'true') {
         isCmsMode = true;
         document.getElementById('cms-controls').classList.add('active');
@@ -22,9 +31,6 @@ function initCms() {
             document.getElementById('github-token').value = token;
             authenticateCms();
         }
-        document.getElementById('cms-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeCmsModal();
-        });
     } else {
         window.isGithubAuthenticated = false;
         const ctrls = document.getElementById('cms-controls');
