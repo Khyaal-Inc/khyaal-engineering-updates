@@ -57,6 +57,9 @@
 
     <div id="main-content">
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
+        <script src="core.js"></script>
+        <script src="views.js"></script>
+        <script src="cms.js"></script>
         <script src="app.js"></script>
 
         <!-- CMS Modal -->
@@ -155,6 +158,9 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Global Blocker Alert Strip -->
+            <div id="global-blocker-strip" class="max-w-7xl mx-auto hidden"></div>
 
             <!-- Advanced Date Filters -->
             <div class="search-container">
@@ -331,27 +337,8 @@
             document.getElementById('auth-gatekeeper').classList.add('hidden');
             document.getElementById('main-content').classList.add('visible');
 
-            // Update metadata from JSON
-            document.getElementById('page-title').textContent = UPDATE_DATA.metadata.title;
-            document.getElementById('page-date').textContent = UPDATE_DATA.metadata.dateRange;
-            document.getElementById('page-desc').textContent = UPDATE_DATA.metadata.description;
-            document.getElementById('footer-text').textContent = `${UPDATE_DATA.metadata.title} • ${UPDATE_DATA.metadata.dateRange}`;
-
-            // Note: nextReview might be missing in some datasets, so we check
-            if (UPDATE_DATA.metadata.nextReview) {
-                document.getElementById('footer-next').textContent = `Next Review: ${UPDATE_DATA.metadata.nextReview}`;
-            }
-
-            // Initialize data and CMS if not already done
-            normalizeData();
-            buildContributorList();
-            setupKeyboardShortcuts();
-            initCms();
-            initArchiveFilter();
-            renderTrackView();
-            updateBacklogBadge();
-            buildTagFilterBar();
-            updateTabCounts();
+            // Initialize the modular dashboard
+            initDashboard();
         }
 
         function logoutAll() {
