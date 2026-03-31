@@ -567,7 +567,12 @@ function openEpicEdit(epicIndex) {
 }
 
 function validateCmsForm() {
-    const textEl = document.getElementById('edit-text') || document.getElementById('edit-sprint-name') || document.getElementById('edit-release-name') || document.getElementById('edit-epic-name');
+    const textEl = document.getElementById('edit-text') || 
+                   document.getElementById('edit-sprint-name') || 
+                   document.getElementById('edit-release-name') || 
+                   document.getElementById('edit-epic-name') ||
+                   document.getElementById('edit-track-name') ||
+                   document.getElementById('edit-subtrack-name');
     if (textEl && !textEl.value.trim()) {
         textEl.style.borderColor = '#ef4444';
         return false;
@@ -670,10 +675,22 @@ function saveCmsChanges() {
         logChange('Edit Metadata', meta.title);
 
     } else if (editContext.type === 'track') {
-        const track = UPDATE_DATA.tracks[editContext.trackIndex];
-        track.name = document.getElementById('edit-track-name').value;
-        track.theme = document.getElementById('edit-track-theme').value;
-        logChange('Edit Track', track.name);
+        const name = document.getElementById('edit-track-name').value.trim();
+        const theme = document.getElementById('edit-track-theme').value;
+        if (editContext.trackIndex !== undefined) {
+            const track = UPDATE_DATA.tracks[editContext.trackIndex];
+            track.name = name;
+            track.theme = theme;
+        } else {
+            UPDATE_DATA.tracks.push({
+                name,
+                theme,
+                subtracks: [{ name: 'General', items: [] }]
+            });
+        }
+        logChange(editContext.trackIndex !== undefined ? 'Edit Track' : 'Add Track', name);
+        renderTrackView();
+        updateTabCounts();
 
     } else if (editContext.type === 'epic') {
         const epicData = {
@@ -692,10 +709,21 @@ function saveCmsChanges() {
         logChange(editContext.epicId ? 'Edit Epic' : 'Add Epic', epicData.name);
 
     } else if (editContext.type === 'subtrack') {
-        const sub = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex];
-        sub.name = document.getElementById('edit-subtrack-name').value;
-        sub.note = document.getElementById('edit-subtrack-note').value;
-        logChange('Edit Subtrack', sub.name);
+        const subName = document.getElementById('edit-subtrack-name').value.trim();
+        const subNote = document.getElementById('edit-subtrack-note').value.trim();
+        if (editContext.subtrackIndex !== undefined) {
+            const sub = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex];
+            sub.name = subName;
+            sub.note = subNote;
+        } else {
+            UPDATE_DATA.tracks[editContext.trackIndex].subtracks.push({
+                name: subName,
+                note: subNote,
+                items: []
+            });
+        }
+        logChange(editContext.subtrackIndex !== undefined ? 'Edit Subtrack' : 'Add Subtrack', subName);
+        renderTrackView();
     }
 
     closeCmsModal();
@@ -712,19 +740,30 @@ function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value) 
     switchView(currentView);
 }
 
-// ------ TRACK & SUBTRACK OPS ------
+// Consolidated Track Management
 function openTrackEdit(ti) {
-    const track = ti !== undefined ? UPDATE_DATA.tracks[ti] : { name: '', theme: 'blue', subtracks: [] };
+    const track = ti !== undefined ? UPDATE_DATA.tracks[ti] : { name: '', theme: 'blue', subtracks: [{ name: 'General', items: [] }] };
     editContext = { type: 'track', trackIndex: ti };
     
     document.getElementById('modal-title').innerText = ti !== undefined ? 'Edit Track' : 'Add New Track';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Track Name</label>
-        <input type="text" id="edit-track-name" value="${track.name}" class="cms-input">
-        <label class="block text-sm font-bold mb-1">Theme Color</label>
-        <select id="edit-track-theme" class="cms-input">
-            ${Object.keys(themeColors).map(c => `<option value="${c}" ${track.theme === c ? 'selected' : ''}>${c.charAt(0).toUpperCase() + c.slice(1)}</option>`).join('')}
-        </select>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Track Name</label>
+                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input" placeholder="e.g. Platform Team">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
+                <select id="edit-track-theme" class="cms-input">
+                    <option value="blue" ${track.theme === 'blue' ? 'selected' : ''}>Standard Blue</option>
+                    <option value="emerald" ${track.theme === 'emerald' ? 'selected' : ''}>Emerald Green</option>
+                    <option value="violet" ${track.theme === 'violet' ? 'selected' : ''}>Violet Purple</option>
+                    <option value="amber" ${track.theme === 'amber' ? 'selected' : ''}>Amber Yellow</option>
+                    <option value="rose" ${track.theme === 'rose' ? 'selected' : ''}>Rose Pink</option>
+                    <option value="slate" ${track.theme === 'slate' ? 'selected' : ''}>Cool Slate</option>
+                </select>
+            </div>
+        </div>
     `;
     document.getElementById('cms-modal').classList.add('active');
 }
@@ -803,50 +842,6 @@ function openMetadataEdit() {
     document.getElementById('cms-modal').classList.add('active');
 }
 
-function openTrackEdit(trackIndex) {
-    const track = UPDATE_DATA.tracks[trackIndex];
-    editContext = { type: 'track', trackIndex };
-
-    document.getElementById('modal-title').innerText = 'Edit Track (Team)';
-    document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Track Name</label>
-                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input">
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
-                <select id="edit-track-theme" class="cms-input">
-                    <option value="blue" ${track.theme === 'blue' ? 'selected' : ''}>Standard Blue</option>
-                    <option value="emerald" ${track.theme === 'emerald' ? 'selected' : ''}>Emerald Green</option>
-                    <option value="violet" ${track.theme === 'violet' ? 'selected' : ''}>Violet Purple</option>
-                    <option value="amber" ${track.theme === 'amber' ? 'selected' : ''}>Amber Yellow</option>
-                    <option value="rose" ${track.theme === 'rose' ? 'selected' : ''}>Rose Pink</option>
-                    <option value="slate" ${track.theme === 'slate' ? 'selected' : ''}>Cool Slate</option>
-                </select>
-            </div>
-        </div>
-    `;
-    document.getElementById('cms-modal').classList.add('active');
-}
-
-function addTrack() {
-    const newTrack = {
-        name: "New Project/Team",
-        theme: "slate",
-        subtracks: [{ name: "General", items: [] }]
-    };
-    UPDATE_DATA.tracks.push(newTrack);
-    renderTrackView();
-    openTrackEdit(UPDATE_DATA.tracks.length - 1);
-}
-
-function deleteTrack(trackIndex) {
-    if (!confirm('DELETE ENTIRE TEAM? This will remove all subtracks and tasks in this track.')) return;
-    UPDATE_DATA.tracks.splice(trackIndex, 1);
-    renderTrackView();
-    updateTabCounts();
-}
 
 function openSubtrackEdit(trackIndex, subtrackIndex) {
     const sub = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex];

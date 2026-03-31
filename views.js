@@ -517,7 +517,7 @@ function renderBacklogView() {
 
         const si = track.subtracks.indexOf(backlogSub);
         html += `<div class="backlog-track-card mb-6 overflow-hidden ${groomingMode ? 'border-2 border-indigo-400 shadow-xl scale-[1.01] transform transition-all' : ''}">
-            <div class="track-header p-4 bg-slate-100 font-extrabold border-b flex justify-between items-center text-slate-700">
+            <div class="p-4 bg-slate-100 font-extrabold border-b flex justify-between items-center text-slate-700">
                 <span class="flex items-center gap-2">🏗️ ${track.name} Backlog <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">${backlogSub.items.length}</span></span>
                 ${shouldShowManagement() ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
             </div>
