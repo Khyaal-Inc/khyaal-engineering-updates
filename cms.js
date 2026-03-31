@@ -683,6 +683,15 @@ function saveCmsChanges() {
     switchView(currentView);
 }
 
+function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value) {
+    const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
+    item[field] = value;
+    logChange(`Groom Item (${field})`, item.text);
+    // Auto-refresh the view to show status changes
+    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'backlog';
+    switchView(currentView);
+}
+
 // ------ TRACK & SUBTRACK OPS ------
 function openTrackEdit(ti) {
     const track = ti !== undefined ? UPDATE_DATA.tracks[ti] : { name: '', theme: 'blue', subtracks: [] };

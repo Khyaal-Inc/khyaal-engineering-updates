@@ -161,7 +161,7 @@ function toggleSubtrack(trackId, subtrackName, iconId) {
     setSubtrackCollapsed(trackId, subtrackName, isNowCollapsed);
 }
 
-function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex) {
+function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, isGrooming = false) {
     const status = statusConfig[item.status];
     const priority = item.priority || 'medium';
     const priorityInfo = priorityConfig[priority];
@@ -230,6 +230,36 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex) {
                                 <button id="comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments || []).length} Comments</button>
                                 ${cmsControls ? `<div>${cmsControls}</div>` : ''}
                             </div>
+
+                            ${isGrooming ? `
+                                <div class="mt-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50 grid grid-cols-1 sm:grid-cols-3 gap-3" onclick="event.stopPropagation()">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Priority</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                            <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
+                                            <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
+                                            <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Epic</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                            <option value="">No Epic</option>
+                                            ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-indigo-400 uppercase mb-1">Horizon</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value)" class="w-full text-xs p-1.5 rounded border border-indigo-200 bg-white">
+                                            <option value="">None</option>
+                                            <option value="1M" ${item.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
+                                            <option value="3M" ${item.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
+                                            <option value="6M" ${item.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
+                                            <option value="1Y" ${item.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            ` : ''}
                             <div id="comments-${trackIndex}-${subtrackIndex}-${itemIndex}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
                                 <div id="thread-${trackIndex}-${subtrackIndex}-${itemIndex}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
                                     ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex)}
@@ -449,8 +479,8 @@ function renderBacklogView() {
                     <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
                     <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
                 </div>
-                <button onclick="toggleGroomingMode()" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-700 hover:bg-slate-600">
-                    ${groomingMode ? '✅ Exit Grooming' : '🔧 Grooming Mode'}
+                <button onclick="toggleGroomingMode()" class="px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md ${groomingMode ? 'bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}">
+                    ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
                 </button>
             </div>
         `;
@@ -464,12 +494,15 @@ function renderBacklogView() {
         if (!backlogSub || !backlogSub.items.length) return;
         totalItems += backlogSub.items.length;
 
-        html += `<div class="backlog-track-card mb-6">
-            <div class="track-header p-3 bg-slate-100 font-bold border-b">${track.name} Backlog</div>
-            <div class="p-2 space-y-2">`;
+        const si = track.subtracks.indexOf(backlogSub);
+        html += `<div class="backlog-track-card mb-6 overflow-hidden ${groomingMode ? 'border-2 border-indigo-400 shadow-xl scale-[1.01] transform transition-all' : ''}">
+            <div class="track-header p-4 bg-slate-100 font-extrabold border-b flex justify-between items-center text-slate-700">
+                <span class="flex items-center gap-2">🏗️ ${track.name} Backlog <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">${backlogSub.items.length}</span></span>
+                ${isAuthenticated ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
+            </div>
+            <div class="p-3 space-y-3 bg-white">`;
         backlogSub.items.forEach((item, ii) => {
-            const si = track.subtracks.indexOf(backlogSub);
-            html += renderItem(item, '', trackIndex, si, ii);
+            html += renderItem(item, '', trackIndex, si, ii, groomingMode);
         });
         html += `</div></div>`;
     });
