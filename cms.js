@@ -566,13 +566,49 @@ function openEpicEdit(epicIndex) {
     document.getElementById('cms-modal').classList.add('active');
 }
 
+function openRoadmapEdit(id) {
+    if (!UPDATE_DATA.metadata.roadmap) {
+        UPDATE_DATA.metadata.roadmap = [
+            { id: '1M', label: '1 Month', color: 'blue' },
+            { id: '3M', label: '3 Months', color: 'indigo' },
+            { id: '6M', label: '6 Months', color: 'slate' }
+        ];
+    }
+    const horizon = id ? UPDATE_DATA.metadata.roadmap.find(r => r.id === id) : { id: '', label: '', color: 'blue' };
+    editContext = { type: 'roadmap', roadmapId: id };
+
+    document.getElementById('modal-title').innerText = id ? 'Edit Roadmap Category' : 'Add Roadmap Category';
+    document.getElementById('modal-form').innerHTML = `
+        <label class="block text-sm font-bold mb-1">Category Label</label>
+        <input type="text" id="edit-roadmap-label" value="${horizon.label}" class="cms-input" placeholder="e.g. Next Month">
+        
+        <label class="block text-sm font-bold mb-1 mt-4">Internal ID</label>
+        <input type="text" id="edit-roadmap-id" value="${horizon.id}" class="cms-input" placeholder="e.g. 1M" ${id ? 'readonly' : ''}>
+        <p class="text-[10px] text-slate-400 mt-1">${id ? 'ID cannot be changed after creation.' : 'Unique ID used for task assignment.'}</p>
+
+        <label class="block text-sm font-bold mb-1 mt-4">Theme Color</label>
+        <select id="edit-roadmap-color" class="cms-input">
+            <option value="blue" ${horizon.color === 'blue' ? 'selected' : ''}>Blue</option>
+            <option value="indigo" ${horizon.color === 'indigo' ? 'selected' : ''}>Indigo</option>
+            <option value="violet" ${horizon.color === 'violet' ? 'selected' : ''}>Violet</option>
+            <option value="emerald" ${horizon.color === 'emerald' ? 'selected' : ''}>Emerald</option>
+            <option value="amber" ${horizon.color === 'amber' ? 'selected' : ''}>Amber</option>
+            <option value="rose" ${horizon.color === 'rose' ? 'selected' : ''}>Rose</option>
+            <option value="slate" ${horizon.color === 'slate' ? 'selected' : ''}>Slate</option>
+        </select>
+    `;
+    document.getElementById('cms-modal').classList.add('active');
+}
+
 function validateCmsForm() {
     const textEl = document.getElementById('edit-text') || 
                    document.getElementById('edit-sprint-name') || 
                    document.getElementById('edit-release-name') || 
                    document.getElementById('edit-epic-name') ||
                    document.getElementById('edit-track-name') ||
-                   document.getElementById('edit-subtrack-name');
+                   document.getElementById('edit-subtrack-name') ||
+                   document.getElementById('edit-roadmap-label') ||
+                   document.getElementById('edit-roadmap-id');
     if (textEl && !textEl.value.trim()) {
         textEl.style.borderColor = '#ef4444';
         return false;
@@ -707,6 +743,28 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.epics.push(epicData);
         }
         logChange(editContext.epicId ? 'Edit Epic' : 'Add Epic', epicData.name);
+
+    } else if (editContext.type === 'roadmap') {
+        const roadmapData = {
+            id: document.getElementById('edit-roadmap-id').value.trim(),
+            label: document.getElementById('edit-roadmap-label').value.trim(),
+            color: document.getElementById('edit-roadmap-color').value
+        };
+        if (!UPDATE_DATA.metadata.roadmap) {
+             UPDATE_DATA.metadata.roadmap = [
+                { id: '1M', label: '1 Month', color: 'blue' },
+                { id: '3M', label: '3 Months', color: 'indigo' },
+                { id: '6M', label: '6 Months', color: 'slate' }
+            ];
+        }
+        if (editContext.roadmapId) {
+            const idx = UPDATE_DATA.metadata.roadmap.findIndex(r => r.id === editContext.roadmapId);
+            UPDATE_DATA.metadata.roadmap[idx] = roadmapData;
+        } else {
+            UPDATE_DATA.metadata.roadmap.push(roadmapData);
+        }
+        logChange(editContext.roadmapId ? 'Edit Roadmap' : 'Add Roadmap', roadmapData.label);
+        renderRoadmapView();
 
     } else if (editContext.type === 'subtrack') {
         const subName = document.getElementById('edit-subtrack-name').value.trim();
@@ -1158,6 +1216,25 @@ function deleteRelease(releaseId) {
     logChange('Delete Release', release.name);
     switchView('releases');
     updateTabCounts();
+}
+
+function deleteRoadmap(id) {
+    const horizon = UPDATE_DATA.metadata.roadmap.find(r => r.id === id);
+    if (!confirm(`Delete roadmap category "${horizon.label}"? Tasks will remain but will be unassigned from this horizon.`)) return;
+
+    // Clear planningHorizon from items
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.planningHorizon === id) delete item.planningHorizon;
+            });
+        });
+    });
+
+    const idx = UPDATE_DATA.metadata.roadmap.findIndex(r => r.id === id);
+    UPDATE_DATA.metadata.roadmap.splice(idx, 1);
+    logChange('Delete Roadmap', horizon.label);
+    renderRoadmapView();
 }
 
 function logoutAll() {

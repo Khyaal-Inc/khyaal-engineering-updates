@@ -606,38 +606,48 @@ function renderRoadmapView() {
     const container = document.getElementById('roadmap-view');
     if (!container) return;
     
-    // Explicitly use window.UPDATE_DATA
     const data = window.UPDATE_DATA || {};
-    
-    // Support either metadata-defined roadmap or fallback horizons
     const roadmapDefs = (data.metadata && data.metadata.roadmap) || [
-        { id: '1M', label: '1 Month (Now)', color: 'blue' },
-        { id: '3M', label: '3 Months (Next)', color: 'indigo' },
-        { id: '6M', label: '6 Months (Later)', color: 'slate' }
+        { id: '1M', label: '1 Month', color: 'blue' },
+        { id: '3M', label: '3 Months', color: 'indigo' },
+        { id: '6M', label: '6 Months', color: 'slate' }
     ];
     
-    let html = '';
+    let html = shouldShowManagement() ? `
+        <div class="flex justify-end mb-6">
+            <button onclick="openRoadmapEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+                <span>➕</span> Add Roadmap Category
+            </button>
+        </div>
+    ` : '';
+    
     roadmapDefs.forEach(h => {
         const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
-        if (horizonItems.length === 0) return;
+        const cmsActions = shouldShowManagement() ? `
+            <div class="flex gap-2 ml-4">
+                <button onclick="openRoadmapEdit('${h.id}')" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-white/80 px-2 py-1 rounded border border-indigo-100 transition-colors">Edit</button>
+                <button onclick="deleteRoadmap('${h.id}')" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-widest bg-white/80 px-2 py-1 rounded border border-rose-100 transition-colors">Delete</button>
+            </div>
+        ` : '';
 
         html += `
-            <div class="roadmap-section mb-10">
-                <div class="flex items-center gap-4 mb-6">
+            <div class="roadmap-section mb-12">
+                <div class="flex items-center gap-4 mb-8">
                     <div class="h-[2px] flex-1 bg-slate-100"></div>
-                    <div class="px-4 py-2 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current flex items-center gap-3">
+                    <div class="px-5 py-2.5 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current flex items-center gap-3 shadow-sm">
                         ${h.label || h.name}
-                        ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-white/50 hover:bg-white p-1 rounded-full text-[10px] w-5 h-5 flex items-center justify-center transition-colors"><span>+</span></button>` : ''}
+                        ${cmsActions}
+                        ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-white/60 hover:bg-white p-1 rounded-full text-[10px] w-6 h-6 flex items-center justify-center transition-all hover:scale-110 shadow-sm" title="Add Task to this Horizon"><span>➕</span></button>` : ''}
                     </div>
                     <div class="h-[2px] flex-1 bg-slate-100"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
-                    ${renderGroupedItems(horizonItems)}
+                <div class="grid grid-cols-1 gap-6">
+                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems) : '<div class="text-center py-10 text-slate-300 italic text-sm">No items assigned to this planning horizon.</div>'}
                 </div>
             </div>`;
     });
     
-    container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use Grooming Mode in Backlog to assign Planning Horizons.</div>';
+    container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use the button to add your first planning category.</div>';
 }
 
 // ------ Sprint View ------
