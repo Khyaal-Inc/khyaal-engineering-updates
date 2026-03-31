@@ -1,4 +1,4 @@
-# Khyaal Engineering Updates Dashboard
+# Khyaal Engineering Pulse Dashboard
 
 > A zero-deployment engineering status and PM planning dashboard for the Khyaal team — secure, real-time, and fully browser-operated.
 
