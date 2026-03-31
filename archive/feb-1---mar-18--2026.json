@@ -2,118 +2,94 @@
             "metadata": {
                         "title": "Khyaal Engineering Updates",
                         "dateRange": "Feb 1 \u2013 Mar 18, 2026",
-                        "description": "Executive Updates"
+                        "description": "Executive Updates",
+                        "epics": [
+                                    {
+                                                "id": "platform-modernization",
+                                                "name": "Platform Modernization Epic",
+                                                "track": "Khyaal Platform",
+                                                "objective": "Modernize legacy systems and enhance platform capabilities",
+                                                "scope": "Website migration, 50Above50 improvements, CRM integration, API enhancements",
+                                                "keyDeliverables": "29 pages migrated, subscription launch, security hardening",
+                                                "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
+                                                "timeline": "Feb 1 - Apr 10, 2026",
+                                                "health": "on-track",
+                                                "status": "in_progress"
+                                    },
+                                    {
+                                                "id": "analytics-intelligence",
+                                                "name": "Analytics & Intelligence Epic",
+                                                "track": "Pulse",
+                                                "objective": "Build comprehensive data foundation and AI capabilities",
+                                                "scope": "CDP development, analytics dashboards, AI agents, recommendation engines",
+                                                "keyDeliverables": "Gold Tier analytics, sales AI agents, ML recommendations",
+                                                "successMetrics": "Data-driven decisions 80%+, AI conversion 15%+, recommendation accuracy 85%+",
+                                                "timeline": "Feb 1 - Apr 10, 2026",
+                                                "health": "on-track",
+                                                "status": "in_progress"
+                                    },
+                                    {
+                                                "id": "infrastructure-optimization",
+                                                "name": "Infrastructure Optimization Epic",
+                                                "track": "DevOps",
+                                                "objective": "Optimize cloud infrastructure and enhance security posture",
+                                                "scope": "AWS to GCP migration, cost optimization, monitoring setup",
+                                                "keyDeliverables": "Cost reduction 30%, improved monitoring, security compliance",
+                                                "successMetrics": "Infrastructure cost savings 30%+, system uptime 99.9%+, security response < 1hr",
+                                                "timeline": "Feb 1 - Apr 10, 2026",
+                                                "health": "on-track",
+                                                "status": "in_progress"
+                                    }
+                        ],
+                        "sprints": [
+                                    {
+                                                "id": "sprint-1",
+                                                "name": "Foundation Sprint",
+                                                "startDate": "2026-02-01",
+                                                "endDate": "2026-02-14",
+                                                "goal": "Establish modern platform foundation and infrastructure optimization",
+                                                "tracks": ["Khyaal Platform", "DevOps"]
+                                    },
+                                    {
+                                                "id": "sprint-2",
+                                                "name": "Analytics Foundation Sprint",
+                                                "startDate": "2026-02-15",
+                                                "endDate": "2026-02-28",
+                                                "goal": "Complete platform migration and establish data analytics foundation",
+                                                "tracks": ["Pulse", "Khyaal Platform"]
+                                    },
+                                    {
+                                                "id": "sprint-3",
+                                                "name": "Security & AI Sprint",
+                                                "startDate": "2026-03-01",
+                                                "endDate": "2026-03-14",
+                                                "goal": "Launch subscription service and initiate AI agent development",
+                                                "tracks": ["Khyaal Platform", "Pulse", "DevOps"]
+                                    }
+                        ],
+                        "releases": [
+                                    {
+                                                "id": "v2.1-platform-foundation",
+                                                "name": "v2.1 Platform Foundation",
+                                                "targetDate": "2026-02-28",
+                                                "tracks": ["Khyaal Platform"],
+                                                "features": "29 legacy pages migrated, 99 subscription launch, basic security",
+                                                "successCriteria": "All pages migrated with 30% performance improvement, subscription processing payments",
+                                                "impact": "Improved user experience, new revenue stream, security baseline",
+                                                "status": "completed"
+                                    },
+                                    {
+                                                "id": "v2.2-security-hardening",
+                                                "name": "v2.2 Security Hardening",
+                                                "targetDate": "2026-03-20",
+                                                "tracks": ["Khyaal Platform", "DevOps"],
+                                                "features": "VAPT completion, crypto redirect fixes, security monitoring",
+                                                "successCriteria": "All critical VAPT issues resolved, security monitoring active",
+                                                "impact": "Enhanced security posture, compliance achievement",
+                                                "status": "planned"
+                                    }
+                        ]
             },
-            "epics": [
-                        {
-                                    "id": "platform-modernization",
-                                    "name": "Platform Modernization Epic",
-                                    "track": "Khyaal Platform",
-                                    "objective": "Modernize legacy systems and enhance platform capabilities",
-                                    "scope": "Website migration, 50Above50 improvements, CRM integration, API enhancements",
-                                    "keyDeliverables": "29 pages migrated, subscription launch, security hardening",
-                                    "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
-                                    "timeline": "Feb 1 - Apr 10, 2026",
-                                    "status": "in_progress"
-                        },
-                        {
-                                    "id": "analytics-intelligence",
-                                    "name": "Analytics & Intelligence Epic",
-                                    "track": "Pulse",
-                                    "objective": "Build comprehensive data foundation and AI capabilities",
-                                    "scope": "CDP development, analytics dashboards, AI agents, recommendation engines",
-                                    "keyDeliverables": "Gold Tier analytics, sales AI agents, ML recommendations",
-                                    "successMetrics": "Data-driven decisions 80%+, AI conversion 15%+, recommendation accuracy 85%+",
-                                    "timeline": "Feb 1 - Apr 10, 2026",
-                                    "status": "in_progress"
-                        },
-                        {
-                                    "id": "infrastructure-optimization",
-                                    "name": "Infrastructure Optimization Epic",
-                                    "track": "DevOps",
-                                    "objective": "Optimize cloud infrastructure and enhance security posture",
-                                    "scope": "AWS to GCP migration, cost optimization, monitoring setup",
-                                    "keyDeliverables": "Cost reduction 30%, improved monitoring, security compliance",
-                                    "successMetrics": "Infrastructure cost savings 30%+, system uptime 99.9%+, security response < 1hr",
-                                    "timeline": "Feb 1 - Apr 10, 2026",
-                                    "status": "in_progress"
-                        }
-            ],
-            "roadmap": [
-                        {
-                                    "id": "foundation-phase",
-                                    "name": "Foundation Phase",
-                                    "period": "Feb 1-28, 2026",
-                                    "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
-                                    "focus": "Legacy migration, data foundation, infrastructure planning",
-                                    "status": "completed"
-                        },
-                        {
-                                    "id": "enhancement-phase",
-                                    "name": "Enhancement Phase",
-                                    "period": "Mar 1-20, 2026",
-                                    "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
-                                    "focus": "Revenue features, AI development, cloud migration",
-                                    "status": "in_progress"
-                        },
-                        {
-                                    "id": "integration-phase",
-                                    "name": "Integration Phase",
-                                    "period": "Mar 21 - Apr 10, 2026",
-                                    "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
-                                    "focus": "Advanced features, personalization, optimization",
-                                    "status": "planned"
-                        }
-            ],
-            "sprints": [
-                        {
-                                    "id": "sprint-1",
-                                    "name": "Foundation Sprint",
-                                    "period": "Feb 1-14, 2026",
-                                    "tracks": ["Khyaal Platform", "DevOps"],
-                                    "goal": "Establish modern platform foundation and infrastructure optimization",
-                                    "deliverables": "15 pages migrated, cost analysis, GCP migration plan",
-                                    "status": "completed"
-                        },
-                        {
-                                    "id": "sprint-2",
-                                    "name": "Analytics Foundation Sprint",
-                                    "period": "Feb 15-28, 2026",
-                                    "tracks": ["Pulse", "Khyaal Platform"],
-                                    "goal": "Complete platform migration and establish data analytics foundation",
-                                    "deliverables": "Complete page migration, subscription backend, data foundation",
-                                    "status": "completed"
-                        },
-                        {
-                                    "id": "sprint-3",
-                                    "name": "Security & AI Sprint",
-                                    "period": "Mar 1-14, 2026",
-                                    "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
-                                    "goal": "Launch subscription service and initiate AI agent development",
-                                    "deliverables": "Subscription launch, AI agent prototype, GCP migration",
-                                    "status": "in_progress"
-                        }
-            ],
-            "releases": [
-                        {
-                                    "id": "v2.1-platform-foundation",
-                                    "name": "v2.1 Platform Foundation",
-                                    "date": "2026-02-28",
-                                    "tracks": ["Khyaal Platform"],
-                                    "features": "29 legacy pages migrated, 99 subscription launch, basic security",
-                                    "impact": "Improved user experience, new revenue stream, security baseline",
-                                    "status": "completed"
-                        },
-                        {
-                                    "id": "v2.2-security-hardening",
-                                    "name": "v2.2 Security Hardening",
-                                    "date": "2026-03-20",
-                                    "tracks": ["Khyaal Platform", "DevOps"],
-                                    "features": "VAPT completion, crypto redirect fixes, security monitoring",
-                                    "impact": "Enhanced security posture, compliance achievement",
-                                    "status": "planned"
-                        }
-            ],
             "tracks": [
                         {
                                     "id": "platform",
@@ -131,7 +107,11 @@
                                                                                     ],
                                                                                     "note": "Updated older pages to a cleaner and faster experience.",
                                                                                     "usecase": "Improves page speed and usability.",
-                                                                                    "publishedDate": "2026-03-20"
+                                                                                    "publishedDate": "2026-03-20",
+                                                                                    "sprint": "sprint-1",
+                                                                                    "release": "v2.1-platform-foundation",
+                                                                                    "linkedEpic": "platform-modernization",
+                                                                                    "planningHorizon": "1M"
                                                                         },
                                                                         {
                                                                                     "text": "99 Subscription launch",
@@ -141,7 +121,11 @@
                                                                                                 "Vivek"
                                                                                     ],
                                                                                     "note": "Launched a paid subscription option for users.",
-                                                                                    "usecase": "Supports recurring revenue."
+                                                                                    "usecase": "Supports recurring revenue.",
+                                                                                    "sprint": "sprint-2",
+                                                                                    "release": "v2.1-platform-foundation",
+                                                                                    "linkedEpic": "platform-modernization",
+                                                                                    "planningHorizon": "1M"
                                                                         },
                                                                         {
                                                                                     "text": "Delhi Marathon event page",
