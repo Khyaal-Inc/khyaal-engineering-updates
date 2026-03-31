@@ -25,6 +25,10 @@ function initCms() {
         document.getElementById('cms-modal').addEventListener('click', function(e) {
             if (e.target === this) closeCmsModal();
         });
+    } else {
+        window.isGithubAuthenticated = false;
+        const ctrls = document.getElementById('cms-controls');
+        if (ctrls) ctrls.classList.remove('active');
     }
 }
 
@@ -32,18 +36,18 @@ function authenticateCms() {
     const token = document.getElementById('github-token').value;
     if (!token) return;
     localStorage.setItem('gh_pat', token);
-    window.isAuthenticated = true;
-    isAuthenticated = true;
+    window.isGithubAuthenticated = true;
 
     document.getElementById('cms-auth-section').classList.add('hidden');
     document.getElementById('cms-actions-section').classList.remove('hidden');
 
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
+    const currentView = document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'track';
+    if (typeof switchView === 'function') switchView(currentView);
 }
 
 function logoutCms() {
     localStorage.removeItem('gh_pat');
+    window.isGithubAuthenticated = false;
     location.reload();
 }
 
@@ -211,9 +215,13 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
     }, 10);
 }
 
-function addItem(trackIndex, subtrackIndex) {
-    editContext = { type: 'item-new', trackIndex, subtrackIndex };
+function addItem(trackIndex, subtrackIndex, defaults = {}) {
+    editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
     document.getElementById('modal-title').innerText = 'Add New Item';
+    const sprints = UPDATE_DATA.metadata.sprints || [];
+    const releases = UPDATE_DATA.metadata.releases || [];
+    const epics = UPDATE_DATA.metadata.epics || [];
+
     document.getElementById('modal-form').innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-4">
@@ -226,19 +234,19 @@ function addItem(trackIndex, subtrackIndex) {
                     <div>
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Status</label>
                         <select id="edit-status" class="cms-input">
-                            <option value="done">Done</option>
-                            <option value="now">Now</option>
-                            <option value="ongoing">On-Going</option>
-                            <option value="next" selected>Next</option>
-                            <option value="later">Later</option>
+                            <option value="done" ${defaults.status === 'done' ? 'selected' : ''}>Done</option>
+                            <option value="now" ${defaults.status === 'now' ? 'selected' : ''}>Now</option>
+                            <option value="ongoing" ${defaults.status === 'ongoing' ? 'selected' : ''}>On-Going</option>
+                            <option value="next" ${!defaults.status || defaults.status === 'next' ? 'selected' : ''}>Next</option>
+                            <option value="later" ${defaults.status === 'later' ? 'selected' : ''}>Later</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Priority</label>
                         <select id="edit-priority" class="cms-input">
-                            <option value="high">High</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="low">Low</option>
+                            <option value="high" ${defaults.priority === 'high' ? 'selected' : ''}>High</option>
+                            <option value="medium" ${!defaults.priority || defaults.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                            <option value="low" ${defaults.priority === 'low' ? 'selected' : ''}>Low</option>
                         </select>
                     </div>
                 </div>
@@ -271,14 +279,14 @@ function addItem(trackIndex, subtrackIndex) {
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Sprint</label>
                         <select id="edit-sprintId" class="cms-input">
                             <option value="">None</option>
-                            ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                            ${sprints.map(s => `<option value="${s.id}" ${s.id === defaults.sprintId ? 'selected' : ''}>${s.name}</option>`).join('')}
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Release</label>
                         <select id="edit-releasedIn" class="cms-input">
                             <option value="">None</option>
-                            ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                            ${releases.map(r => `<option value="${r.id}" ${r.id === defaults.releasedIn ? 'selected' : ''}>${r.name}</option>`).join('')}
                         </select>
                     </div>
                 </div>
@@ -288,16 +296,22 @@ function addItem(trackIndex, subtrackIndex) {
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
                         <select id="edit-planningHorizon" class="cms-input">
                             <option value="">None</option>
-                            <option value="1M">1 Month</option>
-                            <option value="3M">3 Months</option>
-                            <option value="6M">6 Months</option>
-                            <option value="1Y">1 Year</option>
+                            <option value="1M" ${defaults.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
+                            <option value="3M" ${defaults.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
+                            <option value="6M" ${defaults.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
+                            <option value="1Y" ${defaults.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold mb-1.5 text-slate-700">Linked Epic</label>
                         <select id="edit-epicId" class="cms-input">
                             <option value="">None</option>
+                            ${epics.map(e => `<option value="${e.id}" ${e.id === defaults.epicId ? 'selected' : ''}>${e.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
                             ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
                         </select>
                     </div>
@@ -1082,12 +1096,71 @@ async function loadArchive(fileName) {
 // ------ CMS ROUTING ------
 function saveCms() {
     if (!editContext) return;
-    if (editContext.type === 'epic') {
-        // I noticed I don't have saveEpic() in my current set of functions? 
-        // Wait, I should've checked if I deleted it.
-        // I will re-add it if needed or check if it's there.
-        if (typeof saveEpic === 'function') saveEpic();
-    } else {
-        saveCmsChanges();
-    }
+    saveCmsChanges();
+}
+
+function deleteEpic(idx) {
+    const epic = UPDATE_DATA.metadata.epics[idx];
+    if (!confirm(`Delete strategic epic "${epic.name}"? This will not delete tasks, but they will be unlinked from this epic.`)) return;
+    
+    // Clear epicId from all items that were linked to this epic
+    const epicId = epic.id;
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.epicId === epicId) delete item.epicId;
+            });
+        });
+    });
+
+    UPDATE_DATA.metadata.epics.splice(idx, 1);
+    logChange('Delete Epic', epic.name);
+    switchView('epics');
+    updateTabCounts();
+}
+
+function deleteSprint(sprintId) {
+    const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId);
+    if (!confirm(`Delete sprint "${sprint.name}"? This will not delete tasks, but they will be unlinked from this sprint.`)) return;
+    
+    // Clear sprintId from items
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.sprintId === sprintId) delete item.sprintId;
+            });
+        });
+    });
+
+    const idx = UPDATE_DATA.metadata.sprints.findIndex(s => s.id === sprintId);
+    UPDATE_DATA.metadata.sprints.splice(idx, 1);
+    logChange('Delete Sprint', sprint.name);
+    switchView('sprint');
+    updateTabCounts();
+}
+
+function deleteRelease(releaseId) {
+    const release = UPDATE_DATA.metadata.releases.find(r => r.id === releaseId);
+    if (!confirm(`Delete release "${release.name}"? This will not delete tasks, but they will be unlinked from this release.`)) return;
+    
+    // Clear releasedIn from items
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.releasedIn === releaseId) delete item.releasedIn;
+            });
+        });
+    });
+
+    const idx = UPDATE_DATA.metadata.releases.findIndex(r => r.id === releaseId);
+    UPDATE_DATA.metadata.releases.splice(idx, 1);
+    logChange('Delete Release', release.name);
+    switchView('releases');
+    updateTabCounts();
+}
+
+function logoutAll() {
+    localStorage.removeItem('khyaal_site_auth');
+    localStorage.removeItem('GITHUB_CMS_TOKEN');
+    location.reload();
 }

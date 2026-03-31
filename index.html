@@ -29,7 +29,8 @@
                     .then(data => {
                         window.UPDATE_DATA = data;
                         localStorage.setItem(SITE_AUTH_KEY, 'true');
-                        window.isAuthenticated = true;
+                        // Management buttons (Edit/Delete) will NOT appear by default
+                        // They will only be authorized by cms.js upon GitHub PAT entry
                         
                         // Wait for DOM to be ready and all scripts to be loaded
                         if (document.readyState === 'complete' || document.readyState === 'interactive') {
@@ -93,30 +94,37 @@
         <!-- UI Layout -->
         <div id="main-content" class="max-w-7xl mx-auto">
             <!-- CMS Controls -->
-            <div id="cms-controls">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div id="cms-controls" class="bg-white border-2 border-slate-900 rounded-2xl p-6 mb-8 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="flex-1 w-full">
-                        <h2 class="text-lg font-bold mb-2">CMS Dashboard</h2>
-                        <div id="cms-auth-section" class="flex gap-2">
-                            <input type="password" id="github-token" placeholder="Enter GitHub PAT" class="cms-input"
-                                style="max-width: 300px; margin-bottom: 0;">
-                            <button onclick="authenticateCms()" class="cms-btn cms-btn-primary">Authenticate</button>
+                        <h2 class="text-xl font-bold text-slate-900 mb-4">CMS Dashboard</h2>
+                        
+                        <!-- Token Entry (Screenshot 1 phase) -->
+                        <div id="cms-auth-section" class="flex gap-3">
+                            <input type="password" id="github-token" placeholder="Enter GitHub Personal Access Token..." class="cms-input !mb-0 shadow-sm"
+                                style="max-width: 450px;">
+                            <button onclick="authenticateCms()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md">Authenticate</button>
                         </div>
-                        <div id="cms-actions-section" class="hidden flex gap-2">
-                            <span class="text-sm text-green-600 font-semibold flex items-center">Authenticated</span>
-                            <button onclick="saveToGithub()" id="save-to-github-btn"
-                                class="cms-btn cms-btn-primary">Save to GitHub</button>
-                            <button onclick="archiveAndClear()" id="archive-btn" class="cms-btn cms-btn-primary"
-                                style="background-color: #d97706;">Archive & Clear</button>
-                            <div class="flex gap-2">
-                                <button onclick="addTrack()" class="cms-btn cms-btn-primary">➕ Add Track</button>
-                                <button onclick="openMetadataEdit()" class="cms-btn cms-btn-secondary">Settings</button>
-                                <button onclick="logoutAll()" class="cms-btn cms-btn-secondary">Logout</button>
+                        
+                        <!-- Authenticated Actions (Screenshot 2 phase) -->
+                        <div id="cms-actions-section" class="hidden flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2 mr-4">
+                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="text-sm font-black text-green-600 uppercase tracking-widest">Authenticated</span>
                             </div>
+                            
+                            <button onclick="saveToGithub()" id="save-to-github-btn" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md">Save to GitHub</button>
+                            <button onclick="archiveAndClear()" id="archive-btn" class="bg-amber-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-amber-700 transition-all shadow-md">Archive & Clear</button>
+                            
+                            <div class="h-8 w-[1px] bg-slate-200 mx-2"></div>
+                            
+                            <button onclick="openTrackEdit()" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md"><span>+</span> Add Track</button>
+                            <button onclick="openMetadataEdit()" class="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-200 transition-all border border-slate-200 shadow-sm">Settings</button>
+                            <button onclick="logoutCms()" class="bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-200 transition-all border border-slate-200 shadow-sm">Logout</button>
                         </div>
                     </div>
                 </div>
-                <div id="cms-status" class="text-sm text-slate-500"></div>
+                <div id="cms-status" class="text-sm text-slate-500 mt-4 font-medium italic"></div>
             </div>
         </div>
 

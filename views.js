@@ -1,4 +1,9 @@
 // ------ Rendering Helpers ------
+function shouldShowManagement() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('cms') === 'true' && !!window.isGithubAuthenticated;
+}
+
 function renderContributors(contributors) {
     return (contributors || []).map(name =>
         `<span class="contributor-tag ${contributorColors[name] || 'bg-gray-100 text-gray-600'}">${name}</span>`
@@ -39,7 +44,7 @@ function renderCommentThread(comments, ti, si, ii) {
                     <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500">${(c.author || 'P').charAt(0)}</span>
                     <span class="text-[11px] font-black text-slate-800 uppercase tracking-wider">${c.author || 'PM'}</span>
                     <span class="text-[10px] text-slate-400 font-medium">${dateStr}</span>
-                    ${isAuthenticated ? `<button onclick="event.stopPropagation(); deleteComment(${ti},${si},${ii},'${c.id}')" class="ml-auto text-slate-300 hover:text-red-500 transition-colors">
+                    ${shouldShowManagement() ? `<button onclick="event.stopPropagation(); deleteComment(${ti},${si},${ii},'${c.id}')" class="ml-auto text-slate-300 hover:text-red-500 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>` : ''}
                 </div>
@@ -65,7 +70,7 @@ function renderTrackView() {
                 <div class="flex justify-between items-center w-full">
                     <span>${track.name}</span>
                     <div class="flex gap-2">
-                        ${isAuthenticated ? `
+                        ${shouldShowManagement() ? `
                         <button onclick="addSubtrack(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors font-bold">Add Subtrack</button>
                         <button onclick="openTrackEdit(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors">Edit</button>
                         <button onclick="deleteTrack(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors">Delete</button>
@@ -105,7 +110,7 @@ function renderTrackView() {
                     </div>
 
                     <div class="flex gap-2 items-center flex-shrink-0">
-                        ${isAuthenticated ? `
+                        ${shouldShowManagement() ? `
                         <div class="flex gap-1" onclick="event.stopPropagation()">
                             <button onclick="addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 font-bold border border-emerald-100 shadow-sm transition-colors uppercase tracking-wider">Add Item</button>
                             <button onclick="openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-md hover:bg-blue-100 font-bold border border-blue-100 shadow-sm transition-colors uppercase tracking-wider">Edit</button>
@@ -134,7 +139,7 @@ function renderTrackView() {
                 });
             }
 
-            if (isAuthenticated) {
+            if (shouldShowManagement()) {
                 html += `
                     <div class="px-6 pb-4">
                         <button onclick="addItem(${trackIndex}, ${subtrackIndex})" class="cms-add-btn">
@@ -179,7 +184,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     if (effectiveNote) {
         let cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
         cleanNote = highlightSearch(cleanNote);
-        const idHTML = isAuthenticated ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
+        const idHTML = shouldShowManagement() ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
         contentHtml = `
             <div class="info-wrapper">
                 <span class="info-text">${displayText}${due}</span>
@@ -194,7 +199,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     }
 
     let cmsControls = '';
-    if (isAuthenticated) {
+    if (shouldShowManagement()) {
         cmsControls = `
             <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                 <span onclick="event.stopPropagation(); openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
@@ -208,8 +213,8 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     return `
         ${blockerStrip}
         <div class="item-row ${status.bucket}"
-            draggable="${isAuthenticated ? 'true' : 'false'}"
-            ondragstart="if(${isAuthenticated}){dragSource={trackIndex:${trackIndex},subtrackIndex:${subtrackIndex},itemIndex:${itemIndex}};this.classList.add('dragging');}"
+            draggable="${shouldShowManagement() ? 'true' : 'false'}"
+            ondragstart="if(${shouldShowManagement()}){dragSource={trackIndex:${trackIndex},subtrackIndex:${subtrackIndex},itemIndex:${itemIndex}};this.classList.add('dragging');}"
             ondragend="this.classList.remove('dragging')">
             <div class="item-content">
                 <div class="flex justify-between items-start w-full gap-4">
@@ -264,7 +269,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                 <div id="thread-${trackIndex}-${subtrackIndex}-${itemIndex}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
                                     ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex)}
                                 </div>
-                                ${isAuthenticated ? `
+                                ${shouldShowManagement() ? `
                                     <div class="flex gap-2 relative">
                                         <input type="text" id="comment-input-${trackIndex}-${subtrackIndex}-${itemIndex}" placeholder="Type @ to tag contributors..." class="cms-input flex-1 !mb-0 text-xs" onkeyup="if(event.key==='Enter') addComment(${trackIndex},${subtrackIndex},${itemIndex})">
                                         <button onclick="addComment(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-btn cms-btn-primary !px-3 !py-1 flex-shrink-0 text-xs shadow-sm">Post</button>
@@ -483,7 +488,7 @@ function toggleGroomingMode() {
 function renderBacklogView() {
     const container = document.getElementById('backlog-view');
     let html = '';
-    if (isAuthenticated) {
+    if (shouldShowManagement()) {
         html += `
             <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl mb-6 shadow-lg">
                 <div>
@@ -509,7 +514,7 @@ function renderBacklogView() {
         html += `<div class="backlog-track-card mb-6 overflow-hidden ${groomingMode ? 'border-2 border-indigo-400 shadow-xl scale-[1.01] transform transition-all' : ''}">
             <div class="track-header p-4 bg-slate-100 font-extrabold border-b flex justify-between items-center text-slate-700">
                 <span class="flex items-center gap-2">🏗️ ${track.name} Backlog <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">${backlogSub.items.length}</span></span>
-                ${isAuthenticated ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
+                ${shouldShowManagement() ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
             </div>
             <div class="p-3 space-y-3 bg-white">`;
         backlogSub.items.forEach((item, ii) => {
@@ -525,37 +530,47 @@ function renderEpicsView() {
     const container = document.getElementById('epics-view');
     if (!container) return;
     
-    // Explicitly use window.UPDATE_DATA
     const data = window.UPDATE_DATA || {};
     const epics = (data.metadata && data.metadata.epics) || [];
     
-    console.log('🔍 renderEpicsView debugging:', {
-        dataFound: !!data,
-        metadataFound: !!data.metadata,
-        epicsCount: epics.length
-    });
-
-    let html = '';
+    let html = shouldShowManagement() ? `
+        <div class="flex justify-end mb-6">
+            <button onclick="openEpicEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+                <span>🎯</span> Add Strategic Epic
+            </button>
+        </div>
+    ` : '';
     
     if (epics.length === 0) {
-        container.innerHTML = `<div class="text-center py-20 text-slate-400">
+        container.innerHTML = html + `<div class="text-center py-20 text-slate-400">
             No epics defined in metadata.epics. 
             <br><small>Data source: ${data.metadata ? 'Object present' : 'Object missing'}</small>
         </div>`;
         return;
     }
 
-    epics.forEach(e => {
+    epics.forEach((e, idx) => {
         const epicItems = findItemsByMetadataId('epicId', e.id);
         const doneCount = epicItems.filter(i => i.status === 'done').length;
         const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
         
+        const cmsActions = shouldShowManagement() ? `
+            <div class="flex gap-2 ml-4">
+                <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
+                <button onclick="deleteEpic(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
+                <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            </div>
+        ` : '';
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="font-black text-2xl text-slate-900">${e.name}</div>
+                            <div class="flex items-center">
+                                <div class="font-black text-2xl text-slate-900">${e.name}</div>
+                                ${cmsActions}
+                            </div>
                             <div class="text-sm font-bold text-slate-500 mt-1">Goal: ${e.track || e.description || e.objective || ''} | ${e.timeline || ''}</div>
                         </div>
                         <div class="text-right">
@@ -605,8 +620,9 @@ function renderRoadmapView() {
             <div class="roadmap-section mb-10">
                 <div class="flex items-center gap-4 mb-6">
                     <div class="h-[2px] flex-1 bg-slate-100"></div>
-                    <div class="px-4 py-2 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current">
+                    <div class="px-4 py-2 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current flex items-center gap-3">
                         ${h.label || h.name}
+                        ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-white/50 hover:bg-white p-1 rounded-full text-[10px] w-5 h-5 flex items-center justify-center transition-colors"><span>+</span></button>` : ''}
                     </div>
                     <div class="h-[2px] flex-1 bg-slate-100"></div>
                 </div>
@@ -623,21 +639,39 @@ function renderRoadmapView() {
 function renderSprintView() {
     const container = document.getElementById('sprint-view');
     const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
-    let html = isAuthenticated ? `<div class="mb-4 text-right"><button onclick="openSprintEdit()" class="filter-btn active">➕ Add Sprint</button></div>` : '';
+    
+    let html = shouldShowManagement() ? `
+        <div class="flex justify-end mb-6">
+            <button onclick="openSprintEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+                <span>➕</span> Add New Sprint
+            </button>
+        </div>
+    ` : '';
     
     if (sprints.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No sprints defined</div>';
         return;
     }
 
-    sprints.forEach(s => {
+    sprints.forEach((s, idx) => {
         const sprintItems = findItemsByMetadataId('sprintId', s.id);
+        const cmsActions = shouldShowManagement() ? `
+            <div class="flex gap-2 ml-4">
+                <button onclick="openSprintEdit('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
+                <button onclick="deleteSprint('${s.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
+                <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            </div>
+        ` : '';
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="font-black text-2xl text-slate-900">${s.name}</div>
+                            <div class="flex items-center">
+                                <div class="font-black text-2xl text-slate-900">${s.name}</div>
+                                ${cmsActions}
+                            </div>
                             <div class="text-sm font-bold text-slate-500 mt-1">📅 ${s.start} - ${s.end}</div>
                         </div>
                         <div class="text-right">
@@ -661,21 +695,39 @@ function renderSprintView() {
 function renderReleasesView() {
     const container = document.getElementById('releases-view');
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
-    let html = isAuthenticated ? `<div class="mb-4 text-right"><button onclick="openReleaseEdit()" class="filter-btn active">➕ Add Release</button></div>` : '';
+    
+    let html = shouldShowManagement() ? `
+        <div class="flex justify-end mb-6">
+            <button onclick="openReleaseEdit()" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+                <span>📦</span> Add New Release
+            </button>
+        </div>
+    ` : '';
     
     if (releases.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No releases defined</div>';
         return;
     }
 
-    releases.forEach(r => {
+    releases.forEach((r, idx) => {
         const releaseItems = findItemsByMetadataId('releasedIn', r.id);
+        const cmsActions = shouldShowManagement() ? `
+            <div class="flex gap-2 ml-4">
+                <button onclick="openReleaseEdit('${r.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
+                <button onclick="deleteRelease('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
+                <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            </div>
+        ` : '';
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="font-black text-2xl text-slate-900">${r.name}</div>
+                            <div class="flex items-center">
+                                <div class="font-black text-2xl text-slate-900">${r.name}</div>
+                                ${cmsActions}
+                            </div>
                             <div class="text-sm font-bold text-slate-500 mt-1">🎯 Target: ${r.targetDate || 'TBD'}</div>
                         </div>
                         <div class="text-right">
@@ -786,133 +838,7 @@ function drawGanttChart() {
     chart.draw(data, options);
 }
 
-// ------ Roadmap View ------
-function renderRoadmapView() {
-    const container = document.getElementById('roadmap-view');
-    const horizons = ['1M', '3M', '6M', '1Y'];
-    const horizonLabels = { '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year' };
-    
-    let html = '<div class="roadmap-grid">';
-    
-    horizons.forEach(h => {
-        let items = [];
-        UPDATE_DATA.tracks.forEach((track, ti) => {
-            track.subtracks.forEach((subtrack, si) => {
-                subtrack.items.forEach((item, ii) => {
-                    if (item.planningHorizon === h && isItemMatchingTagFilter(item) && isItemInSearch(item)) {
-                        items.push({ ...item, trackName: track.name, trackTheme: track.theme, ti, si, ii });
-                    }
-                });
-            });
-        });
-
-        const colorClass = h === '1M' ? 'horizon-1m' : h === '3M' ? 'horizon-3m' : h === '6M' ? 'horizon-6m' : 'horizon-1y';
-        
-        html += `
-            <div class="roadmap-column">
-                <div class="roadmap-column-header flex justify-between items-center">
-                    <h3 class="font-black text-slate-800 uppercase tracking-widest text-sm">${horizonLabels[h]}</h3>
-                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${items.length}</span>
-                </div>
-                <div class="p-3 space-y-3 flex-1 overflow-y-auto">
-        `;
-
-        if (items.length === 0) {
-            html += '<div class="text-center py-10 text-slate-300 text-[11px] italic">No items planned.</div>';
-        } else {
-            items.forEach(item => {
-                const epic = (UPDATE_DATA.metadata.epics || []).find(e => e.id === item.epicId);
-                const trackColor = themeColors[item.trackTheme] || '#64748b';
-                
-                html += `
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group" onclick="openItemEdit(${item.ti}, ${item.si}, ${item.ii})">
-                        <div class="flex justify-between items-start mb-2">
-                             <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border border-slate-100">
-                                ${item.trackName}
-                            </span>
-                             <span class="status-pill ${statusConfig[item.status].class} text-[8px] px-1.5 py-0 uppercase">${item.status}</span>
-                        </div>
-                        <div class="text-[12px] font-bold text-slate-800 leading-snug group-hover:text-blue-600 transition-colors mb-2">${item.text}</div>
-                        ${epic ? `<div class="text-[9px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">🎯 ${epic.name}</div>` : ''}
-                    </div>
-                `;
-            });
-        }
-        html += '</div></div>';
-    });
-    
-    html += '</div>';
-    
-function renderEpicsView() {
-    console.log('🎯 renderEpicsView() called');
-    console.log('📊 UPDATE_DATA:', UPDATE_DATA);
-    console.log('📊 UPDATE_DATA.metadata:', UPDATE_DATA.metadata);
-    console.log('📊 UPDATE_DATA.metadata.epics:', UPDATE_DATA.metadata.epics);
-    
-    const container = document.getElementById('epics-view');
-    const epics = UPDATE_DATA.metadata.epics || [];
-    
-    console.log('🎯 Found epics:', epics);
-    console.log('🎯 Container found:', container);
-    
-    let html = isAuthenticated ? `<div class="mb-6 flex justify-end"><button onclick="openEpicEdit()" class="filter-btn active">➕ Add Strategic Epic</button></div>` : '';
-    
-    if (epics.length === 0) {
-        console.log('❌ No epics found, showing empty state');
-        container.innerHTML = html + '<div class="text-center py-20 text-slate-300 italic">No strategic epics defined yet.</div>';
-    console.log('✅ Found epics, rendering grid');
-        return;
-    }
-    
-    console.log(`✅ Found ${epics.length} epics, rendering grid`);
-    html += '<div class="epic-grid">';
-    epics.forEach((epic, index) => {
-        const epicItems = [];
-        UPDATE_DATA.tracks.forEach((t, ti) => t.subtracks.forEach((s, si) => s.items.forEach((item, ii) => {
-            if (item.epicId === epic.id && isItemMatchingTagFilter(item) && isItemInSearch(item)) epicItems.push({ ...item, ti, si, ii });
-        })));
-
-        const total = epicItems.length;
-        const done = epicItems.filter(i => i.status === 'done').length;
-        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-        const health = epic.health || 'on-track';
-        const healthClass = health === 'at-risk' ? 'bg-red-100 text-red-700' : health === 'delayed' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
-
-        html += `
-            <div class="epic-card">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <h3 class="font-black text-lg text-slate-900 group-hover:text-blue-600 cursor-pointer" onclick="openEpicEdit(${index})">${epic.name}</h3>
-                        <p class="text-[11px] text-slate-500 mt-1">${epic.description || 'No description provided.'}</p>
-                    </div>
-                    <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${healthClass}">${health}</span>
-                </div>
-                
-                <div class="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">
-                    <span>Progress</span>
-                    <span>${percent}% (${done}/${total} tasks)</span>
-                </div>
-                <div class="epic-progress-bar">
-                    <div class="epic-progress-fill" style="width: ${percent}%"></div>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 max-h-32 overflow-y-auto pr-1">
-                    ${epicItems.map(item => `
-                        <div class="flex items-center gap-2 group/task cursor-pointer p-1 rounded hover:bg-slate-50 transition-colors" onclick="openItemEdit(${item.ti}, ${item.si}, ${item.ii})">
-                            <span class="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover/task:bg-blue-500 transition-colors"></span>
-                            <span class="text-[11px] text-slate-700 truncate flex-1 font-medium">${item.text}</span>
-                            <span class="${statusConfig[item.status].class} px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider">${item.status}</span>
-                        </div>
-                    `).join('')}
-                    ${total === 0 ? '<div class="text-[10px] italic text-slate-300">No tasks linked.</div>' : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
+// Duplicate Epics view removed
 
 let currentWorkflowTab = 'pm';
 
@@ -1064,5 +990,4 @@ function renderWorkflowView() {
     `;
     
     container.innerHTML = html;
-}
 }
