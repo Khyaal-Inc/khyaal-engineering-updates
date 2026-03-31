@@ -109,6 +109,13 @@ function filterBySearch(q) {
     if (activeView) switchView(activeView);
 }
 
+function groomEpicTasks(epicId) {
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) searchInput.value = epicId;
+    globalSearchQuery = epicId.toLowerCase().trim();
+    switchView('backlog');
+}
+
 function isItemInSearch(item) {
     if (!globalSearchQuery) return true;
     const q = globalSearchQuery;
@@ -117,11 +124,15 @@ function isItemInSearch(item) {
     const usecase = (item.usecase || '').toLowerCase();
     const status = (item.status || '').toLowerCase();
     const priority = (item.priority || '').toLowerCase();
+    const epicId = (item.epicId || '').toLowerCase();
+    const sprint = (item.sprint || '').toLowerCase();
+    const release = (item.releasedIn || '').toLowerCase();
     const contribs = (item.contributors || []).join(' ').toLowerCase();
     const tags = (item.tags || []).join(' ').toLowerCase();
     
     return text.includes(q) || note.includes(q) || usecase.includes(q) || 
-           status.includes(q) || priority.includes(q) || contribs.includes(q) || tags.includes(q);
+           status.includes(q) || priority.includes(q) || contribs.includes(q) || 
+           tags.includes(q) || epicId.includes(q) || sprint.includes(q) || release.includes(q);
 }
 
 function isItemInDateRange(item) {

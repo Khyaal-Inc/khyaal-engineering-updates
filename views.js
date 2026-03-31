@@ -35,7 +35,7 @@ function renderTagPills(tags) {
 
 function renderCommentThread(comments, ti, si, ii) {
     if (!comments || comments.length === 0) return '<div class="text-slate-400 text-xs italic p-2 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">No discussion notes yet.</div>';
-    
+
     return comments.map(c => {
         const dateStr = c.timestamp ? new Date(c.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Legacy';
         return `
@@ -59,7 +59,7 @@ function renderCommentThread(comments, ti, si, ii) {
 function renderTrackView() {
     const container = document.getElementById('track-view');
     let html = '';
-    
+
     if (shouldShowManagement()) {
         html += `
             <div class="flex justify-end mb-6">
@@ -140,7 +140,7 @@ function renderTrackView() {
 
             let items = itemsInTag.filter(item => isItemInDateRange(item) && isItemInSearch(item));
             const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-            
+
             if (sortedItems.length === 0) {
                 html += `<div class="empty-subtrack">No items match current filters.</div>`;
             } else {
@@ -283,10 +283,10 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">None</option>
                                             ${((UPDATE_DATA.metadata && UPDATE_DATA.metadata.roadmap) || [
-                                                { id: '1M', label: 'Now (Immediate / 1 Month)' },
-                                                { id: '3M', label: 'Next (Strategic / 3 Months)' },
-                                                { id: '6M', label: 'Later (Future / 6 Months)' }
-                                            ]).map(h => `<option value="${h.id}" ${item.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
+                { id: '1M', label: 'Now (Immediate / 1 Month)' },
+                { id: '3M', label: 'Next (Strategic / 3 Months)' },
+                { id: '6M', label: 'Later (Future / 6 Months)' }
+            ]).map(h => `<option value="${h.id}" ${item.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
                                         </select>
                                     </div>
                                 </div>
@@ -441,9 +441,9 @@ function renderContributorView() {
         });
     });
 
-    const sortedNames = Object.keys(contributors).sort((a,b) => contributors[b].length - contributors[a].length);
+    const sortedNames = Object.keys(contributors).sort((a, b) => contributors[b].length - contributors[a].length);
     let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">';
-    
+
     if (sortedNames.length === 0) {
         container.innerHTML = '<div class="text-center py-20 text-slate-400">No contributors found for current filters.</div>';
         return;
@@ -454,7 +454,7 @@ function renderContributorView() {
         const statusOrder = ['done', 'now', 'ongoing', 'next', 'later'];
         const colorClass = contributorColors[name] || 'bg-slate-600';
         const textColor = contributorColors[name] ? '' : 'text-white';
-        
+
         html += `
             <div class="contributor-compact-card bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div class="${colorClass} ${textColor} px-4 py-2.5 font-black text-sm flex items-center justify-between border-b">
@@ -465,7 +465,7 @@ function renderContributorView() {
                     <span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded opacity-80 uppercase tracking-widest">${items.length} tasks</span>
                 </div>
                 <div class="p-2 space-y-3 bg-slate-50/30">`;
-        
+
         statusOrder.forEach(status => {
             const statusItems = items.filter(i => i.status === status);
             if (statusItems.length === 0) return;
@@ -510,10 +510,15 @@ function renderBacklogView() {
     let html = '';
     if (shouldShowManagement()) {
         html += `
-            <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl mb-6 shadow-lg">
-                <div>
-                    <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
-                    <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
+            <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl mb-6 shadow-lg border border-slate-700">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
+                        <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
+                    </div>
+                    <button onclick="switchView('sprint')" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                        Next: Plan Sprint 🏃
+                    </button>
                 </div>
                 <button onclick="toggleGroomingMode()" class="px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md ${groomingMode ? 'bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}">
                     ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
@@ -549,18 +554,21 @@ function renderBacklogView() {
 function renderEpicsView() {
     const container = document.getElementById('epics-view');
     if (!container) return;
-    
+
     const data = window.UPDATE_DATA || {};
     const epics = (data.metadata && data.metadata.epics) || [];
-    
+
     let html = shouldShowManagement() ? `
-        <div class="flex justify-end mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="switchView('roadmap')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
+                Next: Plan Roadmap 🗺️
+            </button>
             <button onclick="openEpicEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
                 <span>🎯</span> Add Strategic Epic
             </button>
         </div>
     ` : '';
-    
+
     if (epics.length === 0) {
         container.innerHTML = html + `<div class="text-center py-20 text-slate-400">
             No epics defined in metadata.epics. 
@@ -573,12 +581,13 @@ function renderEpicsView() {
         const epicItems = findItemsByMetadataId('epicId', e.id);
         const doneCount = epicItems.filter(i => i.status === 'done').length;
         const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
-        
+
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex gap-2 ml-4">
-                <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
-                <button onclick="deleteEpic(${idx})" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
-                <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            <div class="flex flex-wrap gap-2 ml-4">
+                <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded">Edit</button>
+                <button onclick="deleteEpic(${idx})" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-widest bg-rose-50 px-2 py-1 rounded">Delete</button>
+                <button onclick="groomEpicTasks('${e.id}')" class="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest bg-sky-50 px-2 py-1 rounded">Groom Tasks 📚</button>
+                <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="text-emerald-600 hover:text-emerald-800 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded">➕ Task</button>
             </div>
         ` : '';
 
@@ -626,15 +635,18 @@ function renderRoadmapView() {
         { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
         { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
     ];
-    
+
     let html = shouldShowManagement() ? `
-        <div class="flex justify-end mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="switchView('backlog')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
+                Next: Groom Backlog 📚
+            </button>
             <button onclick="openRoadmapEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
                 <span>➕</span> Add Roadmap Category
             </button>
         </div>
     ` : '';
-    
+
     roadmapDefs.forEach(h => {
         const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
         const cmsActions = shouldShowManagement() ? `
@@ -660,7 +672,7 @@ function renderRoadmapView() {
                 </div>
             </div>`;
     });
-    
+
     container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use the button to add your first planning category.</div>';
 }
 
@@ -668,7 +680,7 @@ function renderRoadmapView() {
 function renderSprintView() {
     const container = document.getElementById('sprint-view');
     const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
-    
+
     let html = shouldShowManagement() ? `
         <div class="flex justify-end mb-6">
             <button onclick="openSprintEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
@@ -676,7 +688,7 @@ function renderSprintView() {
             </button>
         </div>
     ` : '';
-    
+
     if (sprints.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No sprints defined</div>';
         return;
@@ -724,7 +736,7 @@ function renderSprintView() {
 function renderReleasesView() {
     const container = document.getElementById('releases-view');
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
-    
+
     let html = shouldShowManagement() ? `
         <div class="flex justify-end mb-6">
             <button onclick="openReleaseEdit()" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
@@ -732,7 +744,7 @@ function renderReleasesView() {
             </button>
         </div>
     ` : '';
-    
+
     if (releases.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No releases defined</div>';
         return;
@@ -791,7 +803,7 @@ function findItemsByMetadataId(key, value) {
 
 function renderGroupedItems(items) {
     if (items.length === 0) return '<div class="text-center py-8 text-slate-400 italic text-sm">No items assigned yet.</div>';
-    
+
     const grouped = {};
     items.forEach(i => {
         if (!grouped[i.trackName]) grouped[i.trackName] = { theme: i.trackTheme, items: [] };
@@ -1017,6 +1029,6 @@ function renderWorkflowView() {
             </div>
         </div>
     `;
-    
+
     container.innerHTML = html;
 }
