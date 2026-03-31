@@ -677,7 +677,7 @@ function renderSprintView() {
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
                                 ${cmsActions}
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mt-1">📅 ${s.start} - ${s.end}</div>
+                            <div class="text-sm font-bold text-slate-500 mt-1">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</div>
                         </div>
                         <div class="text-right">
                              <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</div>

@@ -504,7 +504,7 @@ function renderContributorTagInput(w, i) { renderTagWidget(w, i, 'contributor-li
 
 // ------ SPRINT & RELEASE OPS ------
 function openSprintEdit(sprintId) {
-    const sprint = sprintId ? UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId) : { name: '', start: '', end: '', goal: '' };
+    const sprint = sprintId ? UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId) : { name: '', startDate: '', endDate: '', goal: '' };
     editContext = { type: 'sprint', sprintId };
     
     document.getElementById('modal-title').innerText = sprintId ? 'Edit Sprint' : 'Add New Sprint';
@@ -514,11 +514,11 @@ function openSprintEdit(sprintId) {
         <div class="grid grid-cols-2 gap-2">
             <div>
                 <label class="block text-xs font-bold mb-1">Start Date</label>
-                <input type="date" id="edit-sprint-start" value="${sprint.start}" class="cms-input">
+                <input type="date" id="edit-sprint-start" value="${sprint.startDate || ''}" class="cms-input">
             </div>
             <div>
                 <label class="block text-xs font-bold mb-1">End Date</label>
-                <input type="date" id="edit-sprint-end" value="${sprint.end}" class="cms-input">
+                <input type="date" id="edit-sprint-end" value="${sprint.endDate || ''}" class="cms-input">
             </div>
         </div>
         <label class="block text-sm font-bold mb-1">Sprint Goal</label>
@@ -634,8 +634,8 @@ function saveCmsChanges() {
         const sprintData = {
             id: editContext.sprintId || `sprint-${Date.now()}`,
             name: document.getElementById('edit-sprint-name').value.trim(),
-            start: document.getElementById('edit-sprint-start').value,
-            end: document.getElementById('edit-sprint-end').value,
+            startDate: document.getElementById('edit-sprint-start').value,
+            endDate: document.getElementById('edit-sprint-end').value,
             goal: document.getElementById('edit-sprint-goal').value.trim()
         };
         if (!UPDATE_DATA.metadata.sprints) UPDATE_DATA.metadata.sprints = [];
