@@ -126,11 +126,20 @@ function applyMode(mode) {
 
 // Render mode switcher in header
 function renderModeSwitcher() {
-    const header = document.querySelector('.flex.flex-col.md\\:flex-row.justify-between');
-    if (!header) return;
+    const container = document.getElementById('mode-switcher-container');
+    if (!container) {
+        console.warn('Mode switcher container not found');
+        return;
+    }
+
+    // Check if already rendered
+    if (document.querySelector('.mode-switcher')) {
+        updateModeSwitcherState();
+        return;
+    }
 
     const switcherHtml = `
-        <div class="mode-switcher" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 1rem;">
+        <div class="mode-switcher" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mode:</span>
             ${Object.keys(MODE_CONFIG).map(mode => {
                 const config = MODE_CONFIG[mode];
@@ -147,12 +156,7 @@ function renderModeSwitcher() {
         </div>
     `;
 
-    // Insert before the view buttons
-    const viewButtons = header.querySelector('.flex.flex-wrap.justify-end.gap-2');
-    if (viewButtons && !document.querySelector('.mode-switcher')) {
-        viewButtons.insertAdjacentHTML('beforebegin', switcherHtml);
-    }
-
+    container.innerHTML = switcherHtml;
     updateModeSwitcherState();
 }
 

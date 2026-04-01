@@ -153,6 +153,9 @@
                 </div>
 
                 <div class="flex flex-col items-end gap-4 relative z-40">
+                    <!-- Mode Switcher (rendered by modes.js) -->
+                    <div id="mode-switcher-container"></div>
+
                     <div class="flex flex-wrap justify-end gap-2">
                         <button onclick="switchView('epics')" id="btn-epics" class="filter-btn active">🚀 Epics<span
                                 id="tab-count-epics" class="tab-count"></span></button>
@@ -166,6 +169,16 @@
                                 id="tab-count-track" class="tab-count"></span></button>
                         <button onclick="switchView('releases')" id="btn-releases" class="filter-btn">📦 Releases<span
                                 id="tab-count-releases" class="tab-count"></span></button>
+
+                        <!-- NEW VIEW BUTTONS -->
+                        <button onclick="switchView('kanban')" id="btn-kanban" class="filter-btn">📋 Kanban<span
+                                id="tab-count-kanban" class="tab-count"></span></button>
+                        <button onclick="switchView('okr')" id="btn-okr" class="filter-btn">🎯 OKRs<span
+                                id="tab-count-okr" class="tab-count"></span></button>
+                        <button onclick="switchView('my-tasks')" id="btn-my-tasks" class="filter-btn">✅ My Tasks<span
+                                id="tab-count-my-tasks" class="tab-count"></span></button>
+                        <button onclick="switchView('dashboard')" id="btn-dashboard" class="filter-btn">📊 Dashboard<span
+                                id="tab-count-dashboard" class="tab-count"></span></button>
 
                         <div class="relative group">
                             <button class="filter-btn flex items-center gap-1">More Views <svg class="w-3 h-3"
@@ -190,6 +203,14 @@
                                 <button onclick="switchView('gantt')" id="btn-gantt"
                                     class="filter-btn !justify-start w-full">Gantt Chart<span
                                         id="tab-count-gantt" class="tab-count ml-auto"></span></button>
+
+                                <!-- NEW ANALYTICS & CAPACITY VIEWS -->
+                                <button onclick="switchView('analytics')" id="btn-analytics"
+                                    class="filter-btn !justify-start w-full">📈 Analytics<span
+                                        id="tab-count-analytics" class="tab-count ml-auto"></span></button>
+                                <button onclick="switchView('capacity')" id="btn-capacity"
+                                    class="filter-btn !justify-start w-full">⚖️ Capacity<span
+                                        id="tab-count-capacity" class="tab-count ml-auto"></span></button>
                             </div>
                         </div>
                         <button onclick="switchView('workflow')" id="btn-workflow" class="filter-btn bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 font-bold ml-2 shadow-sm whitespace-nowrap">🛠️ Engineering Playbook</button>

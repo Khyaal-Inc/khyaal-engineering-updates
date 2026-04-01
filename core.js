@@ -180,6 +180,11 @@ function getActiveTeam() {
 function updateTabCounts() {
     let allItems = [];
     (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => allItems.push(i))));
+
+    // Get current user for my-tasks count
+    const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+    const myTasksCount = currentUser ? allItems.filter(i => i.contributors && i.contributors.includes(currentUser)).length : allItems.length;
+
     const counts = {
         track: allItems.length,
         status: allItems.length,
@@ -194,13 +199,15 @@ function updateTabCounts() {
         okr: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.okrs ? UPDATE_DATA.metadata.okrs.length : 0),
         kanban: allItems.length,
         analytics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.velocityHistory ? UPDATE_DATA.metadata.velocityHistory.length : 0),
-        capacity: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.capacity && UPDATE_DATA.metadata.capacity.teamMembers ? UPDATE_DATA.metadata.capacity.teamMembers.length : 0)
+        capacity: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.capacity && UPDATE_DATA.metadata.capacity.teamMembers ? UPDATE_DATA.metadata.capacity.teamMembers.length : 0),
+        'my-tasks': myTasksCount,
+        dashboard: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.epics ? UPDATE_DATA.metadata.epics.length : 0)
     };
     (UPDATE_DATA.tracks || []).forEach(t => {
         const bl = t.subtracks.find(s => s.name === 'Backlog');
         if (bl) counts.backlog += bl.items.length;
     });
-    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency', 'epics', 'roadmap', 'kanban', 'okr', 'analytics', 'capacity'].forEach(v => {
+    ['track', 'status', 'priority', 'contributor', 'gantt', 'backlog', 'sprint', 'releases', 'dependency', 'epics', 'roadmap', 'kanban', 'okr', 'analytics', 'capacity', 'my-tasks', 'dashboard'].forEach(v => {
         const el = document.getElementById(`tab-count-${v}`);
         if (el) el.textContent = counts[v] || '';
     });
