@@ -82,6 +82,18 @@ function initDashboard() {
         initModeSystem(); // from modes.js
     }
 
+    // 5a. Initialize Onboarding Wizard (shows if needed)
+    console.log('🧙 Checking for onboarding wizard...');
+    if (typeof initWizard === 'function') {
+        initWizard(); // from wizard.js
+    }
+
+    // 5b. Initialize Workflow Navigation
+    console.log('🗺️ Initializing workflow navigation...');
+    if (typeof initWorkflowNav === 'function') {
+        initWorkflowNav(); // from workflow-nav.js
+    }
+
     // 6. Initial Render - Default to mode-specific view
     console.log('🎨 Initial render - defaulting to mode view');
     const defaultMode = UPDATE_DATA.metadata?.modes?.default || 'pm';

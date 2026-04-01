@@ -12,6 +12,586 @@ const CMS_CONFIG = {
     filePath: 'data.json'
 };
 
+// ========================================
+// CONTEXT-AWARE FORM SYSTEM
+// ========================================
+// Determines which fields to show based on current view/workflow stage
+
+/**
+ * Get current context for form rendering
+ * @returns {Object} Context object with view, mode, and workflowStage
+ */
+function getFormContext() {
+    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+    const currentMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
+    const workflowStage = (typeof getCurrentWorkflowStage === 'function') ? getCurrentWorkflowStage() : null;
+
+    return {
+        view: activeView,
+        mode: currentMode,
+        workflowStage: workflowStage
+    };
+}
+
+/**
+ * Define field groups and when they should be shown
+ */
+const FIELD_GROUPS = {
+    // Core fields - always shown
+    core: {
+        label: 'Basic Info',
+        fields: ['text', 'note'],
+        alwaysShow: true,
+        icon: '📝'
+    },
+
+    // Strategic planning fields
+    strategic: {
+        label: 'Strategic Planning',
+        fields: ['epicId', 'planningHorizon', 'usecase'],
+        showInViews: ['epics', 'roadmap', 'backlog'],
+        showInStages: ['strategic', 'planning'],
+        icon: '🎯'
+    },
+
+    // Sprint/timeline fields
+    planning: {
+        label: 'Sprint & Timeline',
+        fields: ['sprintId', 'startDate', 'due', 'priority'],
+        showInViews: ['sprint', 'backlog', 'gantt', 'roadmap'],
+        showInStages: ['planning', 'execution'],
+        icon: '📅'
+    },
+
+    // Execution fields
+    execution: {
+        label: 'Execution',
+        fields: ['status', 'contributors', 'blockerNote', 'dependencies'],
+        showInViews: ['track', 'kanban', 'my-tasks', 'status'],
+        showInStages: ['execution', 'reporting'],
+        icon: '⚡'
+    },
+
+    // Release/delivery fields
+    delivery: {
+        label: 'Release & Delivery',
+        fields: ['releasedIn', 'mediaUrl'],
+        showInViews: ['releases', 'dashboard', 'status'],
+        showInStages: ['reporting'],
+        icon: '🚀'
+    },
+
+    // Metadata fields
+    metadata: {
+        label: 'Tags & Classification',
+        fields: ['tags'],
+        showInViews: ['track', 'backlog', 'sprint'],
+        showInStages: ['planning', 'execution'],
+        icon: '🏷️'
+    }
+};
+
+/**
+ * Determine which field groups should be shown based on context
+ * @param {Object} context - Form context from getFormContext()
+ * @returns {Array} Array of field group keys that should be shown
+ */
+function getVisibleFieldGroups(context) {
+    const visibleGroups = [];
+
+    for (const [groupKey, groupConfig] of Object.entries(FIELD_GROUPS)) {
+        // Always show core fields
+        if (groupConfig.alwaysShow) {
+            visibleGroups.push(groupKey);
+            continue;
+        }
+
+        // Check if should show based on current view
+        if (groupConfig.showInViews && groupConfig.showInViews.includes(context.view)) {
+            visibleGroups.push(groupKey);
+            continue;
+        }
+
+        // Check if should show based on workflow stage
+        if (groupConfig.showInStages && context.workflowStage &&
+            groupConfig.showInStages.includes(context.workflowStage)) {
+            visibleGroups.push(groupKey);
+            continue;
+        }
+    }
+
+    return visibleGroups;
+}
+
+/**
+ * Check if a specific field should be shown
+ * @param {string} fieldName - Name of the field
+ * @param {Object} context - Form context
+ * @returns {boolean} Whether the field should be shown
+ */
+function shouldShowField(fieldName, context) {
+    const visibleGroups = getVisibleFieldGroups(context);
+
+    for (const groupKey of visibleGroups) {
+        const group = FIELD_GROUPS[groupKey];
+        if (group.fields.includes(fieldName)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Get recommended field groups for current context with helpful hints
+ * @param {Object} context - Form context
+ * @returns {Array} Array of {groupKey, label, description, fields}
+ */
+function getRecommendedFieldGroups(context) {
+    const visibleGroups = getVisibleFieldGroups(context);
+    const recommendations = [];
+
+    const descriptions = {
+        strategic: 'Link this task to strategic goals and define long-term planning',
+        planning: 'Schedule the task for a sprint and set deadlines',
+        execution: 'Assign owners and track implementation progress',
+        delivery: 'Associate with a release and add supporting media',
+        metadata: 'Add labels for better organization and filtering'
+    };
+
+    for (const groupKey of visibleGroups) {
+        const group = FIELD_GROUPS[groupKey];
+        if (!group.alwaysShow) {  // Don't recommend core fields
+            recommendations.push({
+                groupKey,
+                label: group.label,
+                icon: group.icon,
+                description: descriptions[groupKey] || '',
+                fields: group.fields
+            });
+        }
+    }
+
+    return recommendations;
+}
+
+/**
+ * USAGE GUIDE FOR CONTEXT-AWARE FORMS:
+ *
+ * The functions above implement progressive disclosure for form fields.
+ * Instead of showing all 40+ fields at once, forms will only show fields
+ * relevant to the current workflow stage and view.
+ *
+ * INTEGRATION STEPS:
+ *
+ * 1. In openItemEdit() and addItem() functions below:
+ *    - Call getFormContext() to get current context
+ *    - Call shouldShowField(fieldName, context) before rendering each field
+ *    - Group fields using getRecommendedFieldGroups(context)
+ *
+ * 2. Example integration:
+ *    ```
+ *    const context = getFormContext();
+ *    const visibleGroups = getRecommendedFieldGroups(context);
+ *
+ *    // Only render field if it should be shown
+ *    if (shouldShowField('sprintId', context)) {
+ *        html += renderSprintField(item);
+ *    }
+ *    ```
+ *
+ * 3. Field Group Examples by Context:
+ *    - Strategic Stage (OKR/Epics): epicId, planningHorizon, usecase
+ *    - Planning Stage (Backlog/Sprint): sprintId, startDate, due, priority
+ *    - Execution Stage (Kanban/Track): status, contributors, blockerNote
+ *    - Reporting Stage (Dashboard/Releases): releasedIn, mediaUrl, status
+ *
+ * 4. Benefits:
+ *    - Reduces cognitive load (fewer fields to fill)
+ *    - Guides users through proper workflow sequence
+ *    - Shows only relevant fields for current stage
+ *    - Makes forms faster and less intimidating
+ *
+ * NOTE: openItemEdit() and addItem() below have been refactored to use buildContextAwareForm().
+ */
+
+// ========================================
+// CONTEXT-AWARE FORM BUILDER
+// ========================================
+
+/**
+ * Build context-aware form HTML based on current view, mode, and workflow stage
+ * @param {Object} item - The item to edit (or {} for new items)
+ * @param {boolean} isNewItem - Whether this is a new item or editing existing
+ * @param {Object} trackInfo - {trackIndex, subtrackIndex} for routing/move fields
+ * @returns {string} HTML for the form
+ */
+function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
+    const context = getFormContext();
+    const visibleGroups = getVisibleFieldGroups(context);
+
+    // Mode-specific field overrides
+    let fieldsToShow = [];
+
+    if (context.mode === 'dev') {
+        // Developer mode: execution-focused fields only
+        fieldsToShow = ['text', 'note', 'status', 'contributors', 'blockerNote', 'dependencies', 'startDate', 'due'];
+    } else if (context.mode === 'exec') {
+        // Executive mode: high-level overview fields
+        fieldsToShow = ['text', 'epicId', 'status', 'priority', 'contributors', 'blockerNote', 'releasedIn'];
+    } else {
+        // PM mode: use full context-aware system
+        for (const groupKey of visibleGroups) {
+            const group = FIELD_GROUPS[groupKey];
+            fieldsToShow = fieldsToShow.concat(group.fields);
+        }
+    }
+
+    // Remove duplicates
+    fieldsToShow = [...new Set(fieldsToShow)];
+
+    let html = '';
+
+    // Context banner (shows current stage and inherited context)
+    html += buildContextBanner(item, context);
+
+    // Group fields by their field groups for better organization
+    html += '<div class="space-y-6">';
+
+    // Core fields (always first)
+    html += buildFieldGroup('core', item, fieldsToShow);
+
+    // Strategic fields
+    if (visibleGroups.includes('strategic') && context.mode !== 'dev') {
+        html += buildFieldGroup('strategic', item, fieldsToShow);
+    }
+
+    // Planning fields
+    if (visibleGroups.includes('planning')) {
+        html += buildFieldGroup('planning', item, fieldsToShow);
+    }
+
+    // Execution fields
+    if (visibleGroups.includes('execution')) {
+        html += buildFieldGroup('execution', item, fieldsToShow);
+    }
+
+    // Delivery/reporting fields
+    if (visibleGroups.includes('delivery') && context.mode !== 'dev') {
+        html += buildFieldGroup('delivery', item, fieldsToShow);
+    }
+
+    // Metadata fields
+    if (visibleGroups.includes('metadata')) {
+        html += buildFieldGroup('metadata', item, fieldsToShow);
+    }
+
+    html += '</div>';
+
+    // Move/routing fields (only for existing items in PM mode)
+    if (!isNewItem && context.mode === 'pm' && trackInfo.trackIndex !== undefined) {
+        html += buildMoveFields(trackInfo.trackIndex, trackInfo.subtrackIndex);
+    }
+
+    // Data lists for autocomplete
+    html += buildDataLists();
+
+    return html;
+}
+
+/**
+ * Build context banner showing current stage and inherited info
+ */
+function buildContextBanner(item, context) {
+    const stageInfo = {
+        strategic: { icon: '🎯', label: 'Strategic Planning', color: '#8b5cf6' },
+        planning: { icon: '📅', label: 'Sprint Planning', color: '#3b82f6' },
+        execution: { icon: '⚡', label: 'Execution', color: '#10b981' },
+        reporting: { icon: '📊', label: 'Reporting', color: '#f59e0b' }
+    };
+
+    const stage = stageInfo[context.workflowStage] || stageInfo.execution;
+
+    let inheritedContext = [];
+    if (item.epicId && context.mode !== 'pm') {
+        const epic = UPDATE_DATA.metadata.epics?.find(e => e.id === item.epicId);
+        if (epic) inheritedContext.push(`Epic: ${epic.name}`);
+    }
+    if (item.sprintId && context.mode === 'dev') {
+        const sprint = UPDATE_DATA.metadata.sprints?.find(s => s.id === item.sprintId);
+        if (sprint) inheritedContext.push(`Sprint: ${sprint.name}`);
+    }
+    if (item.planningHorizon && context.mode !== 'pm') {
+        inheritedContext.push(`Horizon: ${item.planningHorizon}`);
+    }
+
+    let html = `
+        <div class="context-banner mb-6" style="border-left: 4px solid ${stage.color};">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">${stage.icon}</span>
+                    <div>
+                        <div class="context-banner-stage">${stage.label} Stage</div>
+                        <div class="context-banner-view">Current view: ${context.view}</div>
+                    </div>
+                </div>
+                ${inheritedContext.length > 0 ? `
+                    <div class="context-banner-inherited">
+                        ${inheritedContext.map(ctx => `<span class="context-badge">${ctx}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+/**
+ * Build a field group section
+ */
+function buildFieldGroup(groupKey, item, fieldsToShow) {
+    const group = FIELD_GROUPS[groupKey];
+    if (!group) return '';
+
+    // Check if any fields from this group should be shown
+    const groupFields = group.fields.filter(f => fieldsToShow.includes(f));
+    if (groupFields.length === 0) return '';
+
+    let html = `
+        <div class="field-group">
+            <div class="field-group-header">
+                <span class="field-group-icon">${group.icon}</span>
+                <span class="field-group-label">${group.label}</span>
+            </div>
+            <div class="field-group-content">
+    `;
+
+    // Render each field in the group
+    groupFields.forEach(fieldName => {
+        html += renderField(fieldName, item);
+    });
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+/**
+ * Render an individual field based on field name
+ */
+function renderField(fieldName, item) {
+    const val = item[fieldName] || '';
+
+    switch(fieldName) {
+        case 'text':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Task Title *</label>
+                    <input type="text" id="edit-text" value="${val}" class="cms-input" placeholder="What needs to be done?" required>
+                </div>
+            `;
+
+        case 'note':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Description</label>
+                    <textarea id="edit-note" class="cms-input" rows="3" placeholder="Technical details or notes...">${val}</textarea>
+                </div>
+            `;
+
+        case 'status':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Status</label>
+                    <select id="edit-status" class="cms-input">
+                        <option value="done" ${val === 'done' ? 'selected' : ''}>Done</option>
+                        <option value="now" ${val === 'now' ? 'selected' : ''}>Now</option>
+                        <option value="ongoing" ${val === 'ongoing' ? 'selected' : ''}>On-Going</option>
+                        <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Next</option>
+                        <option value="later" ${val === 'later' ? 'selected' : ''}>Later</option>
+                    </select>
+                </div>
+            `;
+
+        case 'priority':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Priority</label>
+                    <select id="edit-priority" class="cms-input">
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
+                        <option value="medium" ${val === 'medium' || !val ? 'selected' : ''}>Medium</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
+                    </select>
+                </div>
+            `;
+
+        case 'usecase':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Impact / Usecase</label>
+                    <input type="text" id="edit-usecase" value="${val}" class="cms-input" placeholder="Why is this important?">
+                </div>
+            `;
+
+        case 'epicId':
+            const epics = UPDATE_DATA.metadata.epics || [];
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Linked Epic</label>
+                    <select id="edit-epicId" class="cms-input">
+                        <option value="">None</option>
+                        ${epics.map(e => `<option value="${e.id}" ${val === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+
+        case 'planningHorizon':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Planning Horizon</label>
+                    <select id="edit-planningHorizon" class="cms-input">
+                        <option value="">None</option>
+                        <option value="1M" ${val === '1M' ? 'selected' : ''}>1 Month</option>
+                        <option value="3M" ${val === '3M' ? 'selected' : ''}>3 Months</option>
+                        <option value="6M" ${val === '6M' ? 'selected' : ''}>6 Months</option>
+                        <option value="1Y" ${val === '1Y' ? 'selected' : ''}>1 Year</option>
+                    </select>
+                </div>
+            `;
+
+        case 'sprintId':
+            const sprints = UPDATE_DATA.metadata.sprints || [];
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Sprint</label>
+                    <select id="edit-sprintId" class="cms-input">
+                        <option value="">None</option>
+                        ${sprints.map(s => `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+
+        case 'startDate':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Start Date</label>
+                    <input type="date" id="edit-startDate" value="${val}" class="cms-input">
+                </div>
+            `;
+
+        case 'due':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Due Date</label>
+                    <input type="date" id="edit-due" value="${val}" class="cms-input">
+                </div>
+            `;
+
+        case 'contributors':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Contributors</label>
+                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                </div>
+            `;
+
+        case 'blockerNote':
+            return `
+                <div class="field-wrapper blocker-field">
+                    <label class="field-label">Blocker Reason</label>
+                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input" placeholder="What's blocking this task?">
+                    <p class="field-hint">⚠️ Setting this will flag the task as blocked</p>
+                </div>
+            `;
+
+        case 'dependencies':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Dependencies</label>
+                    <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                </div>
+            `;
+
+        case 'releasedIn':
+            const releases = UPDATE_DATA.metadata.releases || [];
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Release</label>
+                    <select id="edit-releasedIn" class="cms-input">
+                        <option value="">None</option>
+                        ${releases.map(r => `<option value="${r.id}" ${val === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+
+        case 'mediaUrl':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Media URL</label>
+                    <input type="text" id="edit-mediaUrl" value="${val}" class="cms-input" placeholder="https://...">
+                    <p class="field-hint">Screenshots, demos, or documentation links</p>
+                </div>
+            `;
+
+        case 'tags':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Tags</label>
+                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                </div>
+            `;
+
+        default:
+            return '';
+    }
+}
+
+/**
+ * Build move/routing fields for existing items
+ */
+function buildMoveFields(trackIndex, subtrackIndex) {
+    return `
+        <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner">
+            <label class="block text-[11px] uppercase font-black text-slate-500 mb-4 tracking-[0.2em] text-center">Move Item (Routing)</label>
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Track</label>
+                    <select id="edit-move-track" class="cms-input !mb-0 shadow-sm" onchange="updateMoveSubtrackOpts(this.value)">
+                        ${UPDATE_DATA.tracks.map((t, idx) => `<option value="${idx}" ${idx === trackIndex ? 'selected' : ''}>${t.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Subtrack</label>
+                    <select id="edit-move-subtrack" class="cms-input !mb-0 shadow-sm">
+                        ${UPDATE_DATA.tracks[trackIndex].subtracks.map((s, idx) => `<option value="${idx}" ${idx === subtrackIndex ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Build autocomplete data lists
+ */
+function buildDataLists() {
+    return `
+        <datalist id="contributor-list">
+            ${ALL_CONTRIBUTORS.map(c => `<option value="${c}">`).join('')}
+        </datalist>
+        <datalist id="tag-list">
+            ${Array.from(new Set(UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.flatMap(i => i.tags || []))))).map(t => `<option value="${t}">`).join('')}
+        </datalist>
+        <datalist id="item-list">
+            ${UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.map(i => `<option value="${i.id}">${i.text}</option>`))).join('')}
+        </datalist>
+    `;
+}
+
 function initCms() {
     const params = new URLSearchParams(window.location.search);
     
@@ -63,156 +643,9 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
     editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
 
     document.getElementById('modal-title').innerText = 'Edit Item';
-    document.getElementById('modal-form').innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Text</label>
-                    <input type="text" id="edit-text" value="${item.text}" class="cms-input" placeholder="What needs to be done?">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Status</label>
-                        <select id="edit-status" class="cms-input">
-                            <option value="done" ${item.status === 'done' ? 'selected' : ''}>Done</option>
-                            <option value="now" ${item.status === 'now' ? 'selected' : ''}>Now</option>
-                            <option value="ongoing" ${item.status === 'ongoing' ? 'selected' : ''}>On-Going</option>
-                            <option value="next" ${item.status === 'next' ? 'selected' : ''}>Next</option>
-                            <option value="later" ${item.status === 'later' ? 'selected' : ''}>Later</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Priority</label>
-                        <select id="edit-priority" class="cms-input">
-                            <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
-                            <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
-                            <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Impact / Usecase</label>
-                    <input type="text" id="edit-usecase" value="${item.usecase || ''}" class="cms-input" placeholder="Value provided by this item...">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Media URL</label>
-                    <input type="text" id="edit-mediaUrl" value="${item.mediaUrl || ''}" class="cms-input" placeholder="https://...">
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Note / Description</label>
-                    <textarea id="edit-note" class="cms-input" rows="4" placeholder="Technical details or notes...">${item.note || ''}</textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-500 uppercase tracking-wider">Start Date</label>
-                        <input type="date" id="edit-startDate" value="${item.startDate || ''}" class="cms-input">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-500 uppercase tracking-wider">Due Date</label>
-                        <input type="date" id="edit-due" value="${item.due || ''}" class="cms-input">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Sprint</label>
-                        <select id="edit-sprintId" class="cms-input">
-                            <option value="">None</option>
-                            ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Release</label>
-                        <select id="edit-releasedIn" class="cms-input">
-                            <option value="">None</option>
-                            ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}" ${item.releasedIn === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
-                        <select id="edit-planningHorizon" class="cms-input">
-                            <option value="">None</option>
-                            <option value="1M" ${item.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
-                            <option value="3M" ${item.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
-                            <option value="6M" ${item.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
-                            <option value="1Y" ${item.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Linked Epic</label>
-                        <select id="edit-epicId" class="cms-input">
-                            <option value="">None</option>
-                            ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-8 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-800">Contributors</label>
-                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-800">Tags</label>
-                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-2 text-slate-800">Dependencies (Blockers)</label>
-                <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-            </div>
-            
-            <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
-                <label class="block text-sm font-bold mb-1.5 text-red-700">Blocker Reason (Critical)</label>
-                <input type="text" id="edit-blockerNote" value="${item.blockerNote || ''}" class="cms-input !mb-0 border-red-200 focus:border-red-500" placeholder="Flags this item as a blocker with this reason...">
-            </div>
-        </div>
-        
-        <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner">
-            <label class="block text-[11px] uppercase font-black text-slate-500 mb-4 tracking-[0.2em] text-center">Move Item (Routing)</label>
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Track</label>
-                    <select id="edit-move-track" class="cms-input !mb-0 shadow-sm" onchange="updateMoveSubtrackOpts(this.value)">
-                        ${UPDATE_DATA.tracks.map((t, idx) => `<option value="${idx}" ${idx === trackIndex ? 'selected' : ''}>${t.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Subtrack</label>
-                    <select id="edit-move-subtrack" class="cms-input !mb-0 shadow-sm">
-                        ${UPDATE_DATA.tracks[trackIndex].subtracks.map((s, idx) => `<option value="${idx}" ${idx === subtrackIndex ? 'selected' : ''}>${s.name}</option>`).join('')}
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <datalist id="contributor-list">
-            ${ALL_CONTRIBUTORS.map(c => `<option value="${c}">`).join('')}
-        </datalist>
-        <datalist id="tag-list">
-            ${Array.from(new Set(UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.flatMap(i => i.tags || []))))).map(t => `<option value="${t}">`).join('')}
-        </datalist>
-        <datalist id="item-list">
-            ${UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.map(i => `<option value="${i.id}">${i.text}</option>`))).join('')}
-        </datalist>
-    `;
+    document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, {trackIndex, subtrackIndex});
     document.getElementById('cms-modal').classList.add('active');
-    
+
     // Initialize tag inputs after modal is in DOM
     setTimeout(() => {
         renderTagWidget('contrib-tag-input-edit', item.contributors || [], 'contributor-list', 'author');
@@ -223,142 +656,15 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
 
 function addItem(trackIndex, subtrackIndex, defaults = {}) {
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
+
     document.getElementById('modal-title').innerText = 'Add New Item';
-    const sprints = UPDATE_DATA.metadata.sprints || [];
-    const releases = UPDATE_DATA.metadata.releases || [];
-    const epics = UPDATE_DATA.metadata.epics || [];
-
-    document.getElementById('modal-form').innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Text</label>
-                    <input type="text" id="edit-text" value="" class="cms-input" placeholder="What needs to be done?">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Status</label>
-                        <select id="edit-status" class="cms-input">
-                            <option value="done" ${defaults.status === 'done' ? 'selected' : ''}>Done</option>
-                            <option value="now" ${defaults.status === 'now' ? 'selected' : ''}>Now</option>
-                            <option value="ongoing" ${defaults.status === 'ongoing' ? 'selected' : ''}>On-Going</option>
-                            <option value="next" ${!defaults.status || defaults.status === 'next' ? 'selected' : ''}>Next</option>
-                            <option value="later" ${defaults.status === 'later' ? 'selected' : ''}>Later</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Priority</label>
-                        <select id="edit-priority" class="cms-input">
-                            <option value="high" ${defaults.priority === 'high' ? 'selected' : ''}>High</option>
-                            <option value="medium" ${!defaults.priority || defaults.priority === 'medium' ? 'selected' : ''}>Medium</option>
-                            <option value="low" ${defaults.priority === 'low' ? 'selected' : ''}>Low</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Impact / Usecase</label>
-                    <input type="text" id="edit-usecase" value="" class="cms-input" placeholder="Optional impact details...">
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Note / Description</label>
-                    <textarea id="edit-note" class="cms-input" rows="4" placeholder="Description..."></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-500 uppercase tracking-wider">Start Date</label>
-                        <input type="date" id="edit-startDate" value="" class="cms-input">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-500 uppercase tracking-wider">Due Date</label>
-                        <input type="date" id="edit-due" value="" class="cms-input">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Sprint</label>
-                        <select id="edit-sprintId" class="cms-input">
-                            <option value="">None</option>
-                            ${sprints.map(s => `<option value="${s.id}" ${s.id === defaults.sprintId ? 'selected' : ''}>${s.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Release</label>
-                        <select id="edit-releasedIn" class="cms-input">
-                            <option value="">None</option>
-                            ${releases.map(r => `<option value="${r.id}" ${r.id === defaults.releasedIn ? 'selected' : ''}>${r.name}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
-                        <select id="edit-planningHorizon" class="cms-input">
-                            <option value="">None</option>
-                            <option value="1M" ${defaults.planningHorizon === '1M' ? 'selected' : ''}>1 Month</option>
-                            <option value="3M" ${defaults.planningHorizon === '3M' ? 'selected' : ''}>3 Months</option>
-                            <option value="6M" ${defaults.planningHorizon === '6M' ? 'selected' : ''}>6 Months</option>
-                            <option value="1Y" ${defaults.planningHorizon === '1Y' ? 'selected' : ''}>1 Year</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-slate-700">Linked Epic</label>
-                        <select id="edit-epicId" class="cms-input">
-                            <option value="">None</option>
-                            ${epics.map(e => `<option value="${e.id}" ${e.id === defaults.epicId ? 'selected' : ''}>${e.name}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-                            ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-8 space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-800">Contributors</label>
-                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold mb-2 text-slate-800">Tags</label>
-                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-2 text-slate-800">Dependencies</label>
-                <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
-            </div>
-        </div>
-
-        <datalist id="contributor-list">
-            ${ALL_CONTRIBUTORS.map(c => `<option value="${c}">`).join('')}
-        </datalist>
-        <datalist id="tag-list">
-            ${Array.from(new Set(UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.flatMap(i => i.tags || []))))).map(t => `<option value="${t}">`).join('')}
-        </datalist>
-        <datalist id="item-list">
-            ${UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items.map(i => `<option value="${i.id}">${i.text}</option>`))).join('')}
-        </datalist>
-    `;
+    document.getElementById('modal-form').innerHTML = buildContextAwareForm(defaults, true, {trackIndex, subtrackIndex});
     document.getElementById('cms-modal').classList.add('active');
+
     setTimeout(() => {
-        renderTagWidget('contrib-tag-input-edit', [], 'contributor-list', 'author');
-        renderTagWidget('tags-tag-input-edit', [], 'tag-list', 'tag');
-        renderTagWidget('deps-tag-input-edit', [], 'item-list', 'dep');
+        renderTagWidget('contrib-tag-input-edit', defaults.contributors || [], 'contributor-list', 'author');
+        renderTagWidget('tags-tag-input-edit', defaults.tags || [], 'tag-list', 'tag');
+        renderTagWidget('deps-tag-input-edit', defaults.dependencies || [], 'item-list', 'dep');
     }, 10);
 }
 
@@ -601,10 +907,11 @@ function openRoadmapEdit(id) {
 }
 
 function validateCmsForm() {
-    const textEl = document.getElementById('edit-text') || 
-                   document.getElementById('edit-sprint-name') || 
-                   document.getElementById('edit-release-name') || 
+    const textEl = document.getElementById('edit-text') ||
+                   document.getElementById('edit-sprint-name') ||
+                   document.getElementById('edit-release-name') ||
                    document.getElementById('edit-epic-name') ||
+                   document.getElementById('edit-okr-objective') ||
                    document.getElementById('edit-track-name') ||
                    document.getElementById('edit-subtrack-name') ||
                    document.getElementById('edit-roadmap-label') ||
@@ -743,6 +1050,84 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.epics.push(epicData);
         }
         logChange(editContext.epicId ? 'Edit Epic' : 'Add Epic', epicData.name);
+
+    } else if (editContext.type === 'okr') {
+        // Collect key results from form fields
+        const keyResults = [];
+        const krFields = document.querySelectorAll('[data-kr-field]');
+
+        // Group fields by index
+        const krsByIndex = {};
+        krFields.forEach(field => {
+            const idx = parseInt(field.getAttribute('data-kr-idx'));
+            const fieldName = field.getAttribute('data-kr-field');
+
+            if (!krsByIndex[idx]) {
+                krsByIndex[idx] = {
+                    id: window._editingKeyResults[idx]?.id || `kr-${Date.now()}-${idx}`,
+                    description: '',
+                    target: 100,
+                    current: 0,
+                    unit: '%',
+                    progress: 0,
+                    status: 'on-track',
+                    linkedEpic: ''
+                };
+            }
+
+            // Get value from field
+            let value = field.value;
+            if (fieldName === 'target' || fieldName === 'current') {
+                value = parseFloat(value) || 0;
+            }
+
+            krsByIndex[idx][fieldName] = value;
+        });
+
+        // Calculate progress for each KR
+        Object.values(krsByIndex).forEach(kr => {
+            if (kr.target > 0) {
+                kr.progress = Math.round((kr.current / kr.target) * 100);
+            }
+            keyResults.push(kr);
+        });
+
+        // Calculate overall OKR progress
+        let overallProgress = 0;
+        if (keyResults.length > 0) {
+            const totalProgress = keyResults.reduce((sum, kr) => sum + (kr.progress || 0), 0);
+            overallProgress = Math.round(totalProgress / keyResults.length);
+        }
+
+        const okrData = {
+            id: editContext.okrId || `okr-${Date.now()}`,
+            quarter: document.getElementById('edit-okr-quarter').value.trim(),
+            objective: document.getElementById('edit-okr-objective').value.trim(),
+            owner: document.getElementById('edit-okr-owner').value.trim(),
+            keyResults: keyResults,
+            overallProgress: overallProgress
+        };
+
+        if (!UPDATE_DATA.metadata.okrs) UPDATE_DATA.metadata.okrs = [];
+
+        if (editContext.okrId) {
+            const idx = UPDATE_DATA.metadata.okrs.findIndex(o => o.id === editContext.okrId);
+            if (idx !== -1) {
+                UPDATE_DATA.metadata.okrs[idx] = okrData;
+            } else {
+                UPDATE_DATA.metadata.okrs.push(okrData);
+            }
+        } else {
+            UPDATE_DATA.metadata.okrs.push(okrData);
+        }
+
+        logChange(editContext.okrId ? 'Edit OKR' : 'Add OKR', okrData.objective);
+
+    } else if (window._visionEditContext && window._visionEditContext.type === 'vision') {
+        const visionText = document.getElementById('edit-vision-text')?.value.trim() || '';
+        UPDATE_DATA.metadata.vision = visionText;
+        logChange('Edit Vision', visionText ? 'Vision updated' : 'Vision cleared');
+        window._visionEditContext = null;
 
     } else if (editContext.type === 'roadmap') {
         const roadmapData = {
@@ -1161,7 +1546,7 @@ function saveCms() {
 function deleteEpic(idx) {
     const epic = UPDATE_DATA.metadata.epics[idx];
     if (!confirm(`Delete strategic epic "${epic.name}"? This will not delete tasks, but they will be unlinked from this epic.`)) return;
-    
+
     // Clear epicId from all items that were linked to this epic
     const epicId = epic.id;
     UPDATE_DATA.tracks.forEach(track => {
@@ -1175,6 +1560,165 @@ function deleteEpic(idx) {
     UPDATE_DATA.metadata.epics.splice(idx, 1);
     logChange('Delete Epic', epic.name);
     switchView('epics');
+    updateTabCounts();
+}
+
+// ========================================
+// OKR MANAGEMENT FUNCTIONS
+// ========================================
+
+function openOKREdit(okrIndex) {
+    const okr = okrIndex !== undefined ? UPDATE_DATA.metadata.okrs[okrIndex] : {
+        quarter: '',
+        objective: '',
+        owner: '',
+        keyResults: []
+    };
+    const okrId = okrIndex !== undefined ? okr.id : undefined;
+    editContext = { type: 'okr', okrIndex, okrId };
+
+    document.getElementById('modal-title').innerText = okrId ? 'Edit OKR' : 'Add New OKR';
+
+    // Build form with key results editor
+    let formHtml = `
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Quarter</label>
+                <input type="text" id="edit-okr-quarter" value="${okr.quarter}" class="cms-input" placeholder="e.g. Q1 2026">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Objective</label>
+                <textarea id="edit-okr-objective" class="cms-input" rows="2" placeholder="What do you want to achieve this quarter?">${okr.objective}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Owner / Team</label>
+                <input type="text" id="edit-okr-owner" value="${okr.owner}" class="cms-input" placeholder="e.g. Platform Team">
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <div class="flex justify-between items-center mb-3">
+                <label class="block text-sm font-bold text-slate-700">Key Results</label>
+                <button type="button" onclick="addKeyResult()" class="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded font-bold transition-colors">
+                    + Add Key Result
+                </button>
+            </div>
+            <div id="key-results-container" class="space-y-3">
+                ${(okr.keyResults || []).map((kr, idx) => renderKeyResultForm(kr, idx)).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modal-form').innerHTML = formHtml;
+    document.getElementById('cms-modal').classList.add('active');
+
+    // Store key results in global state for manipulation
+    window._editingKeyResults = okr.keyResults || [];
+}
+
+function renderKeyResultForm(kr, idx) {
+    const epics = UPDATE_DATA.metadata.epics || [];
+
+    return `
+        <div class="key-result-item p-4 bg-slate-50 border border-slate-200 rounded-lg" data-kr-index="${idx}">
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase">KR ${idx + 1}</span>
+                <button type="button" onclick="removeKeyResult(${idx})" class="text-xs text-red-600 hover:text-red-800 font-bold">
+                    Remove
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-slate-600">Description</label>
+                    <input type="text" class="cms-input !mb-0 text-sm" placeholder="What will you measure?"
+                           value="${kr.description || ''}" data-kr-field="description" data-kr-idx="${idx}">
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-600">Target</label>
+                        <input type="number" class="cms-input !mb-0 text-sm" placeholder="100"
+                               value="${kr.target || ''}" data-kr-field="target" data-kr-idx="${idx}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-600">Current</label>
+                        <input type="number" class="cms-input !mb-0 text-sm" placeholder="75"
+                               value="${kr.current || 0}" data-kr-field="current" data-kr-idx="${idx}">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-600">Unit</label>
+                        <input type="text" class="cms-input !mb-0 text-sm" placeholder="%"
+                               value="${kr.unit || ''}" data-kr-field="unit" data-kr-idx="${idx}">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-600">Status</label>
+                        <select class="cms-input !mb-0 text-sm" data-kr-field="status" data-kr-idx="${idx}">
+                            <option value="on-track" ${kr.status === 'on-track' ? 'selected' : ''}>On-Track</option>
+                            <option value="at-risk" ${kr.status === 'at-risk' ? 'selected' : ''}>At-Risk</option>
+                            <option value="behind" ${kr.status === 'behind' ? 'selected' : ''}>Behind</option>
+                            <option value="achieved" ${kr.status === 'achieved' ? 'selected' : ''}>Achieved</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-slate-600">Linked Epic</label>
+                        <select class="cms-input !mb-0 text-sm" data-kr-field="linkedEpic" data-kr-idx="${idx}">
+                            <option value="">None</option>
+                            ${epics.map(e => `<option value="${e.id}" ${kr.linkedEpic === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function addKeyResult() {
+    const container = document.getElementById('key-results-container');
+    const idx = window._editingKeyResults.length;
+
+    const newKR = {
+        id: `kr-${Date.now()}`,
+        description: '',
+        target: 100,
+        current: 0,
+        unit: '%',
+        progress: 0,
+        status: 'on-track',
+        linkedEpic: ''
+    };
+
+    window._editingKeyResults.push(newKR);
+    container.innerHTML += renderKeyResultForm(newKR, idx);
+}
+
+function removeKeyResult(idx) {
+    window._editingKeyResults.splice(idx, 1);
+    // Re-render all key results with updated indices
+    const container = document.getElementById('key-results-container');
+    container.innerHTML = window._editingKeyResults.map((kr, i) => renderKeyResultForm(kr, i)).join('');
+}
+
+function deleteOKR(okrIndex) {
+    const okr = UPDATE_DATA.metadata.okrs[okrIndex];
+    if (!confirm(`Delete OKR "${okr.objective}"? This will not delete tasks or epics, but they will be unlinked from this OKR.`)) return;
+
+    // Clear linkedOKR from epics
+    const okrId = okr.id;
+    if (UPDATE_DATA.metadata.epics) {
+        UPDATE_DATA.metadata.epics.forEach(epic => {
+            if (epic.linkedOKR === okrId) delete epic.linkedOKR;
+        });
+    }
+
+    UPDATE_DATA.metadata.okrs.splice(okrIndex, 1);
+    logChange('Delete OKR', okr.objective);
+    if (typeof renderOkrView === 'function') renderOkrView();
     updateTabCounts();
 }
 
