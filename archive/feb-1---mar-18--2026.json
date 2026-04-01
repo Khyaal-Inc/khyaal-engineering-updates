@@ -3,6 +3,7 @@
     "title": "Khyaal Engineering Pulse",
     "dateRange": "Feb 1 – Mar 18, 2026",
     "description": "Executive Updates",
+    "vision": "Become the leading platform for active aging and community engagement for seniors in India, delivering exceptional experiences through technology, personalized service, and meaningful connections.",
     "epics": [
       {
         "id": "platform-modernization",
@@ -14,7 +15,8 @@
         "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
         "timeline": "Feb 1 - Apr 10, 2026",
         "health": "on-track",
-        "status": "in_progress"
+        "status": "in_progress",
+        "linkedOKR": "okr-q1-2026-platform"
       },
       {
         "id": "analytics-intelligence",
@@ -26,7 +28,8 @@
         "successMetrics": "Data-driven decisions 80%+, AI conversion 15%+, recommendation accuracy 85%+",
         "timeline": "Feb 1 - Apr 10, 2026",
         "health": "on-track",
-        "status": "in_progress"
+        "status": "in_progress",
+        "linkedOKR": "okr-q1-2026-analytics"
       },
       {
         "id": "infrastructure-optimization",
@@ -38,7 +41,127 @@
         "successMetrics": "Infrastructure cost savings 30%+, system uptime 99.9%+, security response < 1hr",
         "timeline": "Feb 1 - Apr 10, 2026",
         "health": "on-track",
-        "status": "in_progress"
+        "status": "in_progress",
+        "linkedOKR": "okr-q1-2026-infrastructure"
+      }
+    ],
+    "okrs": [
+      {
+        "id": "okr-q1-2026-platform",
+        "quarter": "Q1 2026",
+        "objective": "Modernize platform infrastructure and achieve security excellence",
+        "owner": "Platform Team",
+        "keyResults": [
+          {
+            "id": "kr-platform-1",
+            "description": "Migrate 100% of legacy pages to new platform",
+            "target": 29,
+            "current": 29,
+            "unit": "pages",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "platform-modernization"
+          },
+          {
+            "id": "kr-platform-2",
+            "description": "Launch $99 subscription tier with payment processing",
+            "target": 1,
+            "current": 1,
+            "unit": "launch",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "platform-modernization"
+          },
+          {
+            "id": "kr-platform-3",
+            "description": "Complete VAPT and achieve 90%+ security compliance",
+            "target": 90,
+            "current": 75,
+            "unit": "%",
+            "progress": 83,
+            "status": "on-track",
+            "linkedEpic": "platform-modernization"
+          }
+        ],
+        "overallProgress": 94
+      },
+      {
+        "id": "okr-q1-2026-analytics",
+        "quarter": "Q1 2026",
+        "objective": "Build data-driven decision foundation with AI capabilities",
+        "owner": "Pulse Team",
+        "keyResults": [
+          {
+            "id": "kr-analytics-1",
+            "description": "Launch Data Hub with feature engineering and metrics",
+            "target": 1,
+            "current": 1,
+            "unit": "launch",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "analytics-intelligence"
+          },
+          {
+            "id": "kr-analytics-2",
+            "description": "Deploy AI Sales Agent for tour-specific outreach",
+            "target": 1,
+            "current": 1,
+            "unit": "launch",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "analytics-intelligence"
+          },
+          {
+            "id": "kr-analytics-3",
+            "description": "Build recommendation engine foundation (ML features)",
+            "target": 50,
+            "current": 45,
+            "unit": "features",
+            "progress": 90,
+            "status": "on-track",
+            "linkedEpic": "analytics-intelligence"
+          }
+        ],
+        "overallProgress": 97
+      },
+      {
+        "id": "okr-q1-2026-infrastructure",
+        "quarter": "Q1 2026",
+        "objective": "Reduce infrastructure costs and improve reliability",
+        "owner": "DevOps Team",
+        "keyResults": [
+          {
+            "id": "kr-infra-1",
+            "description": "Achieve 20% cost reduction through optimization",
+            "target": 20,
+            "current": 15,
+            "unit": "%",
+            "progress": 75,
+            "status": "on-track",
+            "linkedEpic": "infrastructure-optimization"
+          },
+          {
+            "id": "kr-infra-2",
+            "description": "Complete AWS to GCP migration for Pulse services",
+            "target": 1,
+            "current": 1,
+            "unit": "migration",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "infrastructure-optimization"
+          },
+          {
+            "id": "kr-infra-3",
+            "description": "Implement comprehensive monitoring dashboards",
+            "target": 1,
+            "current": 1,
+            "unit": "system",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "infrastructure-optimization"
+          }
+        ],
+        "overallProgress": 92
       }
     ],
     "sprints": [
@@ -88,7 +211,8 @@
         "features": "29 legacy pages migrated, 99 subscription launch, basic security",
         "successCriteria": "All pages migrated with 30% performance improvement, subscription processing payments",
         "impact": "Improved user experience, new revenue stream, security baseline",
-        "status": "completed"
+        "status": "completed",
+        "linkedEpic": "platform-modernization"
       },
       {
         "id": "v2.2-security-hardening",
@@ -101,8 +225,14 @@
         "features": "VAPT completion, crypto redirect fixes, security monitoring",
         "successCriteria": "All critical VAPT issues resolved, security monitoring active",
         "impact": "Enhanced security posture, compliance achievement",
-        "status": "planned"
+        "status": "in_progress",
+        "linkedEpic": "platform-modernization"
       }
+    ],
+    "roadmap": [
+      { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue" },
+      { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo" },
+      { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate" }
     ]
   },
   "tracks": [
@@ -117,26 +247,45 @@
             {
               "text": "Legacy page refresh – 29 pages migrated and modernized",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Migrated 29 legacy pages to new platform with modern responsive design, optimized assets, and improved UX patterns.",
+              "usecase": "Improves page speed by 40%, enhances usability, and provides better mobile experience for senior users.",
+              "acceptanceCriteria": [
+                "All 29 pages migrated with responsive design",
+                "Page load time improved by 40% minimum",
+                "SEO scores above 90 for all pages",
+                "Zero critical accessibility issues"
               ],
-              "note": "Updated older pages to a cleaner and faster experience.",
-              "usecase": "Improves page speed and usability.",
-              "publishedDate": "2026-03-20",
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "publishedDate": "2026-02-28",
+              "startDate": "2026-02-01",
+              "due": "2026-02-28",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation"
             },
             {
-              "text": "99 Subscription launch",
+              "text": "₹99 Subscription launch",
               "status": "done",
-              "contributors": [
-                "Subhrajit",
-                "Vivek"
+              "contributors": ["Subhrajit", "Vivek"],
+              "note": "Launched premium subscription tier with Razorpay integration, user dashboard, and automated billing cycles.",
+              "usecase": "Supports recurring revenue model and provides premium features to engaged users.",
+              "acceptanceCriteria": [
+                "Razorpay payment gateway integrated and tested",
+                "Subscription dashboard with active status",
+                "Automated renewal and cancellation flows",
+                "Email notifications for payment events"
               ],
-              "note": "Launched a paid subscription option for users.",
-              "usecase": "Supports recurring revenue.",
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-15",
+              "due": "2026-02-28",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
@@ -145,150 +294,320 @@
             {
               "text": "Delhi Marathon event page",
               "status": "done",
-              "contributors": [
-                "Subhrajit",
-                "Vivek"
+              "contributors": ["Subhrajit", "Vivek"],
+              "note": "Created dedicated event landing page with registration form, countdown timer, and event details.",
+              "usecase": "Helps users register easily and access all event information in one place.",
+              "acceptanceCriteria": [
+                "Event page published with registration form",
+                "Countdown timer showing days to event",
+                "Responsive design for mobile users",
+                "Integration with CRM for lead capture"
               ],
-              "note": "Created a dedicated page for the event.",
-              "usecase": "Helps users register and access event details easily."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-10",
+              "due": "2026-02-18",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Emailer templates for Travel and Axis Max",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Built reusable, responsive email templates for marketing campaigns with dynamic content blocks.",
+              "usecase": "Speeds up campaign launches and ensures brand consistency across all email communications.",
+              "acceptanceCriteria": [
+                "Two templates created (Travel and Axis Max)",
+                "Mobile-responsive design tested",
+                "Dynamic content placeholders working",
+                "Tested across major email clients"
               ],
-              "note": "Built reusable email designs for campaigns.",
-              "usecase": "Speeds up campaign launches."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-12",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Chatbot UI fixes",
               "status": "done",
-              "contributors": [
-                "Subhrajit",
-                "Vivek"
+              "contributors": ["Subhrajit", "Vivek"],
+              "note": "Improved chatbot interface with better visual design, loading states, and error handling.",
+              "usecase": "Makes customer support interaction smoother and more intuitive for senior users.",
+              "acceptanceCriteria": [
+                "UI redesign with larger touch targets",
+                "Loading states and animations added",
+                "Error messages user-friendly",
+                "Tested on mobile and desktop"
               ],
-              "note": "Improved the chatbot screen and flow.",
-              "usecase": "Makes support easier to use."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-08",
+              "due": "2026-02-16",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-1",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Pulse SDK integration",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Subhrajit"
+              "contributors": ["Vivek", "Subhrajit"],
+              "note": "Integrated Pulse analytics SDK to track user behavior, page views, and conversion events across the website.",
+              "usecase": "Provides comprehensive analytics for data-driven decision making and user journey optimization.",
+              "acceptanceCriteria": [
+                "Pulse SDK integrated on all website pages",
+                "Key events tracking verified (pageview, signup, purchase)",
+                "User sessions properly tracked",
+                "Data flowing to Pulse dashboard"
               ],
-              "note": "Connected website activity tracking to Pulse.",
-              "usecase": "Gives a better view of user behavior."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-10",
+              "due": "2026-02-22",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Crypto redirection issue RCA completed",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Raj"
+              "contributors": ["Vivek", "Raj"],
+              "note": "Conducted root cause analysis for incorrect website redirect to crypto domain. Issue identified in DNS configuration and server routing rules.",
+              "usecase": "Prevents users from being redirected to wrong domains, ensuring brand trust and security.",
+              "acceptanceCriteria": [
+                "Root cause documented with evidence",
+                "DNS configuration reviewed",
+                "Server routing rules analyzed",
+                "Fix recommendations documented"
               ],
-              "note": "Found the cause of the wrong website redirect.",
-              "usecase": "Helps prevent users from reaching the wrong page."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-01",
+              "due": "2026-03-08",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Initiated VAPT with Appknox",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Raj"
+              "contributors": ["Vivek", "Raj"],
+              "note": "Kicked off comprehensive Vulnerability Assessment and Penetration Testing (VAPT) with Appknox security platform for entire web application.",
+              "usecase": "Identifies and mitigates security vulnerabilities early to ensure platform safety and regulatory compliance.",
+              "acceptanceCriteria": [
+                "VAPT scope defined and approved",
+                "Appknox platform access configured",
+                "Initial scan completed",
+                "Vulnerability report received"
               ],
-              "note": "Kicked off Vulnerability Assessment and Penetration Testing (VAPT) with Appknox for the platform.",
-              "usecase": "Identifies and mitigates security vulnerabilities early to ensure platform safety and compliance."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-01",
+              "due": "2026-03-10",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Captcha implementation",
               "status": "now",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Implementing Google reCAPTCHA v3 on all user-facing forms to prevent bot submissions and spam.",
+              "usecase": "Reduces spam form submissions by 95%+ and protects platform from automated attacks.",
+              "acceptanceCriteria": [
+                "reCAPTCHA v3 integrated on all forms",
+                "Score threshold configured appropriately",
+                "Fallback to v2 for low scores",
+                "Form submission analytics tracking spam reduction"
               ],
-              "note": "Adding a bot check on forms.",
-              "usecase": "Reduces spam and fake submissions."
+              "storyPoints": 3,
+              "priority": "high",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-03-08",
+              "due": "2026-03-15",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3"
             },
             {
-              "text": "Rajkot event",
+              "text": "Rajkot event page",
               "status": "now",
-              "due": "23 Mar",
-              "contributors": [
-                "Subhrajit",
-                "Vivek"
+              "due": "2026-03-23",
+              "contributors": ["Subhrajit", "Vivek"],
+              "note": "Creating dedicated event landing page for Rajkot event with localized content, registration form, and venue information.",
+              "usecase": "Helps users in Rajkot region register easily and access event-specific information.",
+              "acceptanceCriteria": [
+                "Event page published with Gujarati language support option",
+                "Registration form with Rajkot venue details",
+                "Google Maps integration for venue location",
+                "Mobile responsive design"
               ],
-              "note": "Created a dedicated page for the event.",
-              "usecase": "Helps users register and access event details easily."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-03-15",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Missing Pulse events tracking",
               "status": "now",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Adding missing analytics event tracking for key user actions not currently captured in Pulse.",
+              "usecase": "Improves data completeness for journey analysis and enables better conversion funnel tracking.",
+              "acceptanceCriteria": [
+                "Gap analysis completed for missing events",
+                "All critical events implemented",
+                "Event data validated in Pulse dashboard",
+                "Documentation updated with new events"
               ],
-              "note": "Adding missing user activity tracking.",
-              "usecase": "Improves reporting and journey analysis."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-10",
+              "due": "2026-03-18",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Legacy migration alerts and reporting",
               "status": "next",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Automating Slack/email notifications during page migration process with progress tracking and issue alerts.",
+              "usecase": "Keeps team informed of migration progress in real-time with less manual status updates.",
+              "acceptanceCriteria": [
+                "Automated alerts configured for Slack",
+                "Progress dashboard showing migration status",
+                "Error notifications for failed migrations",
+                "Weekly summary reports generated"
               ],
-              "note": "Automating updates during migration work.",
-              "usecase": "Keeps teams informed with less manual work.",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization",
-              "sprintId": "sprint-5",
-              "releasedIn": "v3.1-personalization-engine"
+              "storyPoints": 5,
+              "priority": "low",
+              "effortLevel": "medium",
+              "impactLevel": "low",
+              "planningHorizon": "3M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "CMS modular blocks",
               "status": "next",
-              "contributors": [
-                "Subhrajit",
-                "Vivek"
+              "contributors": ["Subhrajit", "Vivek"],
+              "note": "Creating reusable content blocks in CMS (hero sections, testimonials, CTAs) for faster page building.",
+              "usecase": "Speeds up website content creation by 60% and ensures consistent design patterns.",
+              "acceptanceCriteria": [
+                "10+ reusable block types created",
+                "Drag-and-drop interface working",
+                "Preview mode functional",
+                "Blocks responsive across all devices"
               ],
-              "note": "Creating reusable page sections.",
-              "usecase": "Speeds up website content creation."
+              "storyPoints": 13,
+              "priority": "medium",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "3M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "VAPT fixes remediation",
               "status": "next",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Implementing fixes for critical and high-severity security vulnerabilities identified in VAPT report.",
+              "usecase": "Strengthens website security posture and achieves 95%+ compliance with security standards.",
+              "acceptanceCriteria": [
+                "All critical vulnerabilities fixed",
+                "All high-severity issues resolved",
+                "Fixes validated by security team",
+                "Re-scan shows improved security score"
               ],
-              "note": "Closing security issues found in testing.",
-              "usecase": "Strengthens website safety."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Crypto redirection security improvements",
               "status": "next",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Implementing stronger server-side validation and redirect protection based on RCA findings.",
+              "usecase": "Prevents malicious redirects and ensures users always reach correct Khyaal domains.",
+              "acceptanceCriteria": [
+                "Whitelist-based redirect validation implemented",
+                "Server-side checks for all redirect URLs",
+                "Monitoring alerts for suspicious redirects",
+                "Testing confirms no unauthorized redirects"
               ],
-              "note": "Adding stronger redirect protection.",
-              "usecase": "Prevents wrong or unsafe redirects."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Template-based event pages",
               "status": "later",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Planning and designing reusable event page templates with configurable sections for faster event launches.",
+              "usecase": "Reduces event page creation time from 2 days to 2 hours with consistent branding.",
+              "acceptanceCriteria": [
+                "3 event page templates designed",
+                "Configuration system for template customization",
+                "CMS integration for easy template selection",
+                "Preview mode for template variations"
               ],
-              "note": "Planning reusable event page designs.",
-              "usecase": "Makes future event pages faster to build."
+              "storyPoints": 13,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "planningHorizon": "6M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Events listing and joining via Web Zoom SDK",
               "status": "later",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication via secure app-generated code or QR code scan with JWT token generation.",
+              "usecase": "Enables seamless event joining from website, reducing friction and improving attendance rates by 30%.",
+              "acceptanceCriteria": [
+                "Zoom Web SDK integrated on event pages",
+                "QR code/app code authentication working",
+                "JWT token generation and validation secure",
+                "Event join flow tested end-to-end"
               ],
-              "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
-              "usecase": "1. Display upcoming events on the website.\n2. User selects an event to join.\n3. System generates a unique session token (JWT) for the user.\n4. Token can be retrieved via scanning QR code or app code."
+              "storyPoints": 13,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "platform-modernization"
             }
           ]
         },
@@ -298,113 +617,269 @@
             {
               "text": "Home page redesign",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Complete redesign of 50Above50 homepage with modern UI, improved visual hierarchy, and senior-friendly accessibility features.",
+              "usecase": "Creates stronger first impression and improves user engagement by 25%, resulting in higher event registrations.",
+              "acceptanceCriteria": [
+                "New design implemented with larger fonts and touch targets",
+                "Hero section highlights upcoming events prominently",
+                "Mobile-responsive design tested on common devices",
+                "Page load time under 2 seconds"
               ],
-              "note": "Improved the main landing page look and feel.",
-              "usecase": "Creates a better first impression."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-15",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Category details page redesign",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Simplified category information pages with clearer descriptions, visual enhancements, and improved navigation for 50 categories.",
+              "usecase": "Helps users understand 50Above50 program categories 40% faster, leading to better category selection and participation.",
+              "acceptanceCriteria": [
+                "All 50 category pages updated with new design",
+                "Category descriptions simplified for senior audience",
+                "Visual icons added for quick category identification",
+                "Related categories recommendation section added"
               ],
-              "note": "Simplified the category information page.",
-              "usecase": "Helps users understand options more easily."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-18",
+              "due": "2026-02-27",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Certificate downloads for returning participants",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Enabled self-service certificate download portal for participants who completed 50Above50 categories, with secure authentication.",
+              "usecase": "Reduces support requests by 60% and provides instant certificate access to returning participants.",
+              "acceptanceCriteria": [
+                "Download portal accessible from user dashboard",
+                "Certificates generated with user name and category",
+                "Authentication via user login verified",
+                "PDF format optimized for printing and sharing"
               ],
-              "note": "Enabled self-service certificate access.",
-              "usecase": "Reduces support requests."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-12",
+              "due": "2026-02-24",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "2026 registration and app membership bundle",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Created bundled offer combining 50Above50 2026 registration with app membership at discounted price point.",
+              "usecase": "Encourages membership sign-ups with 30% bundle discount, driving recurring revenue and user retention.",
+              "acceptanceCriteria": [
+                "Bundle offer page created with clear pricing",
+                "Payment processing for bundle working",
+                "Bundle automatically applies both registration and membership",
+                "Confirmation email includes both activations"
               ],
-              "note": "Added a bundled registration offer.",
-              "usecase": "Encourages membership sign-ups."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-02-14",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-1",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Coin redemption for category access",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Implemented coin-based redemption system allowing users to unlock 50Above50 categories using earned reward coins.",
+              "usecase": "Increases platform engagement by 40% and provides gamification incentive for continued participation.",
+              "acceptanceCriteria": [
+                "Coin redemption flow working on category pages",
+                "Coin balance updated in real-time after redemption",
+                "Category access granted immediately after redemption",
+                "Redemption history tracked in user profile"
               ],
-              "note": "Allowed users to use coins for rewards.",
-              "usecase": "Increases engagement and repeat usage."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-08",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "50-50 Category Structure Refinement & Migration",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Refined category structure by merging overlapping categories, updating descriptions, and adding new categories while maintaining exactly 50 total. Migrated all existing user data to align with new structure.",
+              "usecase": "Ensures consistent, optimized category framework for better content organization, user navigation, and program clarity.",
+              "acceptanceCriteria": [
+                "Category count maintained at exactly 50",
+                "All user data migrated without loss",
+                "Category mappings documented",
+                "New structure tested with sample users"
               ],
-              "note": "Refined category structure by merging, updating, and adding categories while maintaining a total of 50. Migrated existing data to align with the new structure.",
-              "usecase": "Ensures a consistent, optimized category framework for better content organization and user navigation."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-05",
+              "due": "2026-02-22",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Zoho integration",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Connected 50Above50 website lead forms to Zoho CRM for automated lead capture and nurturing workflows.",
+              "usecase": "Improves lead tracking efficiency by 70% and enables automated follow-up campaigns for registrations.",
+              "acceptanceCriteria": [
+                "All lead forms connected to Zoho API",
+                "Lead data synced in real-time to CRM",
+                "Custom fields mapped correctly",
+                "Lead source tagged as 50Above50"
               ],
-              "note": "Connected website leads to Zoho.",
-              "usecase": "Improves lead tracking."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-10",
+              "due": "2026-02-18",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Pulse SDK integration",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Integrated Pulse analytics SDK to track user behavior, category views, registrations, and engagement patterns across 50Above50 website.",
+              "usecase": "Provides comprehensive analytics showing how users interact with categories, enabling data-driven program optimization.",
+              "acceptanceCriteria": [
+                "Pulse SDK integrated on all pages",
+                "Key events tracked (category view, registration, certificate download)",
+                "User sessions tracked properly",
+                "Data flowing to Pulse analytics dashboard"
               ],
-              "note": "Added analytics tracking to 50Above50.",
-              "usecase": "Shows how users interact with the website."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-16",
+              "due": "2026-02-25",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Security review kick-off",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Raj"
+              "contributors": ["Vivek", "Raj"],
+              "note": "Initiated comprehensive security review for 50Above50 website including vulnerability scanning and security best practices assessment.",
+              "usecase": "Identifies potential security issues early, ensuring participant data protection and platform trustworthiness.",
+              "acceptanceCriteria": [
+                "Security review scope defined",
+                "Initial vulnerability scan completed",
+                "Security findings documented",
+                "Remediation priorities established"
               ],
-              "note": "Started security review for the site.",
-              "usecase": "Finds issues before they become risks."
+              "storyPoints": 3,
+              "priority": "high",
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "startDate": "2026-03-01",
+              "due": "2026-03-07",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Missing Pulse events tracking",
               "status": "now",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Adding missing activity tracking events for 50Above50 user actions not currently captured (coin usage, certificate downloads, category completions).",
+              "usecase": "Improves campaign targeting accuracy and enables better conversion funnel analysis for the 50Above50 program.",
+              "acceptanceCriteria": [
+                "Gap analysis identifying all missing events completed",
+                "All critical events implemented and tested",
+                "Event data validated in Pulse dashboard",
+                "Event documentation updated"
               ],
-              "note": "Adding missing activity tracking events.",
-              "usecase": "Improves campaign and funnel analysis."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-10",
+              "due": "2026-03-18",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "VAPT fixes remediation",
               "status": "next",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Implementing security fixes for vulnerabilities identified in 50Above50 VAPT report, prioritizing critical and high-severity issues.",
+              "usecase": "Strengthens 50Above50 website security posture and protects participant data from potential breaches.",
+              "acceptanceCriteria": [
+                "All critical vulnerabilities fixed",
+                "All high-severity issues resolved",
+                "Fixes validated through re-testing",
+                "Security score improved to 90%+"
               ],
-              "note": "Fixing issues found in security testing.",
-              "usecase": "Improves website security."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "In-app transition",
               "status": "later",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Planning seamless transition from website to mobile app for 50Above50 participants, including deep linking and context preservation.",
+              "usecase": "Provides smoother cross-platform experience, reducing friction and improving app adoption by 35%.",
+              "acceptanceCriteria": [
+                "Deep linking implemented for all category pages",
+                "User context preserved during transition",
+                "App install prompts optimized",
+                "A/B testing shows improved app adoption"
               ],
-              "note": "Planning the move into the app journey.",
-              "usecase": "Gives users a smoother app experience."
+              "storyPoints": 13,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "platform-modernization"
             }
           ]
         },
@@ -414,30 +889,70 @@
             {
               "text": "Coin redemption integration in CRM",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Built comprehensive backend system for coin-based rewards with transaction tracking, balance management, and redemption history.",
+              "usecase": "Enables users to redeem 50Above50 categories using earned coins, driving engagement and platform stickiness.",
+              "acceptanceCriteria": [
+                "Coin balance API endpoints working",
+                "Redemption transaction logging implemented",
+                "Real-time balance updates verified",
+                "Redemption history queryable from CRM"
               ],
-              "note": "Built the backend for coin-based rewards.",
-              "usecase": "Lets users redeem categories using coins."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-06",
+              "due": "2026-02-19",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Zoho CRM connector",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Developed bidirectional connector between 50Above50 CRM and Zoho CRM for automated data synchronization of leads, contacts, and activities.",
+              "usecase": "Keeps lead records updated in real-time, enabling marketing automation and reducing manual data entry by 80%.",
+              "acceptanceCriteria": [
+                "Bidirectional sync working for leads and contacts",
+                "Custom field mappings configured",
+                "Sync conflicts handled with priority rules",
+                "Sync logs available for troubleshooting"
               ],
-              "note": "Connected CRM systems for data flow.",
-              "usecase": "Keeps lead records updated."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-11",
+              "due": "2026-02-23",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Zoho CRM Data Migration",
               "status": "now",
-              "due": "20 Mar",
-              "contributors": [
-                "Manish"
+              "due": "2026-03-20",
+              "contributors": ["Manish"],
+              "note": "Enhancing speed and reliability of CRM data synchronization during migration with optimized batch processing and error handling.",
+              "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making with 99%+ data integrity.",
+              "acceptanceCriteria": [
+                "Batch processing optimized for 10k+ records",
+                "Error handling with automatic retry logic",
+                "Data validation checks before sync",
+                "Migration progress dashboard available"
               ],
-              "note": "Enhancing the speed and reliability of CRM data synchronization during migration.",
-              "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-08",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3"
             }
           ]
         },
@@ -447,47 +962,117 @@
             {
               "text": "Tambola enhancements",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Enhanced admin controls for Tambola game management including board generation, winner verification, and prize management features.",
+              "usecase": "Makes Tambola event management 50% faster and reduces manual errors during game execution.",
+              "acceptanceCriteria": [
+                "Automated board generation working",
+                "Winner verification system functional",
+                "Prize management interface simplified",
+                "Game history logs accessible"
               ],
-              "note": "Improved admin controls for Tambola.",
-              "usecase": "Makes event management easier."
+              "storyPoints": 8,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-04",
+              "due": "2026-02-17",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-1",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Event data entry improvements",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Simplified event creation and editing workflow with improved form validation, auto-save functionality, and streamlined UI.",
+              "usecase": "Speeds up event setup by 60%, reducing admin time from 15 minutes to 6 minutes per event.",
+              "acceptanceCriteria": [
+                "Form validation with clear error messages",
+                "Auto-save implemented for draft events",
+                "Bulk edit capability for recurring events",
+                "Event templates for common event types"
               ],
-              "note": "Simplified event setup and editing.",
-              "usecase": "Speeds up internal operations."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-08",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Event categories and sub-categories",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Organized events into hierarchical categories and sub-categories with filtering and search capabilities for better admin organization.",
+              "usecase": "Improves event discoverability by 70% and makes event management more scalable as event inventory grows.",
+              "acceptanceCriteria": [
+                "Category hierarchy implemented with 2 levels",
+                "Filtering by category working in admin panel",
+                "Category assignment required for new events",
+                "Category-based reporting available"
               ],
-              "note": "Organized events into clearer groups.",
-              "usecase": "Improves event management."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-10",
+              "due": "2026-02-21",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Backward compatibility maintenance",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Maintained backward compatibility for legacy admin workflows and data structures while migrating to new system architecture.",
+              "usecase": "Avoids disruption for existing admin users and ensures zero downtime during system transitions.",
+              "acceptanceCriteria": [
+                "All legacy admin functions still working",
+                "Data migration completed without loss",
+                "Legacy API endpoints maintained",
+                "Deprecation warnings added for future removal"
               ],
-              "note": "Kept older admin flows working.",
-              "usecase": "Avoids disruption for existing users."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-12",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Product requests from Raissa",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Delivered multiple admin panel improvements requested by product team including reporting enhancements, user management features, and workflow optimizations.",
+              "usecase": "Supports product team needs and enables better business operations with enhanced admin capabilities.",
+              "acceptanceCriteria": [
+                "All requested features implemented and tested",
+                "Product team sign-off received",
+                "Documentation updated for new features",
+                "Training materials provided to admin users"
               ],
-              "note": "Delivered requested admin improvements.",
-              "usecase": "Supports product and business needs."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             }
           ]
         },

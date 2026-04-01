@@ -185,3 +185,4 @@ function showToast(message, type = 'info') {
 
 // Export
 window.renderKanbanView = renderKanbanView;
+window.openItemQuickView = openItemQuickView;

@@ -9,13 +9,14 @@ const MODE_CONFIG = {
         name: 'Product Manager',
         icon: '👨‍💼',
         color: 'blue',
-        defaultView: 'epics',
+        defaultView: 'okr',
         availableViews: [
             'epics', 'roadmap', 'backlog', 'sprint', 'kanban',
             'dependency', 'okr', 'capacity', 'analytics',
             'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow'
         ],
-        description: 'Strategic planning, backlog grooming, sprint management'
+        description: 'Strategic planning, backlog grooming, sprint management',
+        primaryNavOrder: ['okr', 'roadmap', 'epics', 'releases', 'backlog', 'sprint', 'my-tasks', 'kanban', 'track', 'dashboard', 'analytics', 'capacity']
     },
     dev: {
         name: 'Developer',
@@ -25,7 +26,8 @@ const MODE_CONFIG = {
         availableViews: [
             'my-tasks', 'kanban', 'track', 'dependency', 'sprint', 'workflow'
         ],
-        description: 'Task execution, blocker resolution, sprint focus'
+        description: 'Task execution, blocker resolution, sprint focus',
+        primaryNavOrder: ['my-tasks', 'kanban', 'track', 'sprint', 'dependency']
     },
     exec: {
         name: 'Executive',
@@ -35,8 +37,31 @@ const MODE_CONFIG = {
         availableViews: [
             'dashboard', 'epics', 'okr', 'analytics', 'roadmap', 'releases'
         ],
-        description: 'High-level health, strategic alignment, reporting'
+        description: 'High-level health, strategic alignment, reporting',
+        primaryNavOrder: ['dashboard', 'okr', 'epics', 'roadmap', 'releases', 'analytics']
     }
+};
+
+// View metadata for rendering navigation
+const VIEW_METADATA = {
+    'okr': { label: '🎯 OKRs', category: 'primary' },
+    'roadmap': { label: '🗺️ Roadmap', category: 'primary' },
+    'epics': { label: '🚀 Epics', category: 'primary' },
+    'releases': { label: '📦 Releases', category: 'primary' },
+    'backlog': { label: '📚 Backlog', category: 'primary', badge: 'backlog-count-badge' },
+    'sprint': { label: '🏃 Sprints', category: 'primary' },
+    'my-tasks': { label: '✅ My Tasks', category: 'primary' },
+    'kanban': { label: '📋 Kanban', category: 'primary' },
+    'track': { label: '🏗️ Tracks', category: 'primary' },
+    'dashboard': { label: '📊 Dashboard', category: 'primary' },
+    'analytics': { label: '📈 Analytics', category: 'primary' },
+    'capacity': { label: '⚖️ Capacity', category: 'primary' },
+    'status': { label: 'By Status', category: 'more' },
+    'priority': { label: 'By Priority', category: 'more' },
+    'contributor': { label: 'By Contributor', category: 'more' },
+    'dependency': { label: '🕸️ Dependencies', category: 'more' },
+    'gantt': { label: 'Gantt Chart', category: 'more' },
+    'workflow': { label: '🛠️ Engineering Playbook', category: 'special', style: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 font-bold ml-2 shadow-sm whitespace-nowrap' }
 };
 
 // Current mode state
@@ -114,8 +139,8 @@ function applyMode(mode) {
     // Update mode switcher active state
     updateModeSwitcherState();
 
-    // Hide/show views based on mode
-    filterViewsByMode(mode);
+    // Render dynamic navigation based on mode
+    renderDynamicNavigation(mode);
 
     // Update title suffix
     const titleEl = document.getElementById('page-title');
@@ -174,8 +199,107 @@ function updateModeSwitcherState() {
     });
 }
 
-// Filter which view buttons are shown based on mode
+// Render dynamic navigation based on current mode
+function renderDynamicNavigation(mode) {
+    const container = document.getElementById('dynamic-nav-container');
+    if (!container) {
+        console.warn('Dynamic navigation container not found');
+        return;
+    }
+
+    const config = MODE_CONFIG[mode];
+    const navOrder = config.primaryNavOrder || [];
+    const availableViews = config.availableViews || [];
+
+    // Determine active view
+    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '') || config.defaultView;
+
+    // Build primary navigation buttons (in order)
+    const primaryButtons = navOrder
+        .filter(viewId => availableViews.includes(viewId) && VIEW_METADATA[viewId])
+        .map(viewId => {
+            const meta = VIEW_METADATA[viewId];
+            const isActive = activeView === viewId;
+            const tabCountId = meta.badge || `tab-count-${viewId}`;
+
+            return `
+                <button
+                    onclick="switchView('${viewId}')"
+                    id="btn-${viewId}"
+                    class="filter-btn ${isActive ? 'active' : ''}"
+                >
+                    ${meta.label}<span id="${tabCountId}" class="${meta.badge ? meta.badge : 'tab-count'}"></span>
+                </button>
+            `;
+        })
+        .join('');
+
+    // Build "More Views" dropdown for secondary views
+    const moreViews = availableViews
+        .filter(viewId => {
+            const meta = VIEW_METADATA[viewId];
+            return meta && meta.category === 'more';
+        })
+        .map(viewId => {
+            const meta = VIEW_METADATA[viewId];
+            const isActive = activeView === viewId;
+
+            return `
+                <button
+                    onclick="switchView('${viewId}')"
+                    id="btn-${viewId}"
+                    class="filter-btn !justify-start w-full ${isActive ? 'active' : ''}"
+                >
+                    ${meta.label}<span id="tab-count-${viewId}" class="tab-count ml-auto"></span>
+                </button>
+            `;
+        })
+        .join('');
+
+    const moreViewsDropdown = moreViews ? `
+        <div class="relative group">
+            <button class="filter-btn flex items-center gap-1">
+                More Views
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col gap-1 z-50">
+                ${moreViews}
+            </div>
+        </div>
+    ` : '';
+
+    // Build special views (like workflow playbook)
+    const specialViews = availableViews
+        .filter(viewId => {
+            const meta = VIEW_METADATA[viewId];
+            return meta && meta.category === 'special';
+        })
+        .map(viewId => {
+            const meta = VIEW_METADATA[viewId];
+            const isActive = activeView === viewId;
+
+            return `
+                <button
+                    onclick="switchView('${viewId}')"
+                    id="btn-${viewId}"
+                    class="filter-btn ${meta.style || ''} ${isActive ? 'active' : ''}"
+                >
+                    ${meta.label}
+                </button>
+            `;
+        })
+        .join('');
+
+    // Combine all navigation elements
+    container.innerHTML = primaryButtons + moreViewsDropdown + specialViews;
+}
+
+// Filter which view buttons are shown based on mode (Legacy - replaced by renderDynamicNavigation)
 function filterViewsByMode(mode) {
+    // This function is now deprecated in favor of renderDynamicNavigation
+    // Kept for backwards compatibility
     const config = MODE_CONFIG[mode];
     const allViewButtons = document.querySelectorAll('.filter-btn');
 
