@@ -142,6 +142,11 @@ function applyMode(mode) {
     // Render dynamic navigation based on mode
     renderDynamicNavigation(mode);
 
+    // Update workflow navigation
+    if (typeof renderWorkflowNav === 'function') {
+        renderWorkflowNav();
+    }
+
     // Update title suffix
     const titleEl = document.getElementById('page-title');
     if (titleEl && UPDATE_DATA?.metadata?.title) {

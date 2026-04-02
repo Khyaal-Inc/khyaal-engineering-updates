@@ -7,8 +7,9 @@
 const WORKFLOW_STAGES = {
     strategic: {
         name: 'Strategic',
-        icon: '🎯',
-        description: 'Quarterly planning: Define objectives and key results',
+        icon: '🍒',
+        label: 'Discovery',
+        description: 'Quarterly planning: Vision, objectives and key results',
         cadence: 'Quarterly',
         views: ['okr', 'epics'],
         color: '#8b5cf6', // purple
@@ -16,7 +17,8 @@ const WORKFLOW_STAGES = {
     },
     planning: {
         name: 'Planning',
-        icon: '📋',
+        icon: '📂',
+        label: 'Definition',
         description: 'Monthly/Weekly: Roadmap, backlog grooming, sprint planning',
         cadence: 'Monthly/Weekly',
         views: ['roadmap', 'backlog', 'sprint', 'releases'],
@@ -26,6 +28,7 @@ const WORKFLOW_STAGES = {
     execution: {
         name: 'Execution',
         icon: '⚡',
+        label: 'Delivery',
         description: 'Daily work: Track tasks, resolve blockers, update status',
         cadence: 'Daily',
         views: ['my-tasks', 'kanban', 'track', 'dependency', 'workflow'],
@@ -35,6 +38,7 @@ const WORKFLOW_STAGES = {
     reporting: {
         name: 'Reporting',
         icon: '📊',
+        label: 'Analytics',
         description: 'Weekly/Monthly: Review progress, analytics, capacity',
         cadence: 'Weekly/Monthly',
         views: ['dashboard', 'analytics', 'capacity', 'status', 'priority', 'contributor', 'gantt'],
@@ -132,59 +136,80 @@ function renderWorkflowNav() {
         return;
     }
 
+    const availableStages = Object.entries(WORKFLOW_STAGES)
+        .sort((a, b) => a[1].order - b[1].order)
+        .filter(([key]) => isStageAvailableInCurrentMode(key));
+
     const navHtml = `
-        <div class="workflow-nav ${isWorkflowNavExpanded ? 'expanded' : 'collapsed'}">
-            <!-- Header -->
-            <div class="workflow-nav-header">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-black text-slate-700 uppercase tracking-widest">Product Workflow</span>
-                    <button
-                        onclick="toggleWorkflowNav()"
-                        class="text-slate-500 hover:text-slate-700 transition-colors text-xs"
-                        title="${isWorkflowNavExpanded ? 'Collapse' : 'Expand'}"
-                    >
-                        ${isWorkflowNavExpanded ? '▼' : '▶'}
-                    </button>
+        <div class="workflow-nav-v2">
+            <!-- Header/Title -->
+            <div class="flex items-center justify-between mb-4 px-2">
+                <div class="flex items-center gap-3">
+                    <div class="bg-slate-900 text-white px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter">Product Workflow</div>
+                    <div class="text-xs font-bold text-slate-400">Strategic Pipeline & Execution Funnel</div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="text-[10px] text-slate-500 font-semibold">
-                        ${WORKFLOW_STAGES[currentWorkflowStage].name} Stage
-                    </div>
-                    <button
+                    <button 
                         onclick="if (typeof showWizard === 'function') showWizard();"
-                        class="text-[9px] px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 rounded font-bold transition-colors"
-                        title="Restart onboarding wizard"
+                        class="text-[10px] px-3 py-1 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg font-bold transition-all flex items-center gap-1 shadow-sm"
                     >
-                        🧙 Setup
+                        <span>🧙 Set-up</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Workflow Stages -->
-            ${isWorkflowNavExpanded ? `
-                <div class="workflow-stages">
-                    ${Object.entries(WORKFLOW_STAGES)
-                        .sort((a, b) => a[1].order - b[1].order)
-                        .map(([key, stage]) => renderWorkflowStage(key, stage))
-                        .join('')}
-                </div>
-            ` : `
-                <div class="workflow-stages-compact">
-                    ${Object.entries(WORKFLOW_STAGES)
-                        .sort((a, b) => a[1].order - b[1].order)
-                        .map(([key, stage]) => `
-                            <button
-                                onclick="switchWorkflowStage('${key}')"
-                                class="workflow-stage-compact ${currentWorkflowStage === key ? 'active' : ''}"
-                                style="border-color: ${stage.color};"
-                                title="${stage.name}: ${stage.description}"
-                            >
-                                <span class="text-xl">${stage.icon}</span>
-                            </button>
-                        `)
-                        .join('')}
-                </div>
-            `}
+            <!-- Horizontal Pipeline -->
+            <div class="workflow-pipeline-container">
+                ${availableStages.map(([key, stage], idx) => {
+                    const isActive = currentWorkflowStage === key;
+                    const isLast = idx === availableStages.length - 1;
+                    
+                    return `
+                        <div class="pipeline-stage ${isActive ? 'active' : ''}" style="--stage-color: ${stage.color};">
+                            <div class="stage-body" onclick="switchWorkflowStage('${key}')">
+                                <div class="stage-icon-box">
+                                    <span class="stage-icon">${stage.icon}</span>
+                                    <div class="stage-pulse"></div>
+                                </div>
+                                <div class="stage-info">
+                                    <div class="stage-label">${stage.label}</div>
+                                    <div class="stage-name">${stage.name}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sub-steps for active stage -->
+                            <div class="pipeline-steps">
+                                ${stage.views
+                                    .filter(view => isViewAvailableInCurrentMode(view))
+                                    .map(view => {
+                                        const viewLabels = {
+                                            'okr': 'OKRs', 'epics': 'Epics', 'roadmap': 'Roadmap', 'backlog': 'Backlog',
+                                            'sprint': 'Sprint', 'releases': 'Releases', 'my-tasks': 'Active', 
+                                            'kanban': 'Kanban', 'track': 'Track', 'dependency': 'Links', 
+                                            'workflow': 'Flow', 'dashboard': 'Pulse', 'analytics': 'Data', 
+                                            'capacity': 'Load', 'status': 'State', 'priority': 'Risk', 
+                                            'contributor': 'Team', 'gantt': 'Timeline'
+                                        };
+                                        const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
+                                        const isViewActive = activeView === view;
+                                        
+                                        return `
+                                            <button 
+                                                onclick="switchView('${view}')" 
+                                                class="pipeline-step ${isViewActive ? 'active' : ''}"
+                                                title="View ${viewLabels[view] || view}"
+                                            >
+                                                ${viewLabels[view] || view}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                            </div>
+
+                            ${!isLast ? '<div class="pipeline-connector"></div>' : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
         </div>
     `;
 
