@@ -1,0 +1,24 @@
+{
+  "name": "Khyaal Engineering Updates",
+  "description": "Project management and OKR tracking system",
+  "instructions": "This is a JavaScript-based project for managing engineering workflows, OKRs, and project analytics. Focus on core JS files and avoid reading archive data unless explicitly requested.",
+  "context": {
+    "maxTokens": 50000,
+    "fileReadLimit": 20,
+    "autoIncludePatterns": [
+      "*.js",
+      "*.html",
+      "*.css",
+      "*.md"
+    ],
+    "excludePatterns": [
+      "archive/**",
+      "*.zip",
+      "data.json"
+    ]
+  },
+  "preferences": {
+    "conciseResponses": true,
+    "minimalFileReading": true
+  }
+}
