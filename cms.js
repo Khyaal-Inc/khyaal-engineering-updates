@@ -47,40 +47,58 @@ const FIELD_GROUPS = {
 
     // Strategic planning fields
     strategic: {
-        label: 'Strategic Planning',
-        fields: ['epicId', 'planningHorizon', 'usecase'],
-        showInViews: ['epics', 'roadmap', 'backlog'],
-        showInStages: ['strategic', 'planning'],
+        label: 'Strategic Alignment',
+        fields: ['epicId', 'planningHorizon', 'usecase', 'impactLevel'],
+        showInViews: ['okr', 'epics', 'roadmap', 'backlog'],
+        showInStages: ['strategic'],
         icon: '🎯'
     },
-
-    // Sprint/timeline fields
-    planning: {
-        label: 'Sprint & Timeline',
-        fields: ['sprintId', 'startDate', 'due', 'priority'],
-        showInViews: ['sprint', 'backlog', 'gantt', 'roadmap'],
+    
+    // Estimation & Prioritization
+    estimation: {
+        label: 'Prioritization & Effort',
+        fields: ['priority', 'storyPoints', 'effortLevel'],
+        showInViews: ['roadmap', 'backlog', 'sprint', 'kanban'],
+        showInStages: ['strategic', 'planning'],
+        icon: '⚖️'
+    },
+    
+    // Scheduling & Timeline
+    scheduling: {
+        label: 'Scheduling & Timeline',
+        fields: ['sprintId', 'startDate', 'due'],
+        showInViews: ['backlog', 'sprint', 'gantt', 'track', 'kanban'],
         showInStages: ['planning', 'execution'],
         icon: '📅'
     },
 
+    // Specification details
+    specification: {
+        label: 'Technical Specification',
+        fields: ['acceptanceCriteria'],
+        showInViews: ['backlog', 'sprint', 'track', 'kanban'],
+        showInStages: ['planning', 'execution'],
+        icon: '📋'
+    },
+    
     // Execution fields
     execution: {
-        label: 'Execution',
+        label: 'Execution Status',
         fields: ['status', 'contributors', 'blockerNote', 'dependencies'],
         showInViews: ['track', 'kanban', 'my-tasks', 'status'],
-        showInStages: ['execution', 'reporting'],
+        showInStages: ['execution'],
         icon: '⚡'
     },
-
+    
     // Release/delivery fields
     delivery: {
         label: 'Release & Delivery',
-        fields: ['releasedIn', 'mediaUrl'],
+        fields: ['releasedIn', 'publishedDate', 'mediaUrl'],
         showInViews: ['releases', 'dashboard', 'status'],
         showInStages: ['reporting'],
         icon: '🚀'
     },
-
+    
     // Metadata fields
     metadata: {
         label: 'Tags & Classification',
@@ -266,9 +284,19 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
         html += buildFieldGroup('strategic', item, fieldsToShow);
     }
 
-    // Planning fields
-    if (visibleGroups.includes('planning')) {
-        html += buildFieldGroup('planning', item, fieldsToShow);
+    // Estimation fields
+    if (visibleGroups.includes('estimation')) {
+        html += buildFieldGroup('estimation', item, fieldsToShow);
+    }
+
+    // Scheduling fields
+    if (visibleGroups.includes('scheduling')) {
+        html += buildFieldGroup('scheduling', item, fieldsToShow);
+    }
+
+    // Specification fields
+    if (visibleGroups.includes('specification')) {
+        html += buildFieldGroup('specification', item, fieldsToShow);
     }
 
     // Execution fields
@@ -303,14 +331,30 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
  * Build context banner showing current stage and inherited info
  */
 function buildContextBanner(item, context) {
-    const stageInfo = {
-        strategic: { icon: '🎯', label: 'Strategic Planning', color: '#8b5cf6' },
-        planning: { icon: '📅', label: 'Sprint Planning', color: '#3b82f6' },
-        execution: { icon: '⚡', label: 'Execution', color: '#10b981' },
-        reporting: { icon: '📊', label: 'Reporting', color: '#f59e0b' }
+    const viewInfo = {
+        'okr': { icon: '🎯', label: 'Discovery: OKR Alignment', color: '#8b5cf6' },
+        'epics': { icon: '🚀', label: 'Discovery: Epic Scoping', color: '#8b5cf6' },
+        'roadmap': { icon: '🗺️', label: 'Discovery: Strategic Roadmap', color: '#8b5cf6' },
+        'backlog': { icon: '📚', label: 'Definition: Backlog Grooming', color: '#3b82f6' },
+        'sprint': { icon: '🏃', label: 'Definition: Sprint Planning', color: '#3b82f6' },
+        'gantt': { icon: '📅', label: 'Definition: Timeline Planning', color: '#3b82f6' },
+        'kanban': { icon: '📋', label: 'Delivery: Active Board', color: '#10b981' },
+        'track': { icon: '🏗️', label: 'Delivery: Team Tracking', color: '#10b981' },
+        'dependency': { icon: '🔗', label: 'Delivery: Blockers & Links', color: '#10b981' },
+        'workflow': { icon: '⚙️', label: 'Delivery: Process Flow', color: '#10b981' },
+        'dashboard': { icon: '📊', label: 'Analytics: Pulse Dashboard', color: '#f59e0b' },
+        'analytics': { icon: '📈', label: 'Analytics: Data Trends', color: '#f59e0b' },
+        'releases': { icon: '📦', label: 'Analytics: Release Mapping', color: '#f59e0b' }
     };
 
-    const stage = stageInfo[context.workflowStage] || stageInfo.execution;
+    const stageInfo = {
+        strategic: { icon: '🍒', label: 'Discovery Phase', color: '#8b5cf6' },
+        planning: { icon: '📂', label: 'Definition Phase', color: '#3b82f6' },
+        execution: { icon: '⚡', label: 'Delivery Phase', color: '#10b981' },
+        reporting: { icon: '📊', label: 'Analytics Phase', color: '#f59e0b' }
+    };
+
+    const info = viewInfo[context.view] || stageInfo[context.workflowStage] || stageInfo.execution;
 
     let inheritedContext = [];
     if (item.epicId && context.mode !== 'pm') {
@@ -326,13 +370,13 @@ function buildContextBanner(item, context) {
     }
 
     let html = `
-        <div class="context-banner mb-6" style="border-left: 4px solid ${stage.color};">
+        <div class="context-banner mb-6" style="border-left: 4px solid ${info.color};">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl">${stage.icon}</span>
+                    <span class="text-2xl">${info.icon}</span>
                     <div>
-                        <div class="context-banner-stage">${stage.label} Stage</div>
-                        <div class="context-banner-view">Current view: ${context.view}</div>
+                        <div class="context-banner-stage">${info.label}</div>
+                        <div class="context-banner-view">Current View: ${context.view.charAt(0).toUpperCase() + context.view.slice(1)}</div>
                     </div>
                 </div>
                 ${inheritedContext.length > 0 ? `
@@ -534,6 +578,59 @@ function renderField(fieldName, item) {
                     <label class="field-label">Media URL</label>
                     <input type="text" id="edit-mediaUrl" value="${val}" class="cms-input" placeholder="https://...">
                     <p class="field-hint">Screenshots, demos, or documentation links</p>
+                </div>
+            `;
+
+        case 'storyPoints':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Story Points</label>
+                    <input type="number" id="edit-storyPoints" value="${val}" class="cms-input" placeholder="e.g. 1, 2, 3, 5, 8">
+                </div>
+            `;
+
+        case 'effortLevel':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Effort Level</label>
+                    <select id="edit-effortLevel" class="cms-input">
+                        <option value="">Select Effort...</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
+                    </select>
+                </div>
+            `;
+
+        case 'impactLevel':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Impact Level</label>
+                    <select id="edit-impactLevel" class="cms-input">
+                        <option value="">Select Impact...</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
+                    </select>
+                </div>
+            `;
+
+        case 'acceptanceCriteria':
+            // If internal data is an array, join with newlines for editing
+            const acVal = Array.isArray(val) ? val.join('\n') : val;
+            return `
+                <div class="field-wrapper full-width">
+                    <label class="field-label">Acceptance Criteria</label>
+                    <textarea id="edit-acceptanceCriteria" class="cms-input" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
+                    <p class="field-hint">Enter each criterion on a new line</p>
+                </div>
+            `;
+
+        case 'publishedDate':
+            return `
+                <div class="field-wrapper">
+                    <label class="field-label">Published Date</label>
+                    <input type="date" id="edit-publishedDate" value="${val}" class="cms-input">
                 </div>
             `;
 
@@ -932,19 +1029,30 @@ function saveCmsChanges() {
             status: document.getElementById('edit-status').value,
             priority: document.getElementById('edit-priority').value,
             note: document.getElementById('edit-note').value.trim(),
-            usecase: document.getElementById('edit-usecase').value.trim(),
-            mediaUrl: document.getElementById('edit-mediaUrl').value.trim(),
-            startDate: document.getElementById('edit-startDate').value,
-            due: document.getElementById('edit-due').value,
-            sprintId: document.getElementById('edit-sprintId').value,
+            usecase: document.getElementById('edit-usecase')?.value.trim() || '',
+            mediaUrl: document.getElementById('edit-mediaUrl')?.value.trim() || '',
+            startDate: document.getElementById('edit-startDate')?.value || '',
+            due: document.getElementById('edit-due')?.value || '',
+            sprintId: document.getElementById('edit-sprintId')?.value || '',
             releasedIn: document.getElementById('edit-releasedIn')?.value || '',
             planningHorizon: document.getElementById('edit-planningHorizon')?.value || '',
             epicId: document.getElementById('edit-epicId')?.value || '',
+            storyPoints: parseInt(document.getElementById('edit-storyPoints')?.value) || 0,
+            effortLevel: document.getElementById('edit-effortLevel')?.value || '',
+            impactLevel: document.getElementById('edit-impactLevel')?.value || '',
+            publishedDate: document.getElementById('edit-publishedDate')?.value || '',
             contributors: [..._selectedContributors],
             tags: [..._selectedTags],
             dependencies: [..._selectedDeps],
             blockerNote: (document.getElementById('edit-blockerNote')?.value || '').trim()
         };
+
+        // Handle acceptance criteria (convert textarea newlines to array)
+        const acEl = document.getElementById('edit-acceptanceCriteria');
+        if (acEl) {
+            itemData.acceptanceCriteria = acEl.value.split('\n').map(s => s.trim()).filter(s => s !== '');
+        }
+
         if (itemData.blockerNote) itemData.blocker = true;
         else delete itemData.blocker;
 
@@ -967,8 +1075,8 @@ function saveCmsChanges() {
         } else {
             const newItem = { 
                 id: `task-${Date.now()}`, 
-                publishedDate: new Date().toISOString(),
-                ...itemData 
+                ...itemData,
+                publishedDate: itemData.publishedDate || new Date().toISOString().split('T')[0]
             };
             UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(newItem);
             logChange('Add Item', newItem.text);

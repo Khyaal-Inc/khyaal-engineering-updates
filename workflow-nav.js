@@ -9,9 +9,9 @@ const WORKFLOW_STAGES = {
         name: 'Strategic',
         icon: '🍒',
         label: 'Discovery',
-        description: 'Quarterly planning: Vision, objectives and key results',
+        description: 'Quarterly planning: Vision, objectives, epics and roadmap',
         cadence: 'Quarterly',
-        views: ['okr', 'epics'],
+        views: ['okr', 'epics', 'roadmap'],
         color: '#8b5cf6', // purple
         order: 1
     },
@@ -19,9 +19,9 @@ const WORKFLOW_STAGES = {
         name: 'Planning',
         icon: '📂',
         label: 'Definition',
-        description: 'Monthly/Weekly: Roadmap, backlog grooming, sprint planning',
+        description: 'Monthly/Weekly: Backlog grooming, sprint planning, gantt timeline',
         cadence: 'Monthly/Weekly',
-        views: ['roadmap', 'backlog', 'sprint', 'releases'],
+        views: ['backlog', 'sprint', 'gantt'],
         color: '#3b82f6', // blue
         order: 2
     },
@@ -29,9 +29,9 @@ const WORKFLOW_STAGES = {
         name: 'Execution',
         icon: '⚡',
         label: 'Delivery',
-        description: 'Daily work: Track tasks, resolve blockers, update status',
+        description: 'Daily work: Kanban, track tasks, dependencies, workflow',
         cadence: 'Daily',
-        views: ['my-tasks', 'kanban', 'track', 'dependency', 'workflow'],
+        views: ['kanban', 'track', 'dependency', 'workflow'],
         color: '#10b981', // green
         order: 3
     },
@@ -39,9 +39,9 @@ const WORKFLOW_STAGES = {
         name: 'Reporting',
         icon: '📊',
         label: 'Analytics',
-        description: 'Weekly/Monthly: Review progress, analytics, capacity',
+        description: 'Weekly/Monthly: Dashboard, analytics, releases, status',
         cadence: 'Weekly/Monthly',
-        views: ['dashboard', 'analytics', 'capacity', 'status', 'priority', 'contributor', 'gantt'],
+        views: ['dashboard', 'analytics', 'releases', 'capacity', 'status', 'priority', 'contributor'],
         color: '#f59e0b', // amber
         order: 4
     }

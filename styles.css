@@ -667,8 +667,12 @@ body {
             flex-direction: column;
         }
 
-        .field-wrapper.blocker-field {
+        .field-wrapper.blocker-field,
+        .field-wrapper.full-width {
             grid-column: 1 / -1;
+        }
+
+        .field-wrapper.blocker-field {
             padding: 1rem;
             background: #fff1f2;
             border: 2px solid #fecaca;

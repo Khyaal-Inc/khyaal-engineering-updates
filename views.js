@@ -188,21 +188,41 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     const tags = renderTagPills(item.tags);
     const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
 
+    const storyPointsHTML = item.storyPoints ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[9px] border border-slate-200 shadow-sm" title="Story Points">${item.storyPoints} SP</span>` : '';
     const displayText = highlightSearch(item.text);
-    let contentHtml = `${displayText}${due}`;
+    let contentHtml = `<span class="flex items-center">${displayText}${due}${storyPointsHTML}</span>`;
     const effectiveNote = item.note || subtrackNote;
 
-    if (effectiveNote) {
-        let cleanNote = effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim();
+    if (effectiveNote || item.acceptanceCriteria?.length > 0 || item.effortLevel || item.impactLevel) {
+        let cleanNote = effectiveNote ? effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim() : '';
         cleanNote = highlightSearch(cleanNote);
+        
+        const effortImpactHTML = (item.effortLevel || item.impactLevel) ? `
+            <div class="mt-2 pt-2 border-t border-slate-100 flex gap-4 text-[10px] uppercase tracking-wider">
+                ${item.effortLevel ? `<span><span class="font-black text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
+                ${item.impactLevel ? `<span><span class="font-black text-slate-400">Impact:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
+            </div>
+        ` : '';
+
+        const acHTML = (item.acceptanceCriteria && item.acceptanceCriteria.length > 0) ? `
+            <div class="mt-2 pt-2 border-t border-slate-100">
+                <span class="block font-black text-slate-400 text-[10px] mb-1 uppercase tracking-wider">Acceptance Criteria</span>
+                <ul class="list-disc pl-4 space-y-1 text-[10px] text-slate-600 font-medium">
+                    ${item.acceptanceCriteria.map(ac => `<li>${ac}</li>`).join('')}
+                </ul>
+            </div>
+        ` : '';
+
         const idHTML = shouldShowManagement() ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
+        
         contentHtml = `
             <div class="info-wrapper">
-                <span class="info-text">${displayText}${due}</span>
+                <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
                 <button class="info-btn" aria-label="More information">i</button>
                 <div class="tooltip-content" role="tooltip">
-                    <span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span>
-                    ${cleanNote}
+                    ${cleanNote ? `<span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span><div class="mb-2 text-slate-600">${cleanNote}</div>` : ''}
+                    ${effortImpactHTML}
+                    ${acHTML}
                     ${idHTML}
                 </div>
             </div>
