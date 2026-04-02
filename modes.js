@@ -13,7 +13,7 @@ const MODE_CONFIG = {
         availableViews: [
             'epics', 'roadmap', 'backlog', 'sprint', 'kanban',
             'dependency', 'okr', 'capacity', 'analytics',
-            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow'
+            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard'
         ],
         description: 'Strategic planning, backlog grooming, sprint management',
         primaryNavOrder: ['okr', 'roadmap', 'epics', 'releases', 'backlog', 'sprint', 'my-tasks', 'kanban', 'track', 'dashboard', 'analytics', 'capacity']
@@ -207,10 +207,7 @@ function updateModeSwitcherState() {
 // Render dynamic navigation based on current mode
 function renderDynamicNavigation(mode) {
     const container = document.getElementById('dynamic-nav-container');
-    if (!container) {
-        console.warn('Dynamic navigation container not found');
-        return;
-    }
+    if (!container) return; // Silent return as container is removed
 
     const config = MODE_CONFIG[mode];
     const navOrder = config.primaryNavOrder || [];

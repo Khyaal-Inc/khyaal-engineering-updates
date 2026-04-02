@@ -7,7 +7,7 @@
 const WORKFLOW_STAGES = {
     strategic: {
         name: 'Strategic',
-        icon: '🍒',
+        icon: '🎯',
         label: 'Discovery',
         description: 'Quarterly planning: Vision, objectives, epics and roadmap',
         cadence: 'Quarterly',
@@ -20,8 +20,8 @@ const WORKFLOW_STAGES = {
         icon: '📂',
         label: 'Definition',
         description: 'Monthly/Weekly: Backlog grooming, sprint planning, gantt timeline',
-        cadence: 'Monthly/Weekly',
-        views: ['backlog', 'sprint', 'gantt'],
+        cadence: 'Monthly',
+        views: ['backlog', 'sprint', 'gantt', 'releases'],
         color: '#3b82f6', // blue
         order: 2
     },
@@ -31,7 +31,7 @@ const WORKFLOW_STAGES = {
         label: 'Delivery',
         description: 'Daily work: Kanban, track tasks, dependencies, workflow',
         cadence: 'Daily',
-        views: ['kanban', 'track', 'dependency', 'workflow'],
+        views: ['kanban', 'track', 'dependency'],
         color: '#10b981', // green
         order: 3
     },
@@ -39,9 +39,9 @@ const WORKFLOW_STAGES = {
         name: 'Reporting',
         icon: '📊',
         label: 'Analytics',
-        description: 'Weekly/Monthly: Dashboard, analytics, releases, status',
-        cadence: 'Weekly/Monthly',
-        views: ['dashboard', 'analytics', 'releases', 'capacity', 'status', 'priority', 'contributor'],
+        description: 'Weekly/Monthly: Dashboard, analytics, capacity, status',
+        cadence: 'On-Demand',
+        views: ['dashboard', 'analytics', 'capacity', 'status', 'priority', 'contributor'],
         color: '#f59e0b', // amber
         order: 4
     }
@@ -97,15 +97,15 @@ function switchWorkflowStage(stageKey) {
     currentWorkflowStage = stageKey;
     localStorage.setItem('khyaal_workflow_stage', stageKey);
 
-    // Update UI
-    updateWorkflowStageUI();
-
     // Switch to default view for this stage
     const stage = WORKFLOW_STAGES[stageKey];
     const defaultView = stage.views[0];
 
     if (typeof switchView === 'function' && defaultView) {
+        // switchView already triggers updateWorkflowStageUI() via the hook
         switchView(defaultView);
+    } else {
+        updateWorkflowStageUI();
     }
 
     console.log(`Switched to ${stage.name} workflow stage`);
@@ -141,54 +141,74 @@ function renderWorkflowNav() {
         .filter(([key]) => isStageAvailableInCurrentMode(key));
 
     const navHtml = `
-        <div class="workflow-nav-v2">
-            <!-- Header/Title -->
-            <div class="flex items-center justify-between mb-4 px-2">
-                <div class="flex items-center gap-3">
-                    <div class="bg-slate-900 text-white px-2 py-1 rounded text-[10px] font-black uppercase tracking-tighter">Product Workflow</div>
-                    <div class="text-xs font-bold text-slate-400">Strategic Pipeline & Execution Funnel</div>
+        <div class="workflow-nav-v2 mb-10 transition-all duration-500">
+            <!-- Header section with Global Actions -->
+            <div class="flex items-center justify-between mb-5 px-3">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                         <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                            <span class="text-white text-xs font-black italic tracking-tighter">KP</span>
+                         </div>
+                         <div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Engineering Pulse</div>
+                            <div class="text-xs font-bold text-slate-800">Vision-First Lifecycle</div>
+                         </div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
+
+                <div class="flex items-center gap-3">
+                    <!-- Global Engineering Playbook (Special Link) -->
+                    <button 
+                        onclick="switchView('workflow')"
+                        class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-black transition-all shadow-sm flex items-center gap-2"
+                    >
+                        <span>🛠️</span>
+                        <span>Engineering Playbook</span>
+                    </button>
+                    
                     <button 
                         onclick="if (typeof showWizard === 'function') showWizard();"
-                        class="text-[10px] px-3 py-1 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg font-bold transition-all flex items-center gap-1 shadow-sm"
+                        class="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm flex items-center gap-2"
                     >
-                        <span>🧙 Set-up</span>
+                        <span>🧙 Set-up Wizard</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Horizontal Pipeline -->
-            <div class="workflow-pipeline-container">
+            <!-- Horizontal Pipeline Container -->
+            <div class="workflow-pipeline-container bg-white p-2 rounded-2xl border border-slate-200 shadow-xl flex items-stretch gap-4">
                 ${availableStages.map(([key, stage], idx) => {
                     const isActive = currentWorkflowStage === key;
                     const isLast = idx === availableStages.length - 1;
                     
                     return `
-                        <div class="pipeline-stage ${isActive ? 'active' : ''}" style="--stage-color: ${stage.color};">
-                            <div class="stage-body" onclick="switchWorkflowStage('${key}')">
-                                <div class="stage-icon-box">
-                                    <span class="stage-icon">${stage.icon}</span>
-                                    <div class="stage-pulse"></div>
-                                </div>
+                        <div class="pipeline-stage flex-1 flex flex-col gap-3 ${isActive ? 'active' : 'hover:opacity-100'} transition-all duration-300" style="--stage-color: ${stage.color};">
+                            <!-- Stage Header (Clickable) -->
+                            <div 
+                                class="stage-body cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${isActive ? 'shadow-lg' : 'bg-slate-100 border-slate-200 hover:bg-white text-slate-700'}" 
+                                onclick="switchWorkflowStage('${key}')"
+                                style="${isActive ? `background-color: var(--stage-color); color: white; border-color: var(--stage-color);` : ''}"
+                            >
+                                <div class="stage-icon-box text-2xl ${isActive ? 'bg-white/20 p-2 rounded-lg' : ''}">${stage.icon}</div>
                                 <div class="stage-info">
-                                    <div class="stage-label">${stage.label}</div>
-                                    <div class="stage-name">${stage.name}</div>
+                                    <div class="text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-white/70' : 'opacity-60'}">${stage.label}</div>
+                                    <div class="text-sm font-black tracking-tight">${stage.name}</div>
                                 </div>
+                                ${isActive ? '<div class="ml-auto animate-bounce-horizontal">➔</div>' : ''}
                             </div>
                             
-                            <!-- Sub-steps for active stage -->
-                            <div class="pipeline-steps">
+                            <!-- Sub-views for THIS stage (Always visible) -->
+                            <div class="flex flex-nowrap gap-2 px-1 py-1 transition-all duration-500 mt-auto min-h-[44px]">
                                 ${stage.views
                                     .filter(view => isViewAvailableInCurrentMode(view))
                                     .map(view => {
                                         const viewLabels = {
-                                            'okr': 'OKRs', 'epics': 'Epics', 'roadmap': 'Roadmap', 'backlog': 'Backlog',
-                                            'sprint': 'Sprint', 'releases': 'Releases', 'my-tasks': 'Active', 
-                                            'kanban': 'Kanban', 'track': 'Track', 'dependency': 'Links', 
-                                            'workflow': 'Flow', 'dashboard': 'Pulse', 'analytics': 'Data', 
-                                            'capacity': 'Load', 'status': 'State', 'priority': 'Risk', 
-                                            'contributor': 'Team', 'gantt': 'Timeline'
+                                            'okr': '🎯 OKRs', 'epics': '🚀 Epics', 'roadmap': '🗺️ Roadmap', 'backlog': '📚 Backlog',
+                                            'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active', 
+                                            'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links', 
+                                            'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data', 
+                                            'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk', 
+                                            'contributor': '👥 Team', 'gantt': '📅 Gantt'
                                         };
                                         const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
                                         const isViewActive = activeView === view;
@@ -196,17 +216,21 @@ function renderWorkflowNav() {
                                         return `
                                             <button 
                                                 onclick="switchView('${view}')" 
-                                                class="pipeline-step ${isViewActive ? 'active' : ''}"
-                                                title="View ${viewLabels[view] || view}"
+                                                class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${isViewActive ? 'bg-[var(--stage-color)] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-[var(--stage-color)]/10 hover:text-[var(--stage-color)]'}"
+                                                title="Open ${viewLabels[view] || view}"
                                             >
-                                                ${viewLabels[view] || view}
+                                                ${viewLabels[view]?.split(' ')[1] || view}
                                             </button>
                                         `;
                                     }).join('')}
                             </div>
-
-                            ${!isLast ? '<div class="pipeline-connector"></div>' : ''}
                         </div>
+
+                        ${!isLast ? `
+                            <div class="pipeline-connector self-center h-[2px] flex-1 bg-slate-200 relative min-w-[20px] -mt-12">
+                                <div class="absolute inset-0 bg-gradient-to-r from-[var(--stage-color)] to-slate-200 opacity-40 shadow-sm" style="width: ${isActive ? '100%' : '0%'}; transition: width 0.5s ease;"></div>
+                            </div>
+                        ` : ''}
                     `;
                 }).join('')}
             </div>

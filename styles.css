@@ -1847,53 +1847,73 @@ body {
     opacity: 1;
 }
 
+/* Workflow Navigation V2 - Stage-Based Pipeline */
+.workflow-nav-v2 {
+    animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.workflow-pipeline-container {
+    perspective: 1000px;
+    overflow-x: auto;
+}
+
+.pipeline-stage {
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 380px; /* Maximize width to prevent button clipping */
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.stage-body {
+    background: white;
+    border-color: #f1f5f9;
+}
+
+.pipeline-stage.active .stage-body {
+    transform: scale(1.01) translateY(-2px);
+    box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--stage-color);
+}
+
 .pipeline-step {
-    padding: 0.35rem 0.75rem;
-    border-radius: 8px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
+    transition: all 0.2s ease;
 }
 
-.pipeline-step:hover {
-    background: #e2e8f0;
-    color: #1e293b;
-    transform: translateY(-1px);
-}
+/* Custom shadow for each stage color when active */
+.pipeline-stage.active[style*="--stage-color: #8b5cf6"] .stage-body { box-shadow: 0 12px 20px -8px rgba(139, 92, 246, 0.25); }
+.pipeline-stage.active[style*="--stage-color: #3b82f6"] .stage-body { box-shadow: 0 12px 20px -8px rgba(59, 130, 246, 0.25); }
+.pipeline-stage.active[style*="--stage-color: #10b981"] .stage-body { box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.25); }
+.pipeline-stage.active[style*="--stage-color: #f59e0b"] .stage-body { box-shadow: 0 12px 20px -8px rgba(245, 158, 11, 0.25); }
 
-.pipeline-step.active {
-    background: #0f172a;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Connectors */
 .pipeline-connector {
-    position: absolute;
-    top: 28px;
-    right: -15px;
-    width: 20px;
-    height: 2px;
-    background: #e2e8f0;
+    margin-top: -2.5rem;
+    z-index: 0;
+}
+
+.pipeline-connector > div {
     z-index: 1;
 }
 
-.pipeline-stage.active .pipeline-connector {
-    background: var(--stage-color);
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom Scrollbar for Pipeline */
+@keyframes bounce-horizontal {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+.animate-bounce-horizontal {
+    animation: bounce-horizontal 2s infinite;
+}
+
+/* Pipeline Custom Scrollbar */
 .workflow-pipeline-container::-webkit-scrollbar {
     height: 4px;
 }
 .workflow-pipeline-container::-webkit-scrollbar-track {
     background: #f1f5f9;
-    border-radius: 10px;
 }
 .workflow-pipeline-container::-webkit-scrollbar-thumb {
     background: #cbd5e1;
@@ -1903,23 +1923,10 @@ body {
 /* Responsive adjust */
 @media (max-width: 1024px) {
     .workflow-pipeline-container {
+        flex-direction: column;
         gap: 1rem;
     }
     .pipeline-stage {
-        min-width: 180px;
-    }
-}
-
-@media (max-width: 640px) {
-    .workflow-pipeline-container {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    .pipeline-stage {
-        width: 100%;
         min-width: 100%;
-    }
-    .pipeline-connector {
-        display: none;
     }
 }
