@@ -162,12 +162,6 @@ function renderModeSwitcher() {
         return;
     }
 
-    // Check if already rendered
-    if (document.querySelector('.mode-switcher')) {
-        updateModeSwitcherState();
-        return;
-    }
-
     const switcherHtml = `
         <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
             ${Object.keys(MODE_CONFIG).map(mode => {
@@ -187,7 +181,6 @@ function renderModeSwitcher() {
     `;
 
     container.innerHTML = switcherHtml;
-    updateModeSwitcherState();
 }
 
 // Update active state of mode buttons
