@@ -141,23 +141,44 @@ function updateCommandStripNav() {
     // 2. Render Breadcrumb
     const activeStage = WORKFLOW_STAGES[currentWorkflowStage];
     const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr';
-    
+
     breadcrumb.innerHTML = `
-        <span class="hover:text-slate-900 cursor-pointer transition-colors" onclick="togglePipelineExpand()">${activeStage ? activeStage.name : 'Unknown'}</span>
-        <span class="mx-1 text-slate-200">/</span>
-        <span class="text-slate-800 font-black">${activeView.charAt(0).toUpperCase() + activeView.slice(1)}</span>
+        <div class="flex items-center cursor-pointer group hover:bg-slate-50 px-2 py-1 rounded-lg transition-all" onclick="toggleStrategyMenu()">
+            <span class="font-black group-hover:text-indigo-600 transition-colors" 
+                  style="color: var(--stage-color, ${activeStage?.color || '#6366f1'})">
+                ${activeStage ? activeStage.name : 'Unknown'}
+            </span>
+            <span class="mx-1.5 text-slate-300 group-hover:text-slate-400">/</span>
+            <span class="text-slate-800 font-extrabold group-hover:text-black">${activeView.charAt(0).toUpperCase() + activeView.slice(1)}</span>
+            <span class="ml-2 text-[10px] text-slate-300 group-hover:text-indigo-400 transition-colors">▼</span>
+        </div>
     `;
 }
 
-let isPipelineExpanded = false;
-function togglePipelineExpand() {
-    isPipelineExpanded = !isPipelineExpanded;
-    const navContainer = document.getElementById('workflow-nav-container');
-    if (navContainer) {
-        navContainer.classList.toggle('hidden', !isPipelineExpanded);
-        if (isPipelineExpanded) navContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+function toggleStrategyMenu() {
+    const container = document.getElementById('workflow-nav-container');
+    if (!container) return;
+    
+    const isHidden = container.classList.contains('hidden');
+    if (isHidden) {
+        renderWorkflowNav(); // Fresh render
+        container.classList.remove('hidden');
+        container.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
+        
+        // Close on click outside
+        const closeHandler = (e) => {
+            if (!container.contains(e.target) && !document.getElementById('breadcrumb-nav').contains(e.target)) {
+                container.classList.add('hidden');
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeHandler), 10);
+    } else {
+        container.classList.add('hidden');
     }
 }
+
+let isPipelineExpanded = true;
 
 // Toggle workflow navigation expansion
 function toggleWorkflowNav() {
@@ -189,60 +210,50 @@ function renderWorkflowNav() {
         .filter(([key]) => isStageAvailableInCurrentMode(key));
 
     const navHtml = `
-        <div class="workflow-nav-v2 mb-10 transition-all duration-500">
-            <!-- Header section with Global Actions -->
-            <div class="flex items-center justify-between mb-5 px-3">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                         <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
-                            <span class="text-white text-xs font-black italic tracking-tighter">KP</span>
-                         </div>
-                         <div>
-                            <div class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Engineering Pulse</div>
-                            <div class="text-xs font-bold text-slate-800">Vision-First Lifecycle</div>
-                         </div>
-                    </div>
+        <div class="workflow-popover max-w-5xl w-full bg-white/95 backdrop-blur-md p-6 rounded-3xl border-2 border-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
+            <!-- Header section with Global Actions (Densified/Popover Ready) -->
+            <div class="flex items-center justify-between mb-6 px-2">
+                <div class="flex items-center gap-3">
+                     <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-100">
+                        <span class="text-white text-sm font-black italic tracking-tighter">KP</span>
+                     </div>
+                     <div>
+                        <div class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Strategy Discovery</div>
+                        <div class="text-base font-black text-slate-800">Vision-First Lifecycle</div>
+                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <!-- Global Engineering Playbook (Special Link) -->
-                    <button 
-                        onclick="switchView('workflow')"
-                        class="px-4 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-black transition-all shadow-sm flex items-center gap-2"
-                    >
-                        <span>🛠️</span>
-                        <span>Engineering Playbook</span>
+                    <button onclick="switchView('workflow'); document.getElementById('workflow-nav-container').classList.add('hidden');" class="px-5 py-2.5 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 rounded-2xl text-xs font-black transition-all shadow-sm flex items-center gap-2">
+                        <span>🛠️ Engineering Playbook</span>
                     </button>
-                    
-                    <button 
-                        onclick="if (typeof showWizard === 'function') showWizard();"
-                        class="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm flex items-center gap-2"
-                    >
-                        <span>🧙 Set-up Wizard</span>
-                    </button>
+                    <button onclick="document.getElementById('workflow-nav-container').classList.add('hidden');" class="text-slate-400 hover:text-slate-900 p-2 text-xl font-black transition-colors">✕</button>
                 </div>
             </div>
 
-            <!-- Horizontal Pipeline Container -->
-            <div class="workflow-pipeline-container bg-white p-2 rounded-2xl border border-slate-200 shadow-xl flex items-stretch gap-4">
+            <!-- Horizontal Pipeline Container (Strategy Pop-over Style) -->
+            <div class="workflow-pipeline-container flex items-stretch gap-4 pb-2">
                 ${availableStages.map(([key, stage], idx) => {
                     const isActive = currentWorkflowStage === key;
                     const isLast = idx === availableStages.length - 1;
+                    if (isActive) {
+                        document.documentElement.style.setProperty('--stage-color', stage.color);
+                    }
                     
                     return `
                         <div class="pipeline-stage flex-1 flex flex-col gap-3 ${isActive ? 'active' : 'hover:opacity-100'} transition-all duration-300" style="--stage-color: ${stage.color};">
                             <!-- Stage Header (Clickable) -->
                             <div 
-                                class="stage-body cursor-pointer p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${isActive ? 'shadow-lg' : 'bg-slate-100 border-slate-200 hover:bg-white text-slate-700'}" 
+                                class="stage-body cursor-pointer p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${isActive ? 'shadow-md' : 'bg-slate-100 border-slate-200 hover:bg-white text-slate-700'}" 
                                 onclick="switchWorkflowStage('${key}')"
                                 style="${isActive ? `background-color: var(--stage-color); color: white; border-color: var(--stage-color);` : ''}"
                             >
-                                <div class="stage-icon-box text-2xl ${isActive ? 'bg-white/20 p-2 rounded-lg' : ''}">${stage.icon}</div>
+                                <div class="stage-icon-box text-lg ${isActive ? 'bg-white/20 p-1.5 rounded-md' : ''}">${stage.icon}</div>
                                 <div class="stage-info">
-                                    <div class="text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-white/70' : 'opacity-60'}">${stage.label}</div>
-                                    <div class="text-sm font-black tracking-tight">${stage.name}</div>
+                                    <div class="text-[7px] font-black uppercase tracking-widest ${isActive ? 'text-white/70' : 'opacity-60'}">${stage.label}</div>
+                                    <div class="text-[13px] font-black tracking-tight">${stage.name}</div>
                                 </div>
-                                ${isActive ? '<div class="ml-auto animate-bounce-horizontal">➔</div>' : ''}
+                                ${isActive ? '<div class="ml-auto text-xs animate-bounce-horizontal">➔</div>' : ''}
                             </div>
                             
                             <!-- Sub-views for THIS stage (Always visible) -->
@@ -263,7 +274,7 @@ function renderWorkflowNav() {
                                         
                                         return `
                                             <button 
-                                                onclick="switchView('${view}')" 
+                                                onclick="switchView('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden');" 
                                                 class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${isViewActive ? 'bg-[var(--stage-color)] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-[var(--stage-color)]/10 hover:text-[var(--stage-color)]'}"
                                                 title="Open ${viewLabels[view] || view}"
                                             >

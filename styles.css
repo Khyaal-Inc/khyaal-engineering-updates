@@ -135,8 +135,8 @@ body {
             border: 2px solid #e2e8f0;
             overflow: visible;
             /* Required for sticky */
-            margin-bottom: 4rem;
-            /* Increased spacing between main tracks */
+            margin-bottom: 1rem;
+            /* Reduced spacing between main tracks for high density */
         }
 
         /* Fix for rounded corners when using overflow: visible */
@@ -157,9 +157,9 @@ body {
         .track-header {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            padding: 1.25rem 1.5rem;
-            font-weight: 700;
-            font-size: 1.125rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 800;
+            font-size: 1rem;
             letter-spacing: -0.025em;
             position: sticky;
             top: 48px; /* Offset for Command Strip */
@@ -184,10 +184,10 @@ body {
         .subtrack-title {
             background: #f1f5f9;
             /* Solid opaque background */
-            padding: 1.25rem 1.5rem;
+            padding: 0.75rem 1.25rem;
             font-weight: 800;
             color: #0f172a;
-            font-size: 1.15rem;
+            font-size: 1rem;
             border-bottom: 1px solid #e5e7eb;
             border-left: 4px solid #0f172a;
             display: flex;
@@ -207,7 +207,7 @@ body {
             border: 2px solid #e2e8f0;
             overflow: visible;
             /* Required for sticky */
-            margin-bottom: 4rem;
+            margin-bottom: 1rem;
             /* Match track-card spacing */
         }
 

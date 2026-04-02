@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="p-4 md:p-8 text-slate-800">
+<body class="bg-slate-50 text-slate-800 antialiased">
+<div class="p-3 md:p-6">
 
     <div id="auth-loading">
         <div class="loader"></div>
@@ -103,8 +104,8 @@
             </div>
         </div>
 
-        <!-- Strategic Command Strip (Sticky Header) -->
-        <div id="command-strip" class="fixed top-0 left-0 right-0 z-[100] bg-white/90 backdrop-blur-md border-b border-slate-200 transition-all duration-300">
+        <!-- Strategic Command Strip (Sticky Header) - High Density -->
+        <div id="command-strip" class="fixed top-0 left-0 right-0 z-[100] bg-white border-b border-slate-200 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <!-- Logo & Stage Icons -->
@@ -169,22 +170,22 @@
             </div>
         </div>
 
-        <!-- Main Content Area (With Top Padding for Sticky Header) -->
-        <div id="main-content" class="max-w-7xl mx-auto pt-16">
+        <!-- Main Content Area (Extreme Density Padding) -->
+        <div id="main-content" class="max-w-7xl mx-auto pt-12">
 
         <!-- Removed redundant heavy header blocks to reclaim vertical space -->
 
             <!-- Blocker Strip (Collapsible row below Command Strip if active) -->
-            <div id="global-blocker-strip" class="mb-6 hidden"></div>
+            <div id="global-blocker-strip" class="mb-3 hidden"></div>
 
             <!-- Onboarding Wizard (rendered by wizard.js) -->
             <div id="onboarding-wizard-container"></div>
 
-            <!-- Workflow Navigation (rendered by workflow-nav.js) -->
-            <div id="workflow-nav-container"></div>
+            <!-- Workflow Navigation Pop-over (rendered by workflow-nav.js) -->
+            <div id="workflow-nav-container" class="hidden fixed inset-x-0 top-12 z-[100] flex justify-center p-4"></div>
 
-            <!-- Super-Filter Ribbon (Unified Row) -->
-            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xl mb-8 flex flex-wrap items-center gap-4">
+            <!-- Super-Filter Ribbon (Unified Row) - Extreme Density -->
+            <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 flex flex-wrap items-center gap-2">
                 <div class="flex-1 min-w-[300px] relative">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                     <input type="search" placeholder="Quick find tasks, contributors, or notes..." class="search-input w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-600/20 transition-all"
@@ -382,6 +383,7 @@
             if (window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: { primaryColor: '#f1f5f9', lineColor: '#94a3b8' } });
         });
     </script>
+    </div> <!-- Close p-3 md:p-6 -->
 </body>
 
 </html>

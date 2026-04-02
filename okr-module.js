@@ -107,7 +107,7 @@ function renderOkrView() {
     let visionHtml = '';
     if (vision) {
         visionHtml = `
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border-2 border-indigo-200 shadow-sm mb-8">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-2 border-indigo-200 shadow-sm mb-4">
                 <div class="flex items-start gap-4">
                     <div class="text-4xl">🌟</div>
                     <div class="flex-1">
@@ -137,7 +137,9 @@ function renderOkrView() {
     // Management Header (Add OKR button)
     let headerHtml = showManagement ? `
         <div class="flex justify-between items-center mb-6">
-            <button onclick="openOKREdit()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2">
+            <button onclick="openOKREdit()" 
+                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
+                style="background-color: var(--stage-color, #4f46e5)">
                 <span>🎯</span> Add OKR
             </button>
         </div>
@@ -180,7 +182,7 @@ function renderOkrCard(okr, idx) {
     ` : '';
 
     return `
-        <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
+        <div class="bg-white p-4 rounded-xl border-2 border-slate-900 shadow-xl mb-6">
             <!-- Header -->
             <div class="flex justify-between items-start mb-4">
                 <div class="flex-1">

@@ -652,7 +652,9 @@ function renderEpicsView() {
             <button onclick="switchView('roadmap')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
                 Next: Plan Roadmap 🗺️
             </button>
-            <button onclick="openEpicEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+            <button onclick="openEpicEdit()" 
+                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
+                style="background-color: var(--stage-color, #4f46e5)">
                 <span>🎯</span> Add Strategic Epic
             </button>
         </div>
@@ -742,7 +744,9 @@ function renderRoadmapView() {
             <button onclick="switchView('backlog')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
                 Next: Groom Backlog 📚
             </button>
-            <button onclick="openRoadmapEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
+            <button onclick="openRoadmapEdit()" 
+                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
+                style="background-color: var(--stage-color, #4f46e5)">
                 <span>➕</span> Add Roadmap Category
             </button>
         </div>
