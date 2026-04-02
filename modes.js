@@ -156,9 +156,9 @@ function applyMode(mode) {
 
 // Render mode switcher in header
 function renderModeSwitcher() {
-    const container = document.getElementById('mode-switcher-container');
+    const container = document.getElementById('header-mode-switcher');
     if (!container) {
-        console.warn('Mode switcher container not found');
+        console.warn('Header mode switcher container not found');
         return;
     }
 
@@ -169,17 +169,17 @@ function renderModeSwitcher() {
     }
 
     const switcherHtml = `
-        <div class="mode-switcher" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mode:</span>
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
             ${Object.keys(MODE_CONFIG).map(mode => {
                 const config = MODE_CONFIG[mode];
+                const isActive = mode === currentMode;
                 return `
                     <button
                         onclick="switchMode('${mode}')"
-                        class="mode-btn mode-btn-${mode} px-3 py-1.5 rounded-lg text-sm font-bold transition-all border-2"
+                        class="mode-btn mode-btn-${mode} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}"
                         title="${config.description}"
                     >
-                        ${config.icon} ${config.name}
+                        ${config.icon} ${config.name.split(' ')[0]}
                     </button>
                 `;
             }).join('')}
@@ -192,16 +192,8 @@ function renderModeSwitcher() {
 
 // Update active state of mode buttons
 function updateModeSwitcherState() {
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        const mode = btn.classList[1].replace('mode-btn-', '');
-        if (mode === currentMode) {
-            btn.classList.add('active');
-            btn.style.cssText = 'background: var(--mode-color); color: white; border-color: var(--mode-color);';
-        } else {
-            btn.classList.remove('active');
-            btn.style.cssText = 'background: white; color: #64748b; border-color: #e2e8f0;';
-        }
-    });
+    // Handled by re-rendering for simplicity in the compact pill design
+    renderModeSwitcher();
 }
 
 // Render dynamic navigation based on current mode

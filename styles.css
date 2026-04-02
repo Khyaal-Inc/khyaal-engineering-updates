@@ -162,7 +162,7 @@ body {
             font-size: 1.125rem;
             letter-spacing: -0.025em;
             position: sticky;
-            top: 0;
+            top: 48px; /* Offset for Command Strip */
             z-index: 20;
         }
 
@@ -196,8 +196,7 @@ body {
             gap: 0.5rem;
             transition: background-color 0.2s;
             position: sticky;
-            top: 3.875rem;
-            /* Exactly below track header */
+            top: calc(48px + 3.875rem); /* Offset for Command Strip + Track Header */
             z-index: 10;
         }
 

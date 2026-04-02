@@ -49,6 +49,7 @@ function highlightSearch(text) {
 // ------ Global Blocker Alert Strip ------
 function renderBlockerStrip() {
     const strip = document.getElementById('global-blocker-strip');
+    const headerBadge = document.getElementById('header-blocker-badge');
     if (!strip) return;
 
     let blockers = [];
@@ -70,34 +71,59 @@ function renderBlockerStrip() {
         });
     });
 
+    // Update Header Badge (Progressive Disclosure)
+    if (headerBadge) {
+        if (blockers.length > 0) {
+            headerBadge.innerHTML = `
+                <button onclick="document.getElementById('global-blocker-strip').classList.toggle('hidden')" 
+                    class="flex items-center gap-1.5 px-2 py-1 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all group"
+                    title="${blockers.length} Active Blockers"
+                >
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                    </span>
+                    <span class="text-[10px] font-black text-red-700">${blockers.length}</span>
+                </button>
+            `;
+        } else {
+            headerBadge.innerHTML = '';
+        }
+    }
+
     if (blockers.length === 0) {
         strip.classList.add('hidden');
         strip.innerHTML = '';
         return;
     }
 
-    strip.classList.remove('hidden');
-    let html = `<div class="global-blocker-strip">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">🚨 ${blockers.length} Active Blocker${blockers.length > 1 ? 's' : ''}</span>
-                        <span class="text-xs text-red-800 font-bold">Action required to unblock progress</span>
+    // Keep the full strip hidden by default, only toggle via badge or if needed
+    // strip.classList.remove('hidden'); 
+    
+    let html = `<div class="bg-red-50 p-4 rounded-2xl border border-red-200 shadow-xl animate-fadeInDown">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase tracking-widest">🚨 ${blockers.length} Active Blocker${blockers.length > 1 ? 's' : ''}</span>
+                            <span class="text-xs text-red-800 font-bold">Action required to unblock progress</span>
+                        </div>
+                        <button onclick="document.getElementById('global-blocker-strip').classList.add('hidden')" class="text-red-400 hover:text-red-700">✕</button>
                     </div>
+                    <div class="space-y-2">
                 `;
 
     blockers.forEach(b => {
         html += `
-            <div class="blocker-alert-item border-l-2 border-red-500 pl-3 py-1">
-                <div class="dot"></div>
+            <div class="blocker-alert-item border-l-4 border-red-500 bg-white/50 p-3 rounded-r-xl shadow-sm">
                 <div class="flex-1">
-                    <span class="font-black text-xs text-red-900">[${b.track} → ${b.subtrack}]</span>
-                    <span class="text-sm font-medium text-red-800">${b.text}</span>
-                    ${b.note ? `<div class="text-[11px] text-red-700 italic mt-0.5">• ${b.note}</div>` : ''}
+                    <div class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">${b.track} / ${b.subtrack}</div>
+                    <div class="text-sm font-black text-red-900">${b.text}</div>
+                    ${b.note ? `<div class="text-xs text-red-700 italic mt-1 bg-red-100/50 p-1.5 rounded-lg border border-red-100">• ${b.note}</div>` : ''}
                 </div>
             </div>
         `;
     });
 
-    html += `</div>`;
+    html += `</div></div>`;
     strip.innerHTML = html;
 }
 

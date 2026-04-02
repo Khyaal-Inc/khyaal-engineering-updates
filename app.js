@@ -114,10 +114,17 @@ function syncMetadataToUI() {
     const meta = UPDATE_DATA.metadata;
     if (!meta) return;
 
-    document.getElementById('page-title').textContent = meta.title;
-    document.getElementById('page-date').textContent = meta.dateRange;
-    document.getElementById('page-desc').textContent = meta.description;
-    document.getElementById('footer-text').textContent = `${meta.title} • ${meta.dateRange}`;
+    const titleEl = document.getElementById('page-title');
+    if (titleEl) titleEl.textContent = meta.title;
+    
+    const dateEl = document.getElementById('page-date');
+    if (dateEl) dateEl.textContent = meta.dateRange;
+    
+    const descEl = document.getElementById('page-desc');
+    if (descEl) descEl.textContent = meta.description;
+    
+    const footerEl = document.getElementById('footer-text');
+    if (footerEl) footerEl.textContent = `${meta.title} • ${meta.dateRange}`;
 
     if (meta.nextReview) {
         const footerNext = document.getElementById('footer-next');

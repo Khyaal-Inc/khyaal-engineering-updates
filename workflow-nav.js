@@ -101,14 +101,62 @@ function switchWorkflowStage(stageKey) {
     const stage = WORKFLOW_STAGES[stageKey];
     const defaultView = stage.views[0];
 
+    // Update UI 
+    renderWorkflowNav();
+    updateCommandStripNav();
+
     if (typeof switchView === 'function' && defaultView) {
-        // switchView already triggers updateWorkflowStageUI() via the hook
         switchView(defaultView);
     } else {
         updateWorkflowStageUI();
     }
 
     console.log(`Switched to ${stage.name} workflow stage`);
+}
+
+/**
+ * Update the compact header navigation (Command Strip)
+ */
+function updateCommandStripNav() {
+    const miniPipeline = document.getElementById('mini-pipeline');
+    const breadcrumb = document.getElementById('breadcrumb-nav');
+    if (!miniPipeline || !breadcrumb) return;
+
+    // 1. Render Mini Icons
+    miniPipeline.innerHTML = Object.entries(WORKFLOW_STAGES)
+        .filter(([key]) => isStageAvailableInCurrentMode(key))
+        .map(([key, stage]) => {
+            const isActive = currentWorkflowStage === key;
+            return `
+                <button onclick="switchWorkflowStage('${key}')" 
+                    class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${isActive ? 'shadow-lg ring-2 ring-white' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}"
+                    title="${stage.name}"
+                    style="${isActive ? `background-color: ${stage.color}; color: white;` : ''}"
+                >
+                    <span class="text-xs">${stage.icon}</span>
+                </button>
+            `;
+        }).join('');
+
+    // 2. Render Breadcrumb
+    const activeStage = WORKFLOW_STAGES[currentWorkflowStage];
+    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr';
+    
+    breadcrumb.innerHTML = `
+        <span class="hover:text-slate-900 cursor-pointer transition-colors" onclick="togglePipelineExpand()">${activeStage ? activeStage.name : 'Unknown'}</span>
+        <span class="mx-1 text-slate-200">/</span>
+        <span class="text-slate-800 font-black">${activeView.charAt(0).toUpperCase() + activeView.slice(1)}</span>
+    `;
+}
+
+let isPipelineExpanded = false;
+function togglePipelineExpand() {
+    isPipelineExpanded = !isPipelineExpanded;
+    const navContainer = document.getElementById('workflow-nav-container');
+    if (navContainer) {
+        navContainer.classList.toggle('hidden', !isPipelineExpanded);
+        if (isPipelineExpanded) navContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 // Toggle workflow navigation expansion
@@ -238,6 +286,9 @@ function renderWorkflowNav() {
     `;
 
     container.innerHTML = navHtml;
+    
+    // Ensure Command Strip is also up to date
+    updateCommandStripNav();
 }
 
 // Render a single workflow stage
@@ -472,3 +523,5 @@ window.updateWorkflowStageUI = updateWorkflowStageUI;
 window.getCurrentWorkflowStage = getCurrentWorkflowStage;
 window.getRecommendedNextAction = getRecommendedNextAction;
 window.showRecommendedActions = showRecommendedActions;
+window.togglePipelineExpand = togglePipelineExpand;
+window.updateCommandStripNav = updateCommandStripNav;

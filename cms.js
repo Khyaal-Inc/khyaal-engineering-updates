@@ -12,6 +12,16 @@ const CMS_CONFIG = {
     filePath: 'data.json'
 };
 
+function toggleCmsDrawer() {
+    const drawer = document.getElementById('cms-drawer');
+    if (drawer) {
+        const isHidden = drawer.classList.toggle('hidden');
+        if (!isHidden) {
+            setTimeout(() => document.getElementById('github-token')?.focus(), 100);
+        }
+    }
+}
+
 // ========================================
 // CONTEXT-AWARE FORM SYSTEM
 // ========================================
