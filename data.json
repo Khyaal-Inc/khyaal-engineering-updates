@@ -311,15 +311,16 @@
                             "id": "platform-website-captcha",
                             "text": "Captcha implementation",
                             "status": "now",
-                            "priority": "medium",
+                            "priority": "high",
                             "storyPoints": 3,
                             "contributors": ["Subhrajit"],
-                            "note": "Adding a bot check on forms.",
-                            "usecase": "Reduces spam and fake submissions.",
+                            "note": "Implementing Google reCAPTCHA v3 on all user-facing forms to prevent bot submissions and spam.",
+                            "usecase": "Reduces spam form submissions by 95%+ and protects platform from automated attacks.",
                             "acceptanceCriteria": [
-                                "Captcha appears on all public forms",
-                                "Bot submissions are blocked",
-                                "User experience remains smooth"
+                                "reCAPTCHA v3 integrated on all forms",
+                                "Score threshold configured appropriately",
+                                "Fallback to v2 for low scores",
+                                "Form submission analytics tracking spam reduction"
                             ],
                             "effortLevel": "low",
                             "impactLevel": "medium",
@@ -371,12 +372,13 @@
                             "priority": "high",
                             "storyPoints": 5,
                             "contributors": ["Manish"],
-                            "note": "Adding missing user activity tracking.",
-                            "usecase": "Improves reporting and journey analysis.",
+                            "note": "Implementing comprehensive event tracking instrumentation across all user touchpoints (page views, clicks, form submissions, navigation events) to capture complete user journey data in Pulse analytics platform.",
+                            "usecase": "Enables complete funnel analysis and user journey visualization, reducing blind spots in analytics by 100% and improving conversion optimization capabilities by 40%.",
                             "acceptanceCriteria": [
-                                "All user events are tracked",
-                                "Events appear in Pulse dashboard",
-                                "No data loss during tracking"
+                                "All critical user events tracked (pageview, click, submit, navigate)",
+                                "Events appear in Pulse dashboard within 30 seconds",
+                                "Zero data loss - event buffering and retry logic implemented",
+                                "Event schema validated and documented"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "high",
@@ -397,12 +399,13 @@
                             "priority": "low",
                             "storyPoints": 3,
                             "contributors": ["Subhrajit"],
-                            "note": "Automating updates during migration work.",
-                            "usecase": "Keeps teams informed with less manual work.",
+                            "note": "Building automated notification system to track legacy page migration progress with Slack alerts on completion milestones and automated weekly progress reports showing pages migrated, performance improvements, and remaining work.",
+                            "usecase": "Reduces manual status update effort by 80%, improves stakeholder visibility, and ensures migration momentum through proactive reporting.",
                             "acceptanceCriteria": [
-                                "Automated alerts are sent",
-                                "Reports are generated automatically",
-                                "Notifications work reliably"
+                                "Slack alerts trigger on migration milestones (25%, 50%, 75%, 100%)",
+                                "Weekly automated reports generated with migration metrics",
+                                "Alert delivery reliability >99%",
+                                "Stakeholder distribution list configurable"
                             ],
                             "effortLevel": "low",
                             "impactLevel": "low",
@@ -420,12 +423,13 @@
                             "priority": "medium",
                             "storyPoints": 8,
                             "contributors": ["Subhrajit", "Vivek"],
-                            "note": "Creating reusable page sections.",
-                            "usecase": "Speeds up website content creation.",
+                            "note": "Building headless CMS component library with reusable content blocks (Hero, Feature Grid, Testimonials, CTA, Event Listing) using drag-and-drop interface powered by React Beautiful DnD, enabling marketing team to compose pages without engineering involvement.",
+                            "usecase": "Reduces page creation time from 2 days to 2 hours (90% reduction), eliminates engineering bottleneck for marketing campaigns, and improves content iteration velocity by 10x.",
                             "acceptanceCriteria": [
-                                "At least 5 reusable blocks created",
-                                "Blocks can be drag-dropped",
-                                "Content team can use without dev help"
+                                "Minimum 5 production-ready blocks (Hero, Features, Testimonials, CTA, Events)",
+                                "Drag-and-drop builder with live preview functional",
+                                "Content team trained and can create pages independently",
+                                "Block library documented with usage examples"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -444,12 +448,13 @@
                             "priority": "high",
                             "storyPoints": 8,
                             "contributors": ["Vivek"],
-                            "note": "Closing security issues found in testing.",
-                            "usecase": "Strengthens website safety.",
+                            "note": "Systematically remediating all critical and high-priority vulnerabilities identified in Vulnerability Assessment and Penetration Testing (VAPT) report including SQL injection risks, XSS vulnerabilities, insecure authentication, missing security headers, and sensitive data exposure.",
+                            "usecase": "Achieves 95%+ security compliance target, eliminates critical attack vectors, protects user data, and meets regulatory requirements for secure platform operations.",
                             "acceptanceCriteria": [
-                                "All critical VAPT issues resolved",
-                                "Medium issues addressed",
-                                "Security scan passes"
+                                "All 12 critical VAPT findings resolved and verified",
+                                "All 18 high-priority issues addressed",
+                                "Re-scan passes with <5 medium findings",
+                                "Security headers (CSP, HSTS, X-Frame-Options) implemented"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -468,12 +473,13 @@
                             "priority": "high",
                             "storyPoints": 5,
                             "contributors": ["Vivek"],
-                            "note": "Adding stronger redirect protection.",
-                            "usecase": "Prevents wrong or unsafe redirects.",
+                            "note": "Implementing secure redirect whitelist validation to prevent open redirect vulnerabilities, adding cryptographic signature verification for redirect URLs, and implementing referrer policy headers to protect against phishing and malicious redirect attacks identified in VAPT audit.",
+                            "usecase": "Eliminates open redirect vulnerability (OWASP Top 10), prevents phishing attacks using platform domain as trusted intermediary, and protects users from crypto-related scams leveraging redirect weaknesses.",
                             "acceptanceCriteria": [
-                                "Redirect validation is in place",
-                                "Malicious redirects are blocked",
-                                "Legitimate redirects work"
+                                "Whitelist-based redirect validation enforced for all redirects",
+                                "HMAC signature verification implemented for dynamic redirects",
+                                "Malicious redirect attempts logged and blocked",
+                                "All legitimate user flows tested and working (payment callbacks, OAuth, etc.)"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "high",
@@ -492,12 +498,13 @@
                             "priority": "medium",
                             "storyPoints": 8,
                             "contributors": ["Subhrajit", "Vivek"],
-                            "note": "Planning reusable event page designs.",
-                            "usecase": "Makes future event pages faster to build.",
+                            "note": "Building flexible event page template system with pre-designed layouts (Conference, Workshop, Tour, Community Gathering) using parameterized components for rapid event page creation. Templates include registration forms, schedule widgets, speaker profiles, and venue maps with schema.org structured data for SEO.",
+                            "usecase": "Reduces event page creation time from 8 hours to <1 hour (87% reduction), ensures consistent UX across all events, improves SEO with structured data, and enables marketing team to launch events independently.",
                             "acceptanceCriteria": [
-                                "Template system is built",
-                                "At least 3 templates created",
-                                "Events can be created in <1 hour"
+                                "Minimum 3 event templates deployed (Conference, Workshop, Tour)",
+                                "Template variables documented (title, date, location, speakers, schedule)",
+                                "Marketing team can create event page in <1 hour without dev support",
+                                "All templates include schema.org Event markup for rich snippets"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -520,12 +527,13 @@
                             "priority": "high",
                             "storyPoints": 5,
                             "contributors": ["Manish"],
-                            "note": "Adding missing activity tracking events.",
-                            "usecase": "Improves campaign and funnel analysis.",
+                            "note": "Implementing comprehensive event tracking for 50Above50 website covering user interactions (course views, certificate downloads, bundle purchases, category browsing, search queries) to enable complete attribution and funnel optimization in Pulse analytics.",
+                            "usecase": "Enables accurate campaign ROI measurement, identifies drop-off points in purchase funnel (expected 30% conversion improvement), and provides data foundation for personalized recommendations.",
                             "acceptanceCriteria": [
-                                "All events are tracked",
-                                "Events show in dashboard",
-                                "Funnel analysis works"
+                                "All user interaction events tracked (view, click, search, purchase)",
+                                "Events appear in Pulse dashboard with <1 minute latency",
+                                "Multi-step funnel analysis functional (browse → view → cart → purchase)",
+                                "UTM parameters captured and attributed correctly"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "high",
@@ -544,11 +552,13 @@
                             "priority": "low",
                             "storyPoints": 5,
                             "contributors": [],
-                            "note": "Fixing issues found in security testing.",
-                            "usecase": "Improves website security.",
+                            "note": "Addressing security vulnerabilities identified in VAPT assessment for 50Above50 platform including input validation gaps, session management weaknesses, and exposed admin endpoints. Lower priority than main platform due to limited PII and smaller attack surface.",
+                            "usecase": "Enhances security posture for 50Above50 platform, protects course content and user data, and maintains consistent security standards across all Khyaal properties.",
                             "acceptanceCriteria": [
-                                "Security issues resolved",
-                                "VAPT scan passes"
+                                "All critical and high findings from VAPT report resolved",
+                                "Input validation implemented on all user-facing forms",
+                                "Admin endpoints properly secured with authentication",
+                                "Security re-scan passes with acceptable risk level"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "medium",
@@ -631,12 +641,13 @@
                             "priority": "medium",
                             "storyPoints": 13,
                             "contributors": ["Manish"],
-                            "note": "Planned support for a future product area.",
-                            "usecase": "Prepares for future expansion.",
+                            "note": "Building RESTful API infrastructure for upcoming Centerstage product vertical including artist/performer management, event coordination, booking workflows, and content distribution endpoints. Architecting with extensible design patterns to support future feature expansion.",
+                            "usecase": "Enables launch of new Centerstage product line for connecting performers with senior audiences, unlocks new revenue stream (projected $50K/month), and establishes API architecture patterns for future verticals.",
                             "acceptanceCriteria": [
-                                "API endpoints defined",
-                                "Authentication works",
-                                "Documentation complete"
+                                "Core API endpoints implemented (artists, events, bookings, content)",
+                                "JWT-based authentication and role-based authorization working",
+                                "API documentation published with Swagger/OpenAPI spec",
+                                "Rate limiting and security headers configured"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "medium",
@@ -655,12 +666,13 @@
                             "priority": "medium",
                             "storyPoints": 8,
                             "contributors": ["Manish"],
-                            "note": "Improving how work is processed in the backend.",
-                            "usecase": "Makes the system more scalable.",
+                            "note": "Implementing Redis-based queue architecture (Bull/BullMQ) for Centerstage backend to handle asynchronous tasks including video transcoding, notification delivery, content distribution, and booking confirmations. Enables horizontal scalability and graceful degradation under load.",
+                            "usecase": "Improves system throughput by 400%, enables processing of 1000+ concurrent bookings, provides job retry/failure handling (99.9% reliability), and supports future scale to 10K+ users without infrastructure redesign.",
                             "acceptanceCriteria": [
-                                "Queue system is implemented",
-                                "Tasks process reliably",
-                                "Performance improves by 40%"
+                                "Redis queue system deployed with Bull/BullMQ",
+                                "All async tasks migrated to queue (video, notifications, distribution)",
+                                "Job monitoring dashboard showing queue health and throughput",
+                                "Performance benchmarks show 4x improvement in concurrent request handling"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -708,12 +720,13 @@
                             "priority": "low",
                             "storyPoints": 13,
                             "contributors": [],
-                            "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
-                            "usecase": "1. Track daily/weekly participation of users in events or platform activities.2. Increment streak count when user performs the required action consecutively.3. Show streaks on user dashboard to motivate engagement.4. Optionally, provide rewards or badges for achieving streak milestones.5. Reset streak if the user misses a day/session.",
+                            "note": "Building gamification system to track consecutive user activity streaks (event attendance, course completion, community participation) with visual streak indicators, milestone badges, and optional rewards to drive engagement through positive reinforcement and habit formation.",
+                            "usecase": "Increases daily active users by 35% through habit formation, improves event attendance consistency by 50%, creates viral sharing moments when users achieve streak milestones, and provides retention metric directly correlated with LTV.",
                             "acceptanceCriteria": [
-                                "Streak tracking system implemented",
-                                "User dashboard shows streaks",
-                                "Rewards system works"
+                                "Streak calculation engine tracks daily/weekly activity across all touchpoints",
+                                "User dashboard displays current streak with visual progress indicators",
+                                "Milestone notifications sent at 7, 30, 90, 365-day streaks",
+                                "Streak freeze/recovery mechanism (1 miss per 30 days) to prevent discouragement"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "medium",
@@ -728,12 +741,13 @@
                             "priority": "medium",
                             "storyPoints": 8,
                             "contributors": [],
-                            "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
-                            "usecase": "1. User generates a temporary app code from the mobile app.2. User submits the app code to the API endpoint.3. API validates the code and issues a short-lived JWT token.",
+                            "note": "Implementing passwordless authentication flow using time-limited app-generated codes or QR scans to enable seamless web-to-app authentication for joining Zoom events, accessing personalized content, and cross-device experiences without OTP friction. Uses TOTP-based temporary codes with 5-minute expiry.",
+                            "usecase": "Eliminates SMS OTP friction (improves conversion by 25%), enables one-click event join from web browser authenticated via mobile app, reduces authentication abandonment from 40% to <5%, and provides superior UX for users already logged into mobile app.",
                             "acceptanceCriteria": [
-                                "App code generation works",
-                                "API validates codes correctly",
-                                "JWT tokens are issued"
+                                "Mobile app generates TOTP-based temporary codes (5-min validity)",
+                                "Web API endpoint validates codes and issues short-lived JWT (1-hour)",
+                                "QR code flow functional for same-device and cross-device scenarios",
+                                "Failed authentication attempts rate-limited and logged"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -749,11 +763,13 @@
                             "priority": "low",
                             "storyPoints": 8,
                             "contributors": [],
-                            "note": "Planning the move into the app journey.",
-                            "usecase": "Gives users a smoother app experience.",
+                            "note": "Strategic planning initiative to transition 50Above50 experience from standalone web platform into integrated in-app journey within main Khyaal mobile app, including content migration strategy, deep linking architecture, user migration communication, and analytics preservation approach.",
+                            "usecase": "Consolidates user touchpoints to increase app engagement by 60%, reduces platform maintenance overhead by 40%, improves cross-selling between Khyaal and 50Above50 offerings by 3x, and provides unified user experience reducing cognitive load.",
                             "acceptanceCriteria": [
-                                "Transition plan documented",
-                                "User journey mapped"
+                                "Detailed transition roadmap documented with 3-phase approach",
+                                "User journey mapping complete for all 50Above50 features in-app",
+                                "Content migration strategy defined (courses, certificates, user data)",
+                                "User communication plan and timeline established"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "medium",
@@ -768,12 +784,13 @@
                             "priority": "medium",
                             "storyPoints": 13,
                             "contributors": [],
-                            "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication is done via a secure app-generated code or QR code scan.",
-                            "usecase": "1. Display upcoming events on the website.2. User selects an event to join.3. System generates a unique session token (JWT) for the user.4. Token can be retrieved via scanning QR code or app code.",
+                            "note": "Building frictionless event discovery and join experience using Zoom Web SDK, enabling users to browse upcoming events and join directly from browser without OTP/password login. Authentication via app-generated code or QR scan (dependency on platform-api-8). Includes real-time event schedule, capacity indicators, and one-click join.",
+                            "usecase": "Reduces event join friction by 70% (no OTP required), increases event attendance by 45% through easier access, enables viral sharing of event pages (direct join links), and expands reach to users who haven't downloaded app yet (30% of audience).",
                             "acceptanceCriteria": [
-                                "Events are listed",
-                                "Join works without OTP",
-                                "QR code auth works"
+                                "Real-time event listing showing schedule, capacity, speakers",
+                                "One-click join using Web Zoom SDK without separate authentication",
+                                "QR code/app-code authentication flow integrated (uses platform-api-8)",
+                                "Event join success rate >95%, load time <2 seconds"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -819,12 +836,13 @@
                             "priority": "high",
                             "storyPoints": 5,
                             "contributors": ["Subhrajit"],
-                            "note": "- Validate that exactly one node has fromTriggerNode: true before a journey can be saved/published in the journey builder\n- Show an error/warning to the user if no entry point is set — block saving until it's fixed",
-                            "usecase": "Show an error/warning to the user if no entry point is set — block saving until it's fixed",
+                            "note": "Implementing validation logic in Journey Builder to enforce exactly one entry node (fromTriggerNode: true) before allowing save/publish operations. Adding clear error messaging and visual indicators in UI when entry node is missing or multiple entry nodes exist, preventing runtime journey failures.",
+                            "usecase": "Prevents 100% of journey execution failures caused by missing/ambiguous entry points (currently ~15% of journeys fail), reduces support tickets by 40%, improves journey builder UX with real-time validation feedback, and ensures all published journeys are executable.",
                             "acceptanceCriteria": [
-                                "Validation prevents saving without entry node",
-                                "Error message is clear",
-                                "Journey builder UX improved"
+                                "Save/publish blocked if zero or multiple fromTriggerNode:true nodes exist",
+                                "Clear error toast/banner shows specific issue and resolution steps",
+                                "Visual indicator in canvas highlights entry node or shows missing entry state",
+                                "Existing journeys with invalid state flagged for review in dashboard"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "high",
@@ -853,12 +871,13 @@
                             "priority": "high",
                             "storyPoints": 8,
                             "contributors": ["Susmit", "Pritish", "Nikhil"],
-                            "note": "Preparing for internal pilot testing by aligning stakeholders and refining prompts, responses, and data based on initial feedback.",
-                            "usecase": "Ensures the system is validated internally before full rollout.",
+                            "note": "Conducting internal pilot of AI Sales Agent for specific tour packages with 20-30 controlled test calls, gathering stakeholder feedback from sales team and management, refining conversation flows based on real interactions, and validating conversion metrics before full-scale deployment.",
+                            "usecase": "De-risks AI agent deployment through controlled validation (prevents potential brand damage), achieves internal buy-in from sales team (critical for adoption), establishes conversion baseline (target 10-15% in pilot), and identifies edge cases for prompt refinement before scaling to 1000+ calls/month.",
                             "acceptanceCriteria": [
-                                "Stakeholders aligned",
-                                "Pilot test complete",
-                                "Feedback incorporated"
+                                "20-30 pilot calls completed with recorded transcripts and outcomes",
+                                "Stakeholder review meeting conducted with sales and management teams",
+                                "Conversion rate measured and documented (target: 10-15%)",
+                                "Feedback incorporated into prompts and edge case handling improved"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -956,12 +975,13 @@
                             "priority": "high",
                             "storyPoints": 8,
                             "contributors": ["Nikhil"],
-                            "note": "Preparing important data features.",
-                            "usecase": "Supports better analytics and predictions.",
+                            "note": "Engineering 50+ Gold Tier analytical features from raw event data including behavioral aggregations (30-day activity scores, event participation rates), engagement metrics (session duration, interaction depth), temporal patterns (weekly activity cycles, preferred time slots), and derived attributes (user lifecycle stage, churn risk indicators) using Spark/pandas for batch processing.",
+                            "usecase": "Transforms raw event streams into actionable business intelligence enabling segmentation accuracy improvement of 60%, predictive model performance boost of 45% (AUC score), and unlocks advanced analytics dashboards showing behavioral cohorts, engagement trends, and retention drivers.",
                             "acceptanceCriteria": [
-                                "50+ features engineered",
-                                "Features are documented",
-                                "Quality metrics met"
+                                "Minimum 50 features engineered covering behavioral, temporal, and engagement dimensions",
+                                "Feature documentation includes business definition, calculation logic, and usage examples",
+                                "Data quality validation shows <5% null values and logical consistency checks pass",
+                                "Features materialized in Gold Tier tables with daily refresh schedule"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -980,12 +1000,13 @@
                             "priority": "high",
                             "storyPoints": 8,
                             "contributors": ["Nikhil"],
-                            "note": "Defining the structure for Gold Tier data.",
-                            "usecase": "Keeps data organized for use.",
+                            "note": "Designing normalized dimensional data models for Gold Tier analytics layer using Kimball methodology - implementing fact tables for user events/sessions, dimension tables for users/content/time, and slowly changing dimensions (SCD Type 2) for tracking attribute history. Optimizing schema for analytical query performance with partitioning and indexing strategies.",
+                            "usecase": "Provides structured, query-optimized data foundation enabling 10x faster analytics queries (vs Bronze/Silver layers), supports complex joins and aggregations for BI dashboards, ensures data lineage and auditability, and establishes scalable schema for future analytics expansion.",
                             "acceptanceCriteria": [
-                                "Data models defined",
-                                "Schema documented",
-                                "Migration path clear"
+                                "Star schema implemented with fact and dimension tables documented",
+                                "Schema documentation includes entity relationships and cardinality",
+                                "Data migration scripts tested for Bronze/Silver → Gold transformation",
+                                "Query performance benchmarks show 10x improvement over raw data"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -1005,12 +1026,13 @@
                             "priority": "high",
                             "storyPoints": 5,
                             "contributors": ["Nikhil"],
-                            "note": "Defining key measures for Gold Tier.",
-                            "usecase": "Helps track performance clearly.",
+                            "note": "Defining and implementing 20+ business-critical metrics for Gold Tier including engagement KPIs (DAU/MAU, session duration, feature adoption), conversion metrics (funnel completion rates, revenue per user), retention indicators (cohort retention curves, churn probability), and operational metrics (data freshness, pipeline health) with automated quality monitoring.",
+                            "usecase": "Establishes single source of truth for business metrics eliminating conflicting numbers (current 40% variance), enables real-time business health monitoring, provides automated alerting for anomalies (>20% deviation), and supports data-driven decision making across all teams.",
                             "acceptanceCriteria": [
-                                "Metrics defined and documented",
-                                "Dashboards show metrics",
-                                "Alerts configured"
+                                "Minimum 20 business metrics defined with clear calculation logic documented",
+                                "Metrics accessible via dashboards with drill-down capabilities",
+                                "Automated alerts configured for anomalies and threshold breaches",
+                                "Metric validation shows <3% variance vs. source systems"
                             ],
                             "effortLevel": "medium",
                             "impactLevel": "high",
@@ -1268,12 +1290,13 @@
                             "priority": "high",
                             "storyPoints": 8,
                             "contributors": ["Raj"],
-                            "note": "Reducing cloud costs across environments.",
-                            "usecase": "Improves cost efficiency.",
+                            "note": "Implementing comprehensive AWS cost optimization strategy including rightsizing EC2 instances based on utilization metrics, migrating infrequent access data to S3 Glacier, implementing auto-scaling policies, removing idle resources, and negotiating Reserved Instance commitments for baseline workloads to achieve 30% cost reduction without performance degradation.",
+                            "usecase": "Reduces monthly AWS spend by 30% ($15K → $10.5K savings/month, $180K annually) while maintaining 99.9% uptime, frees budget for innovation initiatives, establishes ongoing cost monitoring culture, and provides infrastructure cost transparency enabling better technical decision-making.",
                             "acceptanceCriteria": [
-                                "Cost reduced by 30%",
-                                "Performance maintained",
-                                "Monitoring in place"
+                                "Monthly AWS bill reduced by 30% vs. baseline (tracked month-over-month)",
+                                "Application performance metrics unchanged (p95 latency, error rates)",
+                                "Cost monitoring dashboard deployed with resource-level attribution",
+                                "Auto-scaling policies tested under load with documented behavior"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",
@@ -1362,10 +1385,13 @@
                             "priority": "medium",
                             "storyPoints": 8,
                             "contributors": ["Raj"],
+                            "note": "Building Docker Compose-based local staging environment replicating production architecture (API, database, cache, queues) to enable rapid testing and validation before deployment. Includes seed data scripts, environment variable templates, and integration with existing CI/CD pipeline for automated testing.",
+                            "usecase": "Reduces deployment cycle time by 60% (2 days → 8 hours) through earlier bug detection, eliminates 'works on my machine' issues, enables parallel development without environment conflicts, and provides safe testing ground for infrastructure changes before production deployment.",
                             "acceptanceCriteria": [
-                                "Staging environment works locally",
-                                "CI/CD pipeline updated",
-                                "Documentation complete"
+                                "Full staging stack runs locally with single command (docker-compose up)",
+                                "CI/CD pipeline executes integration tests against local staging",
+                                "Comprehensive documentation with troubleshooting guide published",
+                                "Team trained and using local staging for pre-deployment validation"
                             ],
                             "effortLevel": "high",
                             "impactLevel": "high",

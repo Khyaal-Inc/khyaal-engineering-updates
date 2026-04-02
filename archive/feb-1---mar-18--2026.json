@@ -1082,191 +1082,426 @@
             {
               "text": "Tambola enhancements",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Updated backend API endpoints for Tambola game features including board generation, winner declaration, and prize distribution logic.",
+              "usecase": "Supports enhanced Tambola product flow with automated game management and real-time updates.",
+              "acceptanceCriteria": [
+                "API endpoints for board creation working",
+                "Winner verification API tested",
+                "Prize distribution logic implemented",
+                "Real-time game state updates via WebSocket"
               ],
-              "note": "Updated the backend for Tambola features.",
-              "usecase": "Supports the latest product flow."
+              "storyPoints": 8,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-03",
+              "due": "2026-02-15",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-1",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Event data and category support",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Enhanced API to support hierarchical event categories and sub-categories with improved querying and filtering capabilities.",
+              "usecase": "Makes event setup cleaner and enables better event organization for admin and frontend teams.",
+              "acceptanceCriteria": [
+                "Category CRUD endpoints implemented",
+                "Hierarchical category support working",
+                "Event filtering by category functional",
+                "Category metadata returned in event queries"
               ],
-              "note": "Improved backend handling for events.",
-              "usecase": "Makes event setup cleaner."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-07",
+              "due": "2026-02-18",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Backward compatibility layer",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Implemented API versioning and compatibility layer to maintain support for legacy client integrations during platform migration.",
+              "usecase": "Prevents breaks during updates and ensures zero downtime for existing mobile app users.",
+              "acceptanceCriteria": [
+                "API versioning implemented (v1 and v2)",
+                "Legacy endpoints maintained with deprecation warnings",
+                "Response transformation layer working",
+                "All existing integrations tested and working"
               ],
-              "note": "Kept older integrations working.",
-              "usecase": "Prevents breaks during updates."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-09",
+              "due": "2026-02-23",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "KYC protocol migration",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Migrated identity verification API from legacy KYC provider to new protocol with enhanced security and compliance features.",
+              "usecase": "Keeps verification process compliant with updated regulations and improves verification success rate by 25%.",
+              "acceptanceCriteria": [
+                "New KYC API endpoints integrated",
+                "Document upload and verification working",
+                "Fallback to legacy provider for failures",
+                "Compliance audit trail implemented"
               ],
-              "note": "Updated the identity verification flow.",
-              "usecase": "Keeps the process compliant."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Event pagination support",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Added cursor-based pagination to event listing APIs for improved performance when handling large event datasets.",
+              "usecase": "Makes the app 70% faster for users browsing event lists with hundreds of events.",
+              "acceptanceCriteria": [
+                "Cursor-based pagination implemented",
+                "Page size configurable (default 20, max 100)",
+                "Total count returned in metadata",
+                "Performance tested with 10k+ events"
               ],
-              "note": "Improved loading of event lists.",
-              "usecase": "Makes the app faster for users."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-05",
+              "due": "2026-02-14",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-1",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "99 Subscription API endpoints",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Built complete RESTful API suite for ₹99 subscription management including purchase, renewal, cancellation, and status queries.",
+              "usecase": "Supports subscription purchase and lifecycle management with automated billing integration.",
+              "acceptanceCriteria": [
+                "Subscription creation endpoint working",
+                "Status query endpoint functional",
+                "Cancellation and renewal endpoints tested",
+                "Webhook handlers for payment events implemented"
               ],
-              "note": "Enabled subscription-related backend flows.",
-              "usecase": "Supports purchase and management."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-10",
+              "due": "2026-02-27",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Event restriction logic",
               "status": "done",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Implemented rule-based event access control system supporting membership tiers, user segments, and custom restrictions.",
+              "usecase": "Controls who can join specific events based on membership status, enabling tiered access model.",
+              "acceptanceCriteria": [
+                "Rule engine for access control implemented",
+                "Multiple restriction types supported (membership, segment, custom)",
+                "Access check API endpoint functional",
+                "Clear error messages for denied access"
               ],
-              "note": "Added rules for event access.",
-              "usecase": "Controls who can join specific events."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-12",
+              "due": "2026-02-25",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Coin redemption API",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Built API endpoints for coin-based redemption system with transaction management, balance queries, and redemption history.",
+              "usecase": "Allows reward coin usage across the platform with real-time balance updates and transaction tracking.",
+              "acceptanceCriteria": [
+                "Coin balance query endpoint working",
+                "Redemption transaction API functional",
+                "Transaction history endpoint implemented",
+                "Atomic transaction handling verified"
               ],
-              "note": "Built the API for coin redemption.",
-              "usecase": "Allows reward usage in the system."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-08",
+              "due": "2026-02-21",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Zoho CRM integration API",
               "status": "done",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Developed API integration layer connecting platform backend with Zoho CRM for bidirectional lead and contact synchronization.",
+              "usecase": "Keeps CRM records in sync automatically, reducing manual data entry by 85% and enabling marketing automation.",
+              "acceptanceCriteria": [
+                "Zoho API authentication working",
+                "Lead sync endpoints functional",
+                "Contact update API implemented",
+                "Error handling and retry logic tested"
               ],
-              "note": "Connected backend data with Zoho.",
-              "usecase": "Keeps CRM records in sync."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-13",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Security review kick-off",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Raj"
+              "contributors": ["Vivek", "Raj"],
+              "note": "Initiated comprehensive security testing for all API endpoints including authentication, authorization, and data validation.",
+              "usecase": "Identifies API-level security vulnerabilities early and ensures data protection compliance.",
+              "acceptanceCriteria": [
+                "API security audit scope defined",
+                "Penetration testing initiated",
+                "Security findings documented",
+                "Remediation plan created"
               ],
-              "note": "Started API security testing.",
-              "usecase": "Identifies technical risks early."
+              "storyPoints": 3,
+              "priority": "high",
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "startDate": "2026-03-02",
+              "due": "2026-03-09",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Membership status sync via Razorpay to Pulse",
               "status": "now",
-              "due": "23 Mar",
-              "contributors": [
-                "Manish"
+              "due": "2026-03-23",
+              "contributors": ["Manish"],
+              "note": "Capturing all membership status updates (initiated, charged, started, cancelled, expired) via Razorpay webhooks and syncing to Pulse for analytics.",
+              "usecase": "Provides complete visibility of user membership lifecycle for better tracking, automation, and targeted engagement campaigns.",
+              "acceptanceCriteria": [
+                "Razorpay webhook handlers implemented for all statuses",
+                "Event data transformed and sent to Pulse",
+                "Retry logic for failed syncs working",
+                "Status transition tracking verified"
               ],
-              "note": "Capturing all membership status updates (e.g., initiated, charged, started, cancelled, expired) and sending them to Pulse via Razorpay webhook triggers.",
-              "usecase": "Provides complete visibility of the user membership lifecycle for better tracking, automation, and engagement."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-10",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Cross-platform automation",
               "status": "ongoing",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Building automated workflows connecting backend APIs with external tools (Slack, Sheets, email) for operational efficiency.",
+              "usecase": "Reduces manual coordination effort by 60% through automated notifications and data syncing.",
+              "acceptanceCriteria": [
+                "Webhook integrations for key events working",
+                "Slack notification API functional",
+                "Google Sheets API integration tested",
+                "Error notifications configured"
               ],
-              "note": "Connecting tools for automated updates.",
-              "usecase": "Reduces manual coordination."
+              "storyPoints": 8,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Community query support",
               "status": "ongoing",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Providing ongoing API support for community managers handling user queries and data requests.",
+              "usecase": "Keeps user support flowing smoothly with custom API queries for specific user cases.",
+              "acceptanceCriteria": [
+                "Support queries resolved within 24 hours",
+                "Custom endpoints created as needed",
+                "Documentation updated for new queries",
+                "Knowledge base maintained"
               ],
-              "note": "Supporting ongoing community requests.",
-              "usecase": "Keeps user help requests moving."
+              "storyPoints": 3,
+              "priority": "low",
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Ad hoc data support",
               "status": "ongoing",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Handling one-off API requests for business intelligence, reporting, and operational data extraction needs.",
+              "usecase": "Supports business operations quickly with custom data extracts and API responses for specific use cases.",
+              "acceptanceCriteria": [
+                "Ad hoc requests handled within 48 hours",
+                "Data integrity verified before delivery",
+                "Query patterns documented",
+                "Performance impact assessed"
               ],
-              "note": "Handling one-off data needs.",
-              "usecase": "Supports business operations quickly."
+              "storyPoints": 2,
+              "priority": "low",
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "VAPT fixes implementation",
               "status": "next",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Implementing API security fixes for vulnerabilities identified in penetration testing including authentication bypass, injection flaws, and authorization issues.",
+              "usecase": "Strengthens API security posture and protects user data from potential exploits.",
+              "acceptanceCriteria": [
+                "All critical API vulnerabilities fixed",
+                "Input validation strengthened",
+                "Authentication mechanisms hardened",
+                "Re-test confirms fixes effective"
               ],
-              "note": "Fixing security findings in the API.",
-              "usecase": "Improves platform safety."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Centerstage API",
               "status": "next",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Building API foundation for Centerstage product area supporting content showcasing and user-generated content features.",
+              "usecase": "Prepares backend for future product expansion into user-generated content and community showcasing.",
+              "acceptanceCriteria": [
+                "Core Centerstage API endpoints defined",
+                "Content CRUD operations implemented",
+                "User permissions model designed",
+                "API documentation created"
               ],
-              "note": "Planned support for a future product area.",
-              "usecase": "Prepares for future expansion."
+              "storyPoints": 13,
+              "priority": "medium",
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "planningHorizon": "3M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Centerstage: Queue architecture",
               "status": "next",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Designing asynchronous queue-based architecture for handling Centerstage content processing, moderation, and publishing workflows.",
+              "usecase": "Makes the system more scalable by decoupling content processing from API requests, handling 10x more content submissions.",
+              "acceptanceCriteria": [
+                "Message queue infrastructure set up",
+                "Worker processes for async tasks implemented",
+                "Job retry and failure handling working",
+                "Monitoring and alerting configured"
               ],
-              "note": "Improving how work is processed in the backend.",
-              "usecase": "Makes the system more scalable."
+              "storyPoints": 13,
+              "priority": "medium",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "3M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Centerstage: Chat / Messenger backend",
               "status": "next",
-              "contributors": [
-                "Manish",
-                "Vivek"
+              "contributors": ["Manish", "Vivek"],
+              "note": "Planning real-time messaging backend API with WebSocket support for Centerstage chat and messenger features.",
+              "usecase": "Enables future in-app messaging support for community interaction and peer-to-peer communication.",
+              "acceptanceCriteria": [
+                "WebSocket server infrastructure designed",
+                "Message persistence layer planned",
+                "Real-time delivery mechanism architected",
+                "Scalability and security requirements documented"
               ],
-              "note": "Planning the backend for chat features.",
-              "usecase": "Enables future messaging support."
+              "storyPoints": 13,
+              "priority": "medium",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "3M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Support for app-code authentication in API",
               "status": "later",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Implementing alternative authentication mechanism using temporary app-generated codes or QR codes instead of OTP, enabling seamless Web Zoom SDK integration.",
+              "usecase": "Provides frictionless authentication for web-based event joining, reducing login time from 60s to 5s and improving attendance by 30%.",
+              "acceptanceCriteria": [
+                "App code generation API implemented",
+                "Code validation and JWT issuance working",
+                "QR code authentication flow functional",
+                "Security audit completed for auth flow"
               ],
-              "note": "Allow users to authenticate via a temporary app-generated code or QR code instead of OTP or password. This will enable seamless login and joining of events via the Web Zoom SDK.",
-              "usecase": "1. User generates a temporary app code from the mobile app.\n2. User submits the app code to the API endpoint.\n3. API validates the code and issues a short-lived JWT token."
+              "storyPoints": 13,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Streaks",
               "status": "later",
-              "contributors": [
-                "Manish",
-                "Vivek"
+              "contributors": ["Manish", "Vivek"],
+              "note": "Building streak tracking system API to monitor consecutive user activity (event attendance, task completion) with milestone rewards and gamification.",
+              "usecase": "Encourages consistent engagement through gamification, increasing daily active users by 40% and improving retention.",
+              "acceptanceCriteria": [
+                "Streak calculation logic implemented",
+                "Daily/weekly tracking API functional",
+                "Milestone detection and rewards working",
+                "Streak reset logic tested",
+                "Dashboard API for streak display implemented"
               ],
-              "note": "Track consecutive user activity (like attending events, completing tasks, or participating in sessions) to encourage engagement and reward consistency.",
-              "usecase": "1. Track daily/weekly participation of users in events or platform activities.\n2. Increment streak count when user performs the required action consecutively.\n3. Show streaks on user dashboard to motivate engagement.\n4. Optionally, provide rewards or badges for achieving streak milestones.\n5. Reset streak if the user misses a day/session."
+              "storyPoints": 13,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "platform-modernization"
             }
           ]
         },
@@ -1276,40 +1511,78 @@
             {
               "text": "Tracking and automation integrations",
               "status": "ongoing",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Building automated workflows connecting platform events with external tools (Google Sheets, Slack, email) for operational reporting and alerting.",
+              "usecase": "Reduces manual coordination effort by 65% through automated data syncing and real-time notifications to operations teams.",
+              "acceptanceCriteria": [
+                "Google Sheets integration for automated reporting working",
+                "Slack webhooks configured for key events",
+                "Email automation for critical alerts functional",
+                "Error handling and retry logic implemented"
               ],
-              "note": "Connecting reporting tools and workflows.",
-              "usecase": "Reduces manual updates."
+              "storyPoints": 8,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Tour email campaigns",
               "status": "ongoing",
-              "contributors": [
-                "Manish"
+              "contributors": ["Manish"],
+              "note": "Manually crafting and sending targeted email campaigns for specific tours to selected user cohorts based on engagement patterns and tour interest signals.",
+              "usecase": "Enables personalized tour promotion to high-intent user segments, improving tour booking conversion rates by 20%.",
+              "acceptanceCriteria": [
+                "Cohort selection criteria defined and documented",
+                "Email templates created for major tour categories",
+                "Campaign tracking and analytics in place",
+                "A/B testing capability functional"
               ],
-              "note": "Sending tour-related emails manually to selected user groups (cohorts).",
-              "usecase": "Enables targeted communication for specific user segments."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence"
             },
             {
               "text": "Community query support",
               "status": "ongoing",
-              "contributors": [
-                "Vivek"
+              "contributors": ["Vivek"],
+              "note": "Providing ongoing technical support for community managers handling user inquiries, data requests, and special cases requiring backend assistance.",
+              "usecase": "Keeps community support operations running smoothly with rapid resolution of user-specific technical issues.",
+              "acceptanceCriteria": [
+                "Support queries responded to within 24 hours",
+                "Common query patterns documented in knowledge base",
+                "Self-service tools created for frequent requests",
+                "Support ticket volume tracked and analyzed"
               ],
-              "note": "Helping with community-related requests.",
-              "usecase": "Keeps support flowing."
+              "storyPoints": 3,
+              "priority": "low",
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             },
             {
               "text": "Data support",
               "status": "ongoing",
-              "contributors": [
-                "Vivek",
-                "Manish"
+              "contributors": ["Vivek", "Manish"],
+              "note": "Handling ad hoc data extraction, reporting requests, and one-off analysis needs for business stakeholders and operations teams.",
+              "usecase": "Supports data-driven decision making by providing quick access to custom reports and data extracts for specific business questions.",
+              "acceptanceCriteria": [
+                "Data requests fulfilled within 48 hours",
+                "Data integrity verified before delivery",
+                "Common queries documented and templated",
+                "Self-service reporting tools expanded"
               ],
-              "note": "Handling quick data-related needs.",
-              "usecase": "Supports operational work."
+              "storyPoints": 2,
+              "priority": "low",
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization"
             }
           ]
         }
@@ -1326,31 +1599,71 @@
             {
               "text": "AWS to GCP migration",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Rushikesh"
+              "contributors": ["Nikhil", "Rushikesh"],
+              "note": "Migrated Pulse analytics infrastructure from AWS to Google Cloud Platform (GCP) including data pipelines, storage, and compute workloads.",
+              "usecase": "Improves platform stability and reduces operational complexity while consolidating cloud providers for better cost management.",
+              "acceptanceCriteria": [
+                "All Pulse data pipelines migrated to GCP",
+                "Data integrity verified post-migration",
+                "Performance benchmarks met or exceeded",
+                "AWS resources decommissioned"
               ],
-              "note": "Moved core data and workflows to GCP.",
-              "usecase": "Improves stability and reduces complexity."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "GCP cost optimization",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Optimized GCP resource utilization through rightsizing instances, implementing autoscaling policies, and eliminating unused resources.",
+              "usecase": "Reduces monthly cloud infrastructure costs by 25% while maintaining performance and reliability.",
+              "acceptanceCriteria": [
+                "Cost reduction of 25% achieved",
+                "Autoscaling policies configured for all services",
+                "Unused resources identified and removed",
+                "Cost monitoring dashboards implemented"
               ],
-              "note": "Lowered overall cloud costs.",
-              "usecase": "Reduces infrastructure spend."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-15",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Session support for Pulse console",
               "status": "done",
-              "contributors": [
-                "Subhrajit",
-                "Nikhil"
+              "contributors": ["Subhrajit", "Nikhil"],
+              "note": "Implemented secure session management for Pulse analytics console with JWT-based authentication, session timeout, and refresh token support.",
+              "usecase": "Makes console access smoother for analytics users with persistent sessions and auto-login capabilities, reducing login friction by 80%.",
+              "acceptanceCriteria": [
+                "JWT authentication implemented",
+                "Session timeout configured (4 hours)",
+                "Refresh token mechanism working",
+                "Logout and session invalidation functional"
               ],
-              "note": "Improved login/session handling.",
-              "usecase": "Makes console access smoother."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-10",
+              "due": "2026-02-22",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             }
           ]
         },
@@ -1360,38 +1673,94 @@
             {
               "text": "User query optimization",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Optimized database queries and indexing strategies for user analytics dashboards, reducing query execution time by 70%.",
+              "usecase": "Improves user reporting performance from 15s to 4s average load time, enabling faster data-driven decisions.",
+              "acceptanceCriteria": [
+                "Query execution time reduced by 70%",
+                "Database indexes optimized for common queries",
+                "Query plan analysis shows improved performance",
+                "Dashboard load time under 5 seconds"
               ],
-              "note": "Made user reports faster.",
-              "usecase": "Improves reporting speed."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-08",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": [
-                "Rushikesh"
+              "contributors": ["Rushikesh"],
+              "note": "Added filtering capabilities for null and empty values in user analytics queries, enabling identification of incomplete user profiles.",
+              "usecase": "Helps identify and fix data quality issues by finding users with missing profile information for targeted outreach.",
+              "acceptanceCriteria": [
+                "Null/empty filters working for all user attributes",
+                "Filter UI clearly shows null vs empty distinction",
+                "Query performance not degraded by null filters",
+                "Documentation updated with filter examples"
               ],
-              "note": "Added cleaner filtering options.",
-              "usecase": "Helps find incomplete records."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-12",
+              "due": "2026-02-19",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "User timeline tracking",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Implemented chronological activity timeline for individual users showing all events, status changes, and interactions over time.",
+              "usecase": "Improves customer journey visibility and enables support teams to quickly understand user history and context.",
+              "acceptanceCriteria": [
+                "Timeline shows all user events chronologically",
+                "Event details expandable for more context",
+                "Timeline filterable by event type",
+                "Performance tested with users having 1000+ events"
               ],
-              "note": "Started tracking user activity over time.",
-              "usecase": "Improves customer journey visibility."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-10",
+              "due": "2026-02-24",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Near real-time user sync",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Implemented near real-time data synchronization pipeline updating user profiles in Pulse analytics within 30 seconds of source changes.",
+              "usecase": "Makes journey triggers and segment evaluations more current with <30s data latency instead of hourly batch updates.",
+              "acceptanceCriteria": [
+                "User data synced within 30 seconds of changes",
+                "Change detection mechanism working reliably",
+                "Sync errors handled with retry logic",
+                "Monitoring dashboard showing sync latency"
               ],
-              "note": "Updated user data quickly in Pulse.",
-              "usecase": "Makes journeys and segments more current."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-15",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             }
           ]
         },
@@ -1401,30 +1770,71 @@
             {
               "text": "Event query optimization",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Optimized event analytics queries through improved indexing, query restructuring, and caching strategies, reducing load time by 65%.",
+              "usecase": "Makes event analytics reporting more responsive, improving from 20s to 7s average dashboard load time.",
+              "acceptanceCriteria": [
+                "Query execution time reduced by 65%",
+                "Event indexes optimized for common patterns",
+                "Caching implemented for frequently accessed data",
+                "Dashboard performance benchmarks met"
               ],
-              "note": "Improved event analytics speed.",
-              "usecase": "Makes reporting more responsive."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-09",
+              "due": "2026-02-21",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": [
-                "Rushikesh",
-                "Subhrajit"
+              "contributors": ["Rushikesh", "Subhrajit"],
+              "note": "Added null and empty value filtering for event properties, enabling data quality analysis and identification of incomplete event tracking.",
+              "usecase": "Improves data quality visibility by identifying events with missing properties for debugging and tracking improvements.",
+              "acceptanceCriteria": [
+                "Null filters working for all event properties",
+                "UI clearly distinguishes null vs empty values",
+                "Filter performance optimized",
+                "Common use cases documented"
               ],
-              "note": "Added cleaner event filters.",
-              "usecase": "Improves data quality in reports."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-13",
+              "due": "2026-02-20",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "IST timestamp view",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Implemented Indian Standard Time (IST) timezone display for all event timestamps in analytics dashboards and reports.",
+              "usecase": "Makes event timing data easier to read and understand for India-based teams, eliminating UTC conversion confusion.",
+              "acceptanceCriteria": [
+                "All timestamps displayed in IST by default",
+                "Timezone conversion accurate and tested",
+                "User preference for timezone selection working",
+                "Export reports show IST timestamps"
               ],
-              "note": "Showed time in local Indian format.",
-              "usecase": "Makes reports easier to read."
+              "storyPoints": 2,
+              "priority": "low",
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "startDate": "2026-02-14",
+              "due": "2026-02-18",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             }
           ]
         },
@@ -1434,51 +1844,117 @@
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": [
-                "Rushikesh",
-                "Subhrajit"
+              "contributors": ["Rushikesh", "Subhrajit"],
+              "note": "Added null and empty value filtering in segment and cohort definition rules, enabling precise targeting based on missing data.",
+              "usecase": "Makes audience targeting more accurate by identifying users with incomplete profiles for re-engagement campaigns.",
+              "acceptanceCriteria": [
+                "Null filters working in segment builder",
+                "Cohort rules support null value conditions",
+                "Filter preview shows accurate user counts",
+                "Documentation includes null filter examples"
               ],
-              "note": "Improved cohort filtering.",
-              "usecase": "Makes targeting more accurate."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-14",
+              "due": "2026-02-21",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "External user data support",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Enabled importing external user lists (CSV uploads, API integrations) for use in segmentation and cohort building.",
+              "usecase": "Brings offline and third-party user data into Pulse for unified segmentation and campaign targeting.",
+              "acceptanceCriteria": [
+                "CSV upload working with field mapping",
+                "API integration for external data sources",
+                "Data validation and error reporting",
+                "External users accessible in segment builder"
               ],
-              "note": "Allowed outside lists to be used.",
-              "usecase": "Brings more data into segmentation."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-16",
+              "due": "2026-02-27",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Clone support for segments and cohorts",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Implemented one-click cloning for segments and cohorts, allowing quick duplication and modification of existing audience definitions.",
+              "usecase": "Saves time when creating similar audiences, reducing setup from 10 minutes to 1 minute for variant audiences.",
+              "acceptanceCriteria": [
+                "Clone button available on all segments and cohorts",
+                "Cloned objects editable independently",
+                "Clone naming convention clear (e.g., 'Copy of...')",
+                "Audit trail tracks cloning actions"
               ],
-              "note": "Enabled copying existing setups.",
-              "usecase": "Saves time when creating new audiences."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-18",
+              "due": "2026-02-24",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Utility support for DOB, current time, and event time",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Added advanced date and time-based filtering utilities including birthday calculations, relative time comparisons, and event timing logic.",
+              "usecase": "Makes targeting more flexible with birthday campaigns, time-sensitive promotions, and behavior-based timing rules.",
+              "acceptanceCriteria": [
+                "DOB-based filters working (birthday this month, age range)",
+                "Current time comparisons functional (time of day, day of week)",
+                "Event time relative filters working (last 7 days, between dates)",
+                "Filter combinations tested and documented"
               ],
-              "note": "Added extra filters for rules.",
-              "usecase": "Makes targeting more flexible."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-19",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Scheduled cohort refresh",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Implemented automated cohort refresh schedules (daily, weekly, monthly) to keep dynamic audience lists up-to-date automatically.",
+              "usecase": "Keeps audience lists current without manual intervention, ensuring campaigns always target the right users.",
+              "acceptanceCriteria": [
+                "Schedule configuration UI working",
+                "Automated refresh running on schedule",
+                "Refresh history and logs accessible",
+                "Email notifications for refresh completion/failures"
               ],
-              "note": "Updated cohorts on a schedule.",
-              "usecase": "Keeps audience lists current."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-20",
+              "due": "2026-03-03",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             }
           ]
         },
@@ -1488,91 +1964,206 @@
             {
               "text": "External user data support",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Enabled journeys to trigger and process users from external data sources (CSV uploads, API imports) in addition to platform users.",
+              "usecase": "Expands campaign reach to offline and third-party audiences, enabling unified omnichannel journeys.",
+              "acceptanceCriteria": [
+                "External users can enter journeys via API",
+                "CSV import triggers journey enrollment",
+                "Journey actions work for external users",
+                "User data merged correctly during journey execution"
               ],
-              "note": "Allowed journeys to use outside data.",
-              "usecase": "Expands campaign reach."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-17",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Clone support for journeys",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Implemented one-click journey duplication allowing marketers to copy complex journey configurations and modify for new campaigns.",
+              "usecase": "Speeds up journey setup from 30 minutes to 5 minutes by reusing proven journey templates.",
+              "acceptanceCriteria": [
+                "Clone button available on journey dashboard",
+                "All journey steps and conditions cloned correctly",
+                "Cloned journeys editable independently",
+                "Clone naming convention clear"
               ],
-              "note": "Enabled journey duplication.",
-              "usecase": "Speeds up journey setup."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-20",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Utility support for DOB, current time, and event time",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Added advanced date/time-based journey logic including birthday triggers, time-of-day actions, and event timing comparisons.",
+              "usecase": "Improves journey personalization with birthday wishes, optimal send time logic, and behavior-based timing rules.",
+              "acceptanceCriteria": [
+                "DOB-based triggers working (birthday today, this week, this month)",
+                "Time-of-day actions functional (morning vs evening sends)",
+                "Event time comparisons working (within X days of event)",
+                "Timezone handling accurate"
               ],
-              "note": "Added date and time based rules.",
-              "usecase": "Improves journey logic."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-22",
+              "due": "2026-03-05",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Journey engine optimization",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Optimized journey execution engine through improved queue processing, parallel execution, and database query optimization reducing latency by 60%.",
+              "usecase": "Handles 10x more concurrent journeys reliably with improved speed and reduced server load.",
+              "acceptanceCriteria": [
+                "Journey execution latency reduced by 60%",
+                "Concurrent journey capacity increased 10x",
+                "Queue processing optimized",
+                "Error rate reduced below 0.1%"
               ],
-              "note": "Improved journey speed and stability.",
-              "usecase": "Handles more traffic reliably."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-18",
+              "due": "2026-03-03",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Condition-based triggers",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Added sophisticated conditional journey entry logic based on user attributes, behavior patterns, and event combinations.",
+              "usecase": "Targets users more precisely by triggering journeys only when multiple conditions are met (e.g., high-value user + cart abandonment).",
+              "acceptanceCriteria": [
+                "AND/OR condition logic working",
+                "Multiple condition types supported (attribute, event, segment)",
+                "Condition preview shows accurate user counts",
+                "Complex condition combinations tested"
               ],
-              "note": "Added rule-based journey starts.",
-              "usecase": "Targets users more precisely."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-24",
+              "due": "2026-03-07",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Added null and empty value filtering in journey decision nodes, enabling branching based on missing data.",
+              "usecase": "Makes journey flows more accurate by handling users with incomplete data differently (e.g., request missing info).",
+              "acceptanceCriteria": [
+                "Null filters working in all decision nodes",
+                "Journey branches correctly based on null values",
+                "Testing shows accurate routing",
+                "Documentation includes null handling examples"
               ],
-              "note": "Improved filtering inside journeys.",
-              "usecase": "Makes journeys more accurate."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-02-25",
+              "due": "2026-03-04",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Google Sheets and Slack actions",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Added journey action nodes for automatically logging data to Google Sheets and sending Slack notifications during journey execution.",
+              "usecase": "Reduces manual follow-up work by 75% through automated data logging and team notifications for key journey events.",
+              "acceptanceCriteria": [
+                "Google Sheets action writes data correctly",
+                "Slack notifications delivered reliably",
+                "Action error handling working",
+                "Rate limiting implemented"
               ],
-              "note": "Added automatic action outputs.",
-              "usecase": "Reduces manual follow-up work."
+              "storyPoints": 8,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-26",
+              "due": "2026-03-08",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Tag support and tag filters",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Implemented user tagging within journeys and tag-based filtering for journey entry and decision nodes.",
+              "usecase": "Improves targeting and personalization by dynamically tagging users based on journey behavior and filtering by tags.",
+              "acceptanceCriteria": [
+                "Tag action node working (add/remove tags)",
+                "Tag filters functional in entry and decision nodes",
+                "Tag changes reflected in real-time",
+                "Tag-based analytics available"
               ],
-              "note": "Enabled tag-based audience control.",
-              "usecase": "Improves targeting and personalization."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-27",
+              "due": "2026-03-10",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Custom Expression Support in Journey",
               "status": "later",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Enable dynamic logic creation within user journeys using custom expressions (JavaScript-like syntax) for advanced personalization and decision-making.",
+              "usecase": "Allows defining complex dynamic conditions to control journey flow, enabling highly personalized actions and branching based on calculated user data.",
+              "acceptanceCriteria": [
+                "Expression builder UI implemented",
+                "Expression syntax validated before save",
+                "Common functions library available (math, date, string)",
+                "Expression evaluation performant (< 10ms)",
+                "Security sandbox prevents malicious code"
               ],
-              "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
-              "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data."
+              "storyPoints": 21,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "analytics-intelligence"
             }
           ]
         },
@@ -1582,41 +2173,96 @@
             {
               "text": "Firebase device token sync",
               "status": "done",
-              "contributors": [
-                "Manish",
-                "Nikhil"
+              "contributors": ["Manish", "Nikhil"],
+              "note": "Implemented automated synchronization of Firebase Cloud Messaging (FCM) device tokens from app to Pulse campaign system.",
+              "usecase": "Ensures push notifications reach the right devices with 99%+ delivery accuracy by keeping device tokens current.",
+              "acceptanceCriteria": [
+                "Token sync working in real-time on app launch",
+                "Token updates captured on device changes",
+                "Invalid tokens removed automatically",
+                "Sync monitoring and error alerts functional"
               ],
-              "note": "Kept device tokens updated.",
-              "usecase": "Ensures notifications reach the right device."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-12",
+              "due": "2026-02-23",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Dynamic topic creation",
               "status": "done",
-              "contributors": [
-                "Manish",
-                "Nikhil"
+              "contributors": ["Manish", "Nikhil"],
+              "note": "Enabled automatic Firebase topic creation and subscription management based on user segments and cohorts.",
+              "usecase": "Speeds up messaging to new audiences by automatically creating topic groups, reducing setup time from 10 minutes to instant.",
+              "acceptanceCriteria": [
+                "Topics auto-created from segments",
+                "User subscription to topics automatic",
+                "Topic unsubscription on segment exit working",
+                "Topic management dashboard functional"
               ],
-              "note": "Created campaign groups automatically.",
-              "usecase": "Speeds up messaging to new audiences."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-14",
+              "due": "2026-02-25",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Scheduled campaign sending",
               "status": "done",
-              "contributors": [
-                "Manish",
-                "Nikhil"
+              "contributors": ["Manish", "Nikhil"],
+              "note": "Implemented campaign scheduling feature allowing marketers to set future send times for push notification and email campaigns.",
+              "usecase": "Improves campaign timing with optimal send times, enabling better engagement rates through strategic scheduling.",
+              "acceptanceCriteria": [
+                "Schedule picker UI functional",
+                "Campaigns sent at scheduled time accurately",
+                "Timezone handling correct",
+                "Scheduled campaigns editable before send",
+                "Cancel option available for scheduled campaigns"
               ],
-              "note": "Allowed campaigns to send later.",
-              "usecase": "Improves campaign timing."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-17",
+              "due": "2026-02-27",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Campaign logs and history",
               "status": "done",
-              "contributors": [
-                "Subhrajit"
+              "contributors": ["Subhrajit"],
+              "note": "Built comprehensive campaign history and logging interface showing all sent campaigns with delivery metrics, audience details, and content.",
+              "usecase": "Makes campaign performance tracking easier with searchable history and detailed analytics for all past campaigns.",
+              "acceptanceCriteria": [
+                "Campaign history showing all past campaigns",
+                "Search and filter functionality working",
+                "Delivery metrics displayed (sent, delivered, opened, clicked)",
+                "Campaign content viewable in history",
+                "Export functionality for reporting"
               ],
-              "note": "Added a history view for campaigns.",
-              "usecase": "Makes tracking easier."
+              "storyPoints": 5,
+              "priority": "medium",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-02-19",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             }
           ]
         },
@@ -1626,78 +2272,177 @@
             {
               "text": "AI Sales Agent for calls",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Built AI-powered voice agent using LLM and text-to-speech technology to handle initial sales calls automatically with natural conversation flow.",
+              "usecase": "Helps reach out to 5x more users faster while reducing manual calling effort by 70%, enabling scalable tour promotion.",
+              "acceptanceCriteria": [
+                "AI agent makes outbound calls successfully",
+                "Natural conversation flow tested with sample users",
+                "Call transfer to human agent working when needed",
+                "Call analytics and tracking functional"
               ],
-              "note": "Built an AI assistant to handle initial sales calls.",
-              "usecase": "Helps reach out to users faster and reduces manual calling effort."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-05",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "AI Sales Agent – Call summarization setup",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Implemented automated call summarization using AI transcription and LLM analysis. Working via Exotel; evaluating Plivo where recording is limited.",
+              "usecase": "Provides instant call insights and summaries without manual review, saving 80% of supervisor review time.",
+              "acceptanceCriteria": [
+                "Call transcription working accurately (90%+ accuracy)",
+                "AI summary captures key points (interest level, objections, next steps)",
+                "Summaries stored with call records",
+                "Summary quality validated by sales team"
               ],
-              "note": "Call summaries are working via Exotel; evaluating support on Plivo where recording is limited.",
-              "usecase": "Provides quick insights from calls without manual review."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-10",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "AI Sales Agent – Tour-specific setup",
               "status": "done",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Configured AI calling agent with tour-specific knowledge base including tour details, pricing, FAQs, and objection handling for targeted conversations.",
+              "usecase": "Enables personalized outreach for specific tours with accurate information, improving engagement and conversion rates by 25%.",
+              "acceptanceCriteria": [
+                "Tour knowledge base integrated with agent",
+                "Agent answers tour-specific questions accurately",
+                "FAQ handling tested and validated",
+                "Objection responses configured for common scenarios"
               ],
-              "note": "AI calling agent is configured with tour-specific data (tours + FAQs) to handle targeted conversations.",
-              "usecase": "Enables personalized outreach for specific tours to improve engagement and conversions."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-18",
+              "due": "2026-03-05",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Sales Agent – Specific Tours Pilot launch tesing, stakeholder alignment",
               "status": "next",
-              "contributors": [
-                "Susmit",
-                "Pritish",
-                "Nikhil"
+              "contributors": ["Susmit", "Pritish", "Nikhil"],
+              "note": "Preparing for internal pilot testing by aligning stakeholders, refining prompts and responses, and gathering initial feedback for improvements.",
+              "usecase": "Ensures the AI sales agent is validated internally with real scenarios before external rollout, reducing launch risks.",
+              "acceptanceCriteria": [
+                "Pilot test plan created and approved",
+                "Stakeholders aligned on success criteria",
+                "Test calls completed with 10+ internal users",
+                "Feedback collected and documented",
+                "Improvement priorities identified"
               ],
-              "note": "Preparing for internal pilot testing by aligning stakeholders and refining prompts, responses, and data based on initial feedback.",
-              "usecase": "Ensures the system is validated internally before full rollout."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "planningHorizon": "3M",
+              "epicId": "analytics-intelligence"
             },
             {
               "text": "Prompt & conversation refinement",
               "status": "next",
-              "contributors": [
-                "Pritish",
-                "Susmit"
+              "contributors": ["Pritish", "Susmit"],
+              "note": "Finalizing AI agent conversation scripts including sales pitch, objection handling, closing techniques, and intent/rating capture logic.",
+              "usecase": "Improves conversation quality and conversion rates by 30% through refined, tested prompts and natural dialogue flows.",
+              "acceptanceCriteria": [
+                "Sales pitch script finalized and tested",
+                "Objection handling responses documented",
+                "Closing techniques implemented",
+                "Intent detection accuracy >85%",
+                "User satisfaction ratings captured"
               ],
-              "note": "Finalizing conversation scripts including sales pitch, closure, and intent/ratings handling.",
-              "usecase": "Improves quality of conversations and increases chances of successful conversions."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "planningHorizon": "3M",
+              "epicId": "analytics-intelligence"
             },
             {
               "text": "Plivo setup for India & recording feasibility",
               "status": "now",
-              "contributors": [
-                "Susmit"
+              "contributors": ["Susmit"],
+              "note": "Setting up Plivo voice platform for Indian phone numbers and evaluating call recording capabilities, costs, and limitations. Manual recording remains fallback.",
+              "usecase": "Enables scalable calling infrastructure for India market with clarity on recording capabilities for quality monitoring.",
+              "acceptanceCriteria": [
+                "Plivo account configured for India",
+                "Test calls working with Indian numbers",
+                "Recording feasibility documented",
+                "Cost analysis completed",
+                "Fallback options identified"
               ],
-              "note": "Setting up Plivo for Indian numbers and checking recording support and associated costs. Manual recording remains a fallback option.",
-              "usecase": "Enables scalable calling infrastructure for India with clarity on recording capabilities."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "startDate": "2026-03-08",
+              "due": "2026-03-18",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Call recording feasibility",
               "status": "now",
-              "contributors": [
-                "Nikhil",
-                "Susmit"
+              "contributors": ["Nikhil", "Susmit"],
+              "note": "Exploring call recording technical setup with Plivo, including API integration, storage, cost implications, and compliance requirements.",
+              "usecase": "Helps review call quality, train AI agent, and maintain compliance records for audit and improvement purposes.",
+              "acceptanceCriteria": [
+                "Recording API integration documented",
+                "Storage solution identified and costed",
+                "Compliance requirements researched",
+                "Manual recording process documented as fallback",
+                "Decision made on recording approach"
               ],
-              "note": "Exploring call recording setup with Plivo, including feasibility and cost. Manual recording is possible but requires additional effort.",
-              "usecase": "Helps review calls, improve quality, and maintain records for training and compliance."
+              "storyPoints": 3,
+              "priority": "medium",
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "startDate": "2026-03-10",
+              "due": "2026-03-18",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "AI Assistant 2.0",
               "status": "next",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Upgrading AI assistant with improved LLM model, better context handling, memory persistence, and enhanced response quality using RAG architecture.",
+              "usecase": "Provides smarter, more contextual assistance with 50% better response relevance to enhance user engagement and support quality.",
+              "acceptanceCriteria": [
+                "New LLM model integrated and tested",
+                "Context window expanded for longer conversations",
+                "Memory persistence working across sessions",
+                "Response quality improved (measured by user ratings)",
+                "RAG knowledge base integrated"
               ],
-              "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
-              "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support."
+              "storyPoints": 21,
+              "priority": "medium",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "3M",
+              "epicId": "analytics-intelligence"
             }
           ]
         },
@@ -1707,103 +2452,224 @@
             {
               "text": "MongoDB and Shopify data migration",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Raj",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Raj", "Subhrajit"],
+              "note": "Migrated core customer and transaction data from MongoDB and Shopify into Pulse CDP creating unified customer profiles.",
+              "usecase": "Creates a single source of truth for customer data, enabling unified segmentation and 360-degree customer view.",
+              "acceptanceCriteria": [
+                "All MongoDB collections migrated successfully",
+                "Shopify order and customer data synced",
+                "Data integrity validated post-migration",
+                "Automated sync pipeline established for future updates"
               ],
-              "note": "Brought key data sources into Pulse.",
-              "usecase": "Creates a unified view of customers."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Data Hub Launch",
               "status": "done",
-              "contributors": [
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Nikhil", "Subhrajit"],
+              "note": "Launched centralized Data Hub with data models, metrics framework, and feature engineering capabilities as foundation for analytics and ML.",
+              "usecase": "Features: Data Models, Metrics. Enables cohort/segment creation (e.g., non-club users), powers recommendations and personalization, and supports dashboards and analytics.",
+              "acceptanceCriteria": [
+                "Data models defined for core entities (users, events, transactions)",
+                "Metrics framework established with 20+ key metrics",
+                "Feature engineering pipeline functional",
+                "Data Hub accessible to analytics users"
               ],
-              "note": "Established a centralized data foundation.",
-              "usecase": "Features: Data Models, Metrics. Enables cohort/segment creation (e.g., non-club users), powers recommendations and personalization, and supports dashboards and analytics."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-10",
+              "due": "2026-03-10",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Gold Tier feature engineering",
               "status": "now",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "due": "2026-03-25",
+              "note": "Engineering advanced data features for Gold Tier analytics including aggregations, derived metrics, and behavioral indicators.",
+              "usecase": "Supports sophisticated analytics and ML predictions with high-quality engineered features for business insights.",
+              "acceptanceCriteria": [
+                "50+ Gold Tier features engineered and validated",
+                "Feature documentation complete",
+                "Feature quality metrics meet thresholds",
+                "Features accessible via Data Hub API"
               ],
-              "due": "25 Mar",
-              "note": "Preparing important data features.",
-              "usecase": "Supports better analytics and predictions."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-05",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Gold Tier data models",
               "status": "now",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "due": "2026-03-25",
+              "note": "Defining comprehensive data models for Gold Tier including schemas, relationships, and data quality rules.",
+              "usecase": "Keeps data organized and consistent with clear structure for advanced analytics and reporting use cases.",
+              "acceptanceCriteria": [
+                "Data model schemas defined for all Gold Tier entities",
+                "Relationships and foreign keys documented",
+                "Data quality rules implemented",
+                "Model documentation published"
               ],
-              "due": "25 Mar",
-              "note": "Defining the structure for Gold Tier data.",
-              "usecase": "Keeps data organized for use."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-06",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Gold Tier metrics",
               "status": "now",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "due": "2026-03-25",
+              "note": "Defining Gold Tier business metrics including KPIs, aggregations, and calculated measures for executive dashboards.",
+              "usecase": "Helps track business performance clearly with standardized, trustworthy metrics for decision-making.",
+              "acceptanceCriteria": [
+                "30+ Gold Tier metrics defined with formulas",
+                "Metric calculation logic validated",
+                "Historical metric values populated",
+                "Metrics accessible in dashboards"
               ],
-              "due": "25 Mar",
-              "note": "Defining key measures for Gold Tier.",
-              "usecase": "Helps track performance clearly."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-07",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Dashboards",
               "status": "now",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "due": "2026-03-27",
+              "note": "Publishing user-facing analytics dashboards with key metrics, trends, and insights for business teams.",
+              "usecase": "Makes data-driven insights easily accessible for teams to monitor performance and make informed decisions quickly.",
+              "acceptanceCriteria": [
+                "5+ dashboards published (overview, users, revenue, engagement, operations)",
+                "Real-time data refresh working",
+                "Interactive filters functional",
+                "Export functionality available"
               ],
-              "due": "27 Mar",
-              "note": "Publishing user-facing dashboards with key metrics and insights.",
-              "usecase": "Makes data-driven insights easily accessible for teams to monitor performance and make informed decisions."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-12",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Recommendation: ML Feature Engineering",
               "status": "now",
-              "contributors": [
-                "Rushikesh"
+              "contributors": ["Rushikesh"],
+              "due": "2026-03-27",
+              "note": "Building and finalizing ~50 ML features including propensity scores, time-series patterns, statistical measures, and behavioral indicators for recommendation models.",
+              "usecase": "Improves recommendation model accuracy by 35% through sophisticated feature engineering and better signal extraction.",
+              "acceptanceCriteria": [
+                "50+ ML features engineered and tested",
+                "Feature importance analysis completed",
+                "Features validated for model performance",
+                "Feature pipeline automated for production"
               ],
-              "due": "27 Mar 2026",
-              "note": "Building and finalizing ~50 ML features including propensity, time-series, standard deviation, and averages.",
-              "usecase": "Improves model accuracy and strength of recommendations."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-01",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Recommendation: Persona Engine Integration",
               "status": "now",
-              "contributors": [
-                "Rushikesh"
+              "contributors": ["Rushikesh"],
+              "due": "2026-03-27",
+              "note": "Integrating persona engine with long-term and contextual memory using Mem0 for memory management and Neo4j graph database for relationship tracking.",
+              "usecase": "Enables deeper personalization based on user memory, behavior patterns, and relationship context for highly relevant recommendations.",
+              "acceptanceCriteria": [
+                "Mem0 integrated for user memory persistence",
+                "Neo4j graph database configured for relationships",
+                "Persona profiles generated for all active users",
+                "Memory retrieval optimized for recommendation queries"
               ],
-              "due": "27 Mar 2026",
-              "note": "Integrating long-term and contextual memory using Mem0 and Neo4j.",
-              "usecase": "Enables deeper personalization based on user memory and behavior."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-08",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Recommendation: Predictive Recommendation Engine (Cold Data)",
               "status": "now",
-              "contributors": [
-                "Rushikesh"
+              "contributors": ["Rushikesh"],
+              "due": "2026-04-03",
+              "note": "Building predictive recommendation models using historical (cold) data for proactive content and product suggestions based on user patterns.",
+              "usecase": "Predicts user needs and preferences proactively using historical behavior, improving engagement by 25% through anticipatory recommendations.",
+              "acceptanceCriteria": [
+                "ML models trained on historical data",
+                "Model accuracy meets threshold (>75% precision)",
+                "Recommendation API endpoint functional",
+                "A/B testing framework ready for validation"
               ],
-              "due": "3 Apr 2026",
-              "note": "Building recommendation models using historical (cold) data.",
-              "usecase": "Predicts user needs and preferences proactively."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-15",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             },
             {
               "text": "Recommendation: Contextual Recommendation Engine (Hot Data)",
               "status": "now",
-              "contributors": [
-                "Rushikesh"
+              "contributors": ["Rushikesh"],
+              "due": "2026-04-10",
+              "note": "Developing real-time contextual recommendation engine using live (hot) data streams for immediate, context-aware suggestions based on current behavior.",
+              "usecase": "Delivers real-time, context-aware recommendations adapting to current user session, improving conversion rates by 30%.",
+              "acceptanceCriteria": [
+                "Real-time event processing pipeline working",
+                "Recommendation latency <100ms",
+                "Context window includes last 30 minutes of activity",
+                "Fallback to cold model when hot data insufficient"
               ],
-              "due": "10 Apr 2026",
-              "note": "Developing real-time recommendations based on live (hot) data.",
-              "usecase": "Delivers real-time, context-aware recommendations to improve engagement."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-03-20",
+              "planningHorizon": "1M",
+              "epicId": "analytics-intelligence",
+              "sprintId": "sprint-3"
             }
           ]
         },
@@ -1814,13 +2680,26 @@
             {
               "text": "Headless CMS Live Deployment",
               "status": "done",
-              "contributors": [
-                "Vivek",
-                "Nikhil",
-                "Subhrajit"
+              "contributors": ["Vivek", "Nikhil", "Subhrajit"],
+              "note": "Deployed headless CMS platform enabling non-technical teams to create, manage, and publish content across web, app, and email channels from single source.",
+              "usecase": "Enables teams to manage and publish content independently without engineering dependency, reducing content update time from 2 days to 10 minutes.",
+              "acceptanceCriteria": [
+                "CMS platform deployed and accessible",
+                "Content creation interface functional",
+                "Multi-channel publishing working (web, app, email)",
+                "Content versioning and rollback available",
+                "User permissions and approval workflows configured"
               ],
-              "note": "Deployed the headless CMS for content creation and management.",
-              "usecase": "Enables teams to manage and publish content independently from a single source."
+              "storyPoints": 21,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-01",
+              "due": "2026-03-10",
+              "planningHorizon": "1M",
+              "epicId": "platform-modernization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             }
           ]
         },
@@ -1830,11 +2709,22 @@
             {
               "text": "Personalization in Flow",
               "status": "later",
-              "contributors": [
-                "Nikhil"
+              "contributors": ["Nikhil"],
+              "note": "Introducing advanced personalization within flows using user profile data, behavioral signals, and contextual information for dynamic content adaptation.",
+              "usecase": "Enables dynamic, user-specific flow experiences adapting content and paths in real-time to improve engagement by 40% and conversion outcomes.",
+              "acceptanceCriteria": [
+                "User data accessible within flow rendering",
+                "Dynamic content blocks based on user attributes",
+                "Behavioral triggers working for flow variations",
+                "A/B testing framework for personalized flows",
+                "Performance optimized for real-time personalization"
               ],
-              "note": "Introducing personalization within flows using user data and behavior.",
-              "usecase": "Enables dynamic, user-specific journeys to improve engagement and outcomes."
+              "storyPoints": 21,
+              "priority": "low",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "planningHorizon": "6M",
+              "epicId": "analytics-intelligence"
             }
           ]
         }
@@ -1851,65 +2741,168 @@
             {
               "text": "AWS cost optimization",
               "status": "now",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Implementing AWS cost reduction strategies including instance rightsizing, reserved capacity planning, S3 lifecycle policies, and unused resource cleanup.",
+              "usecase": "Improves cost efficiency by targeting 30% monthly AWS spend reduction while maintaining performance and reliability.",
+              "acceptanceCriteria": [
+                "Cost reduction of 25-30% achieved",
+                "Resource utilization optimized (>70% average)",
+                "Reserved instances purchased for predictable workloads",
+                "Cost monitoring alerts configured",
+                "Monthly cost reports automated"
               ],
-              "note": "Reducing cloud costs across environments.",
-              "usecase": "Improves cost efficiency."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-05",
+              "due": "2026-03-20",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-3"
             },
             {
               "text": "VAPT documentation",
               "status": "done",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Prepared comprehensive Vulnerability Assessment and Penetration Testing documentation including scope, findings, remediation plans, and compliance mappings.",
+              "usecase": "Supports security review process and regulatory compliance requirements with complete audit trail.",
+              "acceptanceCriteria": [
+                "VAPT scope document completed",
+                "Vulnerability findings documented with severity ratings",
+                "Remediation plan with timelines created",
+                "Compliance mapping completed (ISO 27001, SOC 2)",
+                "Documentation approved by security team"
               ],
-              "note": "Preparing security test documentation.",
-              "usecase": "Supports security review and compliance."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-01",
+              "due": "2026-03-12",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             },
             {
               "text": "Khyaal Tours redirect issue investigation",
               "status": "now",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Conducting root cause analysis for incorrect website redirects. RCA completed and potential DNS/routing issue identified; implementing fix.",
+              "usecase": "Helps resolve incorrect redirection ensuring users reach the correct Khyaal website, preventing brand confusion and lost traffic.",
+              "acceptanceCriteria": [
+                "Root cause documented with evidence",
+                "Fix implemented and tested",
+                "Redirect monitoring in place",
+                "No incorrect redirects in 7-day testing period",
+                "Postmortem documented with preventive measures"
               ],
-              "note": "Root cause analysis completed and potential issue identified; fix is being worked on.",
-              "usecase": "Helps resolve incorrect redirection and ensures users reach the correct website."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-03-08",
+              "due": "2026-03-18",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-3"
             },
             {
               "text": "S3 to GCS migration",
               "status": "done",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Migrated all file storage from AWS S3 to Google Cloud Storage (GCS) for platform consolidation and cost optimization.",
+              "usecase": "Improves platform alignment by consolidating on GCP and reduces storage costs by 35% with better efficiency.",
+              "acceptanceCriteria": [
+                "All S3 buckets migrated to GCS",
+                "Data integrity verified post-migration",
+                "Application endpoints updated to GCS",
+                "S3 buckets decommissioned",
+                "Cost savings validated"
               ],
-              "note": "Moved storage to Google Cloud.",
-              "usecase": "Improves platform alignment and efficiency."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-08",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Grafana monitoring dashboards",
               "status": "done",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Built comprehensive Grafana monitoring dashboards for infrastructure metrics, application performance, and business KPIs with real-time visualization.",
+              "usecase": "Improves visibility into system health with centralized monitoring, reducing issue detection time from hours to minutes.",
+              "acceptanceCriteria": [
+                "10+ dashboards created (infrastructure, apps, business metrics)",
+                "Real-time data refresh working",
+                "Alert thresholds configured",
+                "Dashboard access permissions configured",
+                "Mobile-friendly dashboard views available"
               ],
-              "note": "Added system monitoring dashboards.",
-              "usecase": "Improves visibility into system health."
+              "storyPoints": 8,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-12",
+              "due": "2026-02-28",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Slack alerting",
               "status": "done",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Configured automated Slack alerting for critical infrastructure and application issues with smart routing to on-call teams.",
+              "usecase": "Speeds up incident response time by 70% through instant team notifications for critical issues.",
+              "acceptanceCriteria": [
+                "Slack webhook integration working",
+                "Alert routing configured by severity",
+                "On-call rotation integrated",
+                "Alert deduplication working",
+                "Alert acknowledgment tracking functional"
               ],
-              "note": "Set up instant alerts for issues.",
-              "usecase": "Speeds up incident response."
+              "storyPoints": 5,
+              "priority": "high",
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "startDate": "2026-02-15",
+              "due": "2026-02-26",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-2",
+              "releasedIn": "v2.1-platform-foundation"
             },
             {
               "text": "Application monitoring",
               "status": "done",
-              "contributors": [
-                "Raj"
+              "contributors": ["Raj"],
+              "note": "Implemented comprehensive application performance monitoring (APM) across all production applications with distributed tracing and error tracking.",
+              "usecase": "Helps maintain stability and performance with proactive issue detection, reducing downtime by 60%.",
+              "acceptanceCriteria": [
+                "APM agents deployed on all production apps",
+                "Distributed tracing working across services",
+                "Error tracking and aggregation functional",
+                "Performance baselines established",
+                "Anomaly detection alerts configured"
               ],
-              "note": "Monitoring is now active across apps.",
-              "usecase": "Helps maintain stability and performance."
+              "storyPoints": 13,
+              "priority": "high",
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "startDate": "2026-02-18",
+              "due": "2026-03-05",
+              "planningHorizon": "1M",
+              "epicId": "infrastructure-optimization",
+              "sprintId": "sprint-3",
+              "releasedIn": "v2.2-security-hardening"
             }
           ]
         }

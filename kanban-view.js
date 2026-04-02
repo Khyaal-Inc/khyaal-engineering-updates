@@ -153,20 +153,32 @@ function handleKanbanDrop(event) {
 }
 
 function openItemQuickView(itemId) {
-    // Find the item
-    let item = null;
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            const found = subtrack.items.find(i => i.id === itemId);
-            if (found) item = found;
+    // Find the item and its indices
+    let trackIndex = -1;
+    let subtrackIndex = -1;
+    let itemIndex = -1;
+
+    UPDATE_DATA.tracks.forEach((track, ti) => {
+        track.subtracks.forEach((subtrack, si) => {
+            const foundIndex = subtrack.items.findIndex(i => i.id === itemId);
+            if (foundIndex !== -1) {
+                trackIndex = ti;
+                subtrackIndex = si;
+                itemIndex = foundIndex;
+            }
         });
     });
 
-    if (!item) return;
+    if (trackIndex === -1 || subtrackIndex === -1 || itemIndex === -1) {
+        console.error(`Item with id "${itemId}" not found`);
+        return;
+    }
 
-    // Open edit modal (use existing CMS modal)
-    if (typeof openCmsModal === 'function') {
-        openCmsModal('item', item);
+    // Open edit modal using the correct function from cms.js
+    if (typeof openItemEdit === 'function') {
+        openItemEdit(trackIndex, subtrackIndex, itemIndex);
+    } else {
+        console.error('openItemEdit function not found');
     }
 }
 
