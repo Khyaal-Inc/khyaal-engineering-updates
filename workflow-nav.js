@@ -157,24 +157,28 @@ function updateCommandStripNav() {
 
 function toggleStrategyMenu() {
     const container = document.getElementById('workflow-nav-container');
-    if (!container) return;
+    const backdrop = document.getElementById('strategy-backdrop');
+    if (!container || !backdrop) return;
     
     const isHidden = container.classList.contains('hidden');
     if (isHidden) {
         renderWorkflowNav(); // Fresh render
         container.classList.remove('hidden');
+        backdrop.classList.remove('hidden');
         container.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
         
         // Close on click outside
         const closeHandler = (e) => {
             if (!container.contains(e.target) && !document.getElementById('breadcrumb-nav').contains(e.target)) {
                 container.classList.add('hidden');
+                backdrop.classList.add('hidden');
                 document.removeEventListener('click', closeHandler);
             }
         };
         setTimeout(() => document.addEventListener('click', closeHandler), 10);
     } else {
         container.classList.add('hidden');
+        backdrop.classList.add('hidden');
     }
 }
 
@@ -210,7 +214,7 @@ function renderWorkflowNav() {
         .filter(([key]) => isStageAvailableInCurrentMode(key));
 
     const navHtml = `
-        <div class="workflow-popover max-w-5xl w-full bg-white/95 backdrop-blur-md p-6 rounded-3xl border-2 border-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
+        <div class="workflow-popover max-w-[1400px] w-full bg-white/95 backdrop-blur-md p-6 rounded-3xl border-2 border-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
             <!-- Header section with Global Actions (Densified/Popover Ready) -->
             <div class="flex items-center justify-between mb-6 px-2">
                 <div class="flex items-center gap-3">
@@ -224,10 +228,10 @@ function renderWorkflowNav() {
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <button onclick="switchView('workflow'); document.getElementById('workflow-nav-container').classList.add('hidden');" class="px-5 py-2.5 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 rounded-2xl text-xs font-black transition-all shadow-sm flex items-center gap-2">
+                    <button onclick="switchView('workflow'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" class="px-5 py-2.5 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 rounded-2xl text-xs font-black transition-all shadow-sm flex items-center gap-2">
                         <span>🛠️ Engineering Playbook</span>
                     </button>
-                    <button onclick="document.getElementById('workflow-nav-container').classList.add('hidden');" class="text-slate-400 hover:text-slate-900 p-2 text-xl font-black transition-colors">✕</button>
+                    <button onclick="document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" class="text-slate-400 hover:text-slate-900 p-2 text-xl font-black transition-colors">✕</button>
                 </div>
             </div>
 
@@ -274,7 +278,7 @@ function renderWorkflowNav() {
                                         
                                         return `
                                             <button 
-                                                onclick="switchView('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden');" 
+                                                onclick="switchView('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" 
                                                 class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${isViewActive ? 'bg-[var(--stage-color)] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-[var(--stage-color)]/10 hover:text-[var(--stage-color)]'}"
                                                 title="Open ${viewLabels[view] || view}"
                                             >

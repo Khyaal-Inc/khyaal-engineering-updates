@@ -107,7 +107,7 @@ function renderOkrView() {
     let visionHtml = '';
     if (vision) {
         visionHtml = `
-            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border-2 border-indigo-200 shadow-sm mb-4">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border border-indigo-200 shadow-sm mb-3">
                 <div class="flex items-start gap-4">
                     <div class="text-4xl">🌟</div>
                     <div class="flex-1">
@@ -182,7 +182,7 @@ function renderOkrCard(okr, idx) {
     ` : '';
 
     return `
-        <div class="bg-white p-4 rounded-xl border-2 border-slate-900 shadow-xl mb-6">
+        <div class="bg-white p-3 rounded-lg border-2 border-slate-900 shadow-lg mb-4">
             <!-- Header -->
             <div class="flex justify-between items-start mb-4">
                 <div class="flex-1">
@@ -282,7 +282,7 @@ function renderLinkedItems(okr) {
     `;
 
     return `
-        <div class="mt-6 pt-6 border-t border-slate-900/10">
+        <div class="mt-4 pt-4 border-t border-slate-900/10">
             <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4">Strategic Alignment Funnel</h4>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
