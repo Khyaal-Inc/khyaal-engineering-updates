@@ -602,6 +602,9 @@ function renderEpicsView() {
         const doneCount = epicItems.filter(i => i.status === 'done').length;
         const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
 
+        const epicOKR = data.metadata.okrs?.find(o => o.id === e.linkedOKR);
+        const epicHorizon = data.metadata.roadmap?.find(h => h.id === e.planningHorizon);
+
         const cmsActions = shouldShowManagement() ? `
             <div class="flex flex-wrap gap-2 ml-4">
                 <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded">Edit</button>
@@ -612,19 +615,28 @@ function renderEpicsView() {
         ` : '';
 
         html += `
-            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
-                <div class="p-6 bg-slate-50 border-b">
+            <div class="sprint-card bg-white border-2 border-slate-900 rounded-xl overflow-hidden mb-8 shadow-xl">
+                <div class="p-6 bg-slate-50 border-b-2 border-slate-900">
                     <div class="flex justify-between items-start">
-                        <div>
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-3 mb-2">
+                                ${epicOKR ? `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-200">🎯 Objective: ${epicOKR.objective.substring(0, 40)}${epicOKR.objective.length > 40 ? '...' : ''}</span>` : ''}
+                                ${epicHorizon ? `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-black uppercase tracking-widest border border-slate-200">🗺️ Horizon: ${epicHorizon.label}</span>` : ''}
+                            </div>
                             <div class="flex items-center">
                                 <div class="font-black text-2xl text-slate-900">${e.name}</div>
                                 ${cmsActions}
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mt-1">Goal: ${e.track || e.description || e.objective || ''} | ${e.timeline || ''}</div>
+                            <div class="text-sm font-bold text-slate-500 mt-2 leading-relaxed">
+                                <span class="text-slate-900 font-extrabold uppercase text-[10px] tracking-widest block mb-1">Business Value & Goal</span>
+                                ${e.description || 'No description provided.'}
+                            </div>
                         </div>
-                        <div class="text-right">
-                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Health</div>
-                             <span class="px-2 py-1 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' ? 'amber' : 'rose')}-700 rounded text-xs font-bold uppercase tracking-wider">${e.health || 'Normal'}</span>
+                        <div class="text-right ml-4">
+                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Epic Health</div>
+                             <span class="px-3 py-1.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded-lg text-xs font-black uppercase tracking-wider border border-current">
+                                ${e.health === 'on-track' ? '🟢 ON-TRACK' : (e.health === 'at-risk' ? '🟡 AT-RISK' : '🔴 DELAYED')}
+                             </span>
                         </div>
                     </div>
                     <div class="mt-4">
@@ -632,7 +644,7 @@ function renderEpicsView() {
                             <span>Progress</span>
                             <span>${progress}% (${doneCount}/${epicItems.length})</span>
                         </div>
-                        <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="h-3 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
                             <div class="h-full bg-indigo-600 transition-all duration-500" style="width: ${progress}%"></div>
                         </div>
                     </div>
@@ -669,6 +681,8 @@ function renderRoadmapView() {
 
     roadmapDefs.forEach(h => {
         const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
+        const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
+
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-2 ml-4">
                 <button onclick="openRoadmapEdit('${h.id}')" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-white/80 px-2 py-1 rounded border border-indigo-100 transition-colors">Edit</button>
@@ -677,18 +691,30 @@ function renderRoadmapView() {
         ` : '';
 
         html += `
-            <div class="roadmap-section mb-12">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="h-[2px] flex-1 bg-slate-100"></div>
-                    <div class="px-5 py-2.5 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-700 rounded-full font-black text-xs uppercase tracking-widest border border-current flex items-center gap-3 shadow-sm">
-                        ${h.label || h.name}
-                        ${cmsActions}
-                        ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-white/60 hover:bg-white p-1 rounded-full text-[10px] w-6 h-6 flex items-center justify-center transition-all hover:scale-110 shadow-sm" title="Add Task to this Horizon"><span>➕</span></button>` : ''}
+            <div class="roadmap-section mb-16">
+                <div class="flex flex-col items-center mb-8">
+                    <div class="flex items-center w-full gap-4 mb-4">
+                        <div class="h-[2px] flex-1 bg-slate-200"></div>
+                        <div class="px-6 py-3 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-800 rounded-2xl font-black text-sm uppercase tracking-[0.2em] border-2 border-current flex items-center gap-4 shadow-md bg-white">
+                            ${h.label || h.name}
+                            ${cmsActions}
+                            ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-${h.color || 'slate'}-600 text-white hover:scale-110 p-1.5 rounded-xl text-[10px] w-7 h-7 flex items-center justify-center transition-all shadow-lg" title="Add Task to this Horizon"><span>➕</span></button>` : ''}
+                        </div>
+                        <div class="h-[2px] flex-1 bg-slate-200"></div>
                     </div>
-                    <div class="h-[2px] flex-1 bg-slate-100"></div>
+                    
+                    ${horizonOKR ? `
+                        <div class="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm animate-fade-in">
+                            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Alignment:</span>
+                            <span class="text-xs font-bold text-indigo-700">🎯 ${horizonOKR.objective}</span>
+                        </div>
+                    ` : `
+                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No specific strategic objective linked</div>
+                    `}
                 </div>
+
                 <div class="grid grid-cols-1 gap-6">
-                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems) : '<div class="text-center py-10 text-slate-300 italic text-sm">No items assigned to this planning horizon.</div>'}
+                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems) : '<div class="text-center py-16 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 italic text-sm">No strategic initiatives mapped to this horizon.</div>'}
                 </div>
             </div>`;
     });
@@ -699,6 +725,7 @@ function renderRoadmapView() {
 // ------ Sprint View ------
 function renderSprintView() {
     const container = document.getElementById('sprint-view');
+    if (!container) return;
     const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
 
     let html = shouldShowManagement() ? `
@@ -724,11 +751,14 @@ function renderSprintView() {
             </div>
         ` : '';
 
+        const sprintOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === s.linkedOKR);
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
+                            ${sprintOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-100">🎯 Alignment: ${sprintOKR.objective.substring(0, 50)}${sprintOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
                             <div class="flex items-center">
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
                                 ${cmsActions}
@@ -755,6 +785,7 @@ function renderSprintView() {
 // ------ Releases View ------
 function renderReleasesView() {
     const container = document.getElementById('releases-view');
+    if (!container) return;
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
 
     let html = shouldShowManagement() ? `
@@ -780,11 +811,14 @@ function renderReleasesView() {
             </div>
         ` : '';
 
+        const releaseOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === r.linkedOKR);
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
+                            ${releaseOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px] font-black uppercase tracking-widest border border-amber-100">🚀 Strategic Value: ${releaseOKR.objective.substring(0, 50)}${releaseOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
                             <div class="flex items-center">
                                 <div class="font-black text-2xl text-slate-900">${r.name}</div>
                                 ${cmsActions}

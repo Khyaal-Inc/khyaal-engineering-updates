@@ -243,44 +243,107 @@ function renderKeyResult(kr) {
 }
 
 function renderLinkedItems(okr) {
-    // Find all items linked to this OKR's epics
-    const linkedEpics = okr.keyResults.map(kr => kr.linkedEpic).filter(Boolean);
-    const items = [];
+    const data = window.UPDATE_DATA || {};
+    const okrId = okr.id;
 
-    UPDATE_DATA.tracks.forEach(track => {
+    // 1. Find Linked Epics
+    const epics = (data.metadata?.epics || []).filter(e => e.linkedOKR === okrId);
+
+    // 2. Find Linked Roadmap Horizons
+    const horizons = (data.metadata?.roadmap || []).filter(h => h.linkedObjective === okrId);
+
+    // 3. Find Linked Sprints
+    const sprints = (data.metadata?.sprints || []).filter(s => s.linkedOKR === okrId);
+
+    // 4. Find Linked Releases
+    const releases = (data.metadata?.releases || []).filter(r => r.linkedOKR === okrId);
+
+    // 5. Find all individual tasks linked to the epics of this OKR (for progress)
+    const epicIds = epics.map(e => e.id);
+    const tasks = [];
+    (data.tracks || []).forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
-                if (linkedEpics.includes(item.epicId)) {
-                    items.push({ ...item, track: track.name });
+                if (epicIds.includes(item.epicId)) {
+                    tasks.push(item);
                 }
             });
         });
     });
 
-    if (items.length === 0) return '';
+    const hasLinkedContent = epics.length > 0 || horizons.length > 0 || sprints.length > 0 || releases.length > 0;
 
-    const doneCount = items.filter(i => i.status === 'done').length;
-    const totalCount = items.length;
-    const completionRate = Math.round((doneCount / totalCount) * 100);
+    if (!hasLinkedContent) return `
+        <div class="mt-6 pt-6 border-t border-slate-100 italic text-sm text-slate-400">
+            No specific execution artifacts linked yet. Use the Epics or Roadmap views to align work to this objective.
+        </div>
+    `;
 
     return `
-        <div class="mt-6 pt-6 border-t border-slate-200">
-            <div class="flex justify-between items-center mb-3">
-                <h4 class="font-bold text-slate-900">Linked Items</h4>
-                <span class="text-sm text-slate-600">${doneCount}/${totalCount} completed (${completionRate}%)</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                ${items.slice(0, 6).map(item => `
-                    <div class="text-sm p-2 bg-white rounded border border-slate-200">
-                        <div class="flex justify-between items-start">
-                            <span class="font-medium text-slate-900">${item.text}</span>
-                            <span class="ml-2 text-xs ${item.status === 'done' ? 'text-green-600' : 'text-slate-500'}">${item.status}</span>
+        <div class="mt-6 pt-6 border-t border-slate-900/10">
+            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4">Strategic Alignment Funnel</h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Supporting Epics -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-2">Supporting Epics</div>
+                    ${epics.length > 0 ? epics.map(e => `
+                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
+                            <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                            <span class="text-xs font-bold text-slate-700 truncate">${e.name}</span>
                         </div>
-                        ${item.storyPoints ? `<div class="text-xs text-slate-500 mt-1">${item.storyPoints} pts</div>` : ''}
-                    </div>
-                `).join('')}
+                    `).join('') : '<div class="text-[10px] text-slate-300 italic">None linked</div>'}
+                </div>
+
+                <!-- Roadmap Horizons -->
+                <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100">
+                    <div class="text-[10px] font-black text-indigo-400 uppercase mb-2">Roadmap Alignment</div>
+                    ${horizons.length > 0 ? horizons.map(h => `
+                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            <span class="text-xs font-bold text-indigo-900 truncate">${h.label}</span>
+                        </div>
+                    `).join('') : '<div class="text-[10px] text-indigo-300 italic">None linked</div>'}
+                </div>
+
+                <!-- Active Sprints -->
+                <div class="bg-emerald-50/30 p-3 rounded-lg border border-emerald-100">
+                    <div class="text-[10px] font-black text-emerald-500 uppercase mb-2">Targeted Sprints</div>
+                    ${sprints.length > 0 ? sprints.map(s => `
+                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                            <span class="text-xs font-bold text-emerald-900 truncate">${s.name}</span>
+                        </div>
+                    `).join('') : '<div class="text-[10px] text-emerald-300 italic">None linked</div>'}
+                </div>
+
+                <!-- Targeted Releases -->
+                <div class="bg-amber-50/30 p-3 rounded-lg border border-amber-100">
+                    <div class="text-[10px] font-black text-amber-500 uppercase mb-2">Strategic Releases</div>
+                    ${releases.length > 0 ? releases.map(r => `
+                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
+                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                            <span class="text-xs font-bold text-amber-900 truncate">${r.name}</span>
+                        </div>
+                    `).join('') : '<div class="text-[10px] text-amber-300 italic">None linked</div>'}
+                </div>
             </div>
-            ${items.length > 6 ? `<div class="text-sm text-slate-500 mt-2">+ ${items.length - 6} more items</div>` : ''}
+
+            <!-- Execution Status -->
+            ${tasks.length > 0 ? `
+                <div class="mt-4 p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Execution Pulse</div>
+                        <div class="flex items-center gap-2">
+                             <div class="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-500" style="width: ${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}%"></div>
+                             </div>
+                             <span class="text-[10px] font-bold text-slate-600">${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}% Tasks Done</span>
+                        </div>
+                    </div>
+                    <div class="text-[10px] font-bold text-slate-400">${tasks.length} total tasks across linked epics</div>
+                </div>
+            ` : ''}
         </div>
     `;
 }

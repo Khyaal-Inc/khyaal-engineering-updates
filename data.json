@@ -21,7 +21,8 @@
                 "timeline": "Feb 1 - Apr 10, 2026",
                 "health": "on-track",
                 "status": "in_progress",
-                "linkedOKR": "okr-q1-2026-platform"
+                "linkedOKR": "okr-q1-2026-platform",
+                "planningHorizon": "1M"
             },
             {
                 "id": "analytics-intelligence",
@@ -179,7 +180,8 @@
                 "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
                 "plannedPoints": 45,
                 "completedPoints": 38,
-                "status": "completed"
+                "status": "completed",
+                "linkedOKR": "okr-q1-2026-platform"
             },
             {
                 "id": "sprint-2",
@@ -212,7 +214,8 @@
                 "tracks": ["Khyaal Platform", "Pulse", "DevOps"],
                 "plannedPoints": 55,
                 "completedPoints": null,
-                "status": "active"
+                "status": "active",
+                "linkedOKR": "okr-q1-2026-analytics"
             },
             {
                 "id": "sprint-5",
@@ -273,9 +276,9 @@
             }
         ],
         "roadmap": [
-            { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue" },
-            { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo" },
-            { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate" }
+            { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue", "linkedObjective": "okr-q1-2026-platform" },
+            { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo", "linkedObjective": "okr-q1-2026-analytics" },
+            { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate", "linkedObjective": "okr-q1-2026-infrastructure" }
         ],
         "capacity": {
             "teamMembers": [

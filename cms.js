@@ -907,41 +907,79 @@ function renderContributorTagInput(w, i) { renderTagWidget(w, i, 'contributor-li
 
 // ------ SPRINT & RELEASE OPS ------
 function openSprintEdit(sprintId) {
-    const sprint = sprintId ? UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId) : { name: '', startDate: '', endDate: '', goal: '' };
+    const sprint = sprintId ? UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId) : { name: '', startDate: '', endDate: '', goal: '', linkedOKR: '' };
     editContext = { type: 'sprint', sprintId };
     
+    const okrs = UPDATE_DATA.metadata.okrs || [];
+
     document.getElementById('modal-title').innerText = sprintId ? 'Edit Sprint' : 'Add New Sprint';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Sprint Name</label>
-        <input type="text" id="edit-sprint-name" value="${sprint.name}" class="cms-input" placeholder="e.g. Sprint 42">
-        <div class="grid grid-cols-2 gap-2">
+        <div class="space-y-3">
             <div>
-                <label class="block text-xs font-bold mb-1">Start Date</label>
-                <input type="date" id="edit-sprint-start" value="${sprint.startDate || ''}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Sprint Name</label>
+                <input type="text" id="edit-sprint-name" value="${sprint.name}" class="cms-input" placeholder="e.g. Sprint 42">
             </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold mb-1">Start Date</label>
+                    <input type="date" id="edit-sprint-start" value="${sprint.startDate || ''}" class="cms-input">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">End Date</label>
+                    <input type="date" id="edit-sprint-end" value="${sprint.endDate || ''}" class="cms-input">
+                </div>
+            </div>
+
             <div>
-                <label class="block text-xs font-bold mb-1">End Date</label>
-                <input type="date" id="edit-sprint-end" value="${sprint.endDate || ''}" class="cms-input">
+                <label class="block text-sm font-bold mb-1">Strategic Objective Alignment</label>
+                <select id="edit-sprint-okr" class="cms-input">
+                    <option value="">None (Tactical / Unlinked)</option>
+                    ${okrs.map(o => `<option value="${o.id}" ${sprint.linkedOKR === o.id ? 'selected' : ''}>${o.quarter}: ${o.objective}</option>`).join('')}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1">Sprint Goal</label>
+                <textarea id="edit-sprint-goal" class="cms-input" rows="2">${sprint.goal || ''}</textarea>
             </div>
         </div>
-        <label class="block text-sm font-bold mb-1">Sprint Goal</label>
-        <textarea id="edit-sprint-goal" class="cms-input">${sprint.goal || ''}</textarea>
     `;
     document.getElementById('cms-modal').classList.add('active');
 }
 
 function openReleaseEdit(releaseId) {
-    const release = releaseId ? UPDATE_DATA.metadata.releases.find(r => r.id === releaseId) : { name: '', targetDate: '', goal: '' };
+    const release = releaseId ? UPDATE_DATA.metadata.releases.find(r => r.id === releaseId) : { name: '', targetDate: '', goal: '', linkedOKR: '' };
     editContext = { type: 'release', releaseId };
+
+    const okrs = UPDATE_DATA.metadata.okrs || [];
 
     document.getElementById('modal-title').innerText = releaseId ? 'Edit Release' : 'Add New Release';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Release Name</label>
-        <input type="text" id="edit-release-name" value="${release.name}" class="cms-input" placeholder="e.g. v2.1 (The Spark)">
-        <label class="block text-sm font-bold mb-1">Target Date</label>
-        <input type="date" id="edit-release-date" value="${release.targetDate || ''}" class="cms-input">
-        <label class="block text-sm font-bold mb-1">Goal/Focus</label>
-        <textarea id="edit-release-goal" class="cms-input" rows="3">${release.goal || ''}</textarea>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-sm font-bold mb-1">Release Name</label>
+                <input type="text" id="edit-release-name" value="${release.name}" class="cms-input" placeholder="e.g. v2.1 (The Spark)">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold mb-1">Target Date</label>
+                <input type="date" id="edit-release-date" value="${release.targetDate || ''}" class="cms-input">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1">Strategic OKR Alignment</label>
+                <select id="edit-release-okr" class="cms-input">
+                    <option value="">None (Unlinked)</option>
+                    ${okrs.map(o => `<option value="${o.id}" ${release.linkedOKR === o.id ? 'selected' : ''}>${o.quarter}: ${o.objective}</option>`).join('')}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1">Goal/Focus</label>
+                <textarea id="edit-release-goal" class="cms-input" rows="2">${release.goal || ''}</textarea>
+            </div>
+        </div>
     `;
     document.getElementById('cms-modal').classList.add('active');
 }
@@ -951,20 +989,50 @@ function openEpicEdit(epicIndex) {
     const epicId = epicIndex !== undefined ? epic.id : undefined;
     editContext = { type: 'epic', epicId };
 
+    const okrs = UPDATE_DATA.metadata.okrs || [];
+    const horizons = UPDATE_DATA.metadata.roadmap || [];
+
     document.getElementById('modal-title').innerText = epicId ? 'Edit Strategic Epic' : 'Add Strategic Epic';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Epic Name</label>
-        <input type="text" id="edit-epic-name" value="${epic.name}" class="cms-input" placeholder="e.g. Platform Migration V2">
-        
-        <label class="block text-sm font-bold mb-1 mt-4">Health</label>
-        <select id="edit-epic-health" class="cms-input">
-            <option value="on-track" ${epic.health === 'on-track' ? 'selected' : ''}>On-Track</option>
-            <option value="at-risk" ${epic.health === 'at-risk' ? 'selected' : ''}>At-Risk</option>
-            <option value="delayed" ${epic.health === 'delayed' ? 'selected' : ''}>Delayed</option>
-        </select>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Epic Name</label>
+                <input type="text" id="edit-epic-name" value="${epic.name}" class="cms-input" placeholder="e.g. Platform Migration V2">
+            </div>
 
-        <label class="block text-sm font-bold mb-1 mt-4">Description / Goal</label>
-        <textarea id="edit-epic-desc" class="cms-input" rows="3">${epic.description || ''}</textarea>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Strategic Objective</label>
+                    <select id="edit-epic-okr" class="cms-input">
+                        <option value="">None (BAU / Unlinked)</option>
+                        ${okrs.map(o => `<option value="${o.id}" ${epic.linkedOKR === o.id ? 'selected' : ''}>${o.objective}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
+                    <select id="edit-epic-horizon" class="cms-input">
+                        <option value="">No Specific Horizon</option>
+                        ${horizons.map(h => `<option value="${h.id}" ${epic.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Health Status</label>
+                    <select id="edit-epic-health" class="cms-input">
+                        <option value="on-track" ${epic.health === 'on-track' ? 'selected' : ''}>🟢 On-Track</option>
+                        <option value="at-risk" ${epic.health === 'at-risk' ? 'selected' : ''}>🟡 At-Risk</option>
+                        <option value="delayed" ${epic.health === 'delayed' ? 'selected' : ''}>🔴 Delayed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description / Business Value</label>
+                <textarea id="edit-epic-desc" class="cms-input" rows="3" placeholder="What strategic value does this Epic provide?">${epic.description || ''}</textarea>
+            </div>
+        </div>
     `;
     document.getElementById('cms-modal').classList.add('active');
 }
@@ -980,25 +1048,44 @@ function openRoadmapEdit(id) {
     const horizon = id ? UPDATE_DATA.metadata.roadmap.find(r => r.id === id) : { id: '', label: '', color: 'blue' };
     editContext = { type: 'roadmap', roadmapId: id };
 
+    const okrs = UPDATE_DATA.metadata.okrs || [];
+
     document.getElementById('modal-title').innerText = id ? 'Edit Roadmap Category' : 'Add Roadmap Category';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Category Label</label>
-        <input type="text" id="edit-roadmap-label" value="${horizon.label}" class="cms-input" placeholder="e.g. Next Month">
-        
-        <label class="block text-sm font-bold mb-1 mt-4">Internal ID</label>
-        <input type="text" id="edit-roadmap-id" value="${horizon.id}" class="cms-input" placeholder="e.g. 1M" ${id ? 'readonly' : ''}>
-        <p class="text-[10px] text-slate-400 mt-1">${id ? 'ID cannot be changed after creation.' : 'Unique ID used for task assignment.'}</p>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Category Label</label>
+                <input type="text" id="edit-roadmap-label" value="${horizon.label}" class="cms-input" placeholder="e.g. Next Month">
+            </div>
 
-        <label class="block text-sm font-bold mb-1 mt-4">Theme Color</label>
-        <select id="edit-roadmap-color" class="cms-input">
-            <option value="blue" ${horizon.color === 'blue' ? 'selected' : ''}>Blue</option>
-            <option value="indigo" ${horizon.color === 'indigo' ? 'selected' : ''}>Indigo</option>
-            <option value="violet" ${horizon.color === 'violet' ? 'selected' : ''}>Violet</option>
-            <option value="emerald" ${horizon.color === 'emerald' ? 'selected' : ''}>Emerald</option>
-            <option value="amber" ${horizon.color === 'amber' ? 'selected' : ''}>Amber</option>
-            <option value="rose" ${horizon.color === 'rose' ? 'selected' : ''}>Rose</option>
-            <option value="slate" ${horizon.color === 'slate' ? 'selected' : ''}>Slate</option>
-        </select>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Internal ID</label>
+                    <input type="text" id="edit-roadmap-id" value="${horizon.id}" class="cms-input" placeholder="e.g. 1M" ${id ? 'readonly' : ''}>
+                    <p class="text-[10px] text-slate-400 mt-1">${id ? 'Locked' : 'Unique ID for tasks.'}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Supporting Objective</label>
+                    <select id="edit-roadmap-okr" class="cms-input">
+                        <option value="">No Specific OKR</option>
+                        ${okrs.map(o => `<option value="${o.id}" ${horizon.linkedObjective === o.id ? 'selected' : ''}>${o.objective}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
+                <select id="edit-roadmap-color" class="cms-input">
+                    <option value="blue" ${horizon.color === 'blue' ? 'selected' : ''}>Blue</option>
+                    <option value="indigo" ${horizon.color === 'indigo' ? 'selected' : ''}>Indigo</option>
+                    <option value="violet" ${horizon.color === 'violet' ? 'selected' : ''}>Violet</option>
+                    <option value="emerald" ${horizon.color === 'emerald' ? 'selected' : ''}>Emerald</option>
+                    <option value="amber" ${horizon.color === 'amber' ? 'selected' : ''}>Amber</option>
+                    <option value="rose" ${horizon.color === 'rose' ? 'selected' : ''}>Rose</option>
+                    <option value="slate" ${horizon.color === 'slate' ? 'selected' : ''}>Slate</option>
+                </select>
+            </div>
+        </div>
     `;
     document.getElementById('cms-modal').classList.add('active');
 }
@@ -1087,7 +1174,8 @@ function saveCmsChanges() {
             name: document.getElementById('edit-sprint-name').value.trim(),
             startDate: document.getElementById('edit-sprint-start').value,
             endDate: document.getElementById('edit-sprint-end').value,
-            goal: document.getElementById('edit-sprint-goal').value.trim()
+            goal: document.getElementById('edit-sprint-goal').value.trim(),
+            linkedOKR: document.getElementById('edit-sprint-okr').value
         };
         if (!UPDATE_DATA.metadata.sprints) UPDATE_DATA.metadata.sprints = [];
         if (editContext.sprintId) {
@@ -1097,13 +1185,15 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.sprints.push(sprintData);
         }
         logChange(editContext.sprintId ? 'Edit Sprint' : 'Add Sprint', sprintData.name);
+        renderSprintView();
 
     } else if (editContext.type === 'release') {
         const relData = {
             id: editContext.releaseId || `rel-${Date.now()}`,
             name: document.getElementById('edit-release-name').value.trim(),
             targetDate: document.getElementById('edit-release-date').value,
-            goal: document.getElementById('edit-release-goal').value.trim()
+            goal: document.getElementById('edit-release-goal').value.trim(),
+            linkedOKR: document.getElementById('edit-release-okr').value
         };
         if (!UPDATE_DATA.metadata.releases) UPDATE_DATA.metadata.releases = [];
         if (editContext.releaseId) {
@@ -1113,7 +1203,7 @@ function saveCmsChanges() {
             UPDATE_DATA.metadata.releases.push(relData);
         }
         logChange(editContext.releaseId ? 'Edit Release' : 'Add Release', relData.name);
-
+        renderReleasesView();
     } else if (editContext.type === 'metadata') {
         const meta = UPDATE_DATA.metadata;
         meta.title = document.getElementById('edit-meta-title').value;
@@ -1148,7 +1238,9 @@ function saveCmsChanges() {
             id: editContext.epicId || `epic-${Date.now()}`,
             name: document.getElementById('edit-epic-name').value.trim(),
             description: document.getElementById('edit-epic-desc').value.trim(),
-            health: document.getElementById('edit-epic-health').value
+            health: document.getElementById('edit-epic-health').value,
+            linkedOKR: document.getElementById('edit-epic-okr').value,
+            planningHorizon: document.getElementById('edit-epic-horizon').value
         };
         if (!UPDATE_DATA.metadata.epics) UPDATE_DATA.metadata.epics = [];
         if (editContext.epicId) {
@@ -1241,7 +1333,8 @@ function saveCmsChanges() {
         const roadmapData = {
             id: document.getElementById('edit-roadmap-id').value.trim(),
             label: document.getElementById('edit-roadmap-label').value.trim(),
-            color: document.getElementById('edit-roadmap-color').value
+            color: document.getElementById('edit-roadmap-color').value,
+            linkedObjective: document.getElementById('edit-roadmap-okr').value
         };
         if (!UPDATE_DATA.metadata.roadmap) {
              UPDATE_DATA.metadata.roadmap = [
