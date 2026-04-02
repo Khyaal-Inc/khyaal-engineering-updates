@@ -12,70 +12,71 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
-<div class="p-3 md:p-6">
+    <div class="p-3 md:p-6">
 
-    <div id="auth-loading">
-        <div class="loader"></div>
-        <p class="text-slate-500 font-medium animate-pulse">Loading Updates...</p>
-    </div>
-
-    <script>
-        // Global Auth & Load Orchestrator
-        (function () {
-            const SITE_AUTH_KEY = 'khyaal_site_auth';
-            
-            const initLocalLoad = () => {
-                fetch('./data.json?v=' + Date.now())
-                    .then(r => r.json())
-                    .then(data => {
-                        window.UPDATE_DATA = data;
-                        localStorage.setItem(SITE_AUTH_KEY, 'true');
-                        // Management buttons (Edit/Delete) will NOT appear by default
-                        // They will only be authorized by cms.js upon GitHub PAT entry
-                        
-                        // Wait for DOM to be ready and all scripts to be loaded
-                        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                            if (typeof initDashboard === 'function') initDashboard();
-                        } else {
-                            window.addEventListener('DOMContentLoaded', () => {
-                                if (typeof initDashboard === 'function') initDashboard();
-                            });
-                        }
-                    })
-                    .catch(e => console.log('Local load fallback:', e));
-            };
-
-            if (localStorage.getItem(SITE_AUTH_KEY)) {
-                initLocalLoad();
-            }
-        })();
-    </script>
-
-    <!-- Basic Auth Gatekeeper -->
-    <div id="auth-gatekeeper">
-        <div class="auth-card">
-            <div class="mb-6">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                        </path>
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900">Protected Page</h1>
-                <p class="text-slate-500 text-sm mt-1">Please enter password to view updates</p>
-            </div>
-            <div class="space-y-4 text-left">
-                <input type="password" id="site-password" placeholder="Site Password" class="cms-input"
-                    style="padding: 0.75rem;">
-                <button onclick="checkBasicAuth()" class="cms-btn cms-btn-primary w-full py-3">Unlock Content</button>
-            </div>
-            <div id="auth-message" class="text-red-500 text-xs mt-4">Please enter password to view updates</div>
+        <div id="auth-loading">
+            <div class="loader"></div>
+            <p class="text-slate-500 font-medium animate-pulse">Loading Updates...</p>
         </div>
-    </div>
-    
-    <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
-    <script src="core.js"></script>
+
+        <script>
+            // Global Auth & Load Orchestrator
+            (function () {
+                const SITE_AUTH_KEY = 'khyaal_site_auth';
+
+                const initLocalLoad = () => {
+                    fetch('./data.json?v=' + Date.now())
+                        .then(r => r.json())
+                        .then(data => {
+                            window.UPDATE_DATA = data;
+                            localStorage.setItem(SITE_AUTH_KEY, 'true');
+                            // Management buttons (Edit/Delete) will NOT appear by default
+                            // They will only be authorized by cms.js upon GitHub PAT entry
+
+                            // Wait for DOM to be ready and all scripts to be loaded
+                            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                                if (typeof initDashboard === 'function') initDashboard();
+                            } else {
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    if (typeof initDashboard === 'function') initDashboard();
+                                });
+                            }
+                        })
+                        .catch(e => console.log('Local load fallback:', e));
+                };
+
+                if (localStorage.getItem(SITE_AUTH_KEY)) {
+                    initLocalLoad();
+                }
+            })();
+        </script>
+
+        <!-- Basic Auth Gatekeeper -->
+        <div id="auth-gatekeeper">
+            <div class="auth-card">
+                <div class="mb-6">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-900">Protected Page</h1>
+                    <p class="text-slate-500 text-sm mt-1">Please enter password to view updates</p>
+                </div>
+                <div class="space-y-4 text-left">
+                    <input type="password" id="site-password" placeholder="Site Password" class="cms-input"
+                        style="padding: 0.75rem;">
+                    <button onclick="checkBasicAuth()" class="cms-btn cms-btn-primary w-full py-3">Unlock
+                        Content</button>
+                </div>
+                <div id="auth-message" class="text-red-500 text-xs mt-4">Please enter password to view updates</div>
+            </div>
+        </div>
+
+        <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
+        <script src="core.js"></script>
         <script src="views.js"></script>
         <script src="cms.js"></script>
         <script src="app.js"></script>
@@ -110,14 +111,16 @@
                 <div class="flex items-center gap-4">
                     <!-- Logo & Stage Icons -->
                     <div class="flex items-center gap-2 mr-2">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
                             <span class="text-white text-[10px] font-black italic tracking-tighter">KP</span>
                         </div>
                         <div id="mini-pipeline" class="flex items-center gap-1.5 ml-2"></div>
                     </div>
-                    
+
                     <!-- Contextual Breadcrumb (Injected by workflow-nav.js) -->
-                    <div id="breadcrumb-nav" class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
+                    <div id="breadcrumb-nav"
+                        class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
                         <!-- Discovery / OKRs -->
                     </div>
                 </div>
@@ -125,12 +128,13 @@
                 <div class="flex items-center gap-3">
                     <!-- Blocker Badge (Injected by core.js) -->
                     <div id="header-blocker-badge"></div>
-                    
+
                     <!-- Mode Pill (Small) -->
                     <div id="header-mode-switcher"></div>
-                    
+
                     <!-- Admin Gear -->
-                    <button onclick="toggleCmsDrawer()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-all text-slate-400 hover:text-slate-900 border border-transparent hover:border-slate-200">
+                    <button onclick="toggleCmsDrawer()"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-all text-slate-400 hover:text-slate-900 border border-transparent hover:border-slate-200">
                         <span class="text-xl">⚙️</span>
                     </button>
                 </div>
@@ -142,27 +146,37 @@
                     <div id="cms-controls" class="flex flex-col md:flex-row justify-between items-center gap-6">
                         <div class="flex-1 w-full">
                             <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">CMS Management</h2>
-                                <button onclick="toggleCmsDrawer()" class="text-slate-400 hover:text-slate-600">✕</button>
+                                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">CMS Management
+                                </h2>
+                                <button onclick="toggleCmsDrawer()"
+                                    class="text-slate-400 hover:text-slate-600">✕</button>
                             </div>
-                            
+
                             <!-- Token Entry -->
                             <div id="cms-auth-section" class="flex gap-3">
-                                <input type="password" id="github-token" placeholder="Enter GitHub PAT..." class="cms-input !mb-0 text-xs py-2 h-9 shadow-sm" style="max-width: 300px;">
-                                <button onclick="authenticateCms()" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Authenticate</button>
+                                <input type="password" id="github-token" placeholder="Enter GitHub PAT..."
+                                    class="cms-input !mb-0 text-xs py-2 h-9 shadow-sm" style="max-width: 300px;">
+                                <button onclick="authenticateCms()"
+                                    class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Authenticate</button>
                             </div>
-                            
+
                             <!-- Authenticated Actions -->
                             <div id="cms-actions-section" class="hidden flex flex-wrap items-center gap-3">
                                 <div class="flex items-center gap-2 mr-4">
                                     <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authenticated</span>
+                                    <span
+                                        class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authenticated</span>
                                 </div>
-                                <button onclick="saveToGithub()" id="save-to-github-btn" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Save to GitHub</button>
-                                <button onclick="archiveAndClear()" id="archive-btn" class="bg-amber-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-amber-700 transition-all shadow-md">Archive</button>
+                                <button onclick="saveToGithub()" id="save-to-github-btn"
+                                    class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Save
+                                    to GitHub</button>
+                                <button onclick="archiveAndClear()" id="archive-btn"
+                                    class="bg-amber-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-amber-700 transition-all shadow-md">Archive</button>
                                 <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                                <button onclick="openMetadataEdit()" class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Settings</button>
-                                <button onclick="logoutCms()" class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Logout</button>
+                                <button onclick="openMetadataEdit()"
+                                    class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Settings</button>
+                                <button onclick="logoutCms()"
+                                    class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Logout</button>
                             </div>
                         </div>
                     </div>
@@ -173,7 +187,7 @@
         <!-- Main Content Area (Extreme Density Padding + Widescreen Support) -->
         <div id="main-content" class="max-w-[1720px] mx-auto pt-12">
 
-        <!-- Removed redundant heavy header blocks to reclaim vertical space -->
+            <!-- Removed redundant heavy header blocks to reclaim vertical space -->
 
             <!-- Blocker Strip (Collapsible row below Command Strip if active) -->
             <div id="global-blocker-strip" class="mb-3 hidden"></div>
@@ -182,53 +196,12 @@
             <div id="onboarding-wizard-container"></div>
 
             <!-- Workflow Navigation Pop-over (rendered by workflow-nav.js) -->
-            <div id="strategy-backdrop" class="hidden fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[90] transition-opacity duration-300"></div>
-            <div id="workflow-nav-container" class="hidden fixed inset-x-0 top-12 z-[100] flex justify-center p-4"></div>
-
-            <!-- Super-Filter Ribbon (Unified Row) - Extreme Density -->
-            <div class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-2 flex flex-wrap items-center gap-2">
-                <div class="max-w-[400px] flex-1 min-w-[200px] relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-                    <input type="search" placeholder="Quick find tasks, contributors, or notes..." class="search-input w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-xs focus:ring-2 focus:ring-indigo-600/20 transition-all"
-                        onkeyup="filterBySearch(this.value)">
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <select id="global-team-filter"
-                        class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
-                        onchange="const a = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr'; switchView(a);">
-                        <option value="">🌍 All Tracks</option>
-                    </select>
-
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-
-                    <select id="date-range-preset" onchange="applyDatePreset()"
-                        class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
-                        <option value="all">📅 All Dates</option>
-                        <option value="today">Today</option>
-                        <option value="this-week">This Week</option>
-                        <option value="this-month">This Month</option>
-                        <option value="custom">Custom Range...</option>
-                    </select>
-
-                    <div id="custom-date-inputs" class="hidden flex gap-2">
-                        <input type="date" id="filter-start-date" onchange="filterData()" class="px-2 py-1 border rounded text-xs">
-                        <input type="date" id="filter-end-date" onchange="filterData()" class="px-2 py-1 border rounded text-xs">
-                    </div>
-
-                    <div class="flex gap-2">
-                         <button onclick="exportData('csv')" class="p-2.5 bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Export CSV">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                         </button>
-                         <button onclick="generateDigest()" class="px-4 py-2.5 bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl text-xs font-black transition-all">
-                            Slack Digest
-                         </button>
-                         <button id="export-gantt-btn" onclick="exportGantt()" class="hidden p-2.5 bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Export Image">
-                            🖼️
-                         </button>
-                    </div>
-                </div>
+            <div id="strategy-backdrop"
+                class="hidden fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[90] transition-opacity duration-300">
             </div>
+            <div id="workflow-nav-container" class="hidden fixed inset-x-0 top-12 z-[100] flex justify-center p-4">
+            </div>
+
 
             <!-- Archive Filter -->
             <div id="archive-filter" class="archive-filter">
@@ -236,12 +209,23 @@
             </div>
 
             <!-- Floating Legend (HUD) -->
-            <div class="fixed bottom-6 right-6 z-[100] flex gap-3 flex-wrap text-[10px] font-black uppercase tracking-widest bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-2xl">
-                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-slate-500">Done</span></div>
-                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-blue-500"></div><span class="text-slate-500">Now</span></div>
-                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-amber-500"></div><span class="text-slate-500">Ongoing</span></div>
-                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-orange-500"></div><span class="text-slate-500">Next</span></div>
-                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-gray-500"></div><span class="text-slate-500">Later</span></div>
+            <div
+                class="fixed bottom-6 right-6 z-[100] flex gap-3 flex-wrap text-[10px] font-black uppercase tracking-widest bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-2xl">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-slate-500">Done</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div><span class="text-slate-500">Now</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-amber-500"></div><span class="text-slate-500">Ongoing</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-orange-500"></div><span class="text-slate-500">Next</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div><span class="text-slate-500">Later</span>
+                </div>
             </div>
 
             <!-- Views -->
@@ -276,114 +260,114 @@
             <!-- <p class="mt-1" id="footer-next">Next Review: April 1, 2026</p> -->
         </div>
 
-    <script>
-        // Basic Auth Logic (Hash-based)
-        const SITE_AUTH_KEY = 'khyaal_site_auth';
-        // The URL of your AWS Lambda function (from deploy_auth.sh output)
-        const LAMBDA_URL = 'https://3fbc33rf3a.execute-api.ap-south-1.amazonaws.com';
+        <script>
+            // Basic Auth Logic (Hash-based)
+            const SITE_AUTH_KEY = 'khyaal_site_auth';
+            // The URL of your AWS Lambda function (from deploy_auth.sh output)
+            const LAMBDA_URL = 'https://3fbc33rf3a.execute-api.ap-south-1.amazonaws.com';
 
 
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function checkBasicAuth(cachedHash = null) {
-            const passwordInput = document.getElementById('site-password');
-            const authMessage = document.getElementById('auth-message');
-            let hashedInput;
-
-            if (cachedHash) {
-                hashedInput = cachedHash;
-            } else {
-                const password = passwordInput.value.trim();
-                if (!password) return;
-                hashedInput = await sha256(password);
+            async function sha256(message) {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             }
 
-            const githubToken = localStorage.getItem('GITHUB_CMS_TOKEN') || '';
+            async function checkBasicAuth(cachedHash = null) {
+                const passwordInput = document.getElementById('site-password');
+                const authMessage = document.getElementById('auth-message');
+                let hashedInput;
 
-            if (!LAMBDA_URL) {
-                console.error('LAMBDA_URL is not set. Please run deploy_auth.sh and update the URL.');
-                alert('Authentication system is not yet configured. Please check the console for details.');
-                return;
-            }
-
-            try {
-                if (!cachedHash) authMessage.innerText = 'Authenticating...';
-
-                const response = await fetch(`${LAMBDA_URL}?cb=${Date.now()}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        passwordHash: hashedInput,
-                        githubToken: githubToken,
-                        filePath: window.loadingArchive || 'data.json'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.authenticated && result.data) {
-                    UPDATE_DATA = result.data; // Store the secure data in memory
-                    localStorage.setItem(SITE_AUTH_KEY, hashedInput); // Store hash for persistence
-                    showProtectedContent();
-                } else if (result.authenticated && result.error) {
-                    // Correct password but token missing/invalid
-                    authMessage.innerText = result.error + ' (Please set token in CMS settings)';
+                if (cachedHash) {
+                    hashedInput = cachedHash;
                 } else {
-                    authMessage.innerText = 'Invalid password. Please try again.';
-                    localStorage.removeItem(SITE_AUTH_KEY);
+                    const password = passwordInput.value.trim();
+                    if (!password) return;
+                    hashedInput = await sha256(password);
                 }
-            } catch (error) {
-                console.error('Error during authentication:', error);
-                if (!cachedHash) alert('An error occurred during authentication. Please try again.');
+
+                const githubToken = localStorage.getItem('GITHUB_CMS_TOKEN') || '';
+
+                if (!LAMBDA_URL) {
+                    console.error('LAMBDA_URL is not set. Please run deploy_auth.sh and update the URL.');
+                    alert('Authentication system is not yet configured. Please check the console for details.');
+                    return;
+                }
+
+                try {
+                    if (!cachedHash) authMessage.innerText = 'Authenticating...';
+
+                    const response = await fetch(`${LAMBDA_URL}?cb=${Date.now()}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            passwordHash: hashedInput,
+                            githubToken: githubToken,
+                            filePath: window.loadingArchive || 'data.json'
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.authenticated && result.data) {
+                        UPDATE_DATA = result.data; // Store the secure data in memory
+                        localStorage.setItem(SITE_AUTH_KEY, hashedInput); // Store hash for persistence
+                        showProtectedContent();
+                    } else if (result.authenticated && result.error) {
+                        // Correct password but token missing/invalid
+                        authMessage.innerText = result.error + ' (Please set token in CMS settings)';
+                    } else {
+                        authMessage.innerText = 'Invalid password. Please try again.';
+                        localStorage.removeItem(SITE_AUTH_KEY);
+                    }
+                } catch (error) {
+                    console.error('Error during authentication:', error);
+                    if (!cachedHash) alert('An error occurred during authentication. Please try again.');
+                }
             }
-        }
 
-        function showProtectedContent() {
-            if (!UPDATE_DATA) return;
+            function showProtectedContent() {
+                if (!UPDATE_DATA) return;
 
-            document.getElementById('auth-loading').style.display = 'none';
-            document.getElementById('auth-gatekeeper').classList.add('hidden');
-            document.getElementById('main-content').classList.add('visible');
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('auth-gatekeeper').classList.add('hidden');
+                document.getElementById('main-content').classList.add('visible');
 
-            // Initialize the modular dashboard
-            initDashboard();
-        }
-
-        function logoutAll() {
-            localStorage.removeItem(SITE_AUTH_KEY);
-            localStorage.removeItem('gh_pat');
-            location.reload();
-        }
-
-        // Auto-login if hash is cached (starts immediately for speed)
-        const cachedHash = localStorage.getItem(SITE_AUTH_KEY);
-        if (cachedHash) {
-            checkBasicAuth(cachedHash);
-        }
-
-        // Standard initialization for other elements
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const archiveFile = urlParams.get('archive');
-
-            if (archiveFile) {
-                window.loadingArchive = archiveFile;
-                // If archive was specified in URL, we need to re-auth with it
-                if (cachedHash) checkBasicAuth(cachedHash);
+                // Initialize the modular dashboard
+                initDashboard();
             }
-        };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: { primaryColor: '#f1f5f9', lineColor: '#94a3b8' } });
-        });
-    </script>
+
+            function logoutAll() {
+                localStorage.removeItem(SITE_AUTH_KEY);
+                localStorage.removeItem('gh_pat');
+                location.reload();
+            }
+
+            // Auto-login if hash is cached (starts immediately for speed)
+            const cachedHash = localStorage.getItem(SITE_AUTH_KEY);
+            if (cachedHash) {
+                checkBasicAuth(cachedHash);
+            }
+
+            // Standard initialization for other elements
+            window.onload = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const archiveFile = urlParams.get('archive');
+
+                if (archiveFile) {
+                    window.loadingArchive = archiveFile;
+                    // If archive was specified in URL, we need to re-auth with it
+                    if (cachedHash) checkBasicAuth(cachedHash);
+                }
+            };
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.mermaid) mermaid.initialize({ startOnLoad: false, theme: 'base', themeVariables: { primaryColor: '#f1f5f9', lineColor: '#94a3b8' } });
+            });
+        </script>
     </div> <!-- Close p-3 md:p-6 -->
 </body>
 

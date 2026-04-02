@@ -186,3 +186,110 @@ function exportGantt() {
     };
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 }
+
+// ------ Data Export (CSV) ------
+function exportData(type) {
+    if (type !== 'csv') return;
+    
+    const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
+    const rows = [["Track", "Subtrack", "Task", "Status", "Priority", "Owner", "Due"]];
+    
+    UPDATE_DATA.tracks.forEach(track => {
+        if (activeTeam && activeTeam !== track.name) return;
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
+                const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
+                
+                if (searchMatch && dateMatch) {
+                    rows.push([
+                        track.name,
+                        subtrack.name,
+                        item.text,
+                        item.status,
+                        item.priority,
+                        (item.contributors || []).join('; '),
+                        item.due || ''
+                    ]);
+                }
+            });
+        });
+    });
+    
+    let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `khyaal_engineering_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// ------ Slack Digest Generator ------
+function generateDigest() {
+    const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
+    let stats = { done: 0, now: 0, ongoing: 0, blocked: 0 };
+    let recentDone = [];
+    let highPriority = [];
+    
+    UPDATE_DATA.tracks.forEach(track => {
+        if (activeTeam && activeTeam !== track.name) return;
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
+                const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
+                
+                if (searchMatch && dateMatch) {
+                    if (item.status === 'done') {
+                        stats.done++;
+                        recentDone.push(`• ${item.text} (${track.name})`);
+                    } else if (item.status === 'now' || item.status === 'ongoing') {
+                        if (item.status === 'now') stats.now++;
+                        if (item.status === 'ongoing') stats.ongoing++;
+                        if (item.priority === 'high') {
+                            highPriority.push(`• ${item.text} [${item.status.toUpperCase()}]`);
+                        }
+                    }
+                    if (item.blocker) stats.blocked++;
+                }
+            });
+        });
+    });
+    
+    let digest = `🚀 *Engineering Update Digest* ${activeTeam ? `for ${activeTeam}` : ''}\n\n`;
+    digest += `✅ *Completed:* ${stats.done}\n`;
+    digest += `⚡ *Active:* ${stats.now + stats.ongoing}\n`;
+    digest += `🚨 *Blockers:* ${stats.blocked}\n\n`;
+    
+    if (recentDone.length > 0) {
+        digest += `*Highlights:* \n${recentDone.slice(0, 5).join('\n')}\n\n`;
+    }
+    
+    if (highPriority.length > 0) {
+        digest += `*Critical Focus:* \n${highPriority.slice(0, 5).join('\n')}\n\n`;
+    }
+    
+    digest += `🔗 View full dashboard for details.`;
+    
+    // Create temporary modal to show the digest
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-8 animate-scale-in">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-900">Engineering Digest</h3>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Copy this to your Slack channel</p>
+                </div>
+                <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <textarea id="digest-textarea" readonly class="w-full h-80 p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-mono text-slate-700 mb-6 focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all">${digest}</textarea>
+            <div class="flex gap-3">
+                <button onclick="const ta = document.getElementById('digest-textarea'); ta.select(); navigator.clipboard.writeText(ta.value); this.innerText='Copied!'" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-xl">Copy to Clipboard</button>
+                <button onclick="this.closest('.fixed').remove()" class="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm hover:bg-slate-200 transition-all">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
