@@ -1,0 +1,83 @@
+{
+  "hooks": {
+    "userPromptSubmit": [
+      {
+        "type": "command",
+        "name": "archive-warning",
+        "description": "Warn when archive data is requested",
+        "command": "bash",
+        "args": [
+          "-c",
+          "if echo \"$PROMPT\" | grep -iq 'archive'; then echo '{\"message\": \"⚠️  Archive folder excluded by default. Specify explicitly if needed.\"}'; fi; exit 0"
+        ]
+      },
+      {
+        "type": "command",
+        "name": "broad-search-reminder",
+        "description": "Remind about token efficiency for broad searches",
+        "command": "bash",
+        "args": [
+          "-c",
+          "if echo \"$PROMPT\" | grep -Eiq 'search (the )?(entire|whole|all)|find (all|everything)'; then echo '{\"message\": \"💡 Broad searches use many tokens. Consider being more specific.\"}'; fi; exit 0"
+        ]
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "name": "read-validation",
+        "description": "Validate file reads to prevent reading excluded files",
+        "toolName": "Read",
+        "command": "bash",
+        "args": [
+          "-c",
+          "FILE=$(echo \"$TOOL_INPUT\" | grep -o '\"file_path\":\"[^\"]*\"' | cut -d'\"' -f4); if echo \"$FILE\" | grep -Eq '(archive/|node_modules/|\\.zip$|\\.log$)'; then echo '{\"block\": true, \"message\": \"⛔ Blocked: This file is excluded for token efficiency. Use explicit override if needed.\"}'; exit 2; fi; exit 0"
+        ]
+      },
+      {
+        "type": "command",
+        "name": "permission-auto-approve",
+        "description": "Auto-approve safe read operations",
+        "toolName": "Read",
+        "command": "bash",
+        "args": [
+          "-c",
+          "FILE=$(echo \"$TOOL_INPUT\" | grep -o '\"file_path\":\"[^\"]*\"' | cut -d'\"' -f4); if echo \"$FILE\" | grep -Eq '\\.(js|html|css|md)$' && ! echo \"$FILE\" | grep -q 'node_modules'; then echo '{\"approve\": true}'; fi; exit 0"
+        ]
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "name": "large-file-warning",
+        "description": "Warn when large files are read",
+        "toolName": "Read",
+        "command": "bash",
+        "args": [
+          "-c",
+          "if [ -n \"$TOOL_OUTPUT\" ]; then LINES=$(echo \"$TOOL_OUTPUT\" | wc -l); if [ \"$LINES\" -gt 500 ]; then echo '{\"message\": \"📊 Large file read ('$LINES' lines). Consider line ranges for efficiency.\"}'; fi; fi; exit 0"
+        ]
+      }
+    ],
+    "sessionStart": [
+      {
+        "type": "command",
+        "name": "welcome-message",
+        "description": "Show optimization tips at session start",
+        "command": "bash",
+        "args": [
+          "-c",
+          "echo '{\"message\": \"✨ Optimization active! Use skills (code-review, quick-fix, code-explain) or check .claude/CHEATSHEET.md\"}'; exit 0"
+        ]
+      }
+    ]
+  },
+  "contextWindow": {
+    "maxTokens": 50000,
+    "fileReadLimit": 20
+  },
+  "autoMemory": {
+    "enabled": true,
+    "loadLimit": 200
+  }
+}

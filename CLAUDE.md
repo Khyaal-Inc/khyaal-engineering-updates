@@ -1,13 +1,22 @@
-# Project Memory: Khyaal Engineering Pulse
+# Khyaal Engineering Pulse
+
+> This file provides persistent context to Claude Code. Only the essential information is loaded at startup to conserve tokens. Additional details are in README.md (loaded on-demand via imports).
 
 ## Project Overview
 A zero-deployment, GitHub-backed engineering dashboard for project management, OKR tracking, and team analytics.
 
-## Architecture
-- **Frontend-only**: HTML/CSS/JS (no backend server)
-- **Data Source**: GitHub-hosted data.json
+## Quick Reference
+- **Type**: Frontend-only SPA (no backend server)
+- **Data**: GitHub-hosted data.json (fetched via AWS Lambda)
+- **Stack**: Vanilla JS, Tailwind CSS, Mermaid.js, Google Charts
 - **Auth**: AWS Lambda gatekeeper (auth_gatekeeper.js)
-- **Deployment**: Static hosting (any CDN/GitHub Pages)
+
+## Documentation Imports
+For detailed information, refer to:
+- Architecture details: @README.md (lines 156-187)
+- View reference: @README.md (lines 383-543)
+- Data model: @README.md (lines 545-603)
+- Keyboard shortcuts: @README.md (lines 605-621)
 
 ## Key Files
 - `app.js` - Data normalization, GitHub integration
@@ -41,46 +50,31 @@ A zero-deployment, GitHub-backed engineering dashboard for project management, O
 - **Sprints** - 2-week execution cycles
 - **Story Points** - Fibonacci scale (1,2,3,5,8,13,21)
 
-## Common Status Values
-- `done` - Shipped & live
-- `now` - Actively in development
-- `ongoing` - Continuous/operational work
-- `next` - Ready for pickup
-- `later` - Future backlog
+## Status Values (Quick Ref)
+`done` | `now` | `ongoing` | `next` | `later`
 
-## Tech Stack
-- **No build tools** - Vanilla JS, no bundler
-- **Styling** - Tailwind CSS (CDN), custom CSS
-- **Charts** - Google Charts (analytics.js)
-- **Graphs** - Mermaid.js (dependency-view.js)
-- **Data Format** - JSON (single data.json file)
+## Development Guidelines
 
-## Authentication Flow
-1. User visits with `?cms=true`
-2. Prompted for GitHub PAT
-3. Lambda validates and fetches data.json
-4. Session cached locally (one-time auth)
+### Code Style
+- Vanilla JavaScript (ES6+), no transpilation
+- Minimal dependencies (CDN-only: Tailwind, Mermaid, Google Charts)
+- Client-side rendering only (no server logic)
 
-## Key Operations
-- **Save to GitHub** - Commits data.json back to repo
-- **Archive** - Moves old data to archive/ folder
-- **Grooming Mode** - Inline backlog refinement UI
-- **Dependency Linking** - Tasks reference other task IDs
+### Common Tasks
+- **Add feature**: Edit relevant module file (e.g., okr-module.js for OKR features)
+- **Fix bug**: Use browser DevTools, check core.js for state issues
+- **Update UI**: Modify views.js or specific module file
+- **Data changes**: Edit data.json structure, update app.js normalization
 
-## Performance Considerations
-- Archive folder can be large (excluded by .claudeignore)
-- data.json is the live dataset (moderate size)
-- All views render client-side (no server processing)
+### File Exclusions (Token Savings)
+- `archive/` folder - Large, historical data (excluded by .claudeignore)
+- `lambda.zip` - Deployment artifact (excluded)
+- `data.json` - Read only when explicitly needed
 
-## Team Structure
-- **Contributors** - Array field on each task
-- **Capacity** - Story points per person per sprint
-- **Tracks** - Teams own specific tracks
-
-## Keyboard Shortcuts
-- Number keys 1-9,0 navigate views
-- Alt+1/2/3 switch modes
-- / focuses search
+### Performance Notes
+- All rendering is client-side (check browser console for errors)
+- data.json is the live dataset (~moderate size, ok to read if needed)
+- Archive folder contains old sprints (avoid unless explicitly requested)
 
 ## Common Workflows
 ### PM: Plan Sprint
