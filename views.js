@@ -66,59 +66,66 @@ function renderTrackView() {
         const teamOptions = teams.map(n => `<option value="${n}">${n}</option>`).join('');
 
         container.innerHTML = `
-            <div id="track-ribbon" class="bg-white p-1 rounded-xl border border-slate-200 shadow-sm mb-4 flex flex-wrap items-center gap-2">
-                <div class="max-w-[400px] flex-1 min-w-[200px] relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-                    <input type="search" id="track-search-input" placeholder="Quick find tasks, contributors, or notes..."
-                        value="${globalSearchQuery || ''}"
-                        class="search-input w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-xs focus:ring-2 focus:ring-indigo-600/20 transition-all font-medium"
-                        onkeyup="filterBySearch(this.value)">
+            <div id="track-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 1: Navigation & Filters -->
+                <div class="flex flex-wrap items-center gap-3 flex-1">
+                    <div class="max-w-[420px] flex-1 min-w-[240px] relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+                        <input type="search" id="track-search-input" placeholder="Search tasks, owners, or notes..."
+                            value="${globalSearchQuery || ''}"
+                            class="search-input w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600/30 transition-all font-semibold text-slate-700 placeholder:text-slate-400"
+                            onkeyup="filterBySearch(this.value)">
+                    </div>
+
+                    <div class="h-6 w-[1px] bg-slate-200 mx-1 hidden md:block"></div>
+
+                    <div class="flex items-center gap-2">
+                        <select id="global-team-filter"
+                            class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-xs font-black text-slate-600 hover:bg-slate-100 transition-all cursor-pointer focus:ring-4 focus:ring-indigo-600/10"
+                            onchange="renderTrackView()">
+                            <option value="">🌍 All Tracks</option>
+                            ${teamOptions}
+                        </select>
+
+                        <select id="date-range-preset" onchange="applyDatePreset(); renderTrackView();"
+                            class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-xs font-black text-slate-600 hover:bg-slate-100 transition-all cursor-pointer focus:ring-4 focus:ring-indigo-600/10">
+                            <option value="all">📅 All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="this-week">This Week</option>
+                            <option value="this-month">This Month</option>
+                            <option value="custom">Custom Range...</option>
+                        </select>
+
+                        <div id="custom-date-inputs" class="hidden flex gap-2">
+                            <input type="date" id="filter-start-date" onchange="renderTrackView()"
+                                class="px-2 py-1.5 border border-slate-100 rounded-lg text-xs bg-slate-50 font-bold">
+                            <input type="date" id="filter-end-date" onchange="renderTrackView()"
+                                class="px-2 py-1.5 border border-slate-100 rounded-lg text-xs bg-slate-50 font-bold">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <select id="global-team-filter"
-                        class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
-                        onchange="renderTrackView()">
-                        <option value="">🌍 All Tracks</option>
-                        ${teamOptions}
-                    </select>
+                <!-- Group 2: Actions -->
+                <div class="flex items-center gap-2">
+                    <button onclick="exportData('csv')"
+                        class="p-2.5 bg-slate-50 border border-slate-100 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 rounded-xl transition-all shadow-sm group"
+                        title="Export Clean CSV">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </button>
+                    
+                    <button onclick="generateDigest()"
+                        class="px-5 py-2.5 bg-slate-50 border border-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 rounded-xl text-xs font-black transition-all shadow-sm">
+                        Slack Digest
+                    </button>
 
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-
-                    <select id="date-range-preset" onchange="applyDatePreset(); renderTrackView();"
-                        class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
-                        <option value="all">📅 All Dates</option>
-                        <option value="today">Today</option>
-                        <option value="this-week">This Week</option>
-                        <option value="this-month">This Month</option>
-                        <option value="custom">Custom Range...</option>
-                    </select>
-
-                    <div id="custom-date-inputs" class="hidden flex gap-2">
-                        <input type="date" id="filter-start-date" onchange="renderTrackView()"
-                            class="px-2 py-1 border rounded text-xs">
-                        <input type="date" id="filter-end-date" onchange="renderTrackView()"
-                            class="px-2 py-1 border rounded text-xs">
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button onclick="exportData('csv')"
-                            class="p-2.5 bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                            title="Export CSV">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                            </svg>
-                        </button>
-                        <button onclick="generateDigest()"
-                            class="px-4 py-2.5 bg-slate-50 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl text-xs font-black transition-all">
-                            Slack Digest
-                        </button>
-                        ${shouldShowManagement() ? `
-                        <button onclick="openTrackEdit()" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2 ml-2">
-                            <span>🏗️</span> Add New Track
-                        </button>
-                        ` : ''}
-                    </div>
+                    ${shouldShowManagement() ? `
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <button onclick="openTrackEdit()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                        <span class="text-lg">🏗️</span> Add New Track
+                    </button>
+                    ` : ''}
                 </div>
             </div>
             <div id="track-content"></div>
@@ -660,18 +667,18 @@ function renderBacklogView() {
     if (shouldShowManagement()) {
         html += `
             <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl mb-6 shadow-lg border border-slate-700">
-                <div class="flex items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
-                        <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
-                    </div>
+                <div>
+                    <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
+                    <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
+                </div>
+                <div class="flex items-center gap-3">
                     <button onclick="switchView('sprint')" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                         Next: Plan Sprint 🏃
                     </button>
+                    <button onclick="toggleGroomingMode()" class="px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md ${groomingMode ? 'bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}">
+                        ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
+                    </button>
                 </div>
-                <button onclick="toggleGroomingMode()" class="px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md ${groomingMode ? 'bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}">
-                    ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
-                </button>
             </div>
         `;
     }
@@ -708,7 +715,7 @@ function renderEpicsView() {
     const epics = (data.metadata && data.metadata.epics) || [];
 
     let html = shouldShowManagement() ? `
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-end items-center gap-3 mb-6">
             <button onclick="switchView('roadmap')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
                 Next: Plan Roadmap 🗺️
             </button>
@@ -800,7 +807,7 @@ function renderRoadmapView() {
     ];
 
     let html = shouldShowManagement() ? `
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-end items-center gap-3 mb-6">
             <button onclick="switchView('backlog')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
                 Next: Groom Backlog 📚
             </button>

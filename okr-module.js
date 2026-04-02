@@ -136,7 +136,7 @@ function renderOkrView() {
 
     // Management Header (Add OKR button)
     let headerHtml = showManagement ? `
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-end items-center mb-6">
             <button onclick="openOKREdit()" 
                 class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
                 style="background-color: var(--stage-color, #4f46e5)">
