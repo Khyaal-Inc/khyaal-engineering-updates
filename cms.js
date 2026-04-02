@@ -48,7 +48,7 @@ const FIELD_GROUPS = {
     // Strategic planning fields
     strategic: {
         label: 'Strategic Alignment',
-        fields: ['epicId', 'planningHorizon', 'usecase', 'impactLevel'],
+        fields: ['epicId', 'planningHorizon', 'usecase'],
         showInViews: ['okr', 'epics', 'roadmap', 'backlog'],
         showInStages: ['strategic'],
         icon: '🎯'
@@ -56,8 +56,8 @@ const FIELD_GROUPS = {
     
     // Estimation & Prioritization
     estimation: {
-        label: 'Prioritization & Effort',
-        fields: ['priority', 'storyPoints', 'effortLevel'],
+        label: 'Prioritization & ROI',
+        fields: ['priority', 'storyPoints', 'impactLevel', 'effortLevel'],
         showInViews: ['roadmap', 'backlog', 'sprint', 'kanban'],
         showInStages: ['strategic', 'planning'],
         icon: '⚖️'
@@ -592,25 +592,26 @@ function renderField(fieldName, item) {
         case 'effortLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Effort Level</label>
-                    <select id="edit-effortLevel" class="cms-input">
+                    <label class="field-label">Implementation Effort</label>
+                    <select id="edit-effortLevel" class="cms-input" onchange="updateRoiPreview()">
                         <option value="">Select Effort...</option>
-                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
-                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium</option>
-                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Easy Wins)</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Standard Cycle)</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>High (Major Complexities)</option>
                     </select>
+                    <div id="roi-preview-container" class="mt-2"></div>
                 </div>
             `;
 
         case 'impactLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Impact Level</label>
-                    <select id="edit-impactLevel" class="cms-input">
-                        <option value="">Select Impact...</option>
-                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
-                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium</option>
-                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
+                    <label class="field-label">Business Value (Impact)</label>
+                    <select id="edit-impactLevel" class="cms-input" onchange="updateRoiPreview()">
+                        <option value="">Select Value...</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Tactical/Minor)</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Baseline Support)</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>High (Strategic/Major)</option>
                     </select>
                 </div>
             `;
@@ -748,6 +749,7 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
         renderTagWidget('contrib-tag-input-edit', item.contributors || [], 'contributor-list', 'author');
         renderTagWidget('tags-tag-input-edit', item.tags || [], 'tag-list', 'tag');
         renderTagWidget('deps-tag-input-edit', item.dependencies || [], 'item-list', 'dep');
+        setTimeout(updateRoiPreview, 20); // Initial ROI preview
     }, 10);
 }
 
@@ -1451,6 +1453,49 @@ function deleteSubtrack(ti, si) {
 function closeCmsModal() {
     document.getElementById('cms-modal').classList.remove('active');
     editContext = null;
+}
+
+/**
+ * Real-time ROI Calculator for the form
+ */
+function updateRoiPreview() {
+    const impactVal = document.getElementById('edit-impactLevel')?.value;
+    const effortVal = document.getElementById('edit-effortLevel')?.value;
+    const previewContainer = document.getElementById('roi-preview-container');
+    
+    if (!previewContainer) return;
+    
+    if (!impactVal || !effortVal) {
+        previewContainer.innerHTML = '';
+        return;
+    }
+    
+    const impactValues = { low: 1, medium: 2, high: 3 };
+    const effortValues = { low: 3, medium: 2, high: 1 };
+    
+    const impactNum = impactValues[impactVal];
+    const effortNum = effortValues[effortVal];
+    const score = Math.round((impactNum * effortNum) / 9 * 100);
+    
+    let label = 'Medium ROI';
+    let color = 'bg-amber-50 text-amber-700 border-amber-200';
+    if (score >= 80) {
+        label = 'High ROI (Quick Win)';
+        color = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    } else if (score < 40) {
+        label = 'Low ROI (Time Sink)';
+        color = 'bg-slate-50 text-slate-500 border-slate-200';
+    }
+    
+    previewContainer.innerHTML = `
+        <div class="flex items-center justify-between p-2 rounded-lg border ${color} transition-all animate-in fade-in zoom-in duration-300">
+            <span class="text-[10px] font-black uppercase tracking-wider">Calculated Priority</span>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold">${label}</span>
+                <span class="text-xs font-black px-1.5 py-0.5 rounded bg-white/50 border border-current/20">${score}</span>
+            </div>
+        </div>
+    `;
 }
 
 function openMetadataEdit() {

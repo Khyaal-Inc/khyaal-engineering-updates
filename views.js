@@ -75,11 +75,34 @@ function renderTrackView() {
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
         if (activeTeam && activeTeam !== track.name) return;
         const accentColor = themeColors[track.theme] || '#0f172a';
+        
+        // Calculate Team Pulse (Health)
+        let totalActive = 0;
+        let blocked = 0;
+        track.subtracks.forEach(s => {
+            s.items.forEach(i => {
+                if (i.status !== 'later' && i.status !== 'done') {
+                    totalActive++;
+                    if (i.blocker) blocked++;
+                }
+            });
+        });
+        
+        const healthScore = totalActive > 0 ? Math.round(((totalActive - blocked) / totalActive) * 100) : 100;
+        const healthStatus = healthScore >= 90 ? 'Healthy' : healthScore >= 70 ? 'Strained' : 'At Risk';
+        const healthColor = healthScore >= 90 ? 'bg-emerald-500' : healthScore >= 70 ? 'bg-amber-500' : 'bg-red-500';
+
         html += `<div class="track-card" style="border-color: ${accentColor}">`;
         html += `
             <div class="track-header" style="background: linear-gradient(135deg, ${accentColor} 0%, #1e293b 100%)">
                 <div class="flex justify-between items-center w-full">
-                    <span>${track.name}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl font-black uppercase tracking-tighter">${track.name}</span>
+                        <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/10 border border-white/20 backdrop-blur-sm" title="Team Pulse: ${healthScore}% Healthy">
+                            <div class="w-2 h-2 rounded-full ${healthColor} ${healthScore < 90 ? 'animate-pulse' : ''}"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest">${healthStatus}</span>
+                        </div>
+                    </div>
                     <div class="flex gap-2">
                         ${shouldShowManagement() ? `
                         <button onclick="addSubtrack(${trackIndex})" class="bg-white/10 hover:bg-white/20 p-1 rounded text-xs px-2 transition-colors font-bold">Add Subtrack</button>
@@ -193,14 +216,57 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     let contentHtml = `<span class="flex items-center">${displayText}${due}${storyPointsHTML}</span>`;
     const effectiveNote = item.note || subtrackNote;
 
-    if (effectiveNote || item.acceptanceCriteria?.length > 0 || item.effortLevel || item.impactLevel) {
+    // Strategic Context Badges
+    let strategicContext = '';
+    const epics = UPDATE_DATA.metadata?.epics || [];
+    const okrs = UPDATE_DATA.metadata?.okrs || [];
+    
+    if (item.epicId) {
+        const epic = epics.find(e => e.id === item.epicId);
+        if (epic) {
+            let okrText = '';
+            if (epic.linkedOKR) {
+                const okr = okrs.find(o => o.id === epic.linkedOKR);
+                okrText = okr ? `🎯 ${okr.objective.substring(0, 20)}...` : '';
+            }
+            strategicContext = `
+                <div class="flex items-center gap-2 mt-2 mb-1">
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-black border border-indigo-100 flex items-center gap-1 shadow-sm" title="Strategic Epic">
+                        🚀 ${epic.name}
+                    </span>
+                    ${okrText ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100 flex items-center gap-1 shadow-sm" title="Aligned OKR">${okrText}</span>` : ''}
+                </div>
+            `;
+        }
+    }
+
+    // ROI Score Calculation
+    const impactValues = { low: 1, medium: 2, high: 3 };
+    const effortValues = { low: 3, medium: 2, high: 1 }; // High effort is "lower" for ROI
+    let roiScoreHTML = '';
+    if (item.impactLevel && item.effortLevel) {
+        const impactNum = impactValues[item.impactLevel] || 1;
+        const effortNum = effortValues[item.effortLevel] || 1;
+        const score = Math.round((impactNum * effortNum) / 9 * 100);
+        const scoreColor = score >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : score >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-slate-500 bg-slate-50 border-slate-200';
+        roiScoreHTML = `
+            <div class="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded border ${scoreColor} text-[9px] font-black shadow-sm" title="Priority ROI Score (Impact/Effort)">
+                <span class="opacity-50">ROI</span> ${score}
+            </div>
+        `;
+    }
+
+    if (effectiveNote || item.acceptanceCriteria?.length > 0 || item.effortLevel || item.impactLevel || item.epicId) {
         let cleanNote = effectiveNote ? effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim() : '';
         cleanNote = highlightSearch(cleanNote);
         
         const effortImpactHTML = (item.effortLevel || item.impactLevel) ? `
-            <div class="mt-2 pt-2 border-t border-slate-100 flex gap-4 text-[10px] uppercase tracking-wider">
-                ${item.effortLevel ? `<span><span class="font-black text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
-                ${item.impactLevel ? `<span><span class="font-black text-slate-400">Impact:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div class="flex gap-4 text-[10px] uppercase tracking-wider">
+                    ${item.effortLevel ? `<span><span class="font-black text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
+                    ${item.impactLevel ? `<span><span class="font-black text-slate-400">Value:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
+                </div>
+                ${roiScoreHTML}
             </div>
         ` : '';
 
@@ -217,7 +283,10 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
         
         contentHtml = `
             <div class="info-wrapper">
-                <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
+                <div class="flex-1 min-w-0">
+                    <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
+                    ${strategicContext}
+                </div>
                 <button class="info-btn" aria-label="More information">i</button>
                 <div class="tooltip-content" role="tooltip">
                     ${cleanNote ? `<span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span><div class="mb-2 text-slate-600">${cleanNote}</div>` : ''}
@@ -898,35 +967,82 @@ function drawGanttChart() {
     data.addColumn('string', 'Dependencies');
 
     const rows = [];
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                if (!item.startDate || !item.due) return;
-                rows.push([item.id, item.text, track.name, new Date(item.startDate), new Date(item.due), null, item.status === 'done' ? 100 : 0, null]);
+    const epics = UPDATE_DATA.metadata?.epics || [];
+    
+    epics.forEach(epic => {
+        // Find date range from items in this epic if not explicitly set
+        let startDate = epic.startDate ? new Date(epic.startDate) : null;
+        let endDate = epic.endDate ? new Date(epic.endDate) : null;
+        
+        let totalItems = 0;
+        let doneItems = 0;
+        
+        if (!startDate || !endDate) {
+            // Scan items for dates if epic dates missing
+            UPDATE_DATA.tracks.forEach(track => {
+                track.subtracks.forEach(subtrack => {
+                    subtrack.items.forEach(item => {
+                        if (item.epicId === epic.id) {
+                            totalItems++;
+                            if (item.status === 'done') doneItems++;
+                            
+                            if (item.startDate) {
+                                const s = new Date(item.startDate);
+                                if (!startDate || s < startDate) startDate = s;
+                            }
+                            if (item.due) {
+                                const d = new Date(item.due);
+                                if (!endDate || d > endDate) endDate = d;
+                            }
+                        }
+                    });
+                });
             });
-        });
+        }
+        
+        if (startDate && endDate && startDate < endDate) {
+            const percent = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+            rows.push([
+                epic.id, 
+                epic.name, 
+                epic.track || 'Strategy', 
+                startDate, 
+                endDate, 
+                null, 
+                percent, 
+                null
+            ]);
+        }
     });
 
     if (!rows.length) {
-        document.getElementById('gantt-chart-container').innerHTML = '<div class="p-10 text-center text-slate-400">No tasks with dates for Gantt chart</div>';
+        document.getElementById('gantt-chart-container').innerHTML = `
+            <div class="p-12 text-center bg-slate-50 border border-dashed border-slate-300 rounded-xl">
+                <div class="text-4xl mb-3">📅</div>
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">No Strategic Timeline</h3>
+                <p class="text-xs text-slate-500 mt-2">Add dates to your Epics or Tasks to generate the strategic roadmap view.</p>
+            </div>
+        `;
         return;
     }
 
     data.addRows(rows);
-    const options = { height: rows.length * 40 + 50, gantt: { trackHeight: 40 } };
+    const options = { 
+        height: rows.length * 45 + 50, 
+        gantt: { 
+            trackHeight: 45,
+            labelStyle: { fontName: 'Inter', fontSize: 11, color: '#1e293b' },
+            barCornerRadius: 4
+        } 
+    };
     const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
 
     google.visualization.events.addListener(chart, 'select', function () {
         const selection = chart.getSelection();
         if (selection.length > 0) {
             const row = selection[0].row;
-            const taskId = data.getValue(row, 0);
-            UPDATE_DATA.tracks.forEach((t, ti) => {
-                t.subtracks.forEach((s, si) => {
-                    const ii = s.items.findIndex(item => item.id === taskId);
-                    if (ii !== -1) openItemEdit(ti, si, ii);
-                });
-            });
+            const epicId = data.getValue(row, 0);
+            if (typeof openEpicEdit === 'function') openEpicEdit(epicId);
         }
     });
 

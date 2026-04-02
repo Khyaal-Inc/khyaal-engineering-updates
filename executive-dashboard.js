@@ -96,26 +96,55 @@ function renderOKRSummary() {
     if (okrs.length === 0) return '';
 
     return `
-        <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">OKR Progress Summary</h2>
-            <div class="space-y-3">
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+                <span class="text-8xl font-black italic tracking-tighter">OKR</span>
+            </div>
+            
+            <div class="flex justify-between items-end mb-8 relative z-10">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight">Strategic Progress</h2>
+                    <p class="text-slate-500 font-medium text-sm mt-1">Outcome-based achievement per quarter</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-1">Portfolio Health</span>
+                    <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-black rounded-full border border-emerald-100 shadow-sm">On Track</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 ${okrs.map(okr => {
                     const progress = okr.overallProgress || 0;
-                    const color = progress >= 90 ? 'bg-green-500' : progress >= 70 ? 'bg-blue-500' : progress >= 50 ? 'bg-amber-500' : 'bg-red-500';
+                    const krCount = okr.keyResults?.length || 0;
+                    const achievedKR = (okr.keyResults || []).filter(kr => kr.progress >= 100).length;
+                    
+                    const color = progress >= 90 ? 'bg-emerald-500' : progress >= 70 ? 'bg-blue-500' : progress >= 50 ? 'bg-amber-500' : 'bg-red-500';
+                    const textColor = progress >= 90 ? 'text-emerald-600' : progress >= 70 ? 'text-blue-600' : 'text-slate-900';
 
                     return `
-                        <div class="p-4 bg-slate-50 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="flex-1">
-                                    <div class="font-bold text-slate-900">${okr.objective}</div>
-                                    <div class="text-xs text-slate-500 mt-1">${okr.quarter} • ${okr.owner}</div>
-                                </div>
-                                <div class="text-2xl font-black ${progress >= 70 ? 'text-green-600' : 'text-slate-900'}">
-                                    ${progress}%
+                        <div class="group p-5 bg-slate-50 hover:bg-slate-100/50 rounded-2xl border border-slate-100 transition-all duration-500 hover:shadow-lg hover:-translate-y-1">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-white p-2 rounded-xl shadow-sm text-lg">${progress >= 90 ? '🏆' : progress >= 70 ? '📈' : '⚡'}</span>
+                                <div class="text-right">
+                                    <div class="text-2xl font-black ${textColor}">${progress}%</div>
+                                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${okr.quarter}</div>
                                 </div>
                             </div>
-                            <div class="w-full bg-slate-200 rounded-full h-2">
-                                <div class="${color} h-2 rounded-full transition-all" style="width: ${progress}%"></div>
+                            
+                            <h3 class="font-black text-slate-800 text-sm leading-tight mb-4 min-h-[40px] line-clamp-2">${okr.objective}</h3>
+                            
+                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-2">
+                                <span>KR Milestone Success</span>
+                                <span class="text-slate-800 font-black">${achievedKR} / ${krCount}</span>
+                            </div>
+
+                            <div class="w-full bg-slate-200 rounded-full h-2 mb-4 overflow-hidden">
+                                <div class="${color} h-2 rounded-full transition-all duration-1000 group-hover:opacity-80" style="width: ${progress}%"></div>
+                            </div>
+                            
+                            <div class="pt-3 border-t border-slate-200/50 flex justify-between items-center">
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Owner: ${okr.owner}</span>
+                                <button onclick="switchView('okr')" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm transition-all hover:scale-105 active:scale-95">Strategy Hub 🎯</button>
                             </div>
                         </div>
                     `;

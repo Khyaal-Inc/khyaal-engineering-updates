@@ -22,14 +22,14 @@ function renderAnalyticsView() {
 
     container.innerHTML = `
         <div class="space-y-6">
-            <!-- KPI Cards -->
+            <!-- Strategic Pulse Banner -->
+            ${renderStrategicAnalyticsBanner()}
+
+            <!-- KPI Cards (Outcome Focused) -->
             ${renderKPICards()}
 
             <!-- Velocity Chart -->
             ${renderVelocityChart(velocityData)}
-
-            <!-- Sprint Burndown -->
-            ${renderBurndownChart(sprints)}
 
             <!-- Metrics Table -->
             ${renderMetricsTable(velocityData)}
@@ -72,28 +72,79 @@ function renderKPICards() {
 
     return `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
-                <div class="text-sm font-bold text-slate-500 uppercase tracking-wider">Avg Velocity</div>
-                <div class="text-4xl font-black text-slate-900 mt-2">${avgVelocity}</div>
-                <div class="text-xs text-slate-600 mt-1">story points/sprint</div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg Strategic Velocity</div>
+                <div class="text-3xl font-black text-slate-900">${avgVelocity}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">story points / sprint</div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
-                <div class="text-sm font-bold text-slate-500 uppercase tracking-wider">Sprint Completion</div>
-                <div class="text-4xl font-black ${lastVelocity >= 90 ? 'text-green-600' : 'text-amber-600'} mt-2">${lastVelocity}%</div>
-                <div class="text-xs text-slate-600 mt-1">last sprint</div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Commitment Accuracy</div>
+                <div class="text-3xl font-black ${lastVelocity >= 90 ? 'text-emerald-600' : 'text-amber-600'}">${lastVelocity}%</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">last sprint delivery</div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
-                <div class="text-sm font-bold text-slate-500 uppercase tracking-wider">In Progress</div>
-                <div class="text-4xl font-black text-blue-600 mt-2">${activeItems}</div>
-                <div class="text-xs text-slate-600 mt-1">active items</div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Outcome Pulse</div>
+                <div class="text-3xl font-black text-indigo-600">${activeItems}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">active strategic items</div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
-                <div class="text-sm font-bold text-slate-500 uppercase tracking-wider">Completed</div>
-                <div class="text-4xl font-black text-green-600 mt-2">${completedItems}</div>
-                <div class="text-xs text-slate-600 mt-1">total done</div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Portfolio Completion</div>
+                <div class="text-3xl font-black text-emerald-600">${completedItems}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">total items delivered</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderStrategicAnalyticsBanner() {
+    const okrs = UPDATE_DATA.metadata?.okrs || [];
+    const avgOkrProgress = okrs.length > 0 
+        ? Math.round(okrs.reduce((sum, o) => sum + (o.overallProgress || 0), 0) / okrs.length)
+        : 0;
+
+    // Calculate Strategic Impact Score (Delivery vs Outcome)
+    // Formula: (Avg OKR Progress) / (Total Items Completed Ratio)
+    let completedItems = 0;
+    let totalItems = 0;
+    UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
+        totalItems++;
+        if (i.status === 'done') completedItems++;
+    })));
+    
+    const deliveryRate = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+    const impactScore = deliveryRate > 0 ? Math.round((avgOkrProgress / (deliveryRate || 1)) * 100) : 0;
+    
+    return `
+        <div class="relative bg-slate-900 rounded-3xl p-8 overflow-hidden border border-slate-800 shadow-2xl">
+            <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div class="max-w-xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest border border-indigo-500/30">Strategic Pulse</span>
+                        <div class="h-1 w-1 rounded-full bg-slate-700"></div>
+                        <span class="text-slate-500 text-[10px] font-bold uppercase tracking-widest italic">Outcome Projection: Q2 2026</span>
+                    </div>
+                    <h2 class="text-4xl font-black text-white tracking-tight leading-none mb-4">
+                        Engineering velocity is driving <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">${avgOkrProgress}%</span> of strategic outcomes.
+                    </h2>
+                    <p class="text-slate-400 font-medium text-sm">Your delivery rate is currently <span class="text-white font-bold">${Math.round(deliveryRate)}%</span>. The Strategic Impact Score indicates high alignment between tasks and business goals.</p>
+                </div>
+                
+                <div class="flex-shrink-0 flex items-center gap-8">
+                    <div class="text-center">
+                        <div class="relative inline-flex items-center justify-center p-1 rounded-full bg-slate-800 border border-slate-700 shadow-lg mb-2">
+                             <svg class="w-16 h-16 transform -rotate-90">
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" class="text-slate-700"></circle>
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" stroke-dasharray="${2 * Math.PI * 28}" stroke-dashoffset="${2 * Math.PI * 28 * (1 - impactScore/100)}" class="text-indigo-500 transition-all duration-1000"></circle>
+                             </svg>
+                             <span class="absolute text-xs font-black text-white">${impactScore}</span>
+                        </div>
+                        <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Impact Score</div>
+                    </div>
+                </div>
             </div>
         </div>
     `;

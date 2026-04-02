@@ -81,6 +81,10 @@ function renderKanbanCard(item) {
         low: 'border-l-slate-300'
     };
 
+    const epics = UPDATE_DATA.metadata?.epics || [];
+    const epic = item.epicId ? epics.find(e => e.id === item.epicId) : null;
+    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 shadow-sm truncate inline-block max-w-full" title="Strategic Epic: ${epic.name}">🚀 ${epic.name}</div>` : '';
+
     const priorityColor = priorityColors[item.priority] || 'border-l-slate-300';
     const storyPoints = item.storyPoints ? `<span class="text-xs font-bold text-slate-500">${item.storyPoints} pts</span>` : '';
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
@@ -95,12 +99,13 @@ function renderKanbanCard(item) {
                 <span class="text-xs font-bold text-slate-400 uppercase">${item.track || 'No Track'}</span>
                 ${storyPoints}
             </div>
-            <p class="text-sm font-semibold text-slate-900 mb-2 line-clamp-2">${item.text}</p>
-            <div class="flex justify-between items-center text-xs text-slate-600">
+            <p class="text-sm font-semibold text-slate-900 mb-1 line-clamp-2">${item.text}</p>
+            ${epicBadge}
+            <div class="flex justify-between items-center text-xs text-slate-600 mt-3 pt-2 border-t border-slate-50">
                 <span>👤 ${contributors}</span>
-                ${item.blocker ? '<span class="text-red-600 font-bold">🚨 BLOCKED</span>' : ''}
+                ${item.blocker ? '<span class="text-red-600 font-bold animate-pulse">🚨 BLOCKED</span>' : ''}
             </div>
-            ${item.due ? `<div class="text-xs text-slate-500 mt-2">📅 ${item.due}</div>` : ''}
+            ${item.due ? `<div class="text-[10px] text-slate-400 mt-2 font-medium">📅 Due: ${item.due}</div>` : ''}
         </div>
     `;
 }
