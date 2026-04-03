@@ -110,7 +110,7 @@ function renderKanbanView() {
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-320px)] min-w-[320px] shadow-sm"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-220px)] min-w-[320px] shadow-sm"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
@@ -118,8 +118,8 @@ function renderKanbanView() {
                                          ondragleave="handleKanbanDragLeave(event)">
                                         <div class="flex justify-between items-center mb-5 px-1 flex-shrink-0">
                                             <div class="flex items-center gap-2">
-                                                <h4 class="text-[11px] font-black uppercase tracking-wider text-slate-600">${col.title}</h4>
-                                                <span class="text-[9px] font-bold bg-white text-slate-400 px-1.5 py-0.5 rounded border border-slate-100">${columnItems.length}</span>
+                                                <h4 class="text-[12px] font-black uppercase tracking-wider text-slate-900">${col.title}</h4>
+                                                <span class="text-[10px] font-black bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200 shadow-sm">${columnItems.length}</span>
                                             </div>
                                         </div>
                                         <div class="space-y-4 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
@@ -138,21 +138,21 @@ function renderKanbanView() {
 
 function renderKanbanCard(item) {
     const priorityColors = {
-        high: 'border-l-red-500',
-        medium: 'border-l-amber-500',
-        low: 'border-l-slate-300'
+        high: 'border-l-red-600',
+        medium: 'border-l-amber-600',
+        low: 'border-l-slate-400'
     };
 
     const epics = UPDATE_DATA.metadata?.epics || [];
     const epic = item.epicId ? epics.find(e => e.id === item.epicId) : null;
-    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 truncate inline-block max-w-full">🚀 ${epic.name}</div>` : '';
+    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-900 bg-indigo-100/80 px-2 py-0.5 rounded border border-indigo-200 truncate inline-block max-w-full shadow-sm">🚀 ${epic.name}</div>` : '';
 
     const priorityColor = priorityColors[item.priority] || 'border-l-slate-300';
     const storyPoints = item.storyPoints ? `<span class="bg-slate-100 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-full">${item.storyPoints} pts</span>` : '';
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
 
     return `
-        <div class="kanban-card bg-white p-4 rounded-xl border border-slate-100 border-l-[4px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
+        <div class="kanban-card bg-white p-4 rounded-xl border border-slate-200 border-l-[6px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
              draggable="true"
              ondragstart="handleKanbanDragStart(event)"
              ondrop="handleKanbanDrop(event)"
@@ -168,16 +168,16 @@ function renderKanbanCard(item) {
             
             ${epicBadge}
 
-            <div class="flex justify-between items-center text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-100/60">
-                <div class="flex items-center gap-1.5 font-bold">
-                    <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 border border-slate-200">
+            <div class="flex justify-between items-center text-[10px] text-slate-800 mt-4 pt-3 border-t border-slate-100">
+                <div class="flex items-center gap-1.5 font-black">
+                    <div class="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center text-[9px] font-black text-white shadow-sm">
                         ${(item.contributors?.[0] || 'U').charAt(0)}
                     </div>
-                    <span class="capitalize">${contributors}</span>
+                    <span class="capitalize tracking-tight">${contributors}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    ${item.blocker ? '<span class="text-[9px] font-black bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 animate-pulse">🛑 BLOCKED</span>' : 
-                      (item.due ? `<span class="font-black text-slate-400">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
+                    ${item.blocker ? '<span class="text-[9px] font-black bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200 shadow-sm animate-pulse">🛑 BLOCKED</span>' : 
+                      (item.due ? `<span class="font-black text-slate-900 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
                 </div>
             </div>
             
