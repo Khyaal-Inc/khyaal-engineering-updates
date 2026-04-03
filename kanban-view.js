@@ -65,9 +65,9 @@ function renderKanbanView() {
 
     // Render Kanban board
     container.innerHTML = `
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl">
-            <div id="kanban-ribbon" class="bg-slate-50/50 p-3 rounded-2xl border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
-                <div class="flex items-center gap-4 px-2">
+        <div class="bg-white p-3 rounded-3xl border border-slate-200 shadow-xl">
+            <div id="kanban-ribbon" class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 mb-4 flex flex-wrap items-center justify-between gap-6">
+                <div class="flex items-center gap-2 px-2">
                     <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
                         <span class="text-white text-xl">📋</span>
                     </div>
@@ -110,19 +110,19 @@ function renderKanbanView() {
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-220px)] min-w-[320px] shadow-sm"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-140px)] min-w-[320px] shadow-sm"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
                                          ondragover="handleKanbanDragOver(event)"
                                          ondragleave="handleKanbanDragLeave(event)">
-                                        <div class="flex justify-between items-center mb-5 px-1 flex-shrink-0">
-                                            <div class="flex items-center gap-2">
-                                                <h4 class="text-[12px] font-black uppercase tracking-wider text-slate-900">${col.title}</h4>
-                                                <span class="text-[10px] font-black bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200 shadow-sm">${columnItems.length}</span>
+                                        <div class="flex justify-between items-center mb-3 px-1 flex-shrink-0">
+                                            <div class="flex items-center gap-1.5">
+                                                <h4 class="text-[11px] font-black uppercase tracking-wider text-slate-900">${col.title}</h4>
+                                                <span class="text-[9px] font-black bg-slate-100 text-slate-800 px-1 py-0.5 rounded border border-slate-200 shadow-sm">${columnItems.length}</span>
                                             </div>
                                         </div>
-                                        <div class="space-y-4 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
+                                        <div class="space-y-3 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
                                             ${columnItems.map(item => renderKanbanCard(item)).join('')}
                                         </div>
                                     </div>
@@ -145,44 +145,45 @@ function renderKanbanCard(item) {
 
     const epics = UPDATE_DATA.metadata?.epics || [];
     const epic = item.epicId ? epics.find(e => e.id === item.epicId) : null;
-    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-900 bg-indigo-100/80 px-2 py-0.5 rounded border border-indigo-200 truncate inline-block max-w-full shadow-sm">🚀 ${epic.name}</div>` : '';
+    const epicBadge = epic ? `<div class="mt-1 text-[8px] font-black uppercase text-indigo-900 bg-indigo-100/80 px-1.5 py-0.5 rounded border border-indigo-200 truncate inline-block max-w-full shadow-sm">🚀 ${epic.name}</div>` : '';
 
     const priorityColor = priorityColors[item.priority] || 'border-l-slate-300';
     const storyPoints = item.storyPoints ? `<span class="bg-slate-100 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-full">${item.storyPoints} pts</span>` : '';
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
 
     return `
-        <div class="kanban-card bg-white p-4 rounded-xl border border-slate-200 border-l-[6px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
+        <div class="kanban-card bg-white p-2 rounded-lg border border-slate-200 border-l-[6px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
              draggable="true"
              ondragstart="handleKanbanDragStart(event)"
              ondrop="handleKanbanDrop(event)"
              data-item-id="${item.id}"
              onclick="openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})">
             
-            <div class="flex justify-between items-start mb-2.5">
-                <span class="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">${item.track || 'No Track'}</span>
+            <div class="flex justify-between items-start mb-1">
+                <span class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">${item.track || 'No Track'}</span>
                 ${storyPoints}
             </div>
 
-            <h4 class="text-[13px] font-black text-slate-900 leading-snug mb-3 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
+            <h4 class="text-[12px] font-black text-slate-900 leading-tight mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
             
             ${epicBadge}
 
-            <div class="flex justify-between items-center text-[10px] text-slate-800 mt-4 pt-3 border-t border-slate-100">
-                <div class="flex items-center gap-1.5 font-black">
-                    <div class="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center text-[9px] font-black text-white shadow-sm">
+            <div class="flex justify-between items-center text-[9px] text-slate-800 mt-2 pt-1.5 border-t border-slate-100">
+                <div class="flex items-center gap-1 font-black">
+                    <div class="w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center text-[8px] font-black text-white shadow-sm">
                         ${(item.contributors?.[0] || 'U').charAt(0)}
                     </div>
-                    <span class="capitalize tracking-tight">${contributors}</span>
+                    <span class="capitalize tracking-tighter">${contributors}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    ${item.blocker ? '<span class="text-[9px] font-black bg-red-100 text-red-800 px-2 py-0.5 rounded border border-red-200 shadow-sm animate-pulse">🛑 BLOCKED</span>' : 
-                      (item.due ? `<span class="font-black text-slate-900 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
+                <div class="flex items-center gap-1">
+                    ${item.blocker ? '<span class="text-[7px] font-black bg-red-100 text-red-800 px-1 py-0.5 rounded border border-red-200 animate-pulse">🛑</span>' : 
+                      (item.due ? `<span class="font-black text-slate-900 bg-slate-50 px-1 py-0.5 rounded border border-slate-100">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
                 </div>
             </div>
             
-            <!-- Insertion indicator -->
-            <div class="drop-indicator absolute -top-2 left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
+            <!-- Main Content Area (Extreme Density Padding + Widescreen Support) -->
+        <div id="main-content" class="max-w-[1720px] mx-auto pt-2 pb-32">
+ left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
         </div>
     `;
 }
