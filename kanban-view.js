@@ -95,7 +95,7 @@ function renderKanbanView() {
                 </div>
             </div>
 
-            <div class="kanban-board flex gap-8 overflow-x-auto pb-4 custom-scrollbar">
+            <div class="kanban-board flex flex-col gap-12 overflow-x-auto pb-4 custom-scrollbar px-2">
                 ${swimlaneGroups.map(group => `
                     <div class="kanban-row">
                         ${group.title ? `
@@ -106,11 +106,11 @@ function renderKanbanView() {
                             </div>
                         ` : ''}
                         
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="flex gap-6 min-w-max pr-4">
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-140px)] min-w-[320px] shadow-sm"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-140px)] w-[320px] flex-shrink-0 shadow-sm"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
