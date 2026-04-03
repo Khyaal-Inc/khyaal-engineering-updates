@@ -7,6 +7,8 @@ function renderKanbanView() {
     const container = document.getElementById('kanban-view');
     if (!container) return;
 
+    const swimlane = document.getElementById('kanban-swimlane')?.value || 'none';
+
     // Collect all items
     const items = [];
     UPDATE_DATA.tracks.forEach(track => {
@@ -39,20 +41,36 @@ function renderKanbanView() {
     // Render Kanban board
     container.innerHTML = `
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Kanban Board</h2>
-                    <p class="text-slate-600 mt-1">${filteredItems.length} items across ${Object.keys(columns).length} columns</p>
+        <div id="kanban-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">📋</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery / Kanban Board</span>
+                    <h2 class="text-sm font-black text-slate-800">High-Velocity Execution</h2>
                 </div>
-                <div class="flex gap-2">
-                    <select id="kanban-swimlane" onchange="renderKanbanView()" class="cms-input text-sm py-2">
-                        <option value="none">No Swimlanes</option>
-                        <option value="epic">By Epic</option>
-                        <option value="track">By Track</option>
-                        <option value="contributor">By Contributor</option>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="kanban-next-action-mount">
+                    ${(typeof renderPrimaryStageAction === 'function') ? renderPrimaryStageAction('kanban') : ''}
+                </div>
+                
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                
+                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                    <span class="text-[10px] font-black uppercase text-slate-400 px-2">Swimlanes:</span>
+                    <select id="kanban-swimlane" onchange="renderKanbanView()" 
+                        class="bg-white border-none rounded-lg px-3 py-1.5 text-xs font-black text-slate-700 focus:ring-0 cursor-pointer">
+                        <option value="none" ${swimlane === 'none' ? 'selected' : ''}>None</option>
+                        <option value="epic" ${swimlane === 'epic' ? 'selected' : ''}>By Epic</option>
+                        <option value="track" ${swimlane === 'track' ? 'selected' : ''}>By Track</option>
+                        <option value="contributor" ${swimlane === 'contributor' ? 'selected' : ''}>By Contributor</option>
                     </select>
                 </div>
             </div>
+        </div>
 
             <div class="kanban-board" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; min-height: 500px;">
                 ${Object.entries(columns).map(([key, col]) => `

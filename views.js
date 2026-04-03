@@ -12,11 +12,14 @@ function setWorkflowTab(tab) {
 
 window.setWorkflowTab = setWorkflowTab;
 window.renderWorkflowView = renderWorkflowView;
+window.renderDiscoveryView = renderDiscoveryView;
 
 // ------ Rendering Helpers ------
 function shouldShowManagement() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('cms') === 'true' && !!window.isGithubAuthenticated;
+    // Correctly check for presence of authentication hash or github state
+    const isSiteAuthed = !!localStorage.getItem('khyaal_site_auth');
+    return params.get('cms') === 'true' && (!!window.isGithubAuthenticated || isSiteAuthed);
 }
 
 function renderContributors(contributors) {
@@ -68,6 +71,35 @@ function renderCommentThread(comments, ti, si, ii) {
                 </div>
             </div>`;
     }).join('');
+}
+
+// ------ Workflow / Playbook View ------
+function renderWorkflowView() {
+    const container = document.getElementById('workflow-view');
+    if (!container) return;
+
+    let ribbonHtml = `
+        <div id="workflow-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🛠️</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Engineering Playbook</span>
+                    <h2 class="text-sm font-black text-slate-800">Process & Workflow</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="workflow-next-action-mount">
+                    ${renderPrimaryStageAction('workflow')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = ribbonHtml + `<div id="workflow-content"></div>`;
+    // ... rest of rendering logic
 }
 
 // ------ Track View ------
@@ -130,15 +162,15 @@ function renderTrackView() {
                         </svg>
                     </button>
                     
-                    <button onclick="generateDigest()"
-                        class="px-5 py-2.5 bg-slate-50 border border-slate-100 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 rounded-xl text-xs font-black transition-all shadow-sm">
-                        Slack Digest
-                    </button>
+                    <div id="track-next-action-mount" class="hidden md:block">
+                        ${renderPrimaryStageAction('track')}
+                    </div>
 
                     ${shouldShowManagement() ? `
                     <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
                     <button onclick="openTrackEdit()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
-                        <span class="text-lg">🏗️</span> Add New Track
+                        <span class="text-lg">${getCurrentWorkflowStage() === 'discovery' ? '🔮' : '🏗️'}</span> 
+                        ${getCurrentWorkflowStage() === 'discovery' ? 'Add Discovery Track' : 'Add New Track'}
                     </button>
                     ` : ''}
                 </div>
@@ -283,23 +315,30 @@ function toggleSubtrack(trackId, subtrackName, iconId) {
 }
 
 function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, isGrooming = false) {
+    const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
     const status = statusConfig[item.status];
     const priority = item.priority || 'medium';
     const priorityInfo = priorityConfig[priority];
     const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
-    const usecaseRaw = item.usecase ? `<div class="usecase-box"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
+    
+    // Impact/Usecase (Focus for PM/Exec)
+    const showImpactInline = (mode === 'pm' || mode === 'exec');
+    const usecaseRaw = item.usecase ? `<div class="usecase-box ${!showImpactInline ? 'opacity-60 text-[11px]' : ''}"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
     const usecase = highlightSearch(usecaseRaw);
+    
     const due = renderDueDateBadge(item);
     const tags = renderTagPills(item.tags);
     const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
 
     const storyPointsHTML = item.storyPoints ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[9px] border border-slate-200 shadow-sm" title="Story Points">${item.storyPoints} SP</span>` : '';
     const displayText = highlightSearch(item.text);
-    let contentHtml = `<span class="flex items-center">${displayText}${due}${storyPointsHTML}</span>`;
     const effectiveNote = item.note || subtrackNote;
 
-    // Strategic Context Badges
+    // --- STRATEGIC CONTEXT (Epics/OKRs) ---
+    // Shown prominently for PM/Exec, tucked away for Dev unless critical
     let strategicContext = '';
+    const showStrategyInline = (mode === 'pm' || mode === 'exec');
+    
     const epics = UPDATE_DATA.metadata?.epics || [];
     const okrs = UPDATE_DATA.metadata?.okrs || [];
 
@@ -311,74 +350,90 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                 const okr = okrs.find(o => o.id === epic.linkedOKR);
                 okrText = okr ? `🎯 ${okr.objective.substring(0, 20)}...` : '';
             }
-            strategicContext = `
-                <div class="flex items-center gap-2 mt-2 mb-1">
-                    <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-black border border-indigo-100 flex items-center gap-1 shadow-sm" title="Strategic Epic">
-                        🚀 ${epic.name}
-                    </span>
-                    ${okrText ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100 flex items-center gap-1 shadow-sm" title="Aligned OKR">${okrText}</span>` : ''}
-                </div>
-            `;
+            if (showStrategyInline) {
+                strategicContext = `
+                    <div class="flex items-center gap-2 mt-2 mb-1">
+                        <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-black border border-indigo-100 flex items-center gap-1 shadow-sm" title="Strategic Epic">
+                            🚀 ${epic.name}
+                        </span>
+                        ${okrText ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100 flex items-center gap-1 shadow-sm" title="Aligned OKR">${okrText}</span>` : ''}
+                    </div>
+                `;
+            }
         }
     }
 
-    // ROI Score Calculation
+    // --- ROI SCORE ---
+    // Primary for Exec/PM, Secondary for Dev
     const impactValues = { low: 1, medium: 2, high: 3 };
-    const effortValues = { low: 3, medium: 2, high: 1 }; // High effort is "lower" for ROI
+    const effortValues = { low: 3, medium: 2, high: 1 };
     let roiScoreHTML = '';
     if (item.impactLevel && item.effortLevel) {
         const impactNum = impactValues[item.impactLevel] || 1;
         const effortNum = effortValues[item.effortLevel] || 1;
         const score = Math.round((impactNum * effortNum) / 9 * 100);
         const scoreColor = score >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : score >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-slate-500 bg-slate-50 border-slate-200';
-        roiScoreHTML = `
-            <div class="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded border ${scoreColor} text-[9px] font-black shadow-sm" title="Priority ROI Score (Impact/Effort)">
-                <span class="opacity-50">ROI</span> ${score}
-            </div>
-        `;
+        
+        if (mode === 'exec' || mode === 'pm') {
+            roiScoreHTML = `
+                <div class="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded border ${scoreColor} text-[9px] font-black shadow-sm" title="Priority ROI Score (Impact/Effort)">
+                    <span class="opacity-50">ROI</span> ${score}
+                </div>
+            `;
+        }
     }
 
-    if (effectiveNote || item.acceptanceCriteria?.length > 0 || item.effortLevel || item.impactLevel || item.epicId) {
-        let cleanNote = effectiveNote ? effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim() : '';
-        cleanNote = highlightSearch(cleanNote);
-
-        const effortImpactHTML = (item.effortLevel || item.impactLevel) ? `
-            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+    // --- EXECUTION DETAILS (Acceptance Criteria, Effort/Impact Labels) ---
+    // Shown inline for Dev/PM, hidden in Tooltip for Exec
+    const showExecutionInline = (mode === 'pm' || mode === 'dev');
+    
+    let effortImpactHTML = '';
+    if ((item.effortLevel || item.impactLevel) && showExecutionInline) {
+        effortImpactHTML = `
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center">
                 <div class="flex gap-4 text-[10px] uppercase tracking-wider">
                     ${item.effortLevel ? `<span><span class="font-black text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
                     ${item.impactLevel ? `<span><span class="font-black text-slate-400">Value:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
                 </div>
-                ${roiScoreHTML}
             </div>
-        ` : '';
+        `;
+    }
 
-        const acHTML = (item.acceptanceCriteria && item.acceptanceCriteria.length > 0) ? `
+    let acHTML = '';
+    if (item.acceptanceCriteria && item.acceptanceCriteria.length > 0 && showExecutionInline) {
+        acHTML = `
             <div class="mt-2 pt-2 border-t border-slate-100">
                 <span class="block font-black text-slate-400 text-[10px] mb-1 uppercase tracking-wider">Acceptance Criteria</span>
                 <ul class="list-disc pl-4 space-y-1 text-[10px] text-slate-600 font-medium">
                     ${item.acceptanceCriteria.map(ac => `<li>${ac}</li>`).join('')}
                 </ul>
             </div>
-        ` : '';
-
-        const idHTML = shouldShowManagement() ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
-
-        contentHtml = `
-            <div class="info-wrapper">
-                <div class="flex-1 min-w-0">
-                    <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
-                    ${strategicContext}
-                </div>
-                <button class="info-btn" aria-label="More information">i</button>
-                <div class="tooltip-content" role="tooltip">
-                    ${cleanNote ? `<span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span><div class="mb-2 text-slate-600">${cleanNote}</div>` : ''}
-                    ${effortImpactHTML}
-                    ${acHTML}
-                    ${idHTML}
-                </div>
-            </div>
         `;
     }
+
+    // Tooltip Content (Always has everything for accessibility)
+    const idHTML = shouldShowManagement() ? `<div class="mt-2 pt-2 border-t border-slate-200 text-[0.65rem] font-mono text-slate-400">ID: ${item.id}</div>` : '';
+    let cleanNote = effectiveNote ? effectiveNote.replace(/<[^>]*>?/gm, '').replace('Note:', '').trim() : '';
+    cleanNote = highlightSearch(cleanNote);
+
+    const tooltipHTML = `
+        <div class="tooltip-content" role="tooltip">
+            ${cleanNote ? `<span class="block font-bold mb-1">${item.note ? 'Item Note:' : 'Subtrack Note:'}</span><div class="mb-2 text-slate-600">${cleanNote}</div>` : ''}
+            ${!showExecutionInline && (item.effortLevel || item.impactLevel) ? `
+                <div class="my-2 py-2 border-t border-slate-100 flex justify-between text-[10px]">
+                    <span>Effort: ${item.effortLevel || 'N/A'}</span>
+                    <span>Value: ${item.impactLevel || 'N/A'}</span>
+                </div>
+            ` : ''}
+            ${!showExecutionInline && item.acceptanceCriteria?.length > 0 ? `
+                <div class="my-2 py-2 border-t border-slate-100">
+                    <span class="font-bold">Acceptance Criteria:</span>
+                    <ul class="list-disc pl-4 mt-1">${item.acceptanceCriteria.map(ac => `<li>${ac}</li>`).join('')}</ul>
+                </div>
+            ` : ''}
+            ${idHTML}
+        </div>
+    `;
 
     let cmsControls = '';
     if (shouldShowManagement()) {
@@ -394,7 +449,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
 
     return `
         ${blockerStrip}
-        <div class="item-row ${status.bucket}"
+        <div class="item-row ${status.bucket} ${mode}-perspective"
             draggable="${shouldShowManagement() ? 'true' : 'false'}"
             ondragstart="if(${shouldShowManagement()}){dragSource={trackIndex:${trackIndex},subtrackIndex:${subtrackIndex},itemIndex:${itemIndex}};this.classList.add('dragging');}"
             ondragend="this.classList.remove('dragging')">
@@ -406,14 +461,21 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                             <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
                         </div>
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
-                            <div class="mb-1">${contentHtml}</div>
+                            <div class="info-wrapper mb-1">
+                                <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
+                                <button class="info-btn" aria-label="More information">i</button>
+                                ${tooltipHTML}
+                            </div>
                             <div class="flex flex-wrap items-center gap-2 mb-1">
+                                ${strategicContext}
                                 ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints || []).find(s => s.id === item.sprintId)?.name || item.sprintId}</span>` : ''}
                                 ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}</span>` : ''}
-                                ${tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
+                                ${mode !== 'exec' && tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
                             </div>
                             <div class="mb-2">${usecase}</div>
-                            <div class="flex flex-wrap items-center gap-2">
+                            ${effortImpactHTML}
+                            ${acHTML}
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
                                 <button id="comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments || []).length} Comments</button>
                                 ${cmsControls ? `<div>${cmsControls}</div>` : ''}
                             </div>
@@ -446,6 +508,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">📦 Release</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'releasedIn', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Release</option>
+                                            ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}
                                             ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}" ${item.releasedIn === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
                                         </select>
                                     </div>
@@ -475,20 +538,25 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                             </div>
                         </div>
                     </div>
-                    <div class="flex-shrink-0">
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 flex flex-col items-end justify-between min-w-[110px] py-0.5">
                         <div class="flex flex-wrap justify-end gap-1">
                             ${renderContributors(item.contributors)}
                         </div>
+                        <div class="flex flex-col items-end gap-2 mt-auto">
+                            ${roiScoreHTML}
+                            ${item.mediaUrl ? `
+                                <div class="group relative inline-block">
+                                    <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">
+                                        <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
+                                             onerror="this.style.display='none'">
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
-                ${item.mediaUrl ? `
-                    <div class="mt-2 group relative inline-block">
-                        <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">
-                            <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
-                                 onerror="this.style.display='none'">
-                        </a>
-                    </div>
-                ` : ''}
             </div>
         </div>
     `;
@@ -500,7 +568,27 @@ function renderStatusView() {
     const statuses = ['done', 'now', 'ongoing', 'next', 'later'];
     const statusTitles = { done: 'Done', now: 'Now', ongoing: 'On-Going', next: 'Next', later: 'Later' };
 
-    let html = '';
+    let ribbonHtml = `
+        <div id="status-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">📊</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tactical Health Tracking</span>
+                    <h2 class="text-sm font-black text-slate-800">Status Categorization</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="status-next-action-mount">
+                    ${renderPrimaryStageAction('status')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    let html = ribbonHtml;
     const activeTeam = getActiveTeam();
 
     statuses.forEach(status => {
@@ -680,22 +768,32 @@ function renderBacklogView() {
     const container = document.getElementById('backlog-view');
     let html = '';
     if (shouldShowManagement()) {
-        html += `
-            <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl mb-6 shadow-lg border border-slate-700">
-                <div>
-                    <h2 class="text-xl font-bold">🗂️ Backlog Management</h2>
-                    <p class="text-slate-400 text-xs">Items in "Backlog" subtracks</p>
+        const ribbonHtml = `
+            <div id="backlog-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 1: Navigation/Breadcrumb -->
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📚</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Tactical Backlog</span>
+                        <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="switchView('sprint')" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
-                        Next: Plan Sprint 🏃
-                    </button>
-                    <button onclick="toggleGroomingMode()" class="px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md ${groomingMode ? 'bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse' : 'bg-slate-700 text-slate-100 hover:bg-slate-600'}">
+
+                <!-- Group 2: Actions -->
+                <div class="flex items-center gap-2">
+                    <div id="backlog-next-action-mount">
+                        ${renderPrimaryStageAction('backlog')}
+                    </div>
+                    
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <button onclick="toggleGroomingMode()" 
+                        class="px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg flex items-center gap-2 active:scale-95 ${groomingMode ? 'bg-emerald-600 text-white hover:bg-emerald-700 ring-4 ring-emerald-500/10' : 'bg-slate-900 text-white hover:bg-slate-800'}">
                         ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
                     </button>
                 </div>
             </div>
         `;
+        html += ribbonHtml;
     }
 
     let totalItems = 0;
@@ -729,18 +827,35 @@ function renderEpicsView() {
     const data = window.UPDATE_DATA || {};
     const epics = (data.metadata && data.metadata.epics) || [];
 
-    let html = shouldShowManagement() ? `
-        <div class="flex justify-end items-center gap-3 mb-6">
-            <button onclick="switchView('roadmap')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
-                Next: Plan Roadmap 🗺️
-            </button>
-            <button onclick="openEpicEdit()" 
-                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
-                style="background-color: var(--stage-color, #4f46e5)">
-                <span>🎯</span> Add Strategic Epic
-            </button>
+    let ribbonHtml = `
+        <div id="epics-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🚀</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Vision / Strategic Epics</span>
+                    <h2 class="text-sm font-black text-slate-800">Engineering Epics</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="epics-next-action-mount">
+                    ${renderPrimaryStageAction('epics')}
+                </div>
+                
+                ${shouldShowManagement() ? `
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="openEpicEdit()" 
+                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                    <span class="text-lg">🏗️</span> Add Strategic Epic
+                </button>
+                ` : ''}
+            </div>
         </div>
-    ` : '';
+    `;
+
+    let html = ribbonHtml;
 
     if (epics.length === 0) {
         container.innerHTML = html + `<div class="text-center py-20 text-slate-400">
@@ -770,35 +885,38 @@ function renderEpicsView() {
         html += `
             <div class="sprint-card bg-white border-2 border-slate-900 rounded-xl overflow-hidden mb-8 shadow-xl">
                 <div class="p-6 bg-slate-50 border-b-2 border-slate-900">
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-stretch gap-6">
                         <div class="flex-1">
-                            <div class="flex flex-wrap items-center gap-3 mb-2">
-                                ${epicOKR ? `<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-200">🎯 Objective: ${epicOKR.objective.substring(0, 40)}${epicOKR.objective.length > 40 ? '...' : ''}</span>` : ''}
-                                ${epicHorizon ? `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-black uppercase tracking-widest border border-slate-200">🗺️ Horizon: ${epicHorizon.label}</span>` : ''}
-                            </div>
-                            <div class="flex items-center">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest mr-3">Strategic Epic</span>
                                 <div class="font-black text-2xl text-slate-900">${e.name}</div>
                                 ${cmsActions}
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mt-2 leading-relaxed">
+                            <div class="text-sm font-bold text-slate-500 mt-3 leading-relaxed max-w-2xl">
                                 <span class="text-slate-900 font-extrabold uppercase text-[10px] tracking-widest block mb-1">Business Value & Goal</span>
-                                ${e.description || 'No description provided.'}
+                                ${e.description || e.objective || 'No description provided.'}
                             </div>
                         </div>
-                        <div class="text-right ml-4">
-                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Epic Health</div>
-                             <span class="px-3 py-1.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded-lg text-xs font-black uppercase tracking-wider border border-current">
-                                ${e.health === 'on-track' ? '🟢 ON-TRACK' : (e.health === 'at-risk' ? '🟡 AT-RISK' : '🔴 DELAYED')}
-                             </span>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <div class="flex justify-between text-xs font-black text-slate-500 mb-2 uppercase tracking-widest">
-                            <span>Progress</span>
-                            <span>${progress}% (${doneCount}/${epicItems.length})</span>
-                        </div>
-                        <div class="h-3 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
-                            <div class="h-full bg-indigo-600 transition-all duration-500" style="width: ${progress}%"></div>
+                        
+                        <!-- Epic Metadata Tray -->
+                        <div class="flex-shrink-0 flex flex-col items-end justify-between min-w-[150px] py-1 border-l border-slate-200 pl-6">
+                            <div class="flex flex-col items-end gap-2">
+                                ${epicOKR ? `<div class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-[9px] font-black uppercase tracking-widest border border-indigo-200 whitespace-nowrap">🎯 OKR: ${epicOKR.id}</div>` : ''}
+                                ${epicHorizon ? `<div class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] font-black uppercase tracking-widest border border-slate-200 whitespace-nowrap">🗺️ ${epicHorizon.label.split('(')[0]}</div>` : ''}
+                            </div>
+                            
+                            <div class="flex flex-col items-end gap-3 mt-auto w-full">
+                                <div class="flex justify-between items-center w-full text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                                    <span>${progress}% Done</span>
+                                    <span class="px-2 py-0.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded border border-current">
+                                        ${e.health === 'on-track' ? 'ON-TRACK' : (e.health === 'at-risk' ? 'AT-RISK' : 'DELAYED')}
+                                    </span>
+                                </div>
+                                <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden border border-slate-300 shadow-inner">
+                                    <div class="h-full bg-indigo-600 transition-all duration-500" style="width: ${progress}%"></div>
+                                </div>
+                                <div class="text-[9px] font-bold text-slate-400">${doneCount}/${epicItems.length} Tasks Complete</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -815,26 +933,52 @@ function renderRoadmapView() {
     const container = document.getElementById('roadmap-view');
     if (!container) return;
     const data = window.UPDATE_DATA || {};
-    const roadmapDefs = (data.metadata && data.metadata.roadmap) || [
-        { id: '1M', label: 'Now (Immediate / 1 Month)', color: 'blue' },
-        { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
-        { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
-    ];
+    const horizons = data.metadata?.roadmap || [];
+    const showManagement = shouldShowManagement();
 
-    let html = shouldShowManagement() ? `
-        <div class="flex justify-end items-center gap-3 mb-6">
-            <button onclick="switchView('backlog')" class="bg-slate-50 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-sm flex items-center gap-2">
-                Next: Groom Backlog 📚
-            </button>
-            <button onclick="openRoadmapEdit()" 
-                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
-                style="background-color: var(--stage-color, #4f46e5)">
-                <span>➕</span> Add Roadmap Category
-            </button>
+    let ribbonHtml = `
+        <div id="roadmap-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🗺️</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Future Product Horizons</span>
+                    <h2 class="text-sm font-black text-slate-800">Strategic Roadmap</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="roadmap-next-action-mount">
+                    ${renderPrimaryStageAction('roadmap')}
+                </div>
+                
+                ${showManagement ? `
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="openRoadmapEdit()" 
+                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                    <span class="text-lg">🛤️</span> Add Roadmap Item
+                </button>
+                ` : ''}
+            </div>
         </div>
-    ` : '';
+    `;
 
-    roadmapDefs.forEach(h => {
+    if (horizons.length === 0) {
+        container.innerHTML = ribbonHtml + `
+            <div class="text-center py-20 text-slate-400 bg-white rounded-2xl border border-slate-200 border-dashed">
+                <div class="text-6xl mb-4">🏜️</div>
+                <h3 class="text-xl font-bold text-slate-700">The Roadmap is Empty</h3>
+                <p class="mt-2 text-sm text-slate-500">Add a planning horizon to start mapping your strategic vision.</p>
+                ${showManagement ? `<button onclick="openRoadmapEdit()" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold">Add Item</button>` : ''}
+            </div>
+        `;
+        return;
+    }
+
+    let html = ribbonHtml + `<div class="grid grid-cols-1 gap-12">`;
+
+    horizons.forEach(h => {
         const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
         const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
 
@@ -883,13 +1027,35 @@ function renderSprintView() {
     if (!container) return;
     const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
 
-    let html = shouldShowManagement() ? `
-        <div class="flex justify-end mb-6">
-            <button onclick="openSprintEdit()" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
-                <span>➕</span> Add New Sprint
-            </button>
+    let ribbonHtml = `
+        <div id="sprint-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🏃</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Sprint Planning</span>
+                    <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="sprint-next-action-mount">
+                    ${renderPrimaryStageAction('sprint')}
+                </div>
+                
+                ${shouldShowManagement() ? `
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="openSprintEdit()" 
+                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                    <span class="text-lg">➕</span> Add New Sprint
+                </button>
+                ` : ''}
+            </div>
         </div>
-    ` : '';
+    `;
+
+    let html = ribbonHtml;
 
     if (sprints.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No sprints defined</div>';
@@ -943,13 +1109,35 @@ function renderReleasesView() {
     if (!container) return;
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
 
-    let html = shouldShowManagement() ? `
-        <div class="flex justify-end mb-6">
-            <button onclick="openReleaseEdit()" class="bg-amber-500 text-white px-5 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-md flex items-center gap-2">
-                <span>📦</span> Add New Release
-            </button>
+    let ribbonHtml = `
+        <div id="releases-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">📦</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Release Milestones</span>
+                    <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="releases-next-action-mount">
+                    ${renderPrimaryStageAction('releases')}
+                </div>
+                
+                ${shouldShowManagement() ? `
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="openReleaseEdit()" 
+                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                    <span class="text-lg">➕</span> Add New Release
+                </button>
+                ` : ''}
+            </div>
         </div>
-    ` : '';
+    `;
+
+    let html = ribbonHtml;
 
     if (releases.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No releases defined</div>';
@@ -1123,6 +1311,20 @@ function drawGanttChart() {
     };
     const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
 
+    // Phase 9 Reset: High-fidelity action mapping
+    window.openAddItemModal = function(type) {
+        if (typeof addItem === 'function') {
+            // Default to first track/subtrack for discovery items
+            addItem(0, 0, { 
+                tags: [type], 
+                status: 'later',
+                text: type === 'spike' ? '[SPIKE] ' : '[IDEA] ' 
+            });
+        } else {
+            console.error('❌ CMS addItem handler not found!');
+        }
+    };
+
     google.visualization.events.addListener(chart, 'select', function () {
         const selection = chart.getSelection();
         if (selection.length > 0) {
@@ -1156,97 +1358,107 @@ function renderWorkflowView() {
 
     const pmSteps = [
         {
-            title: 'Strategic Epic Vision',
-            desc: 'The foundation of the Product Pulse. Define high-level business goals and capabilities.',
-            why: 'Epics provide the "Why" behind the work. They give the team purpose and a strategic north star.',
-            how: 'In the Epics view, add a new Epic, define its business value, and assign a health status.',
-            meeting: 'Quarterly Strategy Review',
-            cadence: 'Quarterly / Bi-Weekly',
-            stakeholders: 'Founders, PMs, EM',
-            action: { label: 'Define Epics', view: 'epics' }
-        },
-        {
-            title: 'Product Roadmap Alignment',
-            desc: 'Align your Epics and tasks into strategic timeframes (Now vs. Next vs. Later).',
-            why: 'A roadmap provides predictability for stakeholders and prevents context-switching for the team.',
-            how: 'Review the Roadmap view and move items into the strategic buckets based on quarterly priority.',
-            meeting: 'Roadmap Refinement Sync',
+            title: '1. Discovery & Validation',
+            desc: 'The "Idea Funnel." Capturing raw requests and researching future possibilities.',
+            why: 'Discovery prevents backlog bloat by validating high-level ideas before they reach the roadmap.',
+            how: 'Use the Roadmap "Later" bucket to park future horizons, and the Backlog to capture raw items.',
+            meeting: 'Discovery / Ideation Sync',
             cadence: 'Bi-Weekly',
-            stakeholders: 'PMs, EM, Tech Leads',
-            action: { label: 'Manage Roadmap', view: 'roadmap' }
+            stakeholders: 'Founders, PMs, Tech Leads',
+            action: { label: 'Capture Ideas', view: 'backlog' }
         },
         {
-            title: 'Backlog Refinement (PBR)',
-            desc: 'Break your vision down into actionable engineering tasks for the execution teams.',
-            why: 'Grooming ensures that tasks are "ready" for development, reducing friction during the sprint.',
-            how: 'Enter Grooming Mode in the Backlog. Assign priorities, refine descriptions, and link items to Epics.',
-            meeting: 'PBR (Backlog Refinement)',
+            title: '2. Strategic Vision (OKRs)',
+            desc: 'The "Commitment." Aligning validated ideas to business goals and a specific timeframe.',
+            why: 'Strategic alignment ensures that every epic on the roadmap has a clear "Why" (Objective).',
+            how: 'Commit items from Later to Now/Next in the Roadmap view and link them to OKRs & Epics.',
+            meeting: 'Quarterly Strategy Review',
+            cadence: 'Quarterly',
+            stakeholders: 'Founders, PMs, EM',
+            action: { label: 'Commit Strategy', view: 'roadmap' }
+        },
+        {
+            title: '3. Definition & Readiness',
+            desc: 'The "Machine." Breaking committed epics into estimated, ready-to-code tasks.',
+            why: 'Definition ensures that the engineering team is never blocked by vague requirements.',
+            how: 'Use Grooming Mode in the Backlog to set points and link tasks to the current sprint.',
+            meeting: 'PBR (Backlog Grooming)',
             cadence: 'Weekly',
             stakeholders: 'PMs, EM, Tech Leads',
-            action: { label: 'Inspect Backlog', view: 'backlog' }
+            action: { label: 'Groom Tasks', view: 'backlog' }
         },
         {
-            title: 'Sprint Commitment',
-            desc: 'Commit to a specific set of deliverables for the next 2-week execution window.',
-            why: 'Sprints create high-velocity focus and provide a clear definition of "Done" for each cycle.',
-            how: 'Create a new Sprint and move high-priority groomed tasks into it using the Grooming selectors.',
-            meeting: 'Sprint Planning Meeting',
-            cadence: 'Bi-Weekly',
-            stakeholders: 'Whole Team (EM, Devs, PM)',
-            action: { label: 'Start Sprint', view: 'sprint' }
+            title: '4. High-Velocity Delivery',
+            desc: 'The "Action." Daily execution monitoring and proactive blocker resolution.',
+            why: 'Visibility into daily status prevents "silent failures" and keeps the sprint on track.',
+            how: 'Monitor the Kanban and the Global Blocker Strip. Use Tracks for area-specific health.',
+            meeting: 'Daily Standup / Bug Scrub',
+            cadence: 'Daily',
+            stakeholders: 'EM, Developers, PMs',
+            action: { label: 'Monitor Action', view: 'track' }
         },
         {
-            title: 'Engineering Health & Pulse',
-            desc: 'Oversee execution health and proactively resolve impediments.',
-            why: 'Proactive unblocking preserves the Sprint Goal and keeps the Engineering Pulse healthy.',
-            how: 'Check the Contributor cards for daily movement and the Global Blocker Strip for immediate action.',
-            meeting: 'Engineering Status / Pulse Sync',
-            cadence: 'Weekly / Bi-Weekly',
+            title: '5. Analytics & Retros',
+            desc: 'The "Learning." Reviewing metrics to optimize the process for the next loop.',
+            why: 'Retro-driven process updates are the only way to sustainably improve team velocity.',
+            how: 'Check the Executive Dashboard and Analytics for actual vs. planned performance.',
+            meeting: 'Pulse / Retrospective Sync',
+            cadence: 'Weekly',
             stakeholders: 'Founders, PMs, EM',
-            action: { label: 'View Health', view: 'contributor' }
+            action: { label: 'Review Pulse', view: 'dashboard' }
         }
     ];
 
     const devSteps = [
         {
-            title: 'Daily Task Discovery',
-            desc: 'See exactly what tasks are assigned to you for the current cycle.',
-            why: 'Clear visibility prevents context-switching and ensures everyone works on the highest-priority items.',
-            how: 'Filter the dashboard to your Track or just look at your card in the "By Contributor" view.',
+            title: '1. Discovery & Research',
+            desc: 'Technically validate future roadmap items through discovery spikes.',
+            why: 'Spikes clear the path so that you never start a sprint task with massive unknowns.',
+            how: 'Check the Roadmap for "Next/Later" spikes and use the Backlog to capture initial research results.',
+            meeting: 'Discovery Sync / Spikes',
+            cadence: 'Bi-Weekly',
+            stakeholders: 'EM, Tech Leads, Devs',
+            action: { label: 'View Spikes', view: 'backlog' }
+        },
+        {
+            title: '2. Alignment on Strategy',
+            desc: 'Uncovering the "Why." Understanding how your track impacts the quarterly OKRs.',
+            why: 'Developers who understand the strategic "Why" build more resilient and scalable code.',
+            how: 'Review the Epics and Roadmap to see the full strategic context of the current cycle.',
+            meeting: 'Strategic Vision Sync',
+            cadence: 'Quarterly',
+            stakeholders: 'PMs, EM, Developers',
+            action: { label: 'View Context', view: 'roadmap' }
+        },
+        {
+            title: '3. Technical Readiness',
+            desc: 'The defining phase. Refining tasks, story pointing, and clarifying outcomes.',
+            why: 'The Grooming session is the most important meeting for developers to protect their focus.',
+            how: 'Update estimations and technical acceptance criteria in the Backlog grooming mode.',
+            meeting: 'PBR (Grooming / Readiness)',
+            cadence: 'Weekly',
+            stakeholders: 'EM, Tech Leads, Devs',
+            action: { label: 'Refine Tasks', view: 'backlog' }
+        },
+        {
+            title: '4. High-Velocity Action',
+            desc: 'Daily execution, signaling progress, and alerting on blockers immediately.',
+            why: 'A healthy pulse requires real-time data. Status signaling stops the need for manual reporting.',
+            how: 'Check "My Tasks" daily. Update Kanban status and flag blockers immediately.',
             meeting: 'Daily Standup (DSU)',
             cadence: 'Daily',
             stakeholders: 'EM, Developers',
-            action: { label: 'See My Tasks', view: 'contributor' }
+            action: { label: 'Execute Now', view: 'contributor' }
         },
         {
-            title: 'Real-time Execution',
-            desc: 'Signal to the team that you have started working on a task.',
-            why: 'Active status prevents duplicate effort and keeps the dashboard reflecting reality for stakeholders.',
-            how: 'Click the task row to open the editor, change the Status to "Now", and save your progress.',
-            meeting: 'Focused Development',
-            cadence: 'Continuous',
-            stakeholders: 'Developers',
-            action: { label: 'View Board', view: 'track' }
-        },
-        {
-            title: 'Escalate & Unblock',
-            desc: 'Raise a flag immediately if you are stuck waiting on another team or external factor.',
-            why: 'Hiding blockers leads to missed sprint goals. Early escalation allows the EM to clear the path.',
-            how: 'Click "Flag Blocker" on any task and add a reason. This triggers the Global Blocker alert.',
-            meeting: 'DSU / Ad-hoc Sync',
-            cadence: 'Immediate',
-            stakeholders: 'EM, Tech Leads',
-            action: { label: 'View Dependencies', view: 'dependency' }
-        },
-        {
-            title: 'Completion & Transparency',
-            desc: 'Complete the task and provide handover context for PR reviews or testing.',
-            why: 'Quality documentation during task closing ensures a smooth release cycle and avoids rework.',
-            how: 'Change status to "Done", add a note with relevant details, and Save to GitHub.',
-            meeting: 'Sprint Demo / Closing',
-            cadence: 'Bi-Weekly / Continous',
-            stakeholders: 'PMs, EM, Devs',
-            action: { label: 'View Deliverables', view: 'releases' }
+            title: '5. Analytics & Learnings',
+            desc: 'Process optimization. Using metrics to make the next cycle smoother.',
+            why: 'Retrospectives ensure that the same friction never happens two cycles in a row.',
+            how: 'Review Velocity and Completion charts in Analytics to see if process changes are working.',
+            meeting: 'Process Retro / Learning',
+            cadence: 'Weekly / Bi-Weekly',
+            stakeholders: 'Whole Team (EM, Devs, PM)',
+            action: { label: 'Analyze Pulse', view: 'analytics' }
         }
     ];
 
@@ -1369,4 +1581,161 @@ function renderWorkflowView() {
     }
 }
 
-console.log('✅ views.js fully loaded');
+/**
+ * Stage-Aware Action Helper
+ */
+/**
+ * Granular View-to-View Alignment Funnel
+ */
+function renderPrimaryStageAction(currentView) {
+    const viewActions = {
+        'okr': { text: 'Build Epics 🚀', target: 'epics' },
+        'epics': { text: 'Plan Roadmap 🗺️', target: 'roadmap' },
+        'roadmap': { text: 'Groom Backlog 📚', target: 'backlog' },
+        'backlog': { text: 'Scope Sprints 🏃', target: 'sprint' },
+        'sprint': { text: 'Execute Tasks ⚡', target: 'track' },
+        'track': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'kanban': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'my-tasks': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'dashboard': { text: 'Discover Ideas 🔍', target: 'roadmap' },
+        'analytics': { text: 'Discover Ideas 🔍', target: 'roadmap' },
+        'capacity': { text: 'Scope Sprints 🏃', target: 'sprint' },
+        'status': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'workflow': { text: 'Discover Ideas 🔍', target: 'roadmap' },
+        'discovery': { text: 'Explore Spikes 🧪', target: 'spikes' },
+        'ideation': { text: 'Explore Spikes 🧪', target: 'spikes' },
+        'spikes': { text: 'Set Vision 🎯', target: 'okr' }
+    };
+
+    const action = viewActions[currentView] || { text: 'Set Vision 🎯', target: 'okr' };
+    
+    return `
+        <button id="next-action-btn" onclick="switchView('${action.target}')" class="bg-white border-2 border-slate-100 text-slate-700 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm group">
+            Next: <span class="group-hover:text-indigo-600 transition-colors">${action.text}</span>
+        </button>
+    `;
+}
+
+/**
+ * Discovery / Ideation View (Stage 1)
+ */
+function renderDiscoveryView() {
+    const main = document.getElementById('main-content');
+    if (!main) return;
+
+    // Correct view context retrieval
+    const currentView = window.currentActiveView || 'ideation';
+    const title = currentView === 'spikes' ? 'Technical Spikes' : 'Ideation Sandbox';
+    
+    let ribbonHtml = `
+        <div id="discovery-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🔍</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Discovery / Exploration & Ideation</span>
+                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">${title}</h2>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="openAddItemModal('${currentView === 'ideation' ? 'idea' : 'spike'}')" 
+                        class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-black shadow-lg shadow-indigo-100 hover:bg-slate-900 transition-all">
+                    + Add ${currentView === 'ideation' ? 'Idea' : 'Spike'}
+                </button>
+                <button onclick="switchView('${currentView === 'ideation' ? 'spikes' : 'okr'}')" 
+                        class="bg-white text-slate-900 border border-slate-200 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-slate-50 transition-all flex items-center gap-2">
+                    Next: ${currentView === 'ideation' ? 'Explore Spikes' : 'Set Strategy'} 🚀
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Filter for ideas and spikes across all tracks
+    let allItems = [];
+    if (UPDATE_DATA && UPDATE_DATA.tracks) {
+        UPDATE_DATA.tracks.forEach(t => {
+            if (t.subtracks) {
+                t.subtracks.forEach(s => {
+                    if (s.items) {
+                        s.items.forEach(i => {
+                            const tags = (i.tags || []).map(tag => tag.toLowerCase());
+                            const isSpike = tags.includes('spike');
+                            const isIdea = tags.includes('idea') || tags.includes('discovery') || tags.includes('exploration');
+                            const isLater = i.status === 'later' || i.status === 'done';
+                            
+                             // Differentiate content by view
+                             if (allItems.length < 500) { // Safety limit
+                                 if (currentView === 'ideation' && (isIdea || (isLater && !isSpike))) {
+                                     allItems.push({ 
+                                         ...i, 
+                                         track: t.name, 
+                                         subtrack: s.name,
+                                         trackIndex: UPDATE_DATA.tracks.indexOf(t),
+                                         subtrackIndex: t.subtracks.indexOf(s),
+                                         itemIndex: s.items.indexOf(i)
+                                     });
+                                 } else if (currentView === 'spikes' && isSpike) {
+                                     allItems.push({ 
+                                         ...i, 
+                                         track: t.name, 
+                                         subtrack: s.name,
+                                         trackIndex: UPDATE_DATA.tracks.indexOf(t),
+                                         subtrackIndex: t.subtracks.indexOf(s),
+                                         itemIndex: s.items.indexOf(i)
+                                     });
+                                 }
+                             }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    if (allItems.length === 0) {
+        console.warn(`⚠️ renderDiscoveryView('${currentView}'): No items found matching criteria.`);
+    }
+
+    let html = ribbonHtml + `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${allItems.length > 0 ? allItems.map(item => `
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group relative flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+                            ${item.track}
+                        </span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">${item.status}</span>
+                    </div>
+                    
+                    <h3 class="text-lg font-black text-slate-900 mb-2 leading-tight group-hover:text-indigo-600 transition-colors">${item.text}</h3>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${(item.tags || []).map(tag => `
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">#${tag}</span>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('') : `
+                <div class="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-slate-300">
+                    <div class="text-5xl mb-4">💡</div>
+                    <h3 class="text-xl font-black text-slate-900">No active discovery items</h3>
+                    <p class="text-slate-500 mt-2">Tag items with #idea or #spike in the backlog to see them here.</p>
+                </div>
+            `}
+        </div>
+    `;
+
+    const targetId = `${currentView}-view`;
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+        targetEl.innerHTML = html;
+        console.log(`✨ Rendered DiscoveryView('${currentView}') to #${targetId}`);
+    } else {
+        console.warn(`⚠️ Target element #${targetId} not found for Discovery rendering.`);
+    }
+}
+
+// Export
+window.renderDiscoveryView = renderDiscoveryView;
+console.log('✅ views.js fully loaded including Discovery');

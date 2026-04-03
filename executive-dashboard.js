@@ -17,6 +17,25 @@ function renderExecutiveDashboard() {
 
     container.innerHTML = `
         <div class="space-y-6">
+            <!-- Unified Pulse Ribbon -->
+            <div id="dashboard-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 1: Navigation/Breadcrumb -->
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📊</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Executive Pulse</span>
+                        <h2 class="text-sm font-black text-slate-800">Executive Health Dashboard</h2>
+                    </div>
+                </div>
+
+                <!-- Group 2: Actions -->
+                <div class="flex items-center gap-2">
+                    <div id="dashboard-next-action-mount">
+                        ${(typeof renderPrimaryStageAction === 'function') ? renderPrimaryStageAction('dashboard') : ''}
+                    </div>
+                </div>
+            </div>
+
             <!-- Executive Summary -->
             ${renderExecutiveSummary()}
 

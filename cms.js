@@ -47,108 +47,50 @@ function getFormContext() {
  * Define field groups and when they should be shown
  */
 const FIELD_GROUPS = {
-    // Core fields - always shown
-    core: {
-        label: 'Basic Info',
-        fields: ['text', 'note'],
-        alwaysShow: true,
-        icon: '📝'
+    what: {
+        label: 'WHAT',
+        title: 'Goal & Intent',
+        icon: '🎯',
+        fields: ['text', 'usecase', 'epicId', 'tags'],
+        color: '#6366f1' // indigo
     },
-
-    // Strategic planning fields
-    strategic: {
-        label: 'Strategic Alignment',
-        fields: ['epicId', 'planningHorizon', 'usecase'],
-        showInViews: ['okr', 'epics', 'roadmap', 'backlog'],
-        showInStages: ['strategic'],
-        icon: '🎯'
+    when: {
+        label: 'WHEN',
+        title: 'Timeline & Cycle',
+        icon: '📅',
+        fields: ['planningHorizon', 'sprintId', 'startDate', 'due', 'releasedIn'],
+        color: '#8b5cf6' // purple
     },
-    
-    // Estimation & Prioritization
-    estimation: {
-        label: 'Prioritization & ROI',
-        fields: ['priority', 'storyPoints', 'impactLevel', 'effortLevel'],
-        showInViews: ['roadmap', 'backlog', 'sprint', 'kanban'],
-        showInStages: ['strategic', 'planning'],
-        icon: '⚖️'
+    where: {
+        label: 'WHERE',
+        title: 'Action & Routing',
+        icon: '⚡',
+        fields: ['status', 'contributors', 'blockerNote', 'dependencies', 'mediaUrl'],
+        color: '#10b981' // green
     },
-    
-    // Scheduling & Timeline
-    scheduling: {
-        label: 'Scheduling & Timeline',
-        fields: ['sprintId', 'startDate', 'due'],
-        showInViews: ['backlog', 'sprint', 'gantt', 'track', 'kanban'],
-        showInStages: ['planning', 'execution'],
-        icon: '📅'
-    },
-
-    // Specification details
-    specification: {
-        label: 'Technical Specification',
-        fields: ['acceptanceCriteria'],
-        showInViews: ['backlog', 'sprint', 'track', 'kanban'],
-        showInStages: ['planning', 'execution'],
-        icon: '📋'
-    },
-    
-    // Execution fields
-    execution: {
-        label: 'Execution Status',
-        fields: ['status', 'contributors', 'blockerNote', 'dependencies'],
-        showInViews: ['track', 'kanban', 'my-tasks', 'status'],
-        showInStages: ['execution'],
-        icon: '⚡'
-    },
-    
-    // Release/delivery fields
-    delivery: {
-        label: 'Release & Delivery',
-        fields: ['releasedIn', 'publishedDate', 'mediaUrl'],
-        showInViews: ['releases', 'dashboard', 'status'],
-        showInStages: ['reporting'],
-        icon: '🚀'
-    },
-    
-    // Metadata fields
-    metadata: {
-        label: 'Tags & Classification',
-        fields: ['tags'],
-        showInViews: ['track', 'backlog', 'sprint'],
-        showInStages: ['planning', 'execution'],
-        icon: '🏷️'
+    how: {
+        label: 'HOW',
+        title: 'Spec & Effort',
+        icon: '🛠️',
+        fields: ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel'],
+        color: '#f59e0b' // amber
     }
 };
 
 /**
- * Determine which field groups should be shown based on context
+ * Determine which field groups should be shown based on context and persona
  * @param {Object} context - Form context from getFormContext()
  * @returns {Array} Array of field group keys that should be shown
  */
 function getVisibleFieldGroups(context) {
-    const visibleGroups = [];
-
-    for (const [groupKey, groupConfig] of Object.entries(FIELD_GROUPS)) {
-        // Always show core fields
-        if (groupConfig.alwaysShow) {
-            visibleGroups.push(groupKey);
-            continue;
-        }
-
-        // Check if should show based on current view
-        if (groupConfig.showInViews && groupConfig.showInViews.includes(context.view)) {
-            visibleGroups.push(groupKey);
-            continue;
-        }
-
-        // Check if should show based on workflow stage
-        if (groupConfig.showInStages && context.workflowStage &&
-            groupConfig.showInStages.includes(context.workflowStage)) {
-            visibleGroups.push(groupKey);
-            continue;
-        }
+    // In the new 4-pillar system, we show pillars based on Persona (Mode)
+    if (context.mode === 'dev') {
+        return ['where', 'how', 'what', 'when']; // Dev focus: execution first
+    } else if (context.mode === 'exec') {
+        return ['what', 'when', 'where']; // Exec focus: strategy first, no technical 'how'
+    } else {
+        return ['what', 'when', 'where', 'how']; // PM see all
     }
-
-    return visibleGroups;
 }
 
 /**
@@ -256,79 +198,27 @@ function getRecommendedFieldGroups(context) {
  */
 function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
     const context = getFormContext();
-    const visibleGroups = getVisibleFieldGroups(context);
-
-    // Mode-specific field overrides
-    let fieldsToShow = [];
-
-    if (context.mode === 'dev') {
-        // Developer mode: execution-focused fields only
-        fieldsToShow = ['text', 'note', 'status', 'contributors', 'blockerNote', 'dependencies', 'startDate', 'due'];
-    } else if (context.mode === 'exec') {
-        // Executive mode: high-level overview fields
-        fieldsToShow = ['text', 'epicId', 'status', 'priority', 'contributors', 'blockerNote', 'releasedIn'];
-    } else {
-        // PM mode: use full context-aware system
-        for (const groupKey of visibleGroups) {
-            const group = FIELD_GROUPS[groupKey];
-            fieldsToShow = fieldsToShow.concat(group.fields);
-        }
-    }
-
-    // Remove duplicates
-    fieldsToShow = [...new Set(fieldsToShow)];
+    const visiblePillars = getVisibleFieldGroups(context);
 
     let html = '';
 
-    // Context banner (shows current stage and inherited context)
-    html += buildContextBanner(item, context);
+    // Main 4-Pillar Grid
+    html += '<div class="cms-pillars-grid">';
 
-    // Group fields by their field groups for better organization
-    html += '<div class="space-y-6">';
-
-    // Core fields (always first)
-    html += buildFieldGroup('core', item, fieldsToShow);
-
-    // Strategic fields
-    if (visibleGroups.includes('strategic') && context.mode !== 'dev') {
-        html += buildFieldGroup('strategic', item, fieldsToShow);
-    }
-
-    // Estimation fields
-    if (visibleGroups.includes('estimation')) {
-        html += buildFieldGroup('estimation', item, fieldsToShow);
-    }
-
-    // Scheduling fields
-    if (visibleGroups.includes('scheduling')) {
-        html += buildFieldGroup('scheduling', item, fieldsToShow);
-    }
-
-    // Specification fields
-    if (visibleGroups.includes('specification')) {
-        html += buildFieldGroup('specification', item, fieldsToShow);
-    }
-
-    // Execution fields
-    if (visibleGroups.includes('execution')) {
-        html += buildFieldGroup('execution', item, fieldsToShow);
-    }
-
-    // Delivery/reporting fields
-    if (visibleGroups.includes('delivery') && context.mode !== 'dev') {
-        html += buildFieldGroup('delivery', item, fieldsToShow);
-    }
-
-    // Metadata fields
-    if (visibleGroups.includes('metadata')) {
-        html += buildFieldGroup('metadata', item, fieldsToShow);
-    }
+    visiblePillars.forEach(pillarKey => {
+        html += buildPillar(pillarKey, item, context);
+    });
 
     html += '</div>';
 
     // Move/routing fields (only for existing items in PM mode)
     if (!isNewItem && context.mode === 'pm' && trackInfo.trackIndex !== undefined) {
         html += buildMoveFields(trackInfo.trackIndex, trackInfo.subtrackIndex);
+    }
+
+    // Always include a hidden Note field if not already shown
+    if (!item.note && !visiblePillars.some(p => FIELD_GROUPS[p].fields.includes('note'))) {
+        html += `<input type="hidden" id="edit-note" value="${item.note || ''}">`;
     }
 
     // Data lists for autocomplete
@@ -338,67 +228,81 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
 }
 
 /**
- * Build context banner showing current stage and inherited info
+ * Build a Pillar Section (WHAT, WHEN, WHERE, HOW)
  */
-function buildContextBanner(item, context) {
-    const viewInfo = {
-        'okr': { icon: '🎯', label: 'Discovery: OKR Alignment', color: '#8b5cf6' },
-        'epics': { icon: '🚀', label: 'Discovery: Epic Scoping', color: '#8b5cf6' },
-        'roadmap': { icon: '🗺️', label: 'Discovery: Strategic Roadmap', color: '#8b5cf6' },
-        'backlog': { icon: '📚', label: 'Definition: Backlog Grooming', color: '#3b82f6' },
-        'sprint': { icon: '🏃', label: 'Definition: Sprint Planning', color: '#3b82f6' },
-        'gantt': { icon: '📅', label: 'Definition: Timeline Planning', color: '#3b82f6' },
-        'kanban': { icon: '📋', label: 'Delivery: Active Board', color: '#10b981' },
-        'track': { icon: '🏗️', label: 'Delivery: Team Tracking', color: '#10b981' },
-        'dependency': { icon: '🔗', label: 'Delivery: Blockers & Links', color: '#10b981' },
-        'workflow': { icon: '⚙️', label: 'Delivery: Process Flow', color: '#10b981' },
-        'dashboard': { icon: '📊', label: 'Analytics: Pulse Dashboard', color: '#f59e0b' },
-        'analytics': { icon: '📈', label: 'Analytics: Data Trends', color: '#f59e0b' },
-        'releases': { icon: '📦', label: 'Analytics: Release Mapping', color: '#f59e0b' }
-    };
+function buildPillar(pillarKey, item, context) {
+    const pillar = FIELD_GROUPS[pillarKey];
+    if (!pillar) return '';
 
-    const stageInfo = {
-        strategic: { icon: '🍒', label: 'Discovery Phase', color: '#8b5cf6' },
-        planning: { icon: '📂', label: 'Definition Phase', color: '#3b82f6' },
-        execution: { icon: '⚡', label: 'Delivery Phase', color: '#10b981' },
-        reporting: { icon: '📊', label: 'Analytics Phase', color: '#f59e0b' }
-    };
-
-    const info = viewInfo[context.view] || stageInfo[context.workflowStage] || stageInfo.execution;
-
-    let inheritedContext = [];
-    if (item.epicId && context.mode !== 'pm') {
-        const epic = UPDATE_DATA.metadata.epics?.find(e => e.id === item.epicId);
-        if (epic) inheritedContext.push(`Epic: ${epic.name}`);
+    // Persona-based overrides for fields within a pillar
+    let fields = [...pillar.fields];
+    
+    // Developer persona: simplify WHAT and WHEN
+    if (context.mode === 'dev') {
+        if (pillarKey === 'what') fields = ['text']; // Just the title
+        if (pillarKey === 'when') fields = ['due'];  // Just the deadline
     }
-    if (item.sprintId && context.mode === 'dev') {
-        const sprint = UPDATE_DATA.metadata.sprints?.find(s => s.id === item.sprintId);
-        if (sprint) inheritedContext.push(`Sprint: ${sprint.name}`);
-    }
-    if (item.planningHorizon && context.mode !== 'pm') {
-        inheritedContext.push(`Horizon: ${item.planningHorizon}`);
+    
+    // Executive persona: simplify WHERE
+    if (context.mode === 'exec' && pillarKey === 'where') {
+        fields = ['status']; // Just the overall status
     }
 
     let html = `
-        <div class="context-banner mb-6" style="border-left: 4px solid ${info.color};">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">${info.icon}</span>
-                    <div>
-                        <div class="context-banner-stage">${info.label}</div>
-                        <div class="context-banner-view">Current View: ${context.view.charAt(0).toUpperCase() + context.view.slice(1)}</div>
-                    </div>
+        <div class="cms-pillar pillar-${pillarKey}">
+            <div class="cms-pillar-header">
+                <div class="cms-pillar-icon">${pillar.icon}</div>
+                <div>
+                    <div class="cms-pillar-label">${pillar.label}</div>
+                    <div class="cms-pillar-title">${pillar.title}</div>
                 </div>
-                ${inheritedContext.length > 0 ? `
-                    <div class="context-banner-inherited">
-                        ${inheritedContext.map(ctx => `<span class="context-badge">${ctx}</span>`).join('')}
-                    </div>
-                ` : ''}
+            </div>
+            <div class="cms-pillar-content">
+    `;
+
+    fields.forEach(fieldName => {
+        html += renderField(fieldName, item);
+    });
+
+    html += `
             </div>
         </div>
     `;
 
     return html;
+}
+
+/**
+ * Build context banner showing current stage and inherited info
+ */
+function buildContextBanner(item, context) {
+    const stageMap = {
+        'discovery': { label: 'Discovery Phase', icon: '🔍', color: '#6366f1' },
+        'vision': { label: 'Vision Phase', icon: '🎯', color: '#8b5cf6' },
+        'definition': { label: 'Definition Phase', icon: '📂', color: '#3b82f6' },
+        'delivery': { label: 'Delivery Phase', icon: '⚡', color: '#10b981' },
+        'review': { label: 'Review Phase', icon: '📊', color: '#f59e0b' }
+    };
+
+    const stage = stageMap[context.workflowStage] || stageMap.delivery;
+    
+    return `
+        <div class="context-banner" style="border-left: 8px solid ${stage.color}">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <span class="text-3xl">${stage.icon}</span>
+                    <div>
+                        <div class="context-banner-stage">${stage.label}</div>
+                        <div class="context-banner-view">Refining: ${context.view.toUpperCase()}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <span class="context-badge">Mode: ${context.mode.toUpperCase()}</span>
+                    ${item.id ? `<span class="context-badge">ID: ${item.id}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -444,7 +348,7 @@ function renderField(fieldName, item) {
         case 'text':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Task Title *</label>
+                    <label class="field-label">🎯 Task Title *</label>
                     <input type="text" id="edit-text" value="${val}" class="cms-input" placeholder="What needs to be done?" required>
                 </div>
             `;
@@ -452,7 +356,7 @@ function renderField(fieldName, item) {
         case 'note':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Description</label>
+                    <label class="field-label">📝 Description</label>
                     <textarea id="edit-note" class="cms-input" rows="3" placeholder="Technical details or notes...">${val}</textarea>
                 </div>
             `;
@@ -460,7 +364,7 @@ function renderField(fieldName, item) {
         case 'status':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Status</label>
+                    <label class="field-label">🚦 Status</label>
                     <select id="edit-status" class="cms-input">
                         <option value="done" ${val === 'done' ? 'selected' : ''}>Done</option>
                         <option value="now" ${val === 'now' ? 'selected' : ''}>Now</option>
@@ -474,7 +378,7 @@ function renderField(fieldName, item) {
         case 'priority':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Priority</label>
+                    <label class="field-label">🔥 Priority</label>
                     <select id="edit-priority" class="cms-input">
                         <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
                         <option value="medium" ${val === 'medium' || !val ? 'selected' : ''}>Medium</option>
@@ -486,7 +390,7 @@ function renderField(fieldName, item) {
         case 'usecase':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Impact / Usecase</label>
+                    <label class="field-label">💡 Impact / Usecase</label>
                     <input type="text" id="edit-usecase" value="${val}" class="cms-input" placeholder="Why is this important?">
                 </div>
             `;
@@ -495,7 +399,7 @@ function renderField(fieldName, item) {
             const epics = UPDATE_DATA.metadata.epics || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Linked Epic</label>
+                    <label class="field-label">🚀 Linked Epic</label>
                     <select id="edit-epicId" class="cms-input">
                         <option value="">None</option>
                         ${epics.map(e => `<option value="${e.id}" ${val === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
@@ -506,7 +410,7 @@ function renderField(fieldName, item) {
         case 'planningHorizon':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Planning Horizon</label>
+                    <label class="field-label">🗺️ Planning Horizon</label>
                     <select id="edit-planningHorizon" class="cms-input">
                         <option value="">None</option>
                         <option value="1M" ${val === '1M' ? 'selected' : ''}>1 Month</option>
@@ -521,7 +425,7 @@ function renderField(fieldName, item) {
             const sprints = UPDATE_DATA.metadata.sprints || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Sprint</label>
+                    <label class="field-label">🏃 Sprint</label>
                     <select id="edit-sprintId" class="cms-input">
                         <option value="">None</option>
                         ${sprints.map(s => `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
@@ -532,7 +436,7 @@ function renderField(fieldName, item) {
         case 'startDate':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Start Date</label>
+                    <label class="field-label">📅 Start Date</label>
                     <input type="date" id="edit-startDate" value="${val}" class="cms-input">
                 </div>
             `;
@@ -540,7 +444,7 @@ function renderField(fieldName, item) {
         case 'due':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Due Date</label>
+                    <label class="field-label">⌛ Due Date</label>
                     <input type="date" id="edit-due" value="${val}" class="cms-input">
                 </div>
             `;
@@ -548,7 +452,7 @@ function renderField(fieldName, item) {
         case 'contributors':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Contributors</label>
+                    <label class="field-label">👥 Contributors</label>
                     <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
                 </div>
             `;
@@ -556,7 +460,7 @@ function renderField(fieldName, item) {
         case 'blockerNote':
             return `
                 <div class="field-wrapper blocker-field">
-                    <label class="field-label">Blocker Reason</label>
+                    <label class="field-label">🛑 Blocker Reason</label>
                     <input type="text" id="edit-blockerNote" value="${val}" class="cms-input" placeholder="What's blocking this task?">
                     <p class="field-hint">⚠️ Setting this will flag the task as blocked</p>
                 </div>
@@ -565,7 +469,7 @@ function renderField(fieldName, item) {
         case 'dependencies':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Dependencies</label>
+                    <label class="field-label">🔗 Dependencies</label>
                     <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
                 </div>
             `;
@@ -574,7 +478,7 @@ function renderField(fieldName, item) {
             const releases = UPDATE_DATA.metadata.releases || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Release</label>
+                    <label class="field-label">📦 Release</label>
                     <select id="edit-releasedIn" class="cms-input">
                         <option value="">None</option>
                         ${releases.map(r => `<option value="${r.id}" ${val === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
@@ -585,7 +489,7 @@ function renderField(fieldName, item) {
         case 'mediaUrl':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Media URL</label>
+                    <label class="field-label">🔗 Media URL</label>
                     <input type="text" id="edit-mediaUrl" value="${val}" class="cms-input" placeholder="https://...">
                     <p class="field-hint">Screenshots, demos, or documentation links</p>
                 </div>
@@ -594,7 +498,7 @@ function renderField(fieldName, item) {
         case 'storyPoints':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Story Points</label>
+                    <label class="field-label">🔢 Story Points</label>
                     <input type="number" id="edit-storyPoints" value="${val}" class="cms-input" placeholder="e.g. 1, 2, 3, 5, 8">
                 </div>
             `;
@@ -602,7 +506,7 @@ function renderField(fieldName, item) {
         case 'effortLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Implementation Effort</label>
+                    <label class="field-label">🛠️ Implementation Effort</label>
                     <select id="edit-effortLevel" class="cms-input" onchange="updateRoiPreview()">
                         <option value="">Select Effort...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Easy Wins)</option>
@@ -616,7 +520,7 @@ function renderField(fieldName, item) {
         case 'impactLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Business Value (Impact)</label>
+                    <label class="field-label">💎 Business Value (Impact)</label>
                     <select id="edit-impactLevel" class="cms-input" onchange="updateRoiPreview()">
                         <option value="">Select Value...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Tactical/Minor)</option>
@@ -627,20 +531,19 @@ function renderField(fieldName, item) {
             `;
 
         case 'acceptanceCriteria':
-            // If internal data is an array, join with newlines for editing
             const acVal = Array.isArray(val) ? val.join('\n') : val;
             return `
                 <div class="field-wrapper full-width">
-                    <label class="field-label">Acceptance Criteria</label>
-                    <textarea id="edit-acceptanceCriteria" class="cms-input" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
-                    <p class="field-hint">Enter each criterion on a new line</p>
+                    <label class="field-label">✅ Acceptance Criteria</label>
+                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[100px]" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
+                    <p class="field-hint">💡 one per line</p>
                 </div>
             `;
 
         case 'publishedDate':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Published Date</label>
+                    <label class="field-label">📅 Published Date</label>
                     <input type="date" id="edit-publishedDate" value="${val}" class="cms-input">
                 </div>
             `;
@@ -648,7 +551,7 @@ function renderField(fieldName, item) {
         case 'tags':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">Tags</label>
+                    <label class="field-label">🏷️ Tags</label>
                     <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
                 </div>
             `;
@@ -750,31 +653,61 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
     const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
     editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
 
-    document.getElementById('modal-title').innerText = 'Edit Item';
+    document.getElementById('modal-title').innerText = 'Edit Engineering Task';
+    
+    const context = getFormContext();
+    document.getElementById('modal-banner').innerHTML = buildContextBanner(item, context);
     document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, {trackIndex, subtrackIndex});
-    document.getElementById('cms-modal').classList.add('active');
+    
+    // Inject footer buttons
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="deleteItem()" class="cms-btn cms-btn-danger mr-auto">Delete Item</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes</button>
+    `;
 
-    // Initialize tag inputs after modal is in DOM
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent scroll
+
+    // Initialize widgets
     setTimeout(() => {
         renderTagWidget('contrib-tag-input-edit', item.contributors || [], 'contributor-list', 'author');
         renderTagWidget('tags-tag-input-edit', item.tags || [], 'tag-list', 'tag');
         renderTagWidget('deps-tag-input-edit', item.dependencies || [], 'item-list', 'dep');
-        setTimeout(updateRoiPreview, 20); // Initial ROI preview
+        if (typeof updateRoiPreview === 'function') updateRoiPreview();
     }, 10);
 }
 
 function addItem(trackIndex, subtrackIndex, defaults = {}) {
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
 
-    document.getElementById('modal-title').innerText = 'Add New Item';
+    document.getElementById('modal-title').innerText = 'Add New Task';
+    
+    const context = getFormContext();
+    document.getElementById('modal-banner').innerHTML = buildContextBanner(defaults, context);
     document.getElementById('modal-form').innerHTML = buildContextAwareForm(defaults, true, {trackIndex, subtrackIndex});
+    
+    // Inject footer buttons
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Create Task</button>
+    `;
+
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 
     setTimeout(() => {
         renderTagWidget('contrib-tag-input-edit', defaults.contributors || [], 'contributor-list', 'author');
         renderTagWidget('tags-tag-input-edit', defaults.tags || [], 'tag-list', 'tag');
         renderTagWidget('deps-tag-input-edit', defaults.dependencies || [], 'item-list', 'dep');
     }, 10);
+}
+
+function closeCmsModal() {
+    const modal = document.getElementById('cms-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    editContext = null;
 }
 
 // ------ TAG/CHIP INPUT HELPER ------
@@ -1123,37 +1056,42 @@ function saveCmsChanges() {
     if (!validateCmsForm()) return;
 
     if (editContext.type === 'item' || editContext.type === 'item-new') {
-        const itemData = {
-            text: document.getElementById('edit-text').value.trim(),
-            status: document.getElementById('edit-status').value,
-            priority: document.getElementById('edit-priority').value,
-            note: document.getElementById('edit-note').value.trim(),
-            usecase: document.getElementById('edit-usecase')?.value.trim() || '',
-            mediaUrl: document.getElementById('edit-mediaUrl')?.value.trim() || '',
-            startDate: document.getElementById('edit-startDate')?.value || '',
-            due: document.getElementById('edit-due')?.value || '',
-            sprintId: document.getElementById('edit-sprintId')?.value || '',
-            releasedIn: document.getElementById('edit-releasedIn')?.value || '',
-            planningHorizon: document.getElementById('edit-planningHorizon')?.value || '',
-            epicId: document.getElementById('edit-epicId')?.value || '',
-            storyPoints: parseInt(document.getElementById('edit-storyPoints')?.value) || 0,
-            effortLevel: document.getElementById('edit-effortLevel')?.value || '',
-            impactLevel: document.getElementById('edit-impactLevel')?.value || '',
-            publishedDate: document.getElementById('edit-publishedDate')?.value || '',
-            contributors: [..._selectedContributors],
-            tags: [..._selectedTags],
-            dependencies: [..._selectedDeps],
-            blockerNote: (document.getElementById('edit-blockerNote')?.value || '').trim()
+        const itemData = {};
+        
+        // Harvest only visible fields to maintain context-awareness
+        const fieldMap = {
+            'text': 'edit-text', 'status': 'edit-status', 'priority': 'edit-priority',
+            'note': 'edit-note', 'usecase': 'edit-usecase', 'mediaUrl': 'edit-mediaUrl',
+            'startDate': 'edit-startDate', 'due': 'edit-due', 'sprintId': 'edit-sprintId',
+            'releasedIn': 'edit-releasedIn', 'planningHorizon': 'edit-planningHorizon',
+            'epicId': 'edit-epicId', 'storyPoints': 'edit-storyPoints', 
+            'effortLevel': 'edit-effortLevel', 'impactLevel': 'edit-impactLevel',
+            'publishedDate': 'edit-publishedDate', 'blockerNote': 'edit-blockerNote'
         };
 
-        // Handle acceptance criteria (convert textarea newlines to array)
+        Object.entries(fieldMap).forEach(([key, id]) => {
+            const el = document.getElementById(id);
+            if (el) {
+                let val = el.value;
+                if (key === 'storyPoints') val = parseInt(val) || 0;
+                else val = val.trim();
+                itemData[key] = val;
+            }
+        });
+
+        // Specialized fields (Tags/AC)
         const acEl = document.getElementById('edit-acceptanceCriteria');
         if (acEl) {
             itemData.acceptanceCriteria = acEl.value.split('\n').map(s => s.trim()).filter(s => s !== '');
         }
 
+        // Widgets (always available in context if rendered)
+        if (document.getElementById('contrib-tag-input-edit')) itemData.contributors = [..._selectedContributors];
+        if (document.getElementById('tags-tag-input-edit')) itemData.tags = [..._selectedTags];
+        if (document.getElementById('deps-tag-input-edit')) itemData.dependencies = [..._selectedDeps];
+
         if (itemData.blockerNote) itemData.blocker = true;
-        else delete itemData.blocker;
+        else if (document.getElementById('edit-blockerNote')) delete itemData.blocker;
 
         const moveTrackEl = document.getElementById('edit-move-track');
         const moveSubEl = document.getElementById('edit-move-subtrack');
@@ -1161,6 +1099,15 @@ function saveCmsChanges() {
         const targetSi = moveSubEl ? parseInt(moveSubEl.value) : editContext.subtrackIndex;
 
         if (editContext.type === 'item') {
+            // Validate indices before access
+            if (editContext.trackIndex === undefined || editContext.subtrackIndex === undefined || 
+                !UPDATE_DATA.tracks[editContext.trackIndex] || 
+                !UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex]) {
+                console.error('❌ Invalid edit context for item save:', editContext);
+                alert('Error: Could not find original item location. Please refresh and try again.');
+                return;
+            }
+
             const oldItem = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex];
             const finalItem = { ...oldItem, ...itemData };
             
@@ -1177,8 +1124,14 @@ function saveCmsChanges() {
                 ...itemData,
                 publishedDate: itemData.publishedDate || new Date().toISOString().split('T')[0]
             };
-            UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(newItem);
-            logChange('Add Item', newItem.text);
+            
+            if (UPDATE_DATA.tracks[targetTi] && UPDATE_DATA.tracks[targetTi].subtracks[targetSi]) {
+                UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(newItem);
+                logChange('Add Item', newItem.text);
+            } else {
+                console.error('❌ Target location for new item not found:', { targetTi, targetSi });
+                alert('Error: Could not save item to the specified track.');
+            }
         }
     } else if (editContext.type === 'sprint') {
         const sprintData = {

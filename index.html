@@ -76,15 +76,28 @@
         </div>
 
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
-        <script src="core.js"></script>
-        <script src="views.js"></script>
-        <script src="cms.js"></script>
-        <script src="app.js"></script>
+        <script src="core.js?v=04031"></script>
+        <script src="views.js?v=04031"></script>
+        <script src="cms.js?v=04031"></script>
+        <script src="app.js?v=04031"></script>
+        <script>
+            // Phase 6 Reset: Early-boot functional mapping
+            window.openAddItemModal = function(type) {
+                if (typeof addItem === 'function') {
+                    addItem(type);
+                } else if (typeof openAddItem === 'function') {
+                    openAddItem(type);
+                } else {
+                    console.error('❌ CMS action handler not found! Retrying...');
+                    setTimeout(() => window.openAddItemModal(type), 500);
+                }
+            };
+        </script>
 
         <!-- NEW FEATURE MODULES -->
-        <script src="modes.js"></script>
-        <script src="wizard.js"></script>
-        <script src="workflow-nav.js"></script>
+        <script src="modes.js?v=04031"></script>
+        <script src="wizard.js?v=04031"></script>
+        <script src="workflow-nav.js?v=04031"></script>
         <script src="dependency-view.js"></script>
         <script src="kanban-view.js"></script>
         <script src="okr-module.js"></script>
@@ -94,13 +107,22 @@
         <script src="executive-dashboard.js"></script>
 
         <!-- CMS Modal -->
-        <div id="cms-modal" role="dialog">
-            <div class="modal-content">
-                <h2 id="modal-title" class="text-xl font-bold mb-4">Edit Entry</h2>
-                <div id="modal-form"></div>
-                <div class="flex justify-end gap-2 mt-6">
+        <!-- CMS Modal -->
+        <div id="cms-modal" role="dialog" class="hidden">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 id="modal-title">Edit Entry</h2>
+                    <button onclick="closeCmsModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="text-2xl">&times;</span>
+                    </button>
+                </div>
+                <div id="modal-banner" class="modal-banner"></div>
+                <div id="modal-form" class="modal-body">
+                    <!-- Context-Aware pillars injected here -->
+                </div>
+                <div id="modal-footer" class="modal-footer">
                     <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-                    <button onclick="saveCms()" class="cms-btn cms-btn-primary">Apply Changes</button>
+                    <!-- Action buttons injected via JS -->
                 </div>
             </div>
         </div>
@@ -229,7 +251,7 @@
             </div>
 
             <!-- Views -->
-            <div id="track-view" class="view-section active"></div>
+            <div id="track-view" class="view-section"></div>
             <div id="roadmap-view" class="view-section"></div>
             <div id="epics-view" class="view-section"></div>
             <div id="sprint-view" class="view-section"></div>
@@ -238,6 +260,9 @@
             <div id="priority-view" class="view-section"></div>
             <div id="contributor-view" class="view-section"></div>
             <div id="releases-view" class="view-section"></div>
+            <!-- Phase 8 Protected Discovery Section -->
+            <div id="ideation-view" class="view-section" style="min-height: 500px; display: none;"></div>
+            <div id="spikes-view" class="view-section" style="min-height: 500px; display: none;"></div>
             <div id="gantt-view"
                 class="view-section bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto min-h-[500px]">
                 <div id="gantt-chart-container" style="min-width: 800px;"></div>

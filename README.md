@@ -21,6 +21,19 @@
 
 ## Feature Overview
 
+### 🚀 The 5-Stage Engineering Lifecycle
+The platform is architected around a **Vision-First** funnel. Every item in the engineering pulse moves through five distinct strategic stages:
+
+| Stage | Name | Purpose | Next Action |
+|---|---|---|---|
+| **Phase 1** | **Discovery** | R&D, Ideation, Technical Spikes | Define Vision/OKR |
+| **Phase 2** | **Vision** | Strategic Alignment (OKRs & Roadmap) | Create Plan/Epics |
+| **Phase 3** | **Definition** | Backlog Grooming, Sprints, Estimation | Start Sprint |
+| **Phase 4** | **Delivery** | Task Execution, Kanban, Dependencies | Ship Release |
+| **Phase 5** | **Review** | Velocity Analytics, Retro, KPI Burndown | Next Discovery |
+
+---
+
 ### 🎭 Three Persona Modes
 
 Khyaal Engineering Pulse now features **three distinct persona modes** tailored to different roles:
@@ -38,6 +51,7 @@ Khyaal Engineering Pulse now features **three distinct persona modes** tailored 
 #### PM Mode Views
 | View | Shortcut | Description |
 |---|---|---|
+| **🚀 Discovery** | - | Phase 1: Ideation Sandbox and Technical Spikes capturing |
 | **🚀 Epics** | 1 | Strategic goals with health tracking and OKR linkage |
 | **🗺️ Roadmap** | 2 | Planning horizons (Now / Next / Later) with timeline view |
 | **📚 Backlog** | 3 | Grooming hub with inline prioritization and estimation |
@@ -156,13 +170,18 @@ Khyaal Engineering Pulse now features **three distinct persona modes** tailored 
 ## Architecture
 
 ```
-index.html              → Dashboard structure and navigation
+index.html              → Dashboard structure and navigation (w/ ?v=04031 cache-busting)
 core.js                 → State management, filtering, keyboard shortcuts
 views.js                → Core view renderers (Track, Status, Priority, etc.)
 cms.js                  → Full Management UI (Add/Edit/Delete/Groom)
 app.js                  → Normalization, GitHub integration, archiving
 data.json               → Single Source of Truth on GitHub
 styles.css              → Custom CSS with mode-specific theming
+
+### 🏗️ Lifecycle-Aware UI System
+The platform dynamically adjusts its interface as the user progresses:
+- **Adaptive Header/Ribbon**: Each stage (e.g., Discovery) has its own action ribbon. The **Indigo Ribbon** in Discovery provides "Capture Idea" and "Capture Spike" buttons directly in context.
+- **Stage Navigation**: The breadcrumb system acts as a progress bar. Clicking the active stage opens the **Strategic Menu**.
 
 NEW MODULES:
 modes.js                → Persona mode system with view filtering
@@ -207,7 +226,12 @@ GitHub (data.json updated)
 
 ---
 
-### Step 1: Strategic Epic Vision & OKRs
+### Step 1: Discovery & R&D Capture
+**Start here.** Use the **Discovery** view to capture `#idea` and `#spike` items.
+- Use the **Indigo Ribbon** (+ Add) to capture live explorative items.
+- Transition items to Phase 2 (Vision) once feasibility is proven.
+
+### Step 2: Strategic Epic Vision & OKRs
 **Start here.** Define the "Why" in the **🚀 Epics** view and link to **🎯 OKRs**.
 
 **How to create an Epic:**
@@ -544,25 +568,28 @@ The **Team Velocity Trend** shows:
 
 ## Data Model Reference
 
-### Item Structure
-Every task item includes:
+### Item Structure (Granular Schema)
+Every task item includes the following fields for lifecycle tracking:
 
 ```json
 {
   "id": "task-unique-id",
   "text": "Task description",
-  "status": "now",
-  "priority": "high",
-  "storyPoints": 5,
-  "effort": "medium",
-  "impact": "high",
+  "status": "now", // now | done | ongoing | next | later
+  "priority": "high", // high | medium | low
+  "storyPoints": 5, // Fibonacci: 1, 2, 3, 5, 8, 13, 21
+  "effortLevel": "medium", // low | medium | high
+  "impactLevel": "high", // low | medium | high
   "acceptanceCriteria": [
     "Criterion 1",
     "Criterion 2"
   ],
   "contributors": ["Subhrajit", "Vivek"],
-  "tags": ["feature", "frontend"],
+  "tags": ["spike", "frontend"], // Used for stage routing (#idea, #discovery, #spike)
   "dependencies": ["other-task-id"],
+  "trackIndex": 0, // Critical for CMS routing
+  "subtrackIndex": 1, // Critical for CMS routing
+  "itemIndex": 5, // Auto-persisted for edits
   "blocker": false,
   "blockerNote": "",
   "startDate": "2026-02-01",
@@ -570,10 +597,13 @@ Every task item includes:
   "sprintId": "sprint-1",
   "epicId": "epic-platform",
   "releasedIn": "v2.1",
-  "planningHorizon": "1M",
-  "usecase": "User impact description",
-  "note": "Technical notes",
-  "comments": []
+  "planningHorizon": "1M", // 1M (Now) | 3M (Next) | 6M (Later)
+  "usecase": "User/Business impact description",
+  "note": "Technical notes and implementation details",
+  "comments": [
+    {"author": "Vivek", "text": "PR #123 linked", "date": "2026-04-03"}
+  ],
+  "publishedDate": "2026-03-20"
 }
 ```
 

@@ -134,16 +134,34 @@ function renderOkrView() {
         `;
     }
 
-    // Management Header (Add OKR button)
-    let headerHtml = showManagement ? `
-        <div class="flex justify-end items-center mb-6">
-            <button onclick="openOKREdit()" 
-                class="hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-black text-sm transition-all shadow-md flex items-center gap-2"
-                style="background-color: var(--stage-color, #4f46e5)">
-                <span>🎯</span> Add OKR
-            </button>
+    // 3. Unified Ribbon Header
+    let ribbonHtml = `
+        <div id="okr-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <!-- Group 1: Navigation/Breadcrumb -->
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🎯</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Quarterly Strategic Alignment</span>
+                    <h2 class="text-sm font-black text-slate-800">Objectives & Key Results</h2>
+                </div>
+            </div>
+
+            <!-- Group 2: Actions -->
+            <div class="flex items-center gap-2">
+                <div id="okr-next-action-mount">
+                    ${(typeof renderPrimaryStageAction === 'function') ? renderPrimaryStageAction('okr') : ''}
+                </div>
+                
+                ${showManagement ? `
+                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="openOKREdit()" 
+                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                    <span class="text-lg">➕</span> Add OKR
+                </button>
+                ` : ''}
+            </div>
         </div>
-    ` : '';
+    `;
 
     if (okrs.length === 0) {
         container.innerHTML = visionHtml + headerHtml + `
@@ -157,7 +175,7 @@ function renderOkrView() {
         return;
     }
 
-    container.innerHTML = visionHtml + headerHtml + `
+    container.innerHTML = visionHtml + ribbonHtml + `
         <div class="space-y-6">
             ${okrs.map((okr, idx) => renderOkrCard(okr, idx)).join('')}
         </div>
@@ -204,10 +222,12 @@ function renderOkrCard(okr, idx) {
                 <div class="${progressColor} h-3 rounded-full transition-all" style="width: ${progress}%"></div>
             </div>
 
-            <!-- Key Results -->
+            <!-- Key Results (Adaptive Density) -->
             <div class="space-y-4">
                 <h3 class="font-bold text-slate-900 text-lg mb-3">Key Results</h3>
-                ${okr.keyResults.map(kr => renderKeyResult(kr)).join('')}
+                ${((typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm') === 'exec') 
+                    ? `<div class="bg-slate-50 p-4 rounded-xl border border-slate-100 italic text-sm text-slate-500">Key Result details are condensed for Executive overview. Check ROI funnel below for impact.</div>`
+                    : okr.keyResults.map(kr => renderKeyResult(kr)).join('')}
             </div>
 
             <!-- Linked Items -->
@@ -281,53 +301,68 @@ function renderLinkedItems(okr) {
         </div>
     `;
 
+    const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
+    
+    // PERSONA-AWARE DENSITY SHIFT
+    // Exec: focus on ROI & Roadmap (Horizons & Releases)
+    // Dev: focus on Execution (Epics & Sprints)
+    // PM: focus on everything
+    
+    const showEpics = mode === 'pm' || mode === 'dev';
+    const showHorizons = mode === 'pm' || mode === 'exec';
+    const showSprints = mode === 'pm' || mode === 'dev';
+    const showReleases = mode === 'pm' || mode === 'exec';
+
     return `
         <div class="mt-4 pt-4 border-t border-slate-900/10">
-            <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4">Strategic Alignment Funnel</h4>
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Strategic Alignment Funnel</h4>
+                <div class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-widest">${mode} Perspective</div>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Supporting Epics -->
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 ${!showEpics ? 'opacity-40 grayscale' : ''}">
                     <div class="text-[10px] font-black text-slate-400 uppercase mb-2">Supporting Epics</div>
-                    ${epics.length > 0 ? epics.map(e => `
+                    ${showEpics ? (epics.length > 0 ? epics.map(e => `
                         <div class="flex items-center gap-2 mb-1.5 last:mb-0">
                             <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
                             <span class="text-xs font-bold text-slate-700 truncate">${e.name}</span>
                         </div>
-                    `).join('') : '<div class="text-[10px] text-slate-300 italic">None linked</div>'}
+                    `).join('') : '<div class="text-[10px] text-slate-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Exec view</div>'}
                 </div>
 
                 <!-- Roadmap Horizons -->
-                <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100">
+                <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100 ${!showHorizons ? 'opacity-40 grayscale' : ''}">
                     <div class="text-[10px] font-black text-indigo-400 uppercase mb-2">Roadmap Alignment</div>
-                    ${horizons.length > 0 ? horizons.map(h => `
+                    ${showHorizons ? (horizons.length > 0 ? horizons.map(h => `
                         <div class="flex items-center gap-2 mb-1.5 last:mb-0">
                             <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                             <span class="text-xs font-bold text-indigo-900 truncate">${h.label}</span>
                         </div>
-                    `).join('') : '<div class="text-[10px] text-indigo-300 italic">None linked</div>'}
+                    `).join('') : '<div class="text-[10px] text-indigo-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Dev view</div>'}
                 </div>
 
                 <!-- Active Sprints -->
-                <div class="bg-emerald-50/30 p-3 rounded-lg border border-emerald-100">
+                <div class="bg-emerald-50/30 p-3 rounded-lg border border-emerald-100 ${!showSprints ? 'opacity-40 grayscale' : ''}">
                     <div class="text-[10px] font-black text-emerald-500 uppercase mb-2">Targeted Sprints</div>
-                    ${sprints.length > 0 ? sprints.map(s => `
+                    ${showSprints ? (sprints.length > 0 ? sprints.map(s => `
                         <div class="flex items-center gap-2 mb-1.5 last:mb-0">
                             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                             <span class="text-xs font-bold text-emerald-900 truncate">${s.name}</span>
                         </div>
-                    `).join('') : '<div class="text-[10px] text-emerald-300 italic">None linked</div>'}
+                    `).join('') : '<div class="text-[10px] text-emerald-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Exec view</div>'}
                 </div>
 
                 <!-- Targeted Releases -->
-                <div class="bg-amber-50/30 p-3 rounded-lg border border-amber-100">
+                <div class="bg-amber-50/30 p-3 rounded-lg border border-amber-100 ${!showReleases ? 'opacity-40 grayscale' : ''}">
                     <div class="text-[10px] font-black text-amber-500 uppercase mb-2">Strategic Releases</div>
-                    ${releases.length > 0 ? releases.map(r => `
+                    ${showReleases ? (releases.length > 0 ? releases.map(r => `
                         <div class="flex items-center gap-2 mb-1.5 last:mb-0">
                             <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
                             <span class="text-xs font-bold text-amber-900 truncate">${r.name}</span>
                         </div>
-                    `).join('') : '<div class="text-[10px] text-amber-300 italic">None linked</div>'}
+                    `).join('') : '<div class="text-[10px] text-amber-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Dev view</div>'}
                 </div>
             </div>
 

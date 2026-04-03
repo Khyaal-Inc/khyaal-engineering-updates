@@ -5,50 +5,60 @@
 // Guides users through: Strategic → Planning → Execution → Reporting
 
 const WORKFLOW_STAGES = {
-    strategic: {
-        name: 'Strategic',
+    discovery: {
+        name: 'Discovery',
+        icon: '🔍',
+        label: 'Validation',
+        description: 'Spikes & Ideation: Exploring future features and roadmap horizons',
+        cadence: 'Bi-Weekly',
+        views: ['ideation', 'spikes'],
+        color: '#6366f1', // indigo
+        order: 1
+    },
+    vision: {
+        name: 'Vision',
         icon: '🎯',
-        label: 'Discovery',
-        description: 'Quarterly planning: Vision, objectives, epics and roadmap',
+        label: 'Strategic',
+        description: 'Strategic Alignment: Committing roadmap to OKRs and Epics',
         cadence: 'Quarterly',
         views: ['okr', 'epics', 'roadmap'],
         color: '#8b5cf6', // purple
-        order: 1
-    },
-    planning: {
-        name: 'Planning',
-        icon: '📂',
-        label: 'Definition',
-        description: 'Monthly/Weekly: Backlog grooming, sprint planning, gantt timeline',
-        cadence: 'Monthly',
-        views: ['backlog', 'sprint', 'gantt', 'releases'],
-        color: '#3b82f6', // blue
         order: 2
     },
-    execution: {
-        name: 'Execution',
+    definition: {
+        name: 'Definition',
+        icon: '📂',
+        label: 'Planning',
+        description: 'Technical Definition: Grooming the backlog and planning sprints',
+        cadence: 'Weekly',
+        views: ['backlog', 'sprint', 'gantt', 'releases'],
+        color: '#3b82f6', // blue
+        order: 3
+    },
+    delivery: {
+        name: 'Delivery',
         icon: '⚡',
-        label: 'Delivery',
-        description: 'Daily work: Kanban, track tasks, dependencies, workflow',
+        label: 'Execution',
+        description: 'High-Velocity Execution: Moving tasks to done and unblocking',
         cadence: 'Daily',
         views: ['kanban', 'track', 'dependency'],
         color: '#10b981', // green
-        order: 3
+        order: 4
     },
-    reporting: {
-        name: 'Reporting',
+    review: {
+        name: 'Review',
         icon: '📊',
         label: 'Analytics',
-        description: 'Weekly/Monthly: Dashboard, analytics, capacity, status',
-        cadence: 'On-Demand',
+        description: 'Pulse & Retro: Measuring velocity and learning from the cycle',
+        cadence: 'Weekly',
         views: ['dashboard', 'analytics', 'capacity', 'status', 'priority', 'contributor'],
         color: '#f59e0b', // amber
-        order: 4
+        order: 5
     }
 };
 
 // Current workflow state
-let currentWorkflowStage = 'strategic';
+let currentWorkflowStage = 'discovery';
 let isWorkflowNavExpanded = true;
 
 // Initialize workflow navigation
@@ -74,20 +84,36 @@ function initWorkflowNav() {
 
 // Detect workflow stage based on current active view
 function detectStageFromView() {
-    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
-    if (!activeView) return;
+    try {
+        const sections = document.querySelectorAll('.view-section.active');
+        if (sections.length === 0) return;
+        
+        // Priority: Use the last active section (most recently switched)
+        const activeSection = sections[sections.length - 1];
+        const activeView = activeSection.id.replace('-view', '');
+        
+        if (!activeView) return;
 
-    // Find which stage contains this view
-    for (const [stageKey, stage] of Object.entries(WORKFLOW_STAGES)) {
-        if (stage.views.includes(activeView)) {
-            currentWorkflowStage = stageKey;
-            localStorage.setItem('khyaal_workflow_stage', stageKey);
-            return;
+        // Find which stage contains this view
+        for (const [stageKey, stage] of Object.entries(WORKFLOW_STAGES)) {
+            if (stage.views.includes(activeView)) {
+                const stageChanged = currentWorkflowStage !== stageKey;
+                currentWorkflowStage = stageKey;
+                window.khyaal_current_stage = stageKey; // Global sync
+                localStorage.setItem('khyaal_workflow_stage', stageKey);
+                
+                console.log(`🧬 Stage Detected: ${stageKey} (from ${activeView})`);
+                
+                if (stageChanged && typeof updateWorkflowStageUI === 'function') {
+                    updateWorkflowStageUI();
+                }
+                return;
+            }
         }
+    } catch (e) {
+        console.error('❌ detectStageFromView Error:', e);
     }
 }
-
-// Switch workflow stage
 function switchWorkflowStage(stageKey) {
     if (!WORKFLOW_STAGES[stageKey]) {
         console.error(`Invalid workflow stage: ${stageKey}`);
@@ -163,8 +189,8 @@ function toggleStrategyMenu() {
     const isHidden = container.classList.contains('hidden');
     if (isHidden) {
         renderWorkflowNav(); // Fresh render
-        container.classList.remove('hidden');
-        backdrop.classList.remove('hidden');
+        container.classList.remove('hidden', 'pointer-events-none');
+        backdrop.classList.remove('hidden', 'pointer-events-none');
         container.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
         
         // Auto-focus on active/priority stage
@@ -172,16 +198,17 @@ function toggleStrategyMenu() {
         
         // Close on click outside
         const closeHandler = (e) => {
-            if (!container.contains(e.target) && !document.getElementById('breadcrumb-nav').contains(e.target)) {
-                container.classList.add('hidden');
-                backdrop.classList.add('hidden');
-                document.removeEventListener('click', closeHandler);
+            if (e.target === backdrop) {
+                toggleStrategyMenu();
+                backdrop.removeEventListener('click', closeHandler);
             }
         };
-        setTimeout(() => document.addEventListener('click', closeHandler), 10);
+        backdrop.addEventListener('click', closeHandler);
+        
+        console.log('📖 Strategic Navigation opened');
     } else {
-        container.classList.add('hidden');
-        backdrop.classList.add('hidden');
+        container.classList.add('hidden', 'pointer-events-none');
+        backdrop.classList.add('hidden', 'pointer-events-none');
     }
 }
 
@@ -320,7 +347,7 @@ function renderWorkflowNav() {
                                             'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links', 
                                             'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data', 
                                             'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk', 
-                                            'contributor': '👥 Team', 'gantt': '📅 Gantt'
+                                            'contributor': '👥 Team', 'gantt': '📅 Gantt', 'ideation': '💡 Ideas', 'spikes': '🧪 Spikes'
                                         };
                                         const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
                                         const isViewActive = activeView === view;
@@ -414,7 +441,9 @@ function renderWorkflowNavPill(viewKey) {
         'status': '📍 Status',
         'priority': '🔥 Priority',
         'contributor': '👥 Contributors',
-        'gantt': '📅 Gantt'
+        'gantt': '📅 Gantt',
+        'ideation': '💡 Ideation',
+        'spikes': '🧪 Spikes'
     };
 
     const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
@@ -455,20 +484,19 @@ function isStageAvailableInCurrentMode(stageKey) {
     const stage = WORKFLOW_STAGES[stageKey];
     if (!stage) return false;
 
-    // Get current mode
     const currentMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
-    // Developer mode: Only show Execution and Reporting stages
+    // Developer mode focus: Definition & Delivery (Planning & Execution)
     if (currentMode === 'dev') {
-        return ['execution', 'reporting'].includes(stageKey);
+        return ['definition', 'delivery', 'review'].includes(stageKey);
     }
 
-    // Executive mode: Only show Strategic and Reporting stages
+    // Executive mode focus: Discovery, Vision & Review (Strategic & Reporting)
     if (currentMode === 'exec') {
-        return ['strategic', 'reporting'].includes(stageKey);
+        return ['discovery', 'vision', 'review'].includes(stageKey);
     }
 
-    // PM mode: Show all stages
+    // PM mode: Full Lifecycle
     return true;
 }
 
@@ -494,39 +522,44 @@ function getRecommendedNextAction() {
     if (!stage) return null;
 
     const recommendations = {
-        strategic: {
-            title: 'Define Your Strategy',
+        discovery: {
+            title: 'Explore Discovery',
+            actions: [
+                { text: 'Add new ideation item', view: 'ideation' },
+                { text: 'Explore technical spikes', view: 'spikes' },
+                { text: 'Analyze market horizons', view: 'ideation' }
+            ]
+        },
+        vision: {
+            title: 'Align Vision',
             actions: [
                 { text: 'Create OKRs for this quarter', view: 'okr' },
-                { text: 'Define Epics aligned with OKRs', view: 'epics' },
+                { text: 'Define Strategic Epics', view: 'epics' },
                 { text: 'Review strategic alignment', view: 'roadmap' }
             ]
         },
-        planning: {
-            title: 'Plan Your Work',
+        definition: {
+            title: 'Define Requirements',
             actions: [
-                { text: 'Groom and prioritize backlog', view: 'backlog' },
+                { text: 'Groom and scope stories', view: 'backlog' },
                 { text: 'Plan next sprint', view: 'sprint' },
-                { text: 'Set planning horizons on roadmap', view: 'roadmap' },
                 { text: 'Schedule upcoming releases', view: 'releases' }
             ]
         },
-        execution: {
-            title: 'Execute Tasks',
+        delivery: {
+            title: 'Execute Delivery',
             actions: [
-                { text: 'Review your assigned tasks', view: 'my-tasks' },
                 { text: 'Update task status on Kanban', view: 'kanban' },
-                { text: 'Resolve blockers and dependencies', view: 'dependency' },
-                { text: 'Track progress by track', view: 'track' }
+                { text: 'Resolve blockers & dependencies', view: 'dependency' },
+                { text: 'Track delivery by track', view: 'track' }
             ]
         },
-        reporting: {
-            title: 'Review Progress',
+        review: {
+            title: 'Review Pulse',
             actions: [
-                { text: 'View executive dashboard', view: 'dashboard' },
-                { text: 'Analyze velocity and trends', view: 'analytics' },
-                { text: 'Review team capacity', view: 'capacity' },
-                { text: 'Check status across all work', view: 'status' }
+                { text: 'View executive pulse', view: 'dashboard' },
+                { text: 'Analyze cycle velocity', view: 'analytics' },
+                { text: 'Review team performance', view: 'contributor' }
             ]
         }
     };
@@ -588,3 +621,12 @@ window.getCurrentWorkflowStage = getCurrentWorkflowStage;
 window.getRecommendedNextAction = getRecommendedNextAction;
 window.showRecommendedActions = showRecommendedActions;
 window.updateCommandStripNav = updateCommandStripNav;
+window.detectStageFromView = detectStageFromView;
+window.toggleStrategyMenu = toggleStrategyMenu; // Global exposure for perspective buttons
+
+// 4. Synergistic Initialization: Force accurate state sync 
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Finalizing navigation sync...');
+    detectStageFromView();
+    updateCommandStripNav();
+});

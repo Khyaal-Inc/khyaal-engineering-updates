@@ -13,7 +13,7 @@ const MODE_CONFIG = {
         availableViews: [
             'epics', 'roadmap', 'backlog', 'sprint', 'kanban',
             'dependency', 'okr', 'capacity', 'analytics',
-            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard'
+            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard', 'ideation', 'spikes'
         ],
         description: 'Strategic planning, backlog grooming, sprint management',
         primaryNavOrder: ['okr', 'roadmap', 'epics', 'releases', 'backlog', 'sprint', 'my-tasks', 'kanban', 'track', 'dashboard', 'analytics', 'capacity']
@@ -24,7 +24,7 @@ const MODE_CONFIG = {
         color: 'green',
         defaultView: 'my-tasks',
         availableViews: [
-            'my-tasks', 'kanban', 'track', 'dependency', 'sprint', 'workflow'
+            'my-tasks', 'kanban', 'track', 'dependency', 'sprint', 'workflow', 'ideation', 'spikes'
         ],
         description: 'Task execution, blocker resolution, sprint focus',
         primaryNavOrder: ['my-tasks', 'kanban', 'track', 'sprint', 'dependency']
@@ -35,7 +35,7 @@ const MODE_CONFIG = {
         color: 'purple',
         defaultView: 'dashboard',
         availableViews: [
-            'dashboard', 'epics', 'okr', 'analytics', 'roadmap', 'releases'
+            'dashboard', 'epics', 'okr', 'analytics', 'roadmap', 'releases', 'ideation', 'spikes'
         ],
         description: 'High-level health, strategic alignment, reporting',
         primaryNavOrder: ['dashboard', 'okr', 'epics', 'roadmap', 'releases', 'analytics']
@@ -56,6 +56,8 @@ const VIEW_METADATA = {
     'dashboard': { label: '📊 Dashboard', category: 'primary' },
     'analytics': { label: '📈 Analytics', category: 'primary' },
     'capacity': { label: '⚖️ Capacity', category: 'primary' },
+    'ideation': { label: '💡 Ideation', category: 'primary' },
+    'spikes': { label: '🧪 Spikes', category: 'primary' },
     'status': { label: 'By Status', category: 'more' },
     'priority': { label: 'By Priority', category: 'more' },
     'contributor': { label: 'By Contributor', category: 'more' },

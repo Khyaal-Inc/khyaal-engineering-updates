@@ -240,48 +240,80 @@ function updateTabCounts() {
 }
 
 function switchView(view) {
-    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    
-    const btn = document.getElementById(`btn-${view}`);
-    if (btn) btn.classList.add('active');
-    
-    console.log(`🎯 switchView('${view}') called`);
-    const vSection = document.getElementById(`${view}-view`);
-    if (vSection) {
-        console.log(`✅ Found #${view}-view, adding 'active' class`);
-        vSection.classList.add('active');
-    } else {
-        console.error(`❌ vSection #${view}-view NOT found!`);
+    try {
+        window.currentActiveView = view; // Set global state immediately
+        
+        const targetId = `${view}-view`;
+        const vSection = document.getElementById(targetId);
+        
+        console.log(`🎯 switchView('${view}') - DOM Analysis:`, {
+            exists: !!vSection,
+            allSections: document.querySelectorAll('.view-section').length,
+            targetId: targetId
+        });
+        
+        // Terminal Diagnostic: If search failed, log what's actually there
+        if (!vSection) {
+            const allIds = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
+            console.warn('❌ CRITICAL: Target view missing. Current DOM IDs:', allIds.slice(0, 50));
+        }
+        
+        document.querySelectorAll('.view-section').forEach(v => {
+            v.classList.remove('active');
+            v.style.display = 'none'; // Force hide
+        });
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        
+        const btn = document.getElementById(`btn-${view}`);
+        if (btn) btn.classList.add('active');
+        
+        if (vSection) {
+            vSection.classList.add('active');
+            vSection.style.display = 'block'; // Force show
+            console.log(`✅ switchView('${view}') - Stage Sync Initiated`);
+            
+            // Sync breadcrumb & ribbon stage
+            if (typeof detectStageFromView === 'function') {
+                detectStageFromView();
+            }
+        }
+        
+        // Render the appropriate view
+        if (view === 'track') renderTrackView();
+        if (view === 'workflow') renderWorkflowView();
+        if (view === 'ideation' || view === 'spikes') {
+            if (typeof renderDiscoveryView === 'function') renderDiscoveryView(view);
+        }
+        if (view === 'roadmap') renderRoadmapView();
+        if (view === 'epics') renderEpicsView();
+        if (view === 'status') renderStatusView();
+        if (view === 'priority') renderPriorityView();
+        if (view === 'contributor') renderContributorView();
+        if (view === 'gantt') renderGanttView();
+        if (view === 'backlog') renderBacklogView();
+        if (view === 'sprint') renderSprintView();
+        if (view === 'releases') renderReleasesView();
+        if (view === 'dependency') renderDependencyView();
+        if (view === 'kanban') renderKanbanView();
+        if (view === 'okr') renderOkrView();
+        if (view === 'analytics') renderAnalyticsView();
+        if (view === 'capacity') renderCapacityView();
+        if (view === 'my-tasks') renderMyTasksView();
+        if (view === 'dashboard') renderExecutiveDashboard();
+        if (view === 'ideation' || view === 'spikes') {
+            if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
+        }
+        
+        renderBlockerStrip();
+        buildTagFilterBar();
+        updateTabCounts();
+        
+        // Synergistic update: Update stage detection and command strip breadcrumbs AFTER view has rendered
+        if (typeof detectStageFromView === 'function') detectStageFromView();
+        if (typeof updateCommandStripNav === 'function') updateCommandStripNav();
+    } catch (e) {
+        console.error('❌ switchView Error:', e);
     }
-    
-    // Render the appropriate view
-    if (view === 'track') renderTrackView();
-    if (view === 'workflow') {
-        console.log('🏗️ Triggering renderWorkflowView()...');
-        renderWorkflowView();
-    }
-    if (view === 'roadmap') renderRoadmapView();
-    if (view === 'epics') renderEpicsView();
-    if (view === 'status') renderStatusView();
-    if (view === 'priority') renderPriorityView();
-    if (view === 'contributor') renderContributorView();
-    if (view === 'gantt') renderGanttView();
-    if (view === 'backlog') renderBacklogView();
-    if (view === 'sprint') renderSprintView();
-    if (view === 'releases') renderReleasesView();
-    if (view === 'dependency') renderDependencyView();
-    if (view === 'kanban') renderKanbanView();
-    if (view === 'okr') renderOkrView();
-    if (view === 'analytics') renderAnalyticsView();
-    if (view === 'capacity') renderCapacityView();
-    if (view === 'my-tasks') renderMyTasksView();
-    if (view === 'dashboard') renderExecutiveDashboard();
-    
-    renderBlockerStrip();
-    buildTagFilterBar();
-    updateTabCounts();
-    if (typeof updateCommandStripNav === 'function') updateCommandStripNav();
 }
 
 // ------ Persistence Helpers ------
@@ -340,6 +372,22 @@ function buildContributorList() {
         )
     );
     ALL_CONTRIBUTORS = Array.from(set).sort();
+}
+
+// Export for global use
+window.switchView = switchView;
+window.initDashboard = initDashboard;
+if (typeof addItem === 'function') {
+    window.openAddItemModal = addItem; // Map ribbon buttons to CMS addItem
+} else {
+    // Fallback if cms.js hasn't loaded yet
+    window.openAddItemModal = (type) => {
+        if (typeof addItem === 'function') {
+            addItem(type);
+        } else {
+            console.error('❌ CMS addItem function not found!');
+        }
+    };
 }
 
 // ------ Keyboard Shortcuts ------
