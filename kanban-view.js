@@ -65,7 +65,7 @@ function renderKanbanView() {
 
     // Render Kanban board
     container.innerHTML = `
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl">
             <div id="kanban-ribbon" class="bg-slate-50/50 p-3 rounded-2xl border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
                 <div class="flex items-center gap-4 px-2">
                     <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
@@ -110,19 +110,19 @@ function renderKanbanView() {
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[700px]"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
                                          ondragover="handleKanbanDragOver(event)"
                                          ondragleave="handleKanbanDragLeave(event)">
-                                        <div class="flex justify-between items-center mb-5 px-1">
+                                        <div class="flex justify-between items-center mb-5 px-1 flex-shrink-0">
                                             <div class="flex items-center gap-2">
                                                 <h4 class="text-[11px] font-black uppercase tracking-wider text-slate-600">${col.title}</h4>
                                                 <span class="text-[9px] font-bold bg-white text-slate-400 px-1.5 py-0.5 rounded border border-slate-100">${columnItems.length}</span>
                                             </div>
                                         </div>
-                                        <div class="space-y-4 kanban-cards min-h-[120px]">
+                                        <div class="space-y-4 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
                                             ${columnItems.map(item => renderKanbanCard(item)).join('')}
                                         </div>
                                     </div>

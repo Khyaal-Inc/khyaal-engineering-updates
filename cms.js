@@ -704,8 +704,8 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
 
 function closeCmsModal() {
     const modal = document.getElementById('cms-modal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = ''; // Unlock global page scroll
     editContext = null;
 }
 
@@ -1412,10 +1412,6 @@ function deleteSubtrack(ti, si) {
     updateTabCounts();
 }
 
-function closeCmsModal() {
-    document.getElementById('cms-modal').classList.remove('active');
-    editContext = null;
-}
 
 /**
  * Real-time ROI Calculator for the form
