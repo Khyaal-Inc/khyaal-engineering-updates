@@ -366,10 +366,14 @@ function renderField(fieldName, item) {
                 <div class="field-wrapper">
                     <label class="field-label">🚦 Status</label>
                     <select id="edit-status" class="cms-input">
-                        <option value="done" ${val === 'done' ? 'selected' : ''}>Done</option>
-                        <option value="now" ${val === 'now' ? 'selected' : ''}>Now</option>
-                        <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Next</option>
-                        <option value="later" ${val === 'later' ? 'selected' : ''}>Later</option>
+                        <option value="later" ${val === 'later' ? 'selected' : ''}>Backlog (Later)</option>
+                        <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Planned (Next)</option>
+                        <option value="now" ${val === 'now' ? 'selected' : ''}>Developing (Now)</option>
+                        <option value="qa" ${val === 'qa' ? 'selected' : ''}>Testing (QA)</option>
+                        <option value="review" ${val === 'review' ? 'selected' : ''}>In Review (UAT)</option>
+                        <option value="blocked" ${val === 'blocked' ? 'selected' : ''}>Blocked (Urgent)</option>
+                        <option value="onhold" ${val === 'onhold' ? 'selected' : ''}>On Hold (Parked)</option>
+                        <option value="done" ${val === 'done' ? 'selected' : ''}>Production (Done)</option>
                     </select>
                 </div>
             `;

@@ -23,12 +23,16 @@ function renderKanbanView() {
     const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null;
     const filteredItems = modeFilter ? items.filter(modeFilter) : items;
 
-    // Status columns definition
+    // Status columns definition: Full Engineering & Product Lifecycle
     const statusCols = [
-        { key: 'backlog', title: 'Backlog', status: 'later', color: 'border-slate-200 bg-slate-50/30' },
-        { key: 'now', title: 'Now', status: 'now', color: 'border-blue-100 bg-blue-50/20' },
-        { key: 'next', title: 'Next', status: 'next', color: 'border-orange-100 bg-orange-50/20' },
-        { key: 'done', title: 'Done', status: 'done', color: 'border-emerald-100 bg-emerald-50/20' }
+        { key: 'backlog', title: 'Backlog (Later)', status: 'later', color: 'border-slate-200 bg-slate-50/20' },
+        { key: 'planned', title: 'Planned (Next)', status: 'next', color: 'border-orange-200 bg-orange-50/20' },
+        { key: 'developing', title: 'Developing (Now)', status: 'now', color: 'border-blue-200 bg-blue-50/30' },
+        { key: 'testing', title: 'Testing (QA)', status: 'qa', color: 'border-purple-200 bg-purple-50/20' },
+        { key: 'review', title: 'In Review (UAT)', status: 'review', color: 'border-indigo-200 bg-indigo-50/20' },
+        { key: 'blocked', title: 'Blocked (Urgent)', status: 'blocked', color: 'border-red-200 bg-red-50/30' },
+        { key: 'onhold', title: 'On Hold (Parked)', status: 'onhold', color: 'border-amber-200 bg-amber-50/30' },
+        { key: 'done', title: 'Production (Done)', status: 'done', color: 'border-emerald-200 bg-emerald-50/30' }
     ];
 
     // Grouping logic
@@ -63,6 +67,11 @@ function renderKanbanView() {
         swimlaneGroups = [{ id: 'all', title: '', items: filteredItems }];
     }
 
+    // Calculate dynamic height based on swimlane mode (Hardware-guaranteed style)
+    const isFlatView = swimlane === 'none';
+    const columnMaxHeight = isFlatView ? 'calc(100vh - 120px)' : '650px';
+    const columnHeightClass = isFlatView ? '' : 'h-fit';
+
     // Render Kanban board
     container.innerHTML = `
         <div class="bg-white p-3 rounded-3xl border border-slate-200 shadow-xl">
@@ -96,13 +105,14 @@ function renderKanbanView() {
             </div>
 
             <div class="kanban-board flex flex-col gap-12 overflow-x-auto pb-4 custom-scrollbar px-2">
-                ${swimlaneGroups.map(group => `
-                    <div class="kanban-row">
+                ${swimlaneGroups.map((group, groupIdx) => `
+                    <div class="kanban-row ${groupIdx > 0 ? 'pt-2' : ''}">
                         ${group.title ? `
                             <div class="flex items-center gap-3 mb-4 px-2">
-                                <div class="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
-                                <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">${group.title}</h3>
-                                <div class="flex-1 h-[1px] bg-slate-100 ml-2"></div>
+                                <span class="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-md shadow-indigo-100">
+                                    ${group.title}
+                                </span>
+                                <div class="flex-1 h-[1px] bg-slate-100"></div>
                             </div>
                         ` : ''}
                         
@@ -110,7 +120,8 @@ function renderKanbanView() {
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-140px)] w-[320px] flex-shrink-0 shadow-sm"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col ${columnHeightClass} w-[310px] flex-shrink-0 shadow-sm"
+                                         style="max-height: ${columnMaxHeight};"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
@@ -316,8 +327,9 @@ function openItemQuickView(itemId) {
         });
     });
 
-    if (trackIndex === -1 || subtrackIndex === -1 || itemIndex === -1) return;
-    if (typeof openItemEdit === 'function') openItemEdit(trackIndex, subtrackIndex, itemIndex);
+    if (trackIndex !== -1 && typeof openItemEdit === 'function') {
+        openItemEdit(trackIndex, subtrackIndex, itemIndex);
+    }
 }
 
 function showToast(message, type = 'success') {
