@@ -13,8 +13,8 @@ function renderKanbanView() {
     const items = [];
     UPDATE_DATA.tracks.forEach((track, ti) => {
         track.subtracks.forEach((subtrack, si) => {
-            subtrack.items.forEach(item => {
-                items.push({ ...item, track: track.name, trackIndex: ti, subtrackIndex: si });
+            subtrack.items.forEach((item, ii) => {
+                items.push({ ...item, track: track.name, trackIndex: ti, subtrackIndex: si, itemIndex: ii });
             });
         });
     });
@@ -95,7 +95,7 @@ function renderKanbanView() {
                 </div>
             </div>
 
-            <div class="kanban-board flex flex-col gap-8">
+            <div class="kanban-board flex gap-8 overflow-x-auto pb-4 custom-scrollbar">
                 ${swimlaneGroups.map(group => `
                     <div class="kanban-row">
                         ${group.title ? `
@@ -110,7 +110,7 @@ function renderKanbanView() {
                             ${statusCols.map(col => {
                                 const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[700px]"
+                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300 flex flex-col max-h-[calc(100vh-320px)] min-w-[320px] shadow-sm"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
@@ -152,25 +152,33 @@ function renderKanbanCard(item) {
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
 
     return `
-        <div class="kanban-card bg-white p-4 rounded-xl border-l-[3px] ${priorityColor} shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing relative group"
+        <div class="kanban-card bg-white p-4 rounded-xl border border-slate-100 border-l-[4px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
              draggable="true"
              ondragstart="handleKanbanDragStart(event)"
              ondrop="handleKanbanDrop(event)"
              data-item-id="${item.id}"
-             onclick="openItemQuickView('${item.id}')">
-            <div class="flex justify-between items-start mb-3">
-                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">${item.track || 'No Track'}</span>
+             onclick="openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})">
+            
+            <div class="flex justify-between items-start mb-2.5">
+                <span class="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">${item.track || 'No Track'}</span>
                 ${storyPoints}
             </div>
-            <p class="text-xs font-bold text-slate-800 mb-2 leading-relaxed">${item.text}</p>
+
+            <h4 class="text-[13px] font-black text-slate-900 leading-snug mb-3 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
+            
             ${epicBadge}
-            <div class="flex justify-between items-center text-[10px] text-slate-400 mt-4 pt-3 border-t border-slate-50">
+
+            <div class="flex justify-between items-center text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-100/60">
                 <div class="flex items-center gap-1.5 font-bold">
-                    <span>👤</span>
-                    <span>${contributors}</span>
+                    <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-400 border border-slate-200">
+                        ${(item.contributors?.[0] || 'U').charAt(0)}
+                    </div>
+                    <span class="capitalize">${contributors}</span>
                 </div>
-                ${item.blocker ? '<span class="text-[9px] font-black bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 animate-pulse">BLOCKED</span>' : 
-                  (item.due ? `<span>📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
+                <div class="flex items-center gap-2">
+                    ${item.blocker ? '<span class="text-[9px] font-black bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 animate-pulse">🛑 BLOCKED</span>' : 
+                      (item.due ? `<span class="font-black text-slate-400">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
+                </div>
             </div>
             
             <!-- Insertion indicator -->
