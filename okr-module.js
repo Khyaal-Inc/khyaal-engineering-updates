@@ -83,6 +83,23 @@
 //
 // ==========================================
 
+// STATE
+let showExecExecutionDetails = false;
+
+// Helpers for lifecycle and visibility
+function getOkrLifecycleStage(progress) {
+    if (progress === 0) return { label: 'Discovery', color: 'bg-slate-100 text-slate-600 border-slate-200', icon: '🔍' };
+    if (progress <= 10) return { label: 'Vision', color: 'bg-indigo-50 text-indigo-700 border-indigo-100', icon: '🌟' };
+    if (progress <= 30) return { label: 'Definition', color: 'bg-blue-50 text-blue-700 border-blue-100', icon: '📐' };
+    if (progress <= 95) return { label: 'Delivery', color: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: '🚀' };
+    return { label: 'Review', color: 'bg-purple-50 text-purple-700 border-purple-100', icon: '🏁' };
+}
+
+function toggleExecDetail() {
+    showExecExecutionDetails = !showExecExecutionDetails;
+    if (typeof renderOkrView === 'function') renderOkrView();
+}
+
 function renderOkrView() {
     const container = document.getElementById('okr-view');
     if (!container) {
@@ -184,201 +201,250 @@ function renderOkrView() {
 
 function renderOkrCard(okr, idx) {
     const progress = okr.overallProgress || calculateOKRProgress(okr);
-    const progressColor = progress >= 90 ? 'bg-green-500' : progress >= 70 ? 'bg-blue-500' : progress >= 50 ? 'bg-amber-500' : 'bg-red-500';
+    const progressColor = progress >= 90 ? 'bg-emerald-500' : progress >= 70 ? 'bg-blue-500' : progress >= 50 ? 'bg-amber-500' : 'bg-rose-500';
     const showManagement = (typeof shouldShowManagement === 'function') ? shouldShowManagement() : false;
+    const mode = (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
+    const stage = getOkrLifecycleStage(progress);
 
-    // Management Actions (Edit/Delete buttons)
+    // Management Actions
     const cmsActions = showManagement ? `
         <div class="flex gap-2">
-            <button onclick="openOKREdit(${idx})" class="cms-btn cms-btn-secondary text-xs px-3 py-1.5" title="Edit OKR">
-                ✏️ Edit
-            </button>
-            <button onclick="deleteOKR(${idx})" class="cms-btn cms-btn-secondary text-xs px-3 py-1.5 hover:bg-red-50 hover:text-red-600" title="Delete OKR">
-                🗑️ Delete
-            </button>
+            <button onclick="openOKREdit(${idx})" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest px-2 py-1">Edit</button>
+            <button onclick="deleteOKR(${idx})" class="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-widest px-2 py-1">Delete</button>
         </div>
     ` : '';
 
+    const isExec = mode === 'exec';
+
     return `
-        <div class="bg-white p-3 rounded-lg border-2 border-slate-900 shadow-lg mb-4">
-            <!-- Header -->
-            <div class="flex justify-between items-start mb-4">
-                <div class="flex-1">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${okr.quarter}</span>
-                    <h2 class="text-2xl font-bold text-slate-900 mt-1">${okr.objective}</h2>
-                    <p class="text-slate-600 mt-1">Owner: ${okr.owner}</p>
-                </div>
-                <div class="flex flex-col items-end gap-3">
-                    ${cmsActions}
-                    <div class="text-right">
-                        <div class="text-4xl font-black ${progress >= 70 ? 'text-green-600' : 'text-slate-900'}">${progress}%</div>
-                        <div class="text-xs text-slate-500 mt-1">Overall Progress</div>
+        <div class="bg-white rounded-2xl border border-slate-300 shadow-md hover:shadow-xl transition-all mb-6 overflow-hidden okr-card-hover">
+            <!-- Top Status Bar -->
+            <div class="h-1 w-full ${progressColor} opacity-80"></div>
+            
+            <div class="p-6">
+                <!-- Header: Lifecycle + Meta -->
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${stage.color} flex items-center gap-1.5 shadow-sm">
+                                <span>${stage.icon}</span> ${stage.label} Stage
+                            </div>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">${okr.quarter}</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight leading-tight mt-1">${okr.objective}</h2>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
+                            <span class="text-xs font-bold text-slate-600">${okr.owner}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-end gap-4">
+                        ${cmsActions}
+                        <div class="relative flex items-center justify-center w-16 h-16">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" class="text-slate-100" />
+                                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="transparent" 
+                                    stroke-dasharray="${2 * Math.PI * 28}" 
+                                    stroke-dashoffset="${2 * Math.PI * 28 * (1 - progress / 100)}" 
+                                    class="${progress >= 70 ? 'text-emerald-500' : 'text-indigo-500'} transition-all duration-1000" />
+                            </svg>
+                            <span class="absolute text-sm font-black text-slate-900">${progress}%</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Progress Bar -->
-            <div class="w-full bg-slate-200 rounded-full h-3 mb-6">
-                <div class="${progressColor} h-3 rounded-full transition-all" style="width: ${progress}%"></div>
-            </div>
+                <!-- Strategic Summary (Executive Only) -->
+                ${isExec && !showExecExecutionDetails ? `
+                    <div class="bg-indigo-50/30 rounded-xl p-5 border border-indigo-200 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-[10px] font-black uppercase text-indigo-900/60 tracking-widest">Strategic Pulse & ROI Insight</h4>
+                            <button onclick="toggleExecDetail()" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 underline uppercase tracking-widest">
+                                View Execution Details →
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-0 border border-indigo-100/50 rounded-lg overflow-hidden bg-white/50">
+                            <div class="p-4 border-r border-indigo-100/50 space-y-1">
+                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Focus Area</div>
+                                <div class="text-xs font-bold text-slate-700">${okr.keyResults[0]?.description.split(' ').slice(0, 3).join(' ')}...</div>
+                            </div>
+                            <div class="p-4 border-r border-indigo-100/50 space-y-1">
+                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Strategic Drift</div>
+                                <div class="text-xs font-bold text-emerald-600 flex items-center gap-1.5 leading-none">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Healthy / On-Track
+                                </div>
+                            </div>
+                            <div class="p-4 space-y-1">
+                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Target Outcome</div>
+                                <div class="text-xs font-bold text-slate-700">${okr.keyResults.length} Key Results Active</div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
 
-            <!-- Key Results (Adaptive Density) -->
-            <div class="space-y-4">
-                <h3 class="font-bold text-slate-900 text-lg mb-3">Key Results</h3>
-                ${((typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm') === 'exec') 
-                    ? `<div class="bg-slate-50 p-4 rounded-xl border border-slate-100 italic text-sm text-slate-500">Key Result details are condensed for Executive overview. Check ROI funnel below for impact.</div>`
-                    : okr.keyResults.map(kr => renderKeyResult(kr)).join('')}
-            </div>
+                <!-- Key Results (Curated or Exhaustive) -->
+                <div class="space-y-3">
+                    ${(!isExec || showExecExecutionDetails) ? `
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Key Results</h3>
+                            ${isExec ? `<button onclick="toggleExecDetail()" class="text-[9px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">← Back to Overview</button>` : ''}
+                        </div>
+                        ${okr.keyResults.map(kr => renderKeyResult(kr)).join('')}
+                    ` : ''}
+                </div>
 
-            <!-- Linked Items -->
-            ${renderLinkedItems(okr)}
+                <!-- Linked Items (Funnel) -->
+                ${renderLinkedItems(okr, isExec && !showExecExecutionDetails)}
+            </div>
         </div>
     `;
 }
 
 function renderKeyResult(kr) {
-    const progressColor = kr.progress >= 100 ? 'bg-green-500' : kr.progress >= 70 ? 'bg-blue-500' : kr.progress >= 50 ? 'bg-amber-500' : 'bg-orange-500';
-    const statusBadge = kr.status === 'achieved' ? '✅' : kr.status === 'on-track' ? '🟢' : kr.status === 'at-risk' ? '🟡' : '🔴';
+    const progressColor = kr.progress >= 100 ? 'bg-emerald-500' : kr.progress >= 70 ? 'bg-blue-500' : kr.progress >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+    const statusSign = kr.status === 'achieved' ? 'text-emerald-500' : kr.status === 'on-track' ? 'text-blue-500' : kr.status === 'at-risk' ? 'text-amber-500' : 'text-rose-500';
 
     return `
-        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div class="flex justify-between items-start mb-2">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">${statusBadge}</span>
-                        <p class="font-semibold text-slate-900">${kr.description}</p>
+        <div class="group p-4 bg-slate-50/50 hover:bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="w-1.5 h-1.5 rounded-full ${kr.status === 'achieved' ? 'bg-emerald-500' : 'bg-blue-400 group-hover:animate-pulse'}"></div>
+                    <p class="font-bold text-slate-800 text-sm truncate tracking-tight">${kr.description}</p>
+                </div>
+                <div class="flex items-center gap-4 shrink-0">
+                    <div class="text-right">
+                        <span class="text-xs font-black text-slate-900 tracking-tight">${kr.current} / ${kr.target}</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter ml-0.5">${kr.unit}</span>
+                    </div>
+                    <div class="w-32 bg-slate-200 border border-slate-300/50 rounded-full h-2 relative overflow-hidden">
+                        <div class="${progressColor} h-full rounded-full transition-all duration-1000" style="width: ${kr.progress}%"></div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <span class="text-xl font-bold text-slate-900">${kr.current} / ${kr.target}</span>
-                    <span class="text-sm text-slate-600 ml-1">${kr.unit}</span>
+            </div>
+            ${kr.linkedEpic ? `
+                <div class="flex items-center gap-1.5 mt-2 ml-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Impact Source:</span>
+                    <span class="text-[9px] font-bold text-indigo-500 hover:text-indigo-700 cursor-pointer transition-colors">${kr.linkedEpic}</span>
                 </div>
-            </div>
-
-            <div class="w-full bg-slate-200 rounded-full h-2 mt-2">
-                <div class="${progressColor} h-2 rounded-full transition-all" style="width: ${kr.progress}%"></div>
-            </div>
-
-            ${kr.linkedEpic ? `<div class="text-xs text-slate-500 mt-2">🔗 Linked to Epic: ${kr.linkedEpic}</div>` : ''}
+            ` : ''}
         </div>
     `;
 }
 
-function renderLinkedItems(okr) {
+function renderLinkedItems(okr, isCondensed = false) {
     const data = window.UPDATE_DATA || {};
     const okrId = okr.id;
 
-    // 1. Find Linked Epics
+    // 1. Find Linked items
     const epics = (data.metadata?.epics || []).filter(e => e.linkedOKR === okrId);
-
-    // 2. Find Linked Roadmap Horizons
     const horizons = (data.metadata?.roadmap || []).filter(h => h.linkedObjective === okrId);
-
-    // 3. Find Linked Sprints
     const sprints = (data.metadata?.sprints || []).filter(s => s.linkedOKR === okrId);
-
-    // 4. Find Linked Releases
     const releases = (data.metadata?.releases || []).filter(r => r.linkedOKR === okrId);
 
-    // 5. Find all individual tasks linked to the epics of this OKR (for progress)
-    const epicIds = epics.map(e => e.id);
-    const tasks = [];
-    (data.tracks || []).forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                if (epicIds.includes(item.epicId)) {
-                    tasks.push(item);
-                }
+    // 5. Find tasks for Execution Pulse (only if not condensed)
+    let tasks = [];
+    if (!isCondensed) {
+        const epicIds = epics.map(e => e.id);
+        (data.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if (epicIds.includes(item.epicId)) tasks.push(item);
+                });
             });
         });
-    });
+    }
 
     const hasLinkedContent = epics.length > 0 || horizons.length > 0 || sprints.length > 0 || releases.length > 0;
-
-    if (!hasLinkedContent) return `
-        <div class="mt-6 pt-6 border-t border-slate-100 italic text-sm text-slate-400">
-            No specific execution artifacts linked yet. Use the Epics or Roadmap views to align work to this objective.
-        </div>
-    `;
+    if (!hasLinkedContent) return '';
 
     const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
     
-    // PERSONA-AWARE DENSITY SHIFT
-    // Exec: focus on ROI & Roadmap (Horizons & Releases)
-    // Dev: focus on Execution (Epics & Sprints)
-    // PM: focus on everything
-    
-    const showEpics = mode === 'pm' || mode === 'dev';
+    // Adaptive visibility: if condensed (Exec view), hide epics/sprints entirely
+    const showEpics = !isCondensed && (mode === 'pm' || mode === 'dev');
     const showHorizons = mode === 'pm' || mode === 'exec';
-    const showSprints = mode === 'pm' || mode === 'dev';
+    const showSprints = !isCondensed && (mode === 'pm' || mode === 'dev');
     const showReleases = mode === 'pm' || mode === 'exec';
 
     return `
-        <div class="mt-4 pt-4 border-t border-slate-900/10">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">Strategic Alignment Funnel</h4>
-                <div class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-widest">${mode} Perspective</div>
+        <div class="mt-8 pt-6 border-t border-slate-300">
+            <div class="flex justify-between items-center mb-5">
+                <h4 class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Strategic Alignment Funnel</h4>
+                <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                    <div class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${mode} Perspective</div>
+                </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Supporting Epics -->
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 ${!showEpics ? 'opacity-40 grayscale' : ''}">
-                    <div class="text-[10px] font-black text-slate-400 uppercase mb-2">Supporting Epics</div>
-                    ${showEpics ? (epics.length > 0 ? epics.map(e => `
-                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
-                            <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                            <span class="text-xs font-bold text-slate-700 truncate">${e.name}</span>
-                        </div>
-                    `).join('') : '<div class="text-[10px] text-slate-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Exec view</div>'}
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Roadmap Alignment -->
+                ${showHorizons ? `
+                    <div class="bg-indigo-50/20 p-4 rounded-xl border border-indigo-200 shadow-sm">
+                        <div class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-3">Planning Horizon</div>
+                        ${horizons.length > 0 ? horizons.map(h => `
+                            <div class="flex items-center gap-2.5 mb-2 last:mb-0">
+                                <div class="w-1.5 h-3 rounded-full bg-indigo-500"></div>
+                                <span class="text-xs font-bold text-indigo-900 truncate">${h.label}</span>
+                            </div>
+                        `).join('') : '<div class="text-[10px] text-slate-400 italic font-bold">Unscheduled</div>'}
+                    </div>
+                ` : ''}
 
-                <!-- Roadmap Horizons -->
-                <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100 ${!showHorizons ? 'opacity-40 grayscale' : ''}">
-                    <div class="text-[10px] font-black text-indigo-400 uppercase mb-2">Roadmap Alignment</div>
-                    ${showHorizons ? (horizons.length > 0 ? horizons.map(h => `
-                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
-                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                            <span class="text-xs font-bold text-indigo-900 truncate">${h.label}</span>
-                        </div>
-                    `).join('') : '<div class="text-[10px] text-indigo-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Dev view</div>'}
-                </div>
+                <!-- Strategic Releases -->
+                ${showReleases ? `
+                    <div class="bg-purple-50/20 p-4 rounded-xl border border-purple-200 shadow-sm">
+                        <div class="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-3">Targeted Releases</div>
+                        ${releases.length > 0 ? releases.map(r => `
+                            <div class="flex items-center gap-2.5 mb-2 last:mb-0">
+                                <span class="text-xs">📦</span>
+                                <span class="text-xs font-bold text-purple-900 truncate">${r.name}</span>
+                            </div>
+                        `).join('') : '<div class="text-[10px] text-slate-400 italic">No release linked</div>'}
+                    </div>
+                ` : ''}
+
+                <!-- Supporting Epics -->
+                ${showEpics ? `
+                    <div class="bg-blue-50/20 p-4 rounded-xl border border-blue-200 shadow-sm">
+                        <div class="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-3">Supporting Epics</div>
+                        ${epics.length > 0 ? epics.map(e => `
+                            <div class="flex items-center gap-2.5 mb-2 last:mb-0">
+                                <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                <span class="text-xs font-bold text-blue-900 truncate">${e.name}</span>
+                            </div>
+                        `).join('') : '<div class="text-[10px] text-slate-400 italic">None linked</div>'}
+                    </div>
+                ` : ''}
 
                 <!-- Active Sprints -->
-                <div class="bg-emerald-50/30 p-3 rounded-lg border border-emerald-100 ${!showSprints ? 'opacity-40 grayscale' : ''}">
-                    <div class="text-[10px] font-black text-emerald-500 uppercase mb-2">Targeted Sprints</div>
-                    ${showSprints ? (sprints.length > 0 ? sprints.map(s => `
-                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
-                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                            <span class="text-xs font-bold text-emerald-900 truncate">${s.name}</span>
-                        </div>
-                    `).join('') : '<div class="text-[10px] text-emerald-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Exec view</div>'}
-                </div>
-
-                <!-- Targeted Releases -->
-                <div class="bg-amber-50/30 p-3 rounded-lg border border-amber-100 ${!showReleases ? 'opacity-40 grayscale' : ''}">
-                    <div class="text-[10px] font-black text-amber-500 uppercase mb-2">Strategic Releases</div>
-                    ${showReleases ? (releases.length > 0 ? releases.map(r => `
-                        <div class="flex items-center gap-2 mb-1.5 last:mb-0">
-                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                            <span class="text-xs font-bold text-amber-900 truncate">${r.name}</span>
-                        </div>
-                    `).join('') : '<div class="text-[10px] text-amber-300 italic">None linked</div>') : '<div class="text-[10px] text-slate-400">Hidden in Dev view</div>'}
-                </div>
+                ${showSprints ? `
+                    <div class="bg-emerald-50/20 p-4 rounded-xl border border-emerald-200 shadow-sm">
+                        <div class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-3">Execution Sprints</div>
+                        ${sprints.length > 0 ? sprints.map(s => `
+                            <div class="flex items-center gap-2.5 mb-2 last:mb-0">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 anim-ping"></div>
+                                <span class="text-xs font-bold text-emerald-900 truncate">${s.name}</span>
+                            </div>
+                        `).join('') : '<div class="text-[10px] text-slate-400 italic">None active</div>'}
+                    </div>
+                ` : ''}
             </div>
 
-            <!-- Execution Status -->
-            ${tasks.length > 0 ? `
-                <div class="mt-4 p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Execution Pulse</div>
-                        <div class="flex items-center gap-2">
-                             <div class="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-indigo-500" style="width: ${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}%"></div>
+            <!-- Execution Status Pulse -->
+            ${!isCondensed && tasks.length > 0 ? `
+                <div class="p-4 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-md">
+                    <div class="flex items-center gap-6">
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                             <div class="w-2 h-2 rounded-full bg-indigo-500"></div> Execution Pulse
+                        </div>
+                        <div class="flex items-center gap-3">
+                             <div class="h-2.5 w-48 bg-slate-100 rounded-full overflow-hidden border border-slate-300/50 shadow-inner">
+                                <div class="h-full bg-indigo-600 transition-all duration-1000" style="width: ${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}%"></div>
                              </div>
-                             <span class="text-[10px] font-bold text-slate-600">${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}% Tasks Done</span>
+                             <span class="text-[10px] font-black text-slate-800">${Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100)}% Momentum</span>
                         </div>
                     </div>
-                    <div class="text-[10px] font-bold text-slate-400">${tasks.length} total tasks across linked epics</div>
+                    <div class="text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1 rounded-full border border-slate-200">
+                        ${tasks.length} Operational Units
+                    </div>
                 </div>
             ` : ''}
         </div>
@@ -423,3 +489,4 @@ function editVision() {
 // Export
 window.renderOkrView = renderOkrView;
 window.editVision = editVision;
+window.toggleExecDetail = toggleExecDetail;

@@ -2184,3 +2184,26 @@ body {
     border-color: #1e293b;
     transform: translateY(-1px);
 }
+
+/* OKR Redesign Animations & Utilities */
+@keyframes soft-pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+.anim-ping {
+    animation: soft-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Premium Card Overrides */
+.view-section#okr-view {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.okr-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1; /* slate-300 */
+}
