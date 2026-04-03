@@ -21,16 +21,19 @@
 
 ## Feature Overview
 
-### 🚀 The 5-Stage Engineering Lifecycle
-The platform is architected around a **Vision-First** funnel. Every item in the engineering pulse moves through five distinct strategic stages:
+### 🚀 The 8-Stage Engineering Lifecycle
+The platform is architected around an **End-to-End Delivery** funnel. Every item in the engineering pulse moves through eight distinct strategic stages:
 
-| Stage | Name | Purpose | Next Action |
+| Stage | Name | Purpose | Shortcut |
 |---|---|---|---|
-| **Phase 1** | **Discovery** | R&D, Ideation, Technical Spikes | Define Vision/OKR |
-| **Phase 2** | **Vision** | Strategic Alignment (OKRs & Roadmap) | Create Plan/Epics |
-| **Phase 3** | **Definition** | Backlog Grooming, Sprints, Estimation | Start Sprint |
-| **Phase 4** | **Delivery** | Task Execution, Kanban, Dependencies | Ship Release |
-| **Phase 5** | **Review** | Velocity Analytics, Retro, KPI Burndown | Next Discovery |
+| **Phase 1** | **Backlog (Later)** | Future vision and unrefined ideas | 3 (Backlog) |
+| **Phase 2** | **Planned (Next)** | Groomed and ready for pickup | 2 (Roadmap) |
+| **Phase 3** | **Developing (Now)** | Active engineering in progress | - |
+| **Phase 4** | **Testing (QA)** | Quality assurance and verification | - |
+| **Phase 5** | **In Review (UAT)** | Stakeholder review and sign-off | - |
+| **Phase 6** | **Blocked (Urgent)** | Immediate attention required | - |
+| **Phase 7** | **On Hold (Parked)** | Context-switched or deprioritized | - |
+| **Phase 8** | **Production (Done)** | Shipped and live in the world | 6 (Releases) |
 
 ---
 
@@ -95,10 +98,14 @@ Khyaal Engineering Pulse now features **three distinct persona modes** tailored 
 
 | status | Meaning | Kanban Column |
 |---|---|---|
-| 🟢 **Done** | Shipped & live | Done |
-| 🔵 **Now** | Actively in development | Now |
-| 🟠 **Next** | Ready for pickup | Next |
-| ⚪ **Later** | Future backlog | Later/Backlog |
+| 🟢 **done** | Shipped & live | Production (Done) |
+| 🟡 **onhold** | Temporarily paused | On Hold (Parked) |
+| 🔴 **blocked** | Stuck on dependency | Blocked (Urgent) |
+| 🟣 **review** | Awaiting sign-off | In Review (UAT) |
+| 🧪 **qa** | Being verified | Testing (QA) |
+| 🔵 **now** | Active coding | Developing (Now) |
+| 🟠 **next** | High priority queue | Planned (Next) |
+| ⚪ **later** | Idea sandbox | Backlog (Later) |
 
 ---
 
@@ -574,7 +581,7 @@ Every task item includes the following fields for lifecycle tracking:
 {
   "id": "task-unique-id",
   "text": "Task description",
-  "status": "now", // now | done | next | later
+  "status": "now", // now | qa | review | blocked | onhold | done | next | later
   "priority": "high", // high | medium | low
   "storyPoints": 5, // Fibonacci: 1, 2, 3, 5, 8, 13, 21
   "effortLevel": "medium", // low | medium | high

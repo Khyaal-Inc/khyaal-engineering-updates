@@ -109,10 +109,10 @@ function renderKanbanView() {
                     <div class="kanban-row ${groupIdx > 0 ? 'pt-2' : ''}">
                         ${group.title ? `
                             <div class="flex items-center gap-3 mb-4 px-2">
-                                <span class="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-md shadow-indigo-100">
+                                <span class="px-4 py-1.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-indigo-100/50 border border-indigo-500/30">
                                     ${group.title}
                                 </span>
-                                <div class="flex-1 h-[1px] bg-slate-100"></div>
+                                <div class="flex-1 h-[2px] bg-slate-200/60 ml-1 rounded-full"></div>
                             </div>
                         ` : ''}
                         
@@ -163,7 +163,7 @@ function renderKanbanCard(item) {
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
 
     return `
-        <div class="kanban-card bg-white p-2 rounded-lg border border-slate-200 border-l-[6px] ${priorityColor} shadow-[0_8px_30px_rgb(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_45px_rgb(0,0,0,0.06),0_0_1px_rgba(0,0,0,0.15)] transition-all cursor-grab active:cursor-grabbing relative group"
+        <div class="kanban-card bg-white p-2 rounded-lg border border-slate-200 border-l-[6px] ${priorityColor} shadow-[0_12px_40px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_1px_rgba(0,0,0,0.2)] transition-all cursor-grab active:cursor-grabbing relative group"
              draggable="true"
              ondragstart="handleKanbanDragStart(event)"
              ondrop="handleKanbanDrop(event)"
