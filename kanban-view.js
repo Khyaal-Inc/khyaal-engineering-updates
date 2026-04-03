@@ -9,12 +9,12 @@ function renderKanbanView() {
 
     const swimlane = document.getElementById('kanban-swimlane')?.value || 'none';
 
-    // Collect all items
+    // Collect all items with source context
     const items = [];
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
+    UPDATE_DATA.tracks.forEach((track, ti) => {
+        track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach(item => {
-                items.push({ ...item, track: track.name, subtrack: subtrack.name });
+                items.push({ ...item, track: track.name, trackIndex: ti, subtrackIndex: si });
             });
         });
     });
@@ -23,66 +23,111 @@ function renderKanbanView() {
     const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null;
     const filteredItems = modeFilter ? items.filter(modeFilter) : items;
 
-    // Group by status
-    const columns = {
-        'backlog': { title: 'Backlog', status: 'later', items: [], color: 'bg-gray-50' },
-        'next': { title: 'Next', status: 'next', items: [], color: 'bg-orange-50' },
-        'now': { title: 'Now', status: 'now', items: [], color: 'bg-blue-50' },
-        'done': { title: 'Done', status: 'done', items: [], color: 'bg-emerald-50' }
-    };
+    // Status columns definition
+    const statusCols = [
+        { key: 'backlog', title: 'Backlog', status: 'later', color: 'border-slate-200 bg-slate-50/30' },
+        { key: 'now', title: 'Now', status: 'now', color: 'border-blue-100 bg-blue-50/20' },
+        { key: 'next', title: 'Next', status: 'next', color: 'border-orange-100 bg-orange-50/20' },
+        { key: 'done', title: 'Done', status: 'done', color: 'border-emerald-100 bg-emerald-50/20' }
+    ];
 
-    filteredItems.forEach(item => {
-        const status = item.status || 'later';
-        const colKey = Object.keys(columns).find(k => columns[k].status === status) || 'backlog';
-        columns[colKey].items.push(item);
-    });
+    // Grouping logic
+    let swimlaneGroups = [];
+    if (swimlane === 'epic') {
+        const epics = UPDATE_DATA.metadata?.epics || [];
+        const groupsMap = { 'unassigned': { id: 'unassigned', title: 'No Epic Alignment', items: [] } };
+        epics.forEach(e => groupsMap[e.id] = { id: e.id, title: e.name, items: [] });
+        filteredItems.forEach(item => {
+            const gid = item.epicId || 'unassigned';
+            if (groupsMap[gid]) groupsMap[gid].items.push(item);
+        });
+        swimlaneGroups = Object.values(groupsMap).filter(g => g.items.length > 0 || g.id !== 'unassigned');
+    } else if (swimlane === 'track') {
+        UPDATE_DATA.tracks.forEach(t => swimlaneGroups.push({ id: t.name, title: t.name, items: [] }));
+        filteredItems.forEach(item => {
+            const group = swimlaneGroups.find(g => g.id === item.track);
+            if (group) group.items.push(item);
+        });
+    } else if (swimlane === 'contributor') {
+        const contribs = new Set();
+        filteredItems.forEach(item => (item.contributors || ['Unassigned']).forEach(c => contribs.add(c)));
+        Array.from(contribs).sort().forEach(c => swimlaneGroups.push({ id: c, title: c, items: [] }));
+        filteredItems.forEach(item => {
+            const itemContribs = item.contributors && item.contributors.length > 0 ? item.contributors : ['Unassigned'];
+            itemContribs.forEach(c => {
+                const group = swimlaneGroups.find(g => g.id === c);
+                if (group) group.items.push(item);
+            });
+        });
+    } else {
+        swimlaneGroups = [{ id: 'all', title: '', items: filteredItems }];
+    }
 
     // Render Kanban board
     container.innerHTML = `
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div id="kanban-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <!-- Group 1: Navigation/Breadcrumb -->
-            <div class="flex items-center gap-3 px-2">
-                <span class="text-xl">📋</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery / Kanban Board</span>
-                    <h2 class="text-sm font-black text-slate-800">High-Velocity Execution</h2>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+            <div id="kanban-ribbon" class="bg-slate-50/50 p-3 rounded-2xl border border-slate-200 mb-8 flex flex-wrap items-center justify-between gap-6">
+                <div class="flex items-center gap-4 px-2">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+                        <span class="text-white text-xl">📋</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Execution Delivery</span>
+                        <h2 class="text-base font-black text-slate-800">Unified Kanban</h2>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-[10px] font-black uppercase text-slate-400 px-3">Swimlanes:</span>
+                        <select id="kanban-swimlane" onchange="renderKanbanView()" 
+                            class="bg-slate-50 border-none rounded-lg px-4 py-1.5 text-xs font-black text-slate-700 focus:ring-0 cursor-pointer hover:bg-slate-100 transition-colors">
+                            <option value="none" ${swimlane === 'none' ? 'selected' : ''}>None (Flat View)</option>
+                            <option value="epic" ${swimlane === 'epic' ? 'selected' : ''}>By Strategic Epic</option>
+                            <option value="track" ${swimlane === 'track' ? 'selected' : ''}>By Functional Track</option>
+                            <option value="contributor" ${swimlane === 'contributor' ? 'selected' : ''}>By Contributor</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="openAddItemModal('kanban')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                        <span>+</span> Quick Task
+                    </button>
                 </div>
             </div>
 
-            <!-- Group 2: Actions -->
-            <div class="flex items-center gap-2">
-                <div id="kanban-next-action-mount">
-                    ${(typeof renderPrimaryStageAction === 'function') ? renderPrimaryStageAction('kanban') : ''}
-                </div>
-                
-                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                
-                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                    <span class="text-[10px] font-black uppercase text-slate-400 px-2">Swimlanes:</span>
-                    <select id="kanban-swimlane" onchange="renderKanbanView()" 
-                        class="bg-white border-none rounded-lg px-3 py-1.5 text-xs font-black text-slate-700 focus:ring-0 cursor-pointer">
-                        <option value="none" ${swimlane === 'none' ? 'selected' : ''}>None</option>
-                        <option value="epic" ${swimlane === 'epic' ? 'selected' : ''}>By Epic</option>
-                        <option value="track" ${swimlane === 'track' ? 'selected' : ''}>By Track</option>
-                        <option value="contributor" ${swimlane === 'contributor' ? 'selected' : ''}>By Contributor</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-            <div class="kanban-board" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; min-height: 500px;">
-                ${Object.entries(columns).map(([key, col]) => `
-                    <div class="kanban-column ${col.color} rounded-lg p-4 border-2 border-slate-200"
-                         data-status="${col.status}"
-                         ondrop="handleKanbanDrop(event)"
-                         ondragover="handleKanbanDragOver(event)">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-slate-900">${col.title}</h3>
-                            <span class="bg-slate-900 text-white px-2 py-1 rounded-full text-xs font-bold">${col.items.length}</span>
-                        </div>
-                        <div class="space-y-3 kanban-cards" style="min-height: 400px;">
-                            ${col.items.map(item => renderKanbanCard(item)).join('')}
+            <div class="kanban-board flex flex-col gap-8">
+                ${swimlaneGroups.map(group => `
+                    <div class="kanban-row">
+                        ${group.title ? `
+                            <div class="flex items-center gap-3 mb-4 px-2">
+                                <div class="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
+                                <h3 class="text-xs font-black uppercase tracking-widest text-slate-500">${group.title}</h3>
+                                <div class="flex-1 h-[1px] bg-slate-100 ml-2"></div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            ${statusCols.map(col => {
+                                const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
+                                return `
+                                    <div class="kanban-column ${col.color} rounded-2xl p-4 border border-dashed transition-all duration-300"
+                                         data-status="${col.status}"
+                                         data-group-id="${group.id}"
+                                         ondrop="handleKanbanDrop(event)"
+                                         ondragover="handleKanbanDragOver(event)"
+                                         ondragleave="handleKanbanDragLeave(event)">
+                                        <div class="flex justify-between items-center mb-5 px-1">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="text-[11px] font-black uppercase tracking-wider text-slate-600">${col.title}</h4>
+                                                <span class="text-[9px] font-bold bg-white text-slate-400 px-1.5 py-0.5 rounded border border-slate-100">${columnItems.length}</span>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-4 kanban-cards min-h-[120px]">
+                                            ${columnItems.map(item => renderKanbanCard(item)).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `).join('')}
@@ -100,29 +145,36 @@ function renderKanbanCard(item) {
 
     const epics = UPDATE_DATA.metadata?.epics || [];
     const epic = item.epicId ? epics.find(e => e.id === item.epicId) : null;
-    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 shadow-sm truncate inline-block max-w-full" title="Strategic Epic: ${epic.name}">🚀 ${epic.name}</div>` : '';
+    const epicBadge = epic ? `<div class="mt-2 text-[9px] font-black uppercase text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 truncate inline-block max-w-full">🚀 ${epic.name}</div>` : '';
 
     const priorityColor = priorityColors[item.priority] || 'border-l-slate-300';
-    const storyPoints = item.storyPoints ? `<span class="text-xs font-bold text-slate-500">${item.storyPoints} pts</span>` : '';
+    const storyPoints = item.storyPoints ? `<span class="bg-slate-100 text-[10px] font-bold text-slate-500 px-1.5 py-0.5 rounded-full">${item.storyPoints} pts</span>` : '';
     const contributors = item.contributors?.slice(0, 2).join(', ') || 'Unassigned';
 
     return `
-        <div class="kanban-card bg-white p-3 rounded-lg border-l-4 ${priorityColor} shadow-sm hover:shadow-md transition-shadow cursor-move"
+        <div class="kanban-card bg-white p-4 rounded-xl border-l-[3px] ${priorityColor} shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing relative group"
              draggable="true"
              ondragstart="handleKanbanDragStart(event)"
+             ondrop="handleKanbanDrop(event)"
              data-item-id="${item.id}"
              onclick="openItemQuickView('${item.id}')">
-            <div class="flex justify-between items-start mb-2">
-                <span class="text-xs font-bold text-slate-400 uppercase">${item.track || 'No Track'}</span>
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">${item.track || 'No Track'}</span>
                 ${storyPoints}
             </div>
-            <p class="text-sm font-semibold text-slate-900 mb-1 line-clamp-2">${item.text}</p>
+            <p class="text-xs font-bold text-slate-800 mb-2 leading-relaxed">${item.text}</p>
             ${epicBadge}
-            <div class="flex justify-between items-center text-xs text-slate-600 mt-3 pt-2 border-t border-slate-50">
-                <span>👤 ${contributors}</span>
-                ${item.blocker ? '<span class="text-red-600 font-bold animate-pulse">🚨 BLOCKED</span>' : ''}
+            <div class="flex justify-between items-center text-[10px] text-slate-400 mt-4 pt-3 border-t border-slate-50">
+                <div class="flex items-center gap-1.5 font-bold">
+                    <span>👤</span>
+                    <span>${contributors}</span>
+                </div>
+                ${item.blocker ? '<span class="text-[9px] font-black bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 animate-pulse">BLOCKED</span>' : 
+                  (item.due ? `<span>📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
             </div>
-            ${item.due ? `<div class="text-[10px] text-slate-400 mt-2 font-medium">📅 Due: ${item.due}</div>` : ''}
+            
+            <!-- Insertion indicator -->
+            <div class="drop-indicator absolute -top-2 left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
         </div>
     `;
 }
@@ -132,50 +184,114 @@ let draggedItem = null;
 
 function handleKanbanDragStart(event) {
     draggedItem = event.target.dataset.itemId;
-    event.target.style.opacity = '0.5';
+    event.target.classList.add('opacity-40');
+    event.dataTransfer.setData('text/plain', draggedItem);
 }
 
 function handleKanbanDragOver(event) {
     event.preventDefault();
-    event.currentTarget.style.borderColor = '#3b82f6';
-    event.currentTarget.style.borderWidth = '3px';
+    const target = event.currentTarget;
+    
+    if (target.classList.contains('kanban-column')) {
+        target.classList.add('bg-indigo-50/40', 'border-indigo-400');
+    } else if (target.classList.contains('kanban-card')) {
+        const indicator = target.querySelector('.drop-indicator');
+        if (indicator) indicator.classList.remove('hidden');
+    }
+}
+
+function handleKanbanDragLeave(event) {
+    const target = event.currentTarget;
+    if (target.classList.contains('kanban-column')) {
+        target.classList.remove('bg-indigo-50/40', 'border-indigo-400');
+    } else if (target.classList.contains('kanban-card')) {
+        const indicator = target.querySelector('.drop-indicator');
+        if (indicator) indicator.classList.add('hidden');
+    }
 }
 
 function handleKanbanDrop(event) {
     event.preventDefault();
-    event.currentTarget.style.borderColor = '';
-    event.currentTarget.style.borderWidth = '2px';
+    const dropTarget = event.currentTarget;
+    const itemId = draggedItem || event.dataTransfer.getData('text/plain');
 
-    if (!draggedItem) return;
+    // Reset styles
+    document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('bg-indigo-50/40', 'border-indigo-400'));
+    document.querySelectorAll('.drop-indicator').forEach(i => i.classList.add('hidden'));
+    document.querySelectorAll('.kanban-card').forEach(c => c.classList.remove('opacity-40'));
 
-    const newStatus = event.currentTarget.dataset.status;
-    const itemId = draggedItem;
+    if (!itemId) return;
 
-    // Find and update the item
-    let updated = false;
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            const item = subtrack.items.find(i => i.id === itemId);
-            if (item) {
-                item.status = newStatus;
-                updated = true;
-            }
+    const targetStatus = dropTarget.dataset.status; // Dropped on which column?
+    const targetItemId = dropTarget.dataset.itemId; // Dropped on which card?
+
+    // 1. Locate the dragged item in UPDATE_DATA
+    let sourceLoc = null;
+    UPDATE_DATA.tracks.forEach((t, ti) => {
+        t.subtracks.forEach((s, si) => {
+            const idx = s.items.findIndex(i => i.id === itemId);
+            if (idx !== -1) sourceLoc = { ti, si, idx, item: s.items[idx] };
         });
     });
 
-    if (updated) {
-        // Re-render the board
-        renderKanbanView();
+    if (!sourceLoc) return;
 
-        // Show success message
-        showToast(`Item moved to ${newStatus}`, 'success');
+    // 2. Identify new status
+    // If dropped on a card, it inherits that card's status
+    let finalStatus = targetStatus;
+    if (targetItemId) {
+        let targetItem = null;
+        UPDATE_DATA.tracks.forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                const i = subtrack.items.find(it => it.id === targetItemId);
+                if (i) targetItem = i;
+            });
+        });
+        if (targetItem) finalStatus = targetItem.status || 'later';
     }
 
+    if (!finalStatus) return;
+
+    // 3. Update memory data
+    const itemReference = sourceLoc.item;
+    const oldStatus = itemReference.status || 'later';
+    
+    // Update status field
+    itemReference.status = finalStatus;
+
+    // Handle reordering / prioritization
+    if (targetItemId && targetItemId !== itemId) {
+        let targetLoc = null;
+        UPDATE_DATA.tracks.forEach((t, ti) => {
+            t.subtracks.forEach((s, si) => {
+                const idx = s.items.findIndex(i => i.id === targetItemId);
+                if (idx !== -1) targetLoc = { ti, si, idx };
+            });
+        });
+
+        if (targetLoc) {
+            // Remove from source subtrack
+            UPDATE_DATA.tracks[sourceLoc.ti].subtracks[sourceLoc.si].items.splice(sourceLoc.idx, 1);
+            
+            // Insert into target subtrack at target index
+            UPDATE_DATA.tracks[targetLoc.ti].subtracks[targetLoc.si].items.splice(targetLoc.idx, 0, itemReference);
+            
+            logChange('Prioritized Task', `${itemReference.text} moved relative to ${UPDATE_DATA.tracks[targetLoc.ti].subtracks[targetLoc.si].items[targetLoc.idx+1]?.text || 'target'}`);
+        }
+    } else if (finalStatus !== oldStatus) {
+        logChange('Updated Status (Kanban)', `${itemReference.text}: ${oldStatus.toUpperCase()} ➔ ${finalStatus.toUpperCase()}`);
+    }
+
+    // 4. Synchronization and Refresh
+    renderKanbanView();
+    updateTabCounts();
+    if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
+    
+    showToast(`"${itemReference.text}" updated successfully`, 'success');
     draggedItem = null;
 }
 
 function openItemQuickView(itemId) {
-    // Find the item and its indices
     let trackIndex = -1;
     let subtrackIndex = -1;
     let itemIndex = -1;
@@ -191,32 +307,43 @@ function openItemQuickView(itemId) {
         });
     });
 
-    if (trackIndex === -1 || subtrackIndex === -1 || itemIndex === -1) {
-        console.error(`Item with id "${itemId}" not found`);
-        return;
-    }
-
-    // Open edit modal using the correct function from cms.js
-    if (typeof openItemEdit === 'function') {
-        openItemEdit(trackIndex, subtrackIndex, itemIndex);
-    } else {
-        console.error('openItemEdit function not found');
-    }
+    if (trackIndex === -1 || subtrackIndex === -1 || itemIndex === -1) return;
+    if (typeof openItemEdit === 'function') openItemEdit(trackIndex, subtrackIndex, itemIndex);
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container') || (() => {
+        const c = document.createElement('div');
+        c.id = 'toast-container';
+        c.className = 'fixed bottom-8 right-8 z-[200] flex flex-col gap-3';
+        document.body.appendChild(c);
+        return c;
+    })();
+
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
-        type === 'success' ? 'bg-green-500' : 'bg-blue-500'
-    } text-white font-semibold`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
+    toast.className = `px-6 py-4 rounded-2xl shadow-2xl ${
+        type === 'success' ? 'bg-slate-900' : 'bg-red-600'
+    } text-white text-sm font-black flex items-center gap-3 animate-slideInRight`;
+    
+    toast.innerHTML = `
+        <span class="${type === 'success' ? 'text-emerald-400' : 'text-white'}">
+            ${type === 'success' ? '✓' : '⚠'}
+        </span>
+        ${message}
+    `;
+    
+    container.appendChild(toast);
 
     setTimeout(() => {
-        toast.remove();
-    }, 3000);
+        toast.className += ' animate-slideOutRight';
+        setTimeout(() => toast.remove(), 400);
+    }, 4000);
 }
 
 // Export
 window.renderKanbanView = renderKanbanView;
 window.openItemQuickView = openItemQuickView;
+window.handleKanbanDrop = handleKanbanDrop;
+window.handleKanbanDragStart = handleKanbanDragStart;
+window.handleKanbanDragOver = handleKanbanDragOver;
+window.handleKanbanDragLeave = handleKanbanDragLeave;
