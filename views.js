@@ -1356,190 +1356,107 @@ function renderWorkflowView() {
         else if (currentMode === 'pm') currentWorkflowTab = 'pm';
     }
 
+
+    // PM Granular Funnel (10 Points)
     const pmSteps = [
-        {
-            title: '1. Discovery & Validation',
-            desc: 'The "Idea Funnel." Capturing raw requests and researching future possibilities.',
-            why: 'Discovery prevents backlog bloat by validating high-level ideas before they reach the roadmap.',
-            how: 'Use the Roadmap "Later" bucket to park future horizons, and the Backlog to capture raw items.',
-            meeting: 'Discovery / Ideation Sync',
-            cadence: 'Bi-Weekly',
-            stakeholders: 'Founders, PMs, Tech Leads',
-            action: { label: 'Capture Ideas', view: 'backlog' }
-        },
-        {
-            title: '2. Strategic Vision (OKRs)',
-            desc: 'The "Commitment." Aligning validated ideas to business goals and a specific timeframe.',
-            why: 'Strategic alignment ensures that every epic on the roadmap has a clear "Why" (Objective).',
-            how: 'Commit items from Later to Now/Next in the Roadmap view and link them to OKRs & Epics.',
-            meeting: 'Quarterly Strategy Review',
-            cadence: 'Quarterly',
-            stakeholders: 'Founders, PMs, EM',
-            action: { label: 'Commit Strategy', view: 'roadmap' }
-        },
-        {
-            title: '3. Definition & Readiness',
-            desc: 'The "Machine." Breaking committed epics into estimated, ready-to-code tasks.',
-            why: 'Definition ensures that the engineering team is never blocked by vague requirements.',
-            how: 'Use Grooming Mode in the Backlog to set points and link tasks to the current sprint.',
-            meeting: 'PBR (Backlog Grooming)',
-            cadence: 'Weekly',
-            stakeholders: 'PMs, EM, Tech Leads',
-            action: { label: 'Groom Tasks', view: 'backlog' }
-        },
-        {
-            title: '4. High-Velocity Delivery',
-            desc: 'The "Action." Daily execution monitoring and proactive blocker resolution.',
-            why: 'Visibility into daily status prevents "silent failures" and keeps the sprint on track.',
-            how: 'Monitor the Kanban and the Global Blocker Strip. Use Tracks for area-specific health.',
-            meeting: 'Daily Standup / Bug Scrub',
-            cadence: 'Daily',
-            stakeholders: 'EM, Developers, PMs',
-            action: { label: 'Monitor Action', view: 'track' }
-        },
-        {
-            title: '5. Analytics & Retros',
-            desc: 'The "Learning." Reviewing metrics to optimize the process for the next loop.',
-            why: 'Retro-driven process updates are the only way to sustainably improve team velocity.',
-            how: 'Check the Executive Dashboard and Analytics for actual vs. planned performance.',
-            meeting: 'Pulse / Retrospective Sync',
-            cadence: 'Weekly',
-            stakeholders: 'Founders, PMs, EM',
-            action: { label: 'Review Pulse', view: 'dashboard' }
-        }
+        { phase: '1', title: '1.1 Ideation Sandbox', desc: 'Capture raw requests and future explorations (#idea).', why: 'Discovery prevents backlog bloat by validating ideas early.', how: 'Use the Discovery ribbon to add ideas.', meeting: 'Ideation Sync', cadence: 'Weekly', stakeholders: 'PM, Founders', action: { label: 'Go to Ideas', view: 'ideation' } },
+        { phase: '1', title: '1.2 Technical Spikes', desc: 'Validate research and feasibility through spikes (#spike).', why: 'Spikes clear architectural blockers before roadmap commitment.', how: 'Review discovery items tagged #spike.', meeting: 'Engineering R&D Sync', cadence: 'Bi-Weekly', stakeholders: 'Tech Leads, Devs', action: { label: 'Go to Spikes', view: 'spikes' } },
+        { phase: '2', title: '2.1 Strategic OKRs', desc: 'Define high-level quarterly Objectives and Key Results.', why: 'OKRs align engineering output with business outcomes.', how: 'Manage OKRs in the Vision module.', meeting: 'Executive Roadmap Sync', cadence: 'Quarterly', stakeholders: 'Founders, PMs', action: { label: 'Go to OKRs', view: 'okr' } },
+        { phase: '2', title: '2.2 Strategic Epics', desc: 'Map quarterly goals to specific engineering initiatives.', why: 'Epics provide a container for tactical delivery focus.', how: 'Create Epics and link them to OKRs.', meeting: 'Product Vision Sync', cadence: 'Monthly', stakeholders: 'PM, EM', action: { label: 'Go to Epics', view: 'epics' } },
+        { phase: '3', title: '3.1 Roadmap Alignment', desc: 'Sort Epics into Now, Next, and Later horizons.', why: 'Roadmaps provide predictability for stakeholders and teams.', how: 'Use Roadmap Edit to set horizons.', meeting: 'Planning Horizon Sync', cadence: 'Bi-Weekly', stakeholders: 'Founders, PMs', action: { label: 'Go to Roadmap', view: 'roadmap' } },
+        { phase: '3', title: '3.2 Backlog Grooming', desc: 'Ensure tasks are defined, estimated, and ready/ready.', why: 'Groomed tasks prevent sprint-start friction.', how: 'Refine tasks in the Backlog view.', meeting: 'PBR / Grooming', cadence: 'Weekly', stakeholders: 'EM, Developers', action: { label: 'Go to Backlog', view: 'backlog' } },
+        { phase: '4', title: '4.1 Sprint Planning', desc: 'Commit to a 2-week cycle based on team capacity.', why: 'Predictability relies on realistic commitment vs. capacity.', how: 'Assign tasks to sprints.', meeting: 'Sprint Planning', cadence: 'Bi-Weekly', stakeholders: 'Whole Team', action: { label: 'Go to Sprints', view: 'sprint' } },
+        { phase: '4', title: '4.2 Kanban Execution', desc: 'Manage daily flow and signal task status in real-time.', why: 'Real-time status stops the need for manual reports.', how: 'Update Kanban board.', meeting: 'Daily Standup', cadence: 'Daily', stakeholders: 'Developers', action: { label: 'Go to Kanban', view: 'kanban' } },
+        { phase: '4', title: '4.3 Dependency Monitoring', desc: 'Visualize and unblock task relationships.', why: 'Blockers are expensive; red-edge tracking prevents delay.', how: 'Check the Dependency view.', meeting: 'Blocker Escalation', cadence: 'Daily', stakeholders: 'EM, Devs', action: { label: 'Review Blockers', view: 'dependency' } },
+        { phase: '5', title: '5.1 Analytics & Review', desc: 'Review velocity and performance trends.', why: 'Data-driven retros lead to process optimization.', how: 'Check Analytics dashboard.', meeting: 'Sprint Retro', cadence: 'Bi-Weekly', stakeholders: 'PM, EM, Devs', action: { label: 'View Metrics', view: 'analytics' } }
     ];
 
+    // Dev Granular Funnel (10 Points)
     const devSteps = [
-        {
-            title: '1. Discovery & Research',
-            desc: 'Technically validate future roadmap items through discovery spikes.',
-            why: 'Spikes clear the path so that you never start a sprint task with massive unknowns.',
-            how: 'Check the Roadmap for "Next/Later" spikes and use the Backlog to capture initial research results.',
-            meeting: 'Discovery Sync / Spikes',
-            cadence: 'Bi-Weekly',
-            stakeholders: 'EM, Tech Leads, Devs',
-            action: { label: 'View Spikes', view: 'backlog' }
-        },
-        {
-            title: '2. Alignment on Strategy',
-            desc: 'Uncovering the "Why." Understanding how your track impacts the quarterly OKRs.',
-            why: 'Developers who understand the strategic "Why" build more resilient and scalable code.',
-            how: 'Review the Epics and Roadmap to see the full strategic context of the current cycle.',
-            meeting: 'Strategic Vision Sync',
-            cadence: 'Quarterly',
-            stakeholders: 'PMs, EM, Developers',
-            action: { label: 'View Context', view: 'roadmap' }
-        },
-        {
-            title: '3. Technical Readiness',
-            desc: 'The defining phase. Refining tasks, story pointing, and clarifying outcomes.',
-            why: 'The Grooming session is the most important meeting for developers to protect their focus.',
-            how: 'Update estimations and technical acceptance criteria in the Backlog grooming mode.',
-            meeting: 'PBR (Grooming / Readiness)',
-            cadence: 'Weekly',
-            stakeholders: 'EM, Tech Leads, Devs',
-            action: { label: 'Refine Tasks', view: 'backlog' }
-        },
-        {
-            title: '4. High-Velocity Action',
-            desc: 'Daily execution, signaling progress, and alerting on blockers immediately.',
-            why: 'A healthy pulse requires real-time data. Status signaling stops the need for manual reporting.',
-            how: 'Check "My Tasks" daily. Update Kanban status and flag blockers immediately.',
-            meeting: 'Daily Standup (DSU)',
-            cadence: 'Daily',
-            stakeholders: 'EM, Developers',
-            action: { label: 'Execute Now', view: 'contributor' }
-        },
-        {
-            title: '5. Analytics & Learnings',
-            desc: 'Process optimization. Using metrics to make the next cycle smoother.',
-            why: 'Retrospectives ensure that the same friction never happens two cycles in a row.',
-            how: 'Review Velocity and Completion charts in Analytics to see if process changes are working.',
-            meeting: 'Process Retro / Learning',
-            cadence: 'Weekly / Bi-Weekly',
-            stakeholders: 'Whole Team (EM, Devs, PM)',
-            action: { label: 'Analyze Pulse', view: 'analytics' }
-        }
+        { phase: '1', title: '1.1 Exploration Spikes', desc: 'Technically validate roadmap items through R&D.', why: 'Clears the path for standard sprint tasks.', how: 'Check spikes in the Discovery view.', meeting: 'Technical Discovery', cadence: 'Bi-Weekly', stakeholders: 'EM, Devs', action: { label: 'View Spikes', view: 'spikes' } },
+        { phase: '2', title: '2.1 Strategic Context', desc: 'Understand the "Why" behind your track\'s OKRs.', why: 'Informed devs build more resilient systems.', how: 'Review linked OKRs in Epics.', meeting: 'Stategic Sync', cadence: 'Quarterly', stakeholders: 'PM, Devs', action: { label: 'Go to OKRs', view: 'okr' } },
+        { phase: '3', title: '3.1 Requirements Clarity', desc: 'Refine technical tasks and acceptance criteria.', why: 'Detailed requirements protect developer focus.', how: 'Use Backlog Grooming mode.', meeting: 'PBR Sync', cadence: 'Weekly', stakeholders: 'EM, Devs', action: { label: 'Go to Backlog', view: 'backlog' } },
+        { phase: '4', title: '4.1 Task Ownership', desc: 'Customize and manage your personal "My Tasks" list.', why: 'Focus is the primary driver of quality.', how: 'Use the My Tasks view.', meeting: 'Daily Focus', cadence: 'Daily', stakeholders: 'Developers', action: { label: 'Go to Focus', view: 'contributor' } },
+        { phase: '4', title: '4.2 Status Signaling', desc: 'Drag-and-drop to signal active work in Kanban.', why: 'Signals stop the PM from asking "How is it going?"', how: 'Use the Kanban board.', meeting: 'Status Sync', cadence: 'Daily', stakeholders: 'Devs', action: { label: 'Update Status', view: 'kanban' } },
+        { phase: '4', title: '4.3 Blocker Disclosure', desc: 'Flag impediments immediately via the capture modal.', why: 'Blockers trigger the global strip for PM response.', how: 'Click "Flag Blocker" on task.', meeting: 'Alert Sync', cadence: 'Immediate', stakeholders: 'EM, PM', action: { label: 'Flag Blocker', view: 'kanban' } },
+        { phase: '4', title: '4.4 Dependency Awareness', desc: 'Visualize what is blocking your work.', why: 'Awareness of blockers prevents wasted R&D.', how: 'Check dependency graph.', meeting: 'Blocker Review', cadence: 'Daily', stakeholders: 'Devs', action: { label: 'Review Graph', view: 'dependency' } },
+        { phase: '4', title: '4.5 Sprint Commitments', desc: 'Maintain velocity through focused execution.', why: 'Sustainable pace prevents team burnout.', how: 'Track Sprint goals.', meeting: 'Sprint Sync', cadence: 'Daily', stakeholders: 'Whole Team', action: { label: 'Go to Sprint', view: 'sprint' } },
+        { phase: '5', title: '5.1 Velocity Feedback', desc: 'Review personal and team performance metrics.', why: 'Self-optimization drives engineering excellence.', how: 'Review Analytics charts.', meeting: 'Velocity Retro', cadence: 'Bi-Weekly', stakeholders: 'Devs, EM', action: { label: 'View Metrics', view: 'analytics' } },
+        { phase: '5', title: '5.2 Process Learning', desc: 'Optimizing the workflow based on data.', why: 'Ensures friction is never repeated.', how: 'Check roadmap for process items.', meeting: 'Process retro', cadence: 'Quarterly', stakeholders: 'Whole Team', action: { label: 'View Roadmap', view: 'roadmap' } }
     ];
 
     const activeSteps = currentWorkflowTab === 'pm' ? pmSteps : devSteps;
 
     let html = `
-        <div class="max-w-4xl mx-auto py-8 mb-24 px-4 sm:px-0">
-            <div class="mb-10 text-center bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
-                <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Engineering Playbook</h2>
-                <p class="text-slate-500 mt-2 text-lg">A step-by-step guide to managing the engineering pipeline.</p>
+        <div class="max-w-3xl mx-auto py-8 mb-24 px-4 sm:px-0">
+            <div class="mb-10 text-center bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-white/40 shadow-sm">
+                <span class="text-[10px] font-black tracking-widest text-slate-400 uppercase">Engineering Playbook</span>
+                <h2 class="text-xl font-black text-slate-800 tracking-tight mt-1">Lifecycle Sequential Guide</h2>
                 
-                <div class="flex justify-center mt-8">
-                    <div class="bg-slate-100 p-1.5 rounded-xl inline-flex shadow-inner">
-                        <button onclick="setWorkflowTab('pm')" class="${currentWorkflowTab === 'pm' ? 'bg-white text-indigo-700 shadow border border-slate-200/50 font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'} px-8 py-3 rounded-lg text-sm transition-all focus:outline-none flex items-center gap-2">👨‍💼 Product Managers</button>
-                        <button onclick="setWorkflowTab('dev')" class="${currentWorkflowTab === 'dev' ? 'bg-white text-indigo-700 shadow border border-slate-200/50 font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'} px-8 py-3 rounded-lg text-sm transition-all focus:outline-none flex items-center gap-2">👩‍💻 Developers</button>
+                <div class="flex justify-center mt-6">
+                    <div class="bg-slate-100/80 p-1 rounded-xl inline-flex shadow-inner border border-slate-200">
+                        <button onclick="setWorkflowTab('pm')" class="${currentWorkflowTab === 'pm' ? 'bg-white text-indigo-700 shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 font-bold'} px-6 py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all focus:outline-none">👨‍💼 Product Managers</button>
+                        <button onclick="setWorkflowTab('dev')" class="${currentWorkflowTab === 'dev' ? 'bg-white text-indigo-700 shadow-sm font-black' : 'text-slate-500 hover:text-slate-700 font-bold'} px-6 py-2 rounded-lg text-[10px] uppercase tracking-wider transition-all focus:outline-none">👩‍💻 Developers</button>
                     </div>
                 </div>
             </div>
 
             <div class="relative pl-0 md:pl-2">
-                <div class="hidden md:block absolute left-10 top-8 bottom-8 w-1 bg-indigo-100/60 rounded-full"></div>
-                <div class="space-y-8 relative z-10 w-full overflow-hidden">
+                <div class="hidden md:block absolute left-8 top-12 bottom-12 w-[1px] bg-indigo-200/50 border-l border-dashed border-indigo-300"></div>
+                <div class="space-y-6 relative z-10 w-full overflow-hidden">
     `;
 
     activeSteps.forEach((step, index) => {
         html += `
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8 group">
-                <div class="hidden md:flex flex-shrink-0 w-16 h-16 bg-white border-4 border-indigo-50 shadow-sm rounded-2xl items-center justify-center group-hover:border-indigo-200 group-hover:shadow-md transition-all text-2xl font-black text-indigo-400 relative z-10 mt-3 transform group-hover:scale-105 group-hover:text-indigo-600">
-                    ${index + 1}
+            <div class="flex flex-col md:flex-row gap-6 md:gap-4 group">
+                <div class="hidden md:flex flex-shrink-0 w-12 h-12 bg-white border border-slate-200 shadow-sm rounded-xl items-center justify-center group-hover:border-indigo-300 group-hover:shadow-md transition-all text-sm font-black text-slate-400 relative z-10 mt-2 transform group-hover:scale-105 group-hover:text-indigo-600 bg-white/50 backdrop-blur-sm">
+                    ${step.phase}.${(index % 2) + 1}
                 </div>
                 
-                <div class="flex-1 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm group-hover:shadow-lg transition-all relative overflow-hidden group-hover:-translate-y-1 duration-300">
-                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-400 opacity-50 group-hover:bg-indigo-600 group-hover:opacity-100 transition-all"></div>
+                <div class="flex-1 bg-white/60 backdrop-blur-lg p-5 rounded-2xl border border-white/50 shadow-sm group-hover:shadow-md transition-all relative overflow-hidden group-hover:-translate-y-0.5 duration-300">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-indigo-300/30 group-hover:bg-indigo-500/80 transition-all"></div>
                     
-                    <div class="flex flex-col md:flex-row justify-between items-start mb-8 md:pl-2">
+                    <div class="flex flex-col md:flex-row justify-between items-start mb-4">
                         <div>
-                            <span class="text-[10px] font-bold text-indigo-500 tracking-widest uppercase mb-2 block bg-indigo-50 inline-block px-2 py-1 rounded-md">Step ${index + 1}</span>
-                            <h3 class="text-2xl font-bold text-slate-800">${step.title}</h3>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-black text-indigo-600 tracking-widest uppercase bg-indigo-50 px-1.5 py-0.5 rounded">Phase ${step.phase}</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">${step.cadence}</span>
+                            </div>
+                            <h3 class="text-base font-black text-slate-800 leading-tight">${step.title}</h3>
                         </div>
-                        <button onclick="switchView('${step.action.view}')" class="mt-4 md:mt-0 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-600 hover:text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto">
+                        <button onclick="switchView('${step.action.view}')" class="mt-3 md:mt-0 text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:text-slate-900 flex items-center gap-1.5 transition-all">
                             ${step.action.label} 
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                         </button>
                     </div>
                     
-                    <div class="space-y-6 text-sm text-slate-600 md:pl-2">
-                        <div class="flex gap-4 items-start pb-4 border-b border-slate-100">
-                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🎯</div>
-                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1 font-black">The Goal</strong> ${step.desc}</div>
+                    <div class="space-y-4 text-xs text-slate-600">
+                        <div class="flex gap-3 items-start opacity-90">
+                            <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-xs flex-shrink-0">🎯</div>
+                            <div class="flex-1"><strong class="text-slate-800 font-bold">Goal:</strong> ${step.desc}</div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 bg-slate-50/50 rounded-xl px-4 border border-slate-100 shadow-inner">
-                            <div class="flex gap-3">
-                                <div class="text-indigo-500 font-bold">🕒</div>
-                                <div>
-                                    <span class="text-[9px] uppercase tracking-tighter text-slate-400 font-bold block">Cadence</span>
-                                    <span class="text-slate-700 font-bold">${step.cadence}</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-3">
-                                <div class="text-indigo-500 font-bold">🤝</div>
-                                <div>
-                                    <span class="text-[9px] uppercase tracking-tighter text-slate-400 font-bold block">Stakeholders</span>
+                        <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200/50 flex flex-col gap-2">
+                            <div class="flex justify-between items-center text-[10px]">
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-slate-400">🤝 Stakeholders:</span>
                                     <span class="text-slate-700 font-bold">${step.stakeholders}</span>
                                 </div>
-                            </div>
-                            <div class="col-span-1 sm:col-span-2 pt-1 border-t border-slate-200/50 mt-1">
-                                <div class="flex gap-3 items-center">
-                                    <div class="text-indigo-500 font-bold">📅</div>
-                                    <div class="text-xs text-slate-500 font-medium">Sync Meeting: <span class="text-indigo-600 font-bold">${step.meeting}</span></div>
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-slate-400 font-bold">📅 Sync:</span>
+                                    <span class="text-indigo-600 font-bold">${step.meeting}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex gap-4 items-start bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">
-                            <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-lg flex-shrink-0 opacity-80 text-amber-500 border border-amber-100">💡</div>
-                            <div class="flex-1 pt-1"><strong class="text-amber-900 block mb-1 font-black">Why it matters</strong> <span class="text-amber-800/90 leading-relaxed font-medium">${step.why}</span></div>
+                        <div class="flex gap-3 items-start bg-amber-50/40 p-3 rounded-xl border border-amber-100/40">
+                            <div class="w-6 h-6 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs flex-shrink-0 text-amber-500">💡</div>
+                            <div class="flex-1"><strong class="text-amber-900 font-bold text-[10px] uppercase tracking-wider">Insight:</strong> <span class="text-amber-800/90 leading-normal">${step.why}</span></div>
                         </div>
-                        <div class="flex gap-4 items-start pt-2">
-                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🛠️</div>
-                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1 font-black">How to do it</strong> <span class="leading-relaxed">${step.how}</span></div>
+                        
+                        <div class="pt-1 flex gap-3 items-start">
+                            <div class="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-xs flex-shrink-0 border border-slate-100 italic">🛠️</div>
+                            <div class="flex-1 italic text-slate-500">${step.how}</div>
                         </div>
                     </div>
                 </div>
