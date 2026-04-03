@@ -167,6 +167,9 @@ function toggleStrategyMenu() {
         backdrop.classList.remove('hidden');
         container.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
         
+        // Auto-focus on active/priority stage
+        setTimeout(scrollToActiveStage, 300);
+        
         // Close on click outside
         const closeHandler = (e) => {
             if (!container.contains(e.target) && !document.getElementById('breadcrumb-nav').contains(e.target)) {
@@ -201,6 +204,18 @@ function toggleWorkflowNav() {
     }
 }
 
+function scrollToActiveStage() {
+    const pipeline = document.querySelector('.workflow-pipeline-container');
+    const activeStage = document.querySelector('.pipeline-stage.active');
+    
+    if (pipeline && activeStage) {
+        pipeline.scrollTo({
+            left: activeStage.offsetLeft - pipeline.offsetLeft - 60,
+            behavior: 'smooth'
+        });
+    }
+}
+
 // Render workflow navigation UI
 function renderWorkflowNav() {
     const container = document.getElementById('workflow-nav-container');
@@ -212,6 +227,8 @@ function renderWorkflowNav() {
     const availableStages = Object.entries(WORKFLOW_STAGES)
         .sort((a, b) => a[1].order - b[1].order)
         .filter(([key]) => isStageAvailableInCurrentMode(key));
+
+    const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
     const navHtml = `
         <div class="workflow-popover max-w-[1400px] w-full bg-white/95 backdrop-blur-md p-6 rounded-3xl border-2 border-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-200">
@@ -227,9 +244,32 @@ function renderWorkflowNav() {
                      </div>
                 </div>
 
+                <div class="flex flex-col items-center gap-1">
+                    <div class="persona-segmented-control">
+                        <div class="persona-slider" style="transform: translateX(${activeMode === 'pm' ? '0' : activeMode === 'dev' ? '100.5%' : '201%'});"></div>
+                        ${['pm', 'dev', 'exec'].map(mode => {
+                            const config = (typeof MODE_CONFIG !== 'undefined') ? MODE_CONFIG[mode] : null;
+                            if (!config) return '';
+                            const isActive = mode === activeMode;
+                            const activeClass = isActive ? `active active-${mode}` : '';
+                            return `
+                                <button
+                                    onclick="event.stopPropagation(); switchMode('${mode}', true); renderWorkflowNav(); setTimeout(scrollToActiveStage, 100);"
+                                    class="persona-tab ${activeClass}"
+                                >
+                                    <span class="text-xs sm:text-sm">${config.icon}</span>
+                                    <span class="hidden sm:inline">${config.name.split(' ')[0]}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-3">
-                    <button onclick="switchView('workflow'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" class="px-5 py-2.5 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 rounded-2xl text-xs font-black transition-all shadow-sm flex items-center gap-2">
-                        <span>🛠️ Engineering Playbook</span>
+                    <button onclick="if(typeof switchView === 'function') switchView('workflow'); if(typeof updateCommandStripNav === 'function') updateCommandStripNav('workflow'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" 
+                            class="px-5 py-2.5 bg-indigo-50 border-2 border-indigo-100 text-indigo-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 rounded-2xl text-xs font-black transition-all shadow-sm flex items-center gap-2 group">
+                        <span class="group-hover:scale-125 transition-transform">🛠️</span>
+                        <span>Engineering Playbook</span>
                     </button>
                     <button onclick="document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" class="text-slate-400 hover:text-slate-900 p-2 text-xl font-black transition-colors">✕</button>
                 </div>
@@ -244,8 +284,17 @@ function renderWorkflowNav() {
                         document.documentElement.style.setProperty('--stage-color', stage.color);
                     }
                     
+                    // Adaptive Hero/Compact Logic
+                    const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
+                    let displayState = 'hero'; // Default for PM
+                    if (activeMode === 'dev') {
+                        displayState = (key === 'planning' || key === 'execution') ? 'hero' : 'compact';
+                    } else if (activeMode === 'exec') {
+                        displayState = (key === 'strategic' || key === 'reporting') ? 'hero' : 'compact';
+                    }
+
                     return `
-                        <div class="pipeline-stage flex-1 flex flex-col gap-3 ${isActive ? 'active' : 'hover:opacity-100'} transition-all duration-300" style="--stage-color: ${stage.color};">
+                        <div id="stage-card-${key}" class="pipeline-stage ${displayState} flex flex-col gap-3 ${isActive ? 'active' : 'hover:opacity-100'} transition-all duration-500 ease-in-out" style="--stage-color: ${stage.color};">
                             <!-- Stage Header (Clickable) -->
                             <div 
                                 class="stage-body cursor-pointer p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${isActive ? 'shadow-md' : 'bg-slate-100 border-slate-200 hover:bg-white text-slate-700'}" 
@@ -337,7 +386,7 @@ function renderWorkflowStage(key, stage) {
                 <div class="workflow-stage-views">
                     ${stage.views
                         .filter(view => isViewAvailableInCurrentMode(view))
-                        .map(view => renderWorkflowView(view))
+                        .map(view => renderWorkflowNavPill(view))
                         .join('')}
                 </div>
             ` : ''}
@@ -346,7 +395,7 @@ function renderWorkflowStage(key, stage) {
 }
 
 // Render a single view within a workflow stage
-function renderWorkflowView(viewKey) {
+function renderWorkflowNavPill(viewKey) {
     const viewLabels = {
         'okr': '🎯 OKRs',
         'epics': '📚 Epics',
@@ -538,5 +587,4 @@ window.updateWorkflowStageUI = updateWorkflowStageUI;
 window.getCurrentWorkflowStage = getCurrentWorkflowStage;
 window.getRecommendedNextAction = getRecommendedNextAction;
 window.showRecommendedActions = showRecommendedActions;
-window.togglePipelineExpand = togglePipelineExpand;
 window.updateCommandStripNav = updateCommandStripNav;

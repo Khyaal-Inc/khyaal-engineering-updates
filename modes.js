@@ -88,7 +88,7 @@ function initModeSystem() {
 }
 
 // Switch between modes
-function switchMode(mode) {
+function switchMode(mode, stayInModal = false) {
     if (!MODE_CONFIG[mode]) {
         console.error(`Invalid mode: ${mode}`);
         return;
@@ -100,7 +100,7 @@ function switchMode(mode) {
     // Apply mode styling and view restrictions
     applyMode(mode);
 
-    // Switch to default view for this mode
+    // Switch to default view for this mode IF NOT requested to stay in modal
     const config = MODE_CONFIG[mode];
     const viewToShow = config.defaultView;
 
@@ -109,12 +109,12 @@ function switchMode(mode) {
         promptUserSelection();
     }
 
-    // Switch view
-    if (typeof switchView === 'function') {
+    // Switch view only if not staying in modal (preserves the popover)
+    if (!stayInModal && typeof switchView === 'function') {
         switchView(viewToShow);
     }
 
-    console.log(`Switched to ${config.name} mode`);
+    console.log(`Switched to ${config.name} mode ${stayInModal ? '(staying in modal)' : ''}`);
 }
 
 // Apply mode-specific styling and restrictions
@@ -146,6 +146,9 @@ function applyMode(mode) {
     if (typeof renderWorkflowNav === 'function') {
         renderWorkflowNav();
     }
+    if (typeof updateCommandStripNav === 'function') {
+        updateCommandStripNav();
+    }
 
     // Update title suffix
     const titleEl = document.getElementById('page-title');
@@ -157,30 +160,35 @@ function applyMode(mode) {
 // Render mode switcher in header
 function renderModeSwitcher() {
     const container = document.getElementById('header-mode-switcher');
-    if (!container) {
-        console.warn('Header mode switcher container not found');
-        return;
-    }
+    if (!container) return;
 
-    const switcherHtml = `
-        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-            ${Object.keys(MODE_CONFIG).map(mode => {
-                const config = MODE_CONFIG[mode];
-                const isActive = mode === currentMode;
-                return `
-                    <button
-                        onclick="switchMode('${mode}')"
-                        class="mode-btn mode-btn-${mode} px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}"
-                        title="${config.description}"
-                    >
-                        ${config.icon} ${config.name.split(' ')[0]}
-                    </button>
-                `;
-            }).join('')}
-        </div>
+    const config = MODE_CONFIG[currentMode];
+    const colorClass = currentMode === 'dev' ? 'text-emerald-800 bg-emerald-50/50 border-emerald-100' : 
+                      currentMode === 'exec' ? 'text-purple-800 bg-purple-50/50 border-purple-100' : 
+                      'text-indigo-800 bg-indigo-50/50 border-indigo-100';
+
+    const dotColor = currentMode === 'dev' ? 'bg-emerald-500' : 
+                     currentMode === 'exec' ? 'bg-purple-500' : 
+                     'bg-indigo-500';
+
+    container.innerHTML = `
+        <button onclick="if(typeof toggleStrategyMenu === 'function') toggleStrategyMenu()" 
+                class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border ${colorClass} transition-all hover:bg-white hover:shadow-sm active:scale-95 group relative">
+            
+            <div class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-20"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
+                </span>
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-40">Perspective:</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-black uppercase tracking-widest">${config.name}</span>
+                <span class="text-[8px] opacity-20 group-hover:opacity-100 transition-opacity translate-y-[0.5px]">▼</span>
+            </div>
+        </button>
     `;
-
-    container.innerHTML = switcherHtml;
 }
 
 // Update active state of mode buttons

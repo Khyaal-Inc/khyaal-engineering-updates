@@ -246,12 +246,21 @@ function switchView(view) {
     const btn = document.getElementById(`btn-${view}`);
     if (btn) btn.classList.add('active');
     
+    console.log(`🎯 switchView('${view}') called`);
     const vSection = document.getElementById(`${view}-view`);
-    if (vSection) vSection.classList.add('active');
+    if (vSection) {
+        console.log(`✅ Found #${view}-view, adding 'active' class`);
+        vSection.classList.add('active');
+    } else {
+        console.error(`❌ vSection #${view}-view NOT found!`);
+    }
     
     // Render the appropriate view
     if (view === 'track') renderTrackView();
-    if (view === 'workflow') renderWorkflowView();
+    if (view === 'workflow') {
+        console.log('🏗️ Triggering renderWorkflowView()...');
+        renderWorkflowView();
+    }
     if (view === 'roadmap') renderRoadmapView();
     if (view === 'epics') renderEpicsView();
     if (view === 'status') renderStatusView();
@@ -272,6 +281,7 @@ function switchView(view) {
     renderBlockerStrip();
     buildTagFilterBar();
     updateTabCounts();
+    if (typeof updateCommandStripNav === 'function') updateCommandStripNav();
 }
 
 // ------ Persistence Helpers ------

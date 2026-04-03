@@ -1,3 +1,18 @@
+console.log('📜 views.js loading...');
+
+// --- Workflow View State & Initialization (Hoisted for Stability) ---
+let currentWorkflowTab = 'pm';
+
+function setWorkflowTab(tab) {
+    currentWorkflowTab = tab;
+    if (document.getElementById('workflow-view')?.classList.contains('active')) {
+        renderWorkflowView();
+    }
+}
+
+window.setWorkflowTab = setWorkflowTab;
+window.renderWorkflowView = renderWorkflowView;
+
 // ------ Rendering Helpers ------
 function shouldShowManagement() {
     const params = new URLSearchParams(window.location.search);
@@ -1122,18 +1137,22 @@ function drawGanttChart() {
 
 // Duplicate Epics view removed
 
-let currentWorkflowTab = 'pm';
-
-function setWorkflowTab(tab) {
-    currentWorkflowTab = tab;
-    if (document.getElementById('workflow-view').classList.contains('active')) {
-        renderWorkflowView();
-    }
-}
-
 function renderWorkflowView() {
+    console.log('🔄 renderWorkflowView() called');
     const container = document.getElementById('workflow-view');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Engineering Playbook container (#workflow-view) not found.');
+        return;
+    }
+
+    try {
+        console.log('📊 Active Tab:', currentWorkflowTab);
+
+    // Auto-sync tab with active persona if not manually set
+    if (typeof currentMode !== 'undefined') {
+        if (currentMode === 'dev') currentWorkflowTab = 'dev';
+        else if (currentMode === 'pm') currentWorkflowTab = 'pm';
+    }
 
     const pmSteps = [
         {
@@ -1272,4 +1291,31 @@ function renderWorkflowView() {
     `;
 
     container.innerHTML = html;
+    console.log('✅ renderWorkflowView() successfully rendered ' + activeSteps.length + ' steps');
+    } catch (err) {
+        console.error('❌ renderWorkflowView() failed to render playbook:', err);
+        container.innerHTML = `
+            <div class="p-12 text-center bg-white rounded-[2rem] border border-red-200 shadow-xl max-w-2xl mx-auto my-12">
+                <div class="text-6xl mb-6">🏜️</div>
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight">Playbook Rendering Error</h3>
+                <p class="text-slate-500 mt-3 font-medium leading-relaxed">
+                    The Engineering Playbook experienced a data-linkage failure. This usually happens if a step definition is missing required metadata.
+                </p>
+                <div class="mt-8 p-6 bg-slate-50 rounded-2xl text-left font-mono text-sm text-red-600 border border-slate-200 overflow-auto max-h-48 shadow-inner">
+                    <div class="font-bold border-b border-red-100 pb-2 mb-2">Error Log:</div>
+                    ${err.stack || err.message}
+                </div>
+                <div class="flex gap-4 justify-center mt-10">
+                    <button onclick="renderWorkflowView()" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5">
+                        Try Again
+                    </button>
+                    <button onclick="switchView('okr')" class="px-8 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all">
+                        Exit to OKRs
+                    </button>
+                </div>
+            </div>
+        `;
+    }
 }
+
+console.log('✅ views.js fully loaded');
