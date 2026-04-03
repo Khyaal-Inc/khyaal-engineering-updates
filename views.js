@@ -1160,20 +1160,29 @@ function renderWorkflowView() {
             desc: 'The foundation of the Product Pulse. Define high-level business goals and capabilities.',
             why: 'Epics provide the "Why" behind the work. They give the team purpose and a strategic north star.',
             how: 'In the Epics view, add a new Epic, define its business value, and assign a health status.',
+            meeting: 'Quarterly Strategy Review',
+            cadence: 'Quarterly / Bi-Weekly',
+            stakeholders: 'Founders, PMs, EM',
             action: { label: 'Define Epics', view: 'epics' }
         },
         {
-            title: 'Strategic Roadmap',
+            title: 'Product Roadmap Alignment',
             desc: 'Align your Epics and tasks into strategic timeframes (Now vs. Next vs. Later).',
             why: 'A roadmap provides predictability for stakeholders and prevents context-switching for the team.',
             how: 'Review the Roadmap view and move items into the strategic buckets based on quarterly priority.',
+            meeting: 'Roadmap Refinement Sync',
+            cadence: 'Bi-Weekly',
+            stakeholders: 'PMs, EM, Tech Leads',
             action: { label: 'Manage Roadmap', view: 'roadmap' }
         },
         {
-            title: 'Backlog Grooming',
+            title: 'Backlog Refinement (PBR)',
             desc: 'Break your vision down into actionable engineering tasks for the execution teams.',
             why: 'Grooming ensures that tasks are "ready" for development, reducing friction during the sprint.',
             how: 'Enter Grooming Mode in the Backlog. Assign priorities, refine descriptions, and link items to Epics.',
+            meeting: 'PBR (Backlog Refinement)',
+            cadence: 'Weekly',
+            stakeholders: 'PMs, EM, Tech Leads',
             action: { label: 'Inspect Backlog', view: 'backlog' }
         },
         {
@@ -1181,44 +1190,62 @@ function renderWorkflowView() {
             desc: 'Commit to a specific set of deliverables for the next 2-week execution window.',
             why: 'Sprints create high-velocity focus and provide a clear definition of "Done" for each cycle.',
             how: 'Create a new Sprint and move high-priority groomed tasks into it using the Grooming selectors.',
+            meeting: 'Sprint Planning Meeting',
+            cadence: 'Bi-Weekly',
+            stakeholders: 'Whole Team (EM, Devs, PM)',
             action: { label: 'Start Sprint', view: 'sprint' }
         },
         {
-            title: 'Monitor & Unblock',
+            title: 'Engineering Health & Pulse',
             desc: 'Oversee execution health and proactively resolve impediments.',
             why: 'Proactive unblocking preserves the Sprint Goal and keeps the Engineering Pulse healthy.',
             how: 'Check the Contributor cards for daily movement and the Global Blocker Strip for immediate action.',
+            meeting: 'Engineering Status / Pulse Sync',
+            cadence: 'Weekly / Bi-Weekly',
+            stakeholders: 'Founders, PMs, EM',
             action: { label: 'View Health', view: 'contributor' }
         }
     ];
 
     const devSteps = [
         {
-            title: 'Find Your Focus',
+            title: 'Daily Task Discovery',
             desc: 'See exactly what tasks are assigned to you for the current cycle.',
-            why: 'You should never have to hunt across tracks to figure out what you need to do today.',
+            why: 'Clear visibility prevents context-switching and ensures everyone works on the highest-priority items.',
             how: 'Filter the dashboard to your Track or just look at your card in the "By Contributor" view.',
+            meeting: 'Daily Standup (DSU)',
+            cadence: 'Daily',
+            stakeholders: 'EM, Developers',
             action: { label: 'See My Tasks', view: 'contributor' }
         },
         {
-            title: 'Start the Engine',
+            title: 'Real-time Execution',
             desc: 'Signal to the team that you have started working on a task.',
-            why: 'Real-time status updates prevent duplicate work and stop PMs from asking for daily manual status reports.',
-            how: 'Click the task row to open the editor (or use Grooming Mode), change the Status to "Now", and save.',
+            why: 'Active status prevents duplicate effort and keeps the dashboard reflecting reality for stakeholders.',
+            how: 'Click the task row to open the editor, change the Status to "Now", and save your progress.',
+            meeting: 'Focused Development',
+            cadence: 'Continuous',
+            stakeholders: 'Developers',
             action: { label: 'View Board', view: 'track' }
         },
         {
-            title: 'Signal Blockers Early',
+            title: 'Escalate & Unblock',
             desc: 'Raise a flag immediately if you are stuck waiting on another team or external factor.',
-            why: 'Hiding blockers derails Sprint commitments. Flagging early allows the PM to escalate and unblock you.',
+            why: 'Hiding blockers leads to missed sprint goals. Early escalation allows the EM to clear the path.',
             how: 'Click "Flag Blocker" on any task and add a reason. This triggers the Global Blocker alert.',
+            meeting: 'DSU / Ad-hoc Sync',
+            cadence: 'Immediate',
+            stakeholders: 'EM, Tech Leads',
             action: { label: 'View Dependencies', view: 'dependency' }
         },
         {
-            title: 'Close the Loop',
-            desc: 'Complete the task and provide handover context.',
-            why: 'Closing tasks automatically updates the health of the overarching Epics and Sprints.',
-            how: 'Change status to "Done", add a note with relevant links, and Save to GitHub.',
+            title: 'Completion & Transparency',
+            desc: 'Complete the task and provide handover context for PR reviews or testing.',
+            why: 'Quality documentation during task closing ensures a smooth release cycle and avoids rework.',
+            how: 'Change status to "Done", add a note with relevant details, and Save to GitHub.',
+            meeting: 'Sprint Demo / Closing',
+            cadence: 'Bi-Weekly / Continous',
+            stakeholders: 'PMs, EM, Devs',
             action: { label: 'View Deliverables', view: 'releases' }
         }
     ];
@@ -1268,15 +1295,39 @@ function renderWorkflowView() {
                     <div class="space-y-6 text-sm text-slate-600 md:pl-2">
                         <div class="flex gap-4 items-start pb-4 border-b border-slate-100">
                             <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🎯</div>
-                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1">The Goal</strong> ${step.desc}</div>
+                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1 font-black">The Goal</strong> ${step.desc}</div>
                         </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 bg-slate-50/50 rounded-xl px-4 border border-slate-100 shadow-inner">
+                            <div class="flex gap-3">
+                                <div class="text-indigo-500 font-bold">🕒</div>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-tighter text-slate-400 font-bold block">Cadence</span>
+                                    <span class="text-slate-700 font-bold">${step.cadence}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="text-indigo-500 font-bold">🤝</div>
+                                <div>
+                                    <span class="text-[9px] uppercase tracking-tighter text-slate-400 font-bold block">Stakeholders</span>
+                                    <span class="text-slate-700 font-bold">${step.stakeholders}</span>
+                                </div>
+                            </div>
+                            <div class="col-span-1 sm:col-span-2 pt-1 border-t border-slate-200/50 mt-1">
+                                <div class="flex gap-3 items-center">
+                                    <div class="text-indigo-500 font-bold">📅</div>
+                                    <div class="text-xs text-slate-500 font-medium">Sync Meeting: <span class="text-indigo-600 font-bold">${step.meeting}</span></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex gap-4 items-start bg-amber-50/50 p-4 rounded-xl border border-amber-100/50">
                             <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-lg flex-shrink-0 opacity-80 text-amber-500 border border-amber-100">💡</div>
-                            <div class="flex-1 pt-1"><strong class="text-amber-900 block mb-1">Why it matters</strong> <span class="text-amber-800/90 leading-relaxed">${step.why}</span></div>
+                            <div class="flex-1 pt-1"><strong class="text-amber-900 block mb-1 font-black">Why it matters</strong> <span class="text-amber-800/90 leading-relaxed font-medium">${step.why}</span></div>
                         </div>
                         <div class="flex gap-4 items-start pt-2">
                             <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg flex-shrink-0 border border-slate-100">🛠️</div>
-                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1">How to do it</strong> ${step.how}</div>
+                            <div class="flex-1 pt-1"><strong class="text-slate-800 block mb-1 font-black">How to do it</strong> <span class="leading-relaxed">${step.how}</span></div>
                         </div>
                     </div>
                 </div>
