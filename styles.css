@@ -68,9 +68,6 @@ body {
             background: #eff6ff;
         }
 
-        .bucket-ongoing {
-            background: #fffbeb;
-        }
 
         .bucket-next {
             background: #fff7ed;
@@ -90,10 +87,6 @@ body {
             color: white;
         }
 
-        .badge-ongoing {
-            background: #f59e0b;
-            color: white;
-        }
 
         .badge-next {
             background: #f97316;
@@ -108,7 +101,6 @@ body {
         /* Specific status pill styles for better contrast */
         .status-pill.done { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
         .status-pill.now { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-        .status-pill.ongoing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
         .status-pill.next { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
         .status-pill.later { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
@@ -775,7 +767,6 @@ body {
 
         .status-indicator-dot.done-dot { background-color: #22c55e; box-shadow: 0 0 4px #22c55e44; }
         .status-indicator-dot.now-dot { background-color: #3b82f6; box-shadow: 0 0 4px #3b82f644; }
-        .status-indicator-dot.ongoing-dot { background-color: #f59e0b; box-shadow: 0 0 4px #f59e0b44; }
         .status-indicator-dot.next-dot { background-color: #f97316; box-shadow: 0 0 4px #f9731644; }
         .status-indicator-dot.later-dot { background-color: #6b7280; box-shadow: 0 0 4px #6b728044; }
 

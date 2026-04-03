@@ -25,7 +25,6 @@ const themeColors = {
 const statusConfig = {
     done: { label: 'Done', class: 'badge-done', bucket: 'bucket-done' },
     now: { label: 'Now', class: 'badge-now', bucket: 'bucket-now' },
-    ongoing: { label: 'On-Going', class: 'badge-ongoing', bucket: 'bucket-ongoing' },
     next: { label: 'Next', class: 'badge-next', bucket: 'bucket-next' },
     later: { label: 'Later', class: 'badge-later', bucket: 'bucket-later' }
 };

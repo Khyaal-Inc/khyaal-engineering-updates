@@ -368,7 +368,6 @@ function renderField(fieldName, item) {
                     <select id="edit-status" class="cms-input">
                         <option value="done" ${val === 'done' ? 'selected' : ''}>Done</option>
                         <option value="now" ${val === 'now' ? 'selected' : ''}>Now</option>
-                        <option value="ongoing" ${val === 'ongoing' ? 'selected' : ''}>On-Going</option>
                         <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Next</option>
                         <option value="later" ${val === 'later' ? 'selected' : ''}>Later</option>
                     </select>

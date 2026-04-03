@@ -93,11 +93,10 @@ Khyaal Engineering Pulse now features **three distinct persona modes** tailored 
 
 ### 🎯 Item Statuses
 
-| Status | Meaning | Kanban Column |
+| status | Meaning | Kanban Column |
 |---|---|---|
 | 🟢 **Done** | Shipped & live | Done |
 | 🔵 **Now** | Actively in development | Now |
-| 🟡 **On-Going** | Continuous/operational work | Ongoing |
 | 🟠 **Next** | Ready for pickup | Next |
 | ⚪ **Later** | Future backlog | Later/Backlog |
 
@@ -458,7 +457,7 @@ The **Team Velocity Trend** shows:
 ### 📊 Kanban View
 **Purpose:** Visual workflow management
 **Features:**
-- 5 columns: Backlog → Next → Now → Ongoing → Done
+- 4 columns: Backlog → Next → Now → Done
 - Drag-and-drop status updates
 - Swimlanes by contributor (optional)
 - WIP limits per column
@@ -575,7 +574,7 @@ Every task item includes the following fields for lifecycle tracking:
 {
   "id": "task-unique-id",
   "text": "Task description",
-  "status": "now", // now | done | ongoing | next | later
+  "status": "now", // now | done | next | later
   "priority": "high", // high | medium | low
   "storyPoints": 5, // Fibonacci: 1, 2, 3, 5, 8, 13, 21
   "effortLevel": "medium", // low | medium | high

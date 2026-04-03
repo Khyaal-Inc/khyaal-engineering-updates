@@ -230,9 +230,21 @@
       }
     ],
     "roadmap": [
-      { "id": "1M", "label": "Now (Immediate / 1 Month)", "color": "blue" },
-      { "id": "3M", "label": "Next (Strategic / 3 Months)", "color": "indigo" },
-      { "id": "6M", "label": "Later (Future / 6 Months)", "color": "slate" }
+      {
+        "id": "1M",
+        "label": "Now (Immediate / 1 Month)",
+        "color": "blue"
+      },
+      {
+        "id": "3M",
+        "label": "Next (Strategic / 3 Months)",
+        "color": "indigo"
+      },
+      {
+        "id": "6M",
+        "label": "Later (Future / 6 Months)",
+        "color": "slate"
+      }
     ]
   },
   "tracks": [
@@ -247,7 +259,9 @@
             {
               "text": "Legacy page refresh – 29 pages migrated and modernized",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Migrated 29 legacy pages to new platform with modern responsive design, optimized assets, and improved UX patterns.",
               "usecase": "Improves page speed by 40%, enhances usability, and provides better mobile experience for senior users.",
               "acceptanceCriteria": [
@@ -271,7 +285,10 @@
             {
               "text": "₹99 Subscription launch",
               "status": "done",
-              "contributors": ["Subhrajit", "Vivek"],
+              "contributors": [
+                "Subhrajit",
+                "Vivek"
+              ],
               "note": "Launched premium subscription tier with Razorpay integration, user dashboard, and automated billing cycles.",
               "usecase": "Supports recurring revenue model and provides premium features to engaged users.",
               "acceptanceCriteria": [
@@ -294,7 +311,10 @@
             {
               "text": "Delhi Marathon event page",
               "status": "done",
-              "contributors": ["Subhrajit", "Vivek"],
+              "contributors": [
+                "Subhrajit",
+                "Vivek"
+              ],
               "note": "Created dedicated event landing page with registration form, countdown timer, and event details.",
               "usecase": "Helps users register easily and access all event information in one place.",
               "acceptanceCriteria": [
@@ -317,7 +337,9 @@
             {
               "text": "Emailer templates for Travel and Axis Max",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Built reusable, responsive email templates for marketing campaigns with dynamic content blocks.",
               "usecase": "Speeds up campaign launches and ensures brand consistency across all email communications.",
               "acceptanceCriteria": [
@@ -340,7 +362,10 @@
             {
               "text": "Chatbot UI fixes",
               "status": "done",
-              "contributors": ["Subhrajit", "Vivek"],
+              "contributors": [
+                "Subhrajit",
+                "Vivek"
+              ],
               "note": "Improved chatbot interface with better visual design, loading states, and error handling.",
               "usecase": "Makes customer support interaction smoother and more intuitive for senior users.",
               "acceptanceCriteria": [
@@ -363,7 +388,10 @@
             {
               "text": "Pulse SDK integration",
               "status": "done",
-              "contributors": ["Vivek", "Subhrajit"],
+              "contributors": [
+                "Vivek",
+                "Subhrajit"
+              ],
               "note": "Integrated Pulse analytics SDK to track user behavior, page views, and conversion events across the website.",
               "usecase": "Provides comprehensive analytics for data-driven decision making and user journey optimization.",
               "acceptanceCriteria": [
@@ -386,7 +414,10 @@
             {
               "text": "Crypto redirection issue RCA completed",
               "status": "done",
-              "contributors": ["Vivek", "Raj"],
+              "contributors": [
+                "Vivek",
+                "Raj"
+              ],
               "note": "Conducted root cause analysis for incorrect website redirect to crypto domain. Issue identified in DNS configuration and server routing rules.",
               "usecase": "Prevents users from being redirected to wrong domains, ensuring brand trust and security.",
               "acceptanceCriteria": [
@@ -409,7 +440,10 @@
             {
               "text": "Initiated VAPT with Appknox",
               "status": "done",
-              "contributors": ["Vivek", "Raj"],
+              "contributors": [
+                "Vivek",
+                "Raj"
+              ],
               "note": "Kicked off comprehensive Vulnerability Assessment and Penetration Testing (VAPT) with Appknox security platform for entire web application.",
               "usecase": "Identifies and mitigates security vulnerabilities early to ensure platform safety and regulatory compliance.",
               "acceptanceCriteria": [
@@ -432,7 +466,9 @@
             {
               "text": "Captcha implementation",
               "status": "now",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Implementing Google reCAPTCHA v3 on all user-facing forms to prevent bot submissions and spam.",
               "usecase": "Reduces spam form submissions by 95%+ and protects platform from automated attacks.",
               "acceptanceCriteria": [
@@ -455,7 +491,10 @@
               "text": "Rajkot event page",
               "status": "now",
               "due": "2026-03-23",
-              "contributors": ["Subhrajit", "Vivek"],
+              "contributors": [
+                "Subhrajit",
+                "Vivek"
+              ],
               "note": "Creating dedicated event landing page for Rajkot event with localized content, registration form, and venue information.",
               "usecase": "Helps users in Rajkot region register easily and access event-specific information.",
               "acceptanceCriteria": [
@@ -476,7 +515,9 @@
             {
               "text": "Missing Pulse events tracking",
               "status": "now",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Adding missing analytics event tracking for key user actions not currently captured in Pulse.",
               "usecase": "Improves data completeness for journey analysis and enables better conversion funnel tracking.",
               "acceptanceCriteria": [
@@ -498,7 +539,9 @@
             {
               "text": "Legacy migration alerts and reporting",
               "status": "next",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Automating Slack/email notifications during page migration process with progress tracking and issue alerts.",
               "usecase": "Keeps team informed of migration progress in real-time with less manual status updates.",
               "acceptanceCriteria": [
@@ -517,7 +560,10 @@
             {
               "text": "CMS modular blocks",
               "status": "next",
-              "contributors": ["Subhrajit", "Vivek"],
+              "contributors": [
+                "Subhrajit",
+                "Vivek"
+              ],
               "note": "Creating reusable content blocks in CMS (hero sections, testimonials, CTAs) for faster page building.",
               "usecase": "Speeds up website content creation by 60% and ensures consistent design patterns.",
               "acceptanceCriteria": [
@@ -536,7 +582,10 @@
             {
               "text": "VAPT fixes remediation",
               "status": "next",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Implementing fixes for critical and high-severity security vulnerabilities identified in VAPT report.",
               "usecase": "Strengthens website security posture and achieves 95%+ compliance with security standards.",
               "acceptanceCriteria": [
@@ -555,7 +604,9 @@
             {
               "text": "Crypto redirection security improvements",
               "status": "next",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Implementing stronger server-side validation and redirect protection based on RCA findings.",
               "usecase": "Prevents malicious redirects and ensures users always reach correct Khyaal domains.",
               "acceptanceCriteria": [
@@ -574,7 +625,9 @@
             {
               "text": "Template-based event pages",
               "status": "later",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Planning and designing reusable event page templates with configurable sections for faster event launches.",
               "usecase": "Reduces event page creation time from 2 days to 2 hours with consistent branding.",
               "acceptanceCriteria": [
@@ -593,7 +646,9 @@
             {
               "text": "Events listing and joining via Web Zoom SDK",
               "status": "later",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Allow users to join Zoom events directly from the website without OTP login. Authentication via secure app-generated code or QR code scan with JWT token generation.",
               "usecase": "Enables seamless event joining from website, reducing friction and improving attendance rates by 30%.",
               "acceptanceCriteria": [
@@ -617,7 +672,9 @@
             {
               "text": "Home page redesign",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Complete redesign of 50Above50 homepage with modern UI, improved visual hierarchy, and senior-friendly accessibility features.",
               "usecase": "Creates stronger first impression and improves user engagement by 25%, resulting in higher event registrations.",
               "acceptanceCriteria": [
@@ -640,7 +697,9 @@
             {
               "text": "Category details page redesign",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Simplified category information pages with clearer descriptions, visual enhancements, and improved navigation for 50 categories.",
               "usecase": "Helps users understand 50Above50 program categories 40% faster, leading to better category selection and participation.",
               "acceptanceCriteria": [
@@ -663,7 +722,9 @@
             {
               "text": "Certificate downloads for returning participants",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Enabled self-service certificate download portal for participants who completed 50Above50 categories, with secure authentication.",
               "usecase": "Reduces support requests by 60% and provides instant certificate access to returning participants.",
               "acceptanceCriteria": [
@@ -686,7 +747,9 @@
             {
               "text": "2026 registration and app membership bundle",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Created bundled offer combining 50Above50 2026 registration with app membership at discounted price point.",
               "usecase": "Encourages membership sign-ups with 30% bundle discount, driving recurring revenue and user retention.",
               "acceptanceCriteria": [
@@ -709,7 +772,9 @@
             {
               "text": "Coin redemption for category access",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Implemented coin-based redemption system allowing users to unlock 50Above50 categories using earned reward coins.",
               "usecase": "Increases platform engagement by 40% and provides gamification incentive for continued participation.",
               "acceptanceCriteria": [
@@ -732,7 +797,10 @@
             {
               "text": "50-50 Category Structure Refinement & Migration",
               "status": "done",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Refined category structure by merging overlapping categories, updating descriptions, and adding new categories while maintaining exactly 50 total. Migrated all existing user data to align with new structure.",
               "usecase": "Ensures consistent, optimized category framework for better content organization, user navigation, and program clarity.",
               "acceptanceCriteria": [
@@ -755,7 +823,9 @@
             {
               "text": "Zoho integration",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Connected 50Above50 website lead forms to Zoho CRM for automated lead capture and nurturing workflows.",
               "usecase": "Improves lead tracking efficiency by 70% and enables automated follow-up campaigns for registrations.",
               "acceptanceCriteria": [
@@ -778,7 +848,9 @@
             {
               "text": "Pulse SDK integration",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Integrated Pulse analytics SDK to track user behavior, category views, registrations, and engagement patterns across 50Above50 website.",
               "usecase": "Provides comprehensive analytics showing how users interact with categories, enabling data-driven program optimization.",
               "acceptanceCriteria": [
@@ -801,7 +873,10 @@
             {
               "text": "Security review kick-off",
               "status": "done",
-              "contributors": ["Vivek", "Raj"],
+              "contributors": [
+                "Vivek",
+                "Raj"
+              ],
               "note": "Initiated comprehensive security review for 50Above50 website including vulnerability scanning and security best practices assessment.",
               "usecase": "Identifies potential security issues early, ensuring participant data protection and platform trustworthiness.",
               "acceptanceCriteria": [
@@ -824,7 +899,9 @@
             {
               "text": "Missing Pulse events tracking",
               "status": "now",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Adding missing activity tracking events for 50Above50 user actions not currently captured (coin usage, certificate downloads, category completions).",
               "usecase": "Improves campaign targeting accuracy and enables better conversion funnel analysis for the 50Above50 program.",
               "acceptanceCriteria": [
@@ -846,7 +923,10 @@
             {
               "text": "VAPT fixes remediation",
               "status": "next",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Implementing security fixes for vulnerabilities identified in 50Above50 VAPT report, prioritizing critical and high-severity issues.",
               "usecase": "Strengthens 50Above50 website security posture and protects participant data from potential breaches.",
               "acceptanceCriteria": [
@@ -865,7 +945,9 @@
             {
               "text": "In-app transition",
               "status": "later",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Planning seamless transition from website to mobile app for 50Above50 participants, including deep linking and context preservation.",
               "usecase": "Provides smoother cross-platform experience, reducing friction and improving app adoption by 35%.",
               "acceptanceCriteria": [
@@ -889,7 +971,9 @@
             {
               "text": "Coin redemption integration in CRM",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Built comprehensive backend system for coin-based rewards with transaction tracking, balance management, and redemption history.",
               "usecase": "Enables users to redeem 50Above50 categories using earned coins, driving engagement and platform stickiness.",
               "acceptanceCriteria": [
@@ -912,7 +996,9 @@
             {
               "text": "Zoho CRM connector",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Developed bidirectional connector between 50Above50 CRM and Zoho CRM for automated data synchronization of leads, contacts, and activities.",
               "usecase": "Keeps lead records updated in real-time, enabling marketing automation and reducing manual data entry by 80%.",
               "acceptanceCriteria": [
@@ -936,7 +1022,9 @@
               "text": "Zoho CRM Data Migration",
               "status": "now",
               "due": "2026-03-20",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Enhancing speed and reliability of CRM data synchronization during migration with optimized batch processing and error handling.",
               "usecase": "Ensures CRM data is accurate, up-to-date, and reliable for reporting and decision-making with 99%+ data integrity.",
               "acceptanceCriteria": [
@@ -962,7 +1050,9 @@
             {
               "text": "Tambola enhancements",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Enhanced admin controls for Tambola game management including board generation, winner verification, and prize management features.",
               "usecase": "Makes Tambola event management 50% faster and reduces manual errors during game execution.",
               "acceptanceCriteria": [
@@ -985,7 +1075,9 @@
             {
               "text": "Event data entry improvements",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Simplified event creation and editing workflow with improved form validation, auto-save functionality, and streamlined UI.",
               "usecase": "Speeds up event setup by 60%, reducing admin time from 15 minutes to 6 minutes per event.",
               "acceptanceCriteria": [
@@ -1008,7 +1100,9 @@
             {
               "text": "Event categories and sub-categories",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Organized events into hierarchical categories and sub-categories with filtering and search capabilities for better admin organization.",
               "usecase": "Improves event discoverability by 70% and makes event management more scalable as event inventory grows.",
               "acceptanceCriteria": [
@@ -1031,7 +1125,9 @@
             {
               "text": "Backward compatibility maintenance",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Maintained backward compatibility for legacy admin workflows and data structures while migrating to new system architecture.",
               "usecase": "Avoids disruption for existing admin users and ensures zero downtime during system transitions.",
               "acceptanceCriteria": [
@@ -1054,7 +1150,9 @@
             {
               "text": "Product requests from Raissa",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Delivered multiple admin panel improvements requested by product team including reporting enhancements, user management features, and workflow optimizations.",
               "usecase": "Supports product team needs and enables better business operations with enhanced admin capabilities.",
               "acceptanceCriteria": [
@@ -1082,7 +1180,9 @@
             {
               "text": "Tambola enhancements",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Updated backend API endpoints for Tambola game features including board generation, winner declaration, and prize distribution logic.",
               "usecase": "Supports enhanced Tambola product flow with automated game management and real-time updates.",
               "acceptanceCriteria": [
@@ -1105,7 +1205,9 @@
             {
               "text": "Event data and category support",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Enhanced API to support hierarchical event categories and sub-categories with improved querying and filtering capabilities.",
               "usecase": "Makes event setup cleaner and enables better event organization for admin and frontend teams.",
               "acceptanceCriteria": [
@@ -1128,7 +1230,9 @@
             {
               "text": "Backward compatibility layer",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Implemented API versioning and compatibility layer to maintain support for legacy client integrations during platform migration.",
               "usecase": "Prevents breaks during updates and ensures zero downtime for existing mobile app users.",
               "acceptanceCriteria": [
@@ -1151,7 +1255,9 @@
             {
               "text": "KYC protocol migration",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Migrated identity verification API from legacy KYC provider to new protocol with enhanced security and compliance features.",
               "usecase": "Keeps verification process compliant with updated regulations and improves verification success rate by 25%.",
               "acceptanceCriteria": [
@@ -1174,7 +1280,9 @@
             {
               "text": "Event pagination support",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Added cursor-based pagination to event listing APIs for improved performance when handling large event datasets.",
               "usecase": "Makes the app 70% faster for users browsing event lists with hundreds of events.",
               "acceptanceCriteria": [
@@ -1197,7 +1305,9 @@
             {
               "text": "99 Subscription API endpoints",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Built complete RESTful API suite for ₹99 subscription management including purchase, renewal, cancellation, and status queries.",
               "usecase": "Supports subscription purchase and lifecycle management with automated billing integration.",
               "acceptanceCriteria": [
@@ -1220,7 +1330,9 @@
             {
               "text": "Event restriction logic",
               "status": "done",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Implemented rule-based event access control system supporting membership tiers, user segments, and custom restrictions.",
               "usecase": "Controls who can join specific events based on membership status, enabling tiered access model.",
               "acceptanceCriteria": [
@@ -1243,7 +1355,9 @@
             {
               "text": "Coin redemption API",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Built API endpoints for coin-based redemption system with transaction management, balance queries, and redemption history.",
               "usecase": "Allows reward coin usage across the platform with real-time balance updates and transaction tracking.",
               "acceptanceCriteria": [
@@ -1266,7 +1380,9 @@
             {
               "text": "Zoho CRM integration API",
               "status": "done",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Developed API integration layer connecting platform backend with Zoho CRM for bidirectional lead and contact synchronization.",
               "usecase": "Keeps CRM records in sync automatically, reducing manual data entry by 85% and enabling marketing automation.",
               "acceptanceCriteria": [
@@ -1289,7 +1405,10 @@
             {
               "text": "Security review kick-off",
               "status": "done",
-              "contributors": ["Vivek", "Raj"],
+              "contributors": [
+                "Vivek",
+                "Raj"
+              ],
               "note": "Initiated comprehensive security testing for all API endpoints including authentication, authorization, and data validation.",
               "usecase": "Identifies API-level security vulnerabilities early and ensures data protection compliance.",
               "acceptanceCriteria": [
@@ -1313,7 +1432,9 @@
               "text": "Membership status sync via Razorpay to Pulse",
               "status": "now",
               "due": "2026-03-23",
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Capturing all membership status updates (initiated, charged, started, cancelled, expired) via Razorpay webhooks and syncing to Pulse for analytics.",
               "usecase": "Provides complete visibility of user membership lifecycle for better tracking, automation, and targeted engagement campaigns.",
               "acceptanceCriteria": [
@@ -1332,66 +1453,12 @@
               "sprintId": "sprint-3"
             },
             {
-              "text": "Cross-platform automation",
-              "status": "ongoing",
-              "contributors": ["Vivek", "Manish"],
-              "note": "Building automated workflows connecting backend APIs with external tools (Slack, Sheets, email) for operational efficiency.",
-              "usecase": "Reduces manual coordination effort by 60% through automated notifications and data syncing.",
-              "acceptanceCriteria": [
-                "Webhook integrations for key events working",
-                "Slack notification API functional",
-                "Google Sheets API integration tested",
-                "Error notifications configured"
-              ],
-              "storyPoints": 8,
-              "priority": "medium",
-              "effortLevel": "medium",
-              "impactLevel": "medium",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            },
-            {
-              "text": "Community query support",
-              "status": "ongoing",
-              "contributors": ["Vivek"],
-              "note": "Providing ongoing API support for community managers handling user queries and data requests.",
-              "usecase": "Keeps user support flowing smoothly with custom API queries for specific user cases.",
-              "acceptanceCriteria": [
-                "Support queries resolved within 24 hours",
-                "Custom endpoints created as needed",
-                "Documentation updated for new queries",
-                "Knowledge base maintained"
-              ],
-              "storyPoints": 3,
-              "priority": "low",
-              "effortLevel": "low",
-              "impactLevel": "low",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            },
-            {
-              "text": "Ad hoc data support",
-              "status": "ongoing",
-              "contributors": ["Vivek", "Manish"],
-              "note": "Handling one-off API requests for business intelligence, reporting, and operational data extraction needs.",
-              "usecase": "Supports business operations quickly with custom data extracts and API responses for specific use cases.",
-              "acceptanceCriteria": [
-                "Ad hoc requests handled within 48 hours",
-                "Data integrity verified before delivery",
-                "Query patterns documented",
-                "Performance impact assessed"
-              ],
-              "storyPoints": 2,
-              "priority": "low",
-              "effortLevel": "low",
-              "impactLevel": "low",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            },
-            {
               "text": "VAPT fixes implementation",
               "status": "next",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Implementing API security fixes for vulnerabilities identified in penetration testing including authentication bypass, injection flaws, and authorization issues.",
               "usecase": "Strengthens API security posture and protects user data from potential exploits.",
               "acceptanceCriteria": [
@@ -1410,7 +1477,10 @@
             {
               "text": "Centerstage API",
               "status": "next",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Building API foundation for Centerstage product area supporting content showcasing and user-generated content features.",
               "usecase": "Prepares backend for future product expansion into user-generated content and community showcasing.",
               "acceptanceCriteria": [
@@ -1429,7 +1499,10 @@
             {
               "text": "Centerstage: Queue architecture",
               "status": "next",
-              "contributors": ["Vivek", "Manish"],
+              "contributors": [
+                "Vivek",
+                "Manish"
+              ],
               "note": "Designing asynchronous queue-based architecture for handling Centerstage content processing, moderation, and publishing workflows.",
               "usecase": "Makes the system more scalable by decoupling content processing from API requests, handling 10x more content submissions.",
               "acceptanceCriteria": [
@@ -1448,7 +1521,10 @@
             {
               "text": "Centerstage: Chat / Messenger backend",
               "status": "next",
-              "contributors": ["Manish", "Vivek"],
+              "contributors": [
+                "Manish",
+                "Vivek"
+              ],
               "note": "Planning real-time messaging backend API with WebSocket support for Centerstage chat and messenger features.",
               "usecase": "Enables future in-app messaging support for community interaction and peer-to-peer communication.",
               "acceptanceCriteria": [
@@ -1467,7 +1543,9 @@
             {
               "text": "Support for app-code authentication in API",
               "status": "later",
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Implementing alternative authentication mechanism using temporary app-generated codes or QR codes instead of OTP, enabling seamless Web Zoom SDK integration.",
               "usecase": "Provides frictionless authentication for web-based event joining, reducing login time from 60s to 5s and improving attendance by 30%.",
               "acceptanceCriteria": [
@@ -1486,7 +1564,10 @@
             {
               "text": "Streaks",
               "status": "later",
-              "contributors": ["Manish", "Vivek"],
+              "contributors": [
+                "Manish",
+                "Vivek"
+              ],
               "note": "Building streak tracking system API to monitor consecutive user activity (event attendance, task completion) with milestone rewards and gamification.",
               "usecase": "Encourages consistent engagement through gamification, increasing daily active users by 40% and improving retention.",
               "acceptanceCriteria": [
@@ -1507,84 +1588,7 @@
         },
         {
           "name": "Adhoc / Integrations",
-          "items": [
-            {
-              "text": "Tracking and automation integrations",
-              "status": "ongoing",
-              "contributors": ["Vivek", "Manish"],
-              "note": "Building automated workflows connecting platform events with external tools (Google Sheets, Slack, email) for operational reporting and alerting.",
-              "usecase": "Reduces manual coordination effort by 65% through automated data syncing and real-time notifications to operations teams.",
-              "acceptanceCriteria": [
-                "Google Sheets integration for automated reporting working",
-                "Slack webhooks configured for key events",
-                "Email automation for critical alerts functional",
-                "Error handling and retry logic implemented"
-              ],
-              "storyPoints": 8,
-              "priority": "medium",
-              "effortLevel": "medium",
-              "impactLevel": "medium",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            },
-            {
-              "text": "Tour email campaigns",
-              "status": "ongoing",
-              "contributors": ["Manish"],
-              "note": "Manually crafting and sending targeted email campaigns for specific tours to selected user cohorts based on engagement patterns and tour interest signals.",
-              "usecase": "Enables personalized tour promotion to high-intent user segments, improving tour booking conversion rates by 20%.",
-              "acceptanceCriteria": [
-                "Cohort selection criteria defined and documented",
-                "Email templates created for major tour categories",
-                "Campaign tracking and analytics in place",
-                "A/B testing capability functional"
-              ],
-              "storyPoints": 5,
-              "priority": "medium",
-              "effortLevel": "medium",
-              "impactLevel": "medium",
-              "planningHorizon": "1M",
-              "epicId": "analytics-intelligence"
-            },
-            {
-              "text": "Community query support",
-              "status": "ongoing",
-              "contributors": ["Vivek"],
-              "note": "Providing ongoing technical support for community managers handling user inquiries, data requests, and special cases requiring backend assistance.",
-              "usecase": "Keeps community support operations running smoothly with rapid resolution of user-specific technical issues.",
-              "acceptanceCriteria": [
-                "Support queries responded to within 24 hours",
-                "Common query patterns documented in knowledge base",
-                "Self-service tools created for frequent requests",
-                "Support ticket volume tracked and analyzed"
-              ],
-              "storyPoints": 3,
-              "priority": "low",
-              "effortLevel": "low",
-              "impactLevel": "low",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            },
-            {
-              "text": "Data support",
-              "status": "ongoing",
-              "contributors": ["Vivek", "Manish"],
-              "note": "Handling ad hoc data extraction, reporting requests, and one-off analysis needs for business stakeholders and operations teams.",
-              "usecase": "Supports data-driven decision making by providing quick access to custom reports and data extracts for specific business questions.",
-              "acceptanceCriteria": [
-                "Data requests fulfilled within 48 hours",
-                "Data integrity verified before delivery",
-                "Common queries documented and templated",
-                "Self-service reporting tools expanded"
-              ],
-              "storyPoints": 2,
-              "priority": "low",
-              "effortLevel": "low",
-              "impactLevel": "low",
-              "planningHorizon": "1M",
-              "epicId": "platform-modernization"
-            }
-          ]
+          "items": []
         }
       ]
     },
@@ -1599,7 +1603,10 @@
             {
               "text": "AWS to GCP migration",
               "status": "done",
-              "contributors": ["Nikhil", "Rushikesh"],
+              "contributors": [
+                "Nikhil",
+                "Rushikesh"
+              ],
               "note": "Migrated Pulse analytics infrastructure from AWS to Google Cloud Platform (GCP) including data pipelines, storage, and compute workloads.",
               "usecase": "Improves platform stability and reduces operational complexity while consolidating cloud providers for better cost management.",
               "acceptanceCriteria": [
@@ -1622,7 +1629,9 @@
             {
               "text": "GCP cost optimization",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Optimized GCP resource utilization through rightsizing instances, implementing autoscaling policies, and eliminating unused resources.",
               "usecase": "Reduces monthly cloud infrastructure costs by 25% while maintaining performance and reliability.",
               "acceptanceCriteria": [
@@ -1645,7 +1654,10 @@
             {
               "text": "Session support for Pulse console",
               "status": "done",
-              "contributors": ["Subhrajit", "Nikhil"],
+              "contributors": [
+                "Subhrajit",
+                "Nikhil"
+              ],
               "note": "Implemented secure session management for Pulse analytics console with JWT-based authentication, session timeout, and refresh token support.",
               "usecase": "Makes console access smoother for analytics users with persistent sessions and auto-login capabilities, reducing login friction by 80%.",
               "acceptanceCriteria": [
@@ -1673,7 +1685,9 @@
             {
               "text": "User query optimization",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Optimized database queries and indexing strategies for user analytics dashboards, reducing query execution time by 70%.",
               "usecase": "Improves user reporting performance from 15s to 4s average load time, enabling faster data-driven decisions.",
               "acceptanceCriteria": [
@@ -1696,7 +1710,9 @@
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": ["Rushikesh"],
+              "contributors": [
+                "Rushikesh"
+              ],
               "note": "Added filtering capabilities for null and empty values in user analytics queries, enabling identification of incomplete user profiles.",
               "usecase": "Helps identify and fix data quality issues by finding users with missing profile information for targeted outreach.",
               "acceptanceCriteria": [
@@ -1719,7 +1735,9 @@
             {
               "text": "User timeline tracking",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Implemented chronological activity timeline for individual users showing all events, status changes, and interactions over time.",
               "usecase": "Improves customer journey visibility and enables support teams to quickly understand user history and context.",
               "acceptanceCriteria": [
@@ -1742,7 +1760,9 @@
             {
               "text": "Near real-time user sync",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Implemented near real-time data synchronization pipeline updating user profiles in Pulse analytics within 30 seconds of source changes.",
               "usecase": "Makes journey triggers and segment evaluations more current with <30s data latency instead of hourly batch updates.",
               "acceptanceCriteria": [
@@ -1770,7 +1790,9 @@
             {
               "text": "Event query optimization",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Optimized event analytics queries through improved indexing, query restructuring, and caching strategies, reducing load time by 65%.",
               "usecase": "Makes event analytics reporting more responsive, improving from 20s to 7s average dashboard load time.",
               "acceptanceCriteria": [
@@ -1793,7 +1815,10 @@
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": ["Rushikesh", "Subhrajit"],
+              "contributors": [
+                "Rushikesh",
+                "Subhrajit"
+              ],
               "note": "Added null and empty value filtering for event properties, enabling data quality analysis and identification of incomplete event tracking.",
               "usecase": "Improves data quality visibility by identifying events with missing properties for debugging and tracking improvements.",
               "acceptanceCriteria": [
@@ -1816,7 +1841,9 @@
             {
               "text": "IST timestamp view",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Implemented Indian Standard Time (IST) timezone display for all event timestamps in analytics dashboards and reports.",
               "usecase": "Makes event timing data easier to read and understand for India-based teams, eliminating UTC conversion confusion.",
               "acceptanceCriteria": [
@@ -1844,7 +1871,10 @@
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": ["Rushikesh", "Subhrajit"],
+              "contributors": [
+                "Rushikesh",
+                "Subhrajit"
+              ],
               "note": "Added null and empty value filtering in segment and cohort definition rules, enabling precise targeting based on missing data.",
               "usecase": "Makes audience targeting more accurate by identifying users with incomplete profiles for re-engagement campaigns.",
               "acceptanceCriteria": [
@@ -1867,7 +1897,9 @@
             {
               "text": "External user data support",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Enabled importing external user lists (CSV uploads, API integrations) for use in segmentation and cohort building.",
               "usecase": "Brings offline and third-party user data into Pulse for unified segmentation and campaign targeting.",
               "acceptanceCriteria": [
@@ -1890,7 +1922,10 @@
             {
               "text": "Clone support for segments and cohorts",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Implemented one-click cloning for segments and cohorts, allowing quick duplication and modification of existing audience definitions.",
               "usecase": "Saves time when creating similar audiences, reducing setup from 10 minutes to 1 minute for variant audiences.",
               "acceptanceCriteria": [
@@ -1913,7 +1948,10 @@
             {
               "text": "Utility support for DOB, current time, and event time",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Added advanced date and time-based filtering utilities including birthday calculations, relative time comparisons, and event timing logic.",
               "usecase": "Makes targeting more flexible with birthday campaigns, time-sensitive promotions, and behavior-based timing rules.",
               "acceptanceCriteria": [
@@ -1936,7 +1974,10 @@
             {
               "text": "Scheduled cohort refresh",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Implemented automated cohort refresh schedules (daily, weekly, monthly) to keep dynamic audience lists up-to-date automatically.",
               "usecase": "Keeps audience lists current without manual intervention, ensuring campaigns always target the right users.",
               "acceptanceCriteria": [
@@ -1964,7 +2005,10 @@
             {
               "text": "External user data support",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Enabled journeys to trigger and process users from external data sources (CSV uploads, API imports) in addition to platform users.",
               "usecase": "Expands campaign reach to offline and third-party audiences, enabling unified omnichannel journeys.",
               "acceptanceCriteria": [
@@ -1987,7 +2031,10 @@
             {
               "text": "Clone support for journeys",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Implemented one-click journey duplication allowing marketers to copy complex journey configurations and modify for new campaigns.",
               "usecase": "Speeds up journey setup from 30 minutes to 5 minutes by reusing proven journey templates.",
               "acceptanceCriteria": [
@@ -2010,7 +2057,10 @@
             {
               "text": "Utility support for DOB, current time, and event time",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Added advanced date/time-based journey logic including birthday triggers, time-of-day actions, and event timing comparisons.",
               "usecase": "Improves journey personalization with birthday wishes, optimal send time logic, and behavior-based timing rules.",
               "acceptanceCriteria": [
@@ -2033,7 +2083,9 @@
             {
               "text": "Journey engine optimization",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Optimized journey execution engine through improved queue processing, parallel execution, and database query optimization reducing latency by 60%.",
               "usecase": "Handles 10x more concurrent journeys reliably with improved speed and reduced server load.",
               "acceptanceCriteria": [
@@ -2056,7 +2108,10 @@
             {
               "text": "Condition-based triggers",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Added sophisticated conditional journey entry logic based on user attributes, behavior patterns, and event combinations.",
               "usecase": "Targets users more precisely by triggering journeys only when multiple conditions are met (e.g., high-value user + cart abandonment).",
               "acceptanceCriteria": [
@@ -2079,7 +2134,10 @@
             {
               "text": "Null filter support",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Added null and empty value filtering in journey decision nodes, enabling branching based on missing data.",
               "usecase": "Makes journey flows more accurate by handling users with incomplete data differently (e.g., request missing info).",
               "acceptanceCriteria": [
@@ -2102,7 +2160,10 @@
             {
               "text": "Google Sheets and Slack actions",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Added journey action nodes for automatically logging data to Google Sheets and sending Slack notifications during journey execution.",
               "usecase": "Reduces manual follow-up work by 75% through automated data logging and team notifications for key journey events.",
               "acceptanceCriteria": [
@@ -2125,7 +2186,10 @@
             {
               "text": "Tag support and tag filters",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Implemented user tagging within journeys and tag-based filtering for journey entry and decision nodes.",
               "usecase": "Improves targeting and personalization by dynamically tagging users based on journey behavior and filtering by tags.",
               "acceptanceCriteria": [
@@ -2148,7 +2212,10 @@
             {
               "text": "Custom Expression Support in Journey",
               "status": "later",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Enable dynamic logic creation within user journeys using custom expressions (JavaScript-like syntax) for advanced personalization and decision-making.",
               "usecase": "Allows defining complex dynamic conditions to control journey flow, enabling highly personalized actions and branching based on calculated user data.",
               "acceptanceCriteria": [
@@ -2173,7 +2240,10 @@
             {
               "text": "Firebase device token sync",
               "status": "done",
-              "contributors": ["Manish", "Nikhil"],
+              "contributors": [
+                "Manish",
+                "Nikhil"
+              ],
               "note": "Implemented automated synchronization of Firebase Cloud Messaging (FCM) device tokens from app to Pulse campaign system.",
               "usecase": "Ensures push notifications reach the right devices with 99%+ delivery accuracy by keeping device tokens current.",
               "acceptanceCriteria": [
@@ -2196,7 +2266,10 @@
             {
               "text": "Dynamic topic creation",
               "status": "done",
-              "contributors": ["Manish", "Nikhil"],
+              "contributors": [
+                "Manish",
+                "Nikhil"
+              ],
               "note": "Enabled automatic Firebase topic creation and subscription management based on user segments and cohorts.",
               "usecase": "Speeds up messaging to new audiences by automatically creating topic groups, reducing setup time from 10 minutes to instant.",
               "acceptanceCriteria": [
@@ -2219,7 +2292,10 @@
             {
               "text": "Scheduled campaign sending",
               "status": "done",
-              "contributors": ["Manish", "Nikhil"],
+              "contributors": [
+                "Manish",
+                "Nikhil"
+              ],
               "note": "Implemented campaign scheduling feature allowing marketers to set future send times for push notification and email campaigns.",
               "usecase": "Improves campaign timing with optimal send times, enabling better engagement rates through strategic scheduling.",
               "acceptanceCriteria": [
@@ -2243,7 +2319,9 @@
             {
               "text": "Campaign logs and history",
               "status": "done",
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Built comprehensive campaign history and logging interface showing all sent campaigns with delivery metrics, audience details, and content.",
               "usecase": "Makes campaign performance tracking easier with searchable history and detailed analytics for all past campaigns.",
               "acceptanceCriteria": [
@@ -2272,7 +2350,9 @@
             {
               "text": "AI Sales Agent for calls",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Built AI-powered voice agent using LLM and text-to-speech technology to handle initial sales calls automatically with natural conversation flow.",
               "usecase": "Helps reach out to 5x more users faster while reducing manual calling effort by 70%, enabling scalable tour promotion.",
               "acceptanceCriteria": [
@@ -2295,7 +2375,9 @@
             {
               "text": "AI Sales Agent – Call summarization setup",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Implemented automated call summarization using AI transcription and LLM analysis. Working via Exotel; evaluating Plivo where recording is limited.",
               "usecase": "Provides instant call insights and summaries without manual review, saving 80% of supervisor review time.",
               "acceptanceCriteria": [
@@ -2318,7 +2400,9 @@
             {
               "text": "AI Sales Agent – Tour-specific setup",
               "status": "done",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Configured AI calling agent with tour-specific knowledge base including tour details, pricing, FAQs, and objection handling for targeted conversations.",
               "usecase": "Enables personalized outreach for specific tours with accurate information, improving engagement and conversion rates by 25%.",
               "acceptanceCriteria": [
@@ -2341,7 +2425,11 @@
             {
               "text": "Sales Agent – Specific Tours Pilot launch tesing, stakeholder alignment",
               "status": "next",
-              "contributors": ["Susmit", "Pritish", "Nikhil"],
+              "contributors": [
+                "Susmit",
+                "Pritish",
+                "Nikhil"
+              ],
               "note": "Preparing for internal pilot testing by aligning stakeholders, refining prompts and responses, and gathering initial feedback for improvements.",
               "usecase": "Ensures the AI sales agent is validated internally with real scenarios before external rollout, reducing launch risks.",
               "acceptanceCriteria": [
@@ -2361,7 +2449,10 @@
             {
               "text": "Prompt & conversation refinement",
               "status": "next",
-              "contributors": ["Pritish", "Susmit"],
+              "contributors": [
+                "Pritish",
+                "Susmit"
+              ],
               "note": "Finalizing AI agent conversation scripts including sales pitch, objection handling, closing techniques, and intent/rating capture logic.",
               "usecase": "Improves conversation quality and conversion rates by 30% through refined, tested prompts and natural dialogue flows.",
               "acceptanceCriteria": [
@@ -2381,7 +2472,9 @@
             {
               "text": "Plivo setup for India & recording feasibility",
               "status": "now",
-              "contributors": ["Susmit"],
+              "contributors": [
+                "Susmit"
+              ],
               "note": "Setting up Plivo voice platform for Indian phone numbers and evaluating call recording capabilities, costs, and limitations. Manual recording remains fallback.",
               "usecase": "Enables scalable calling infrastructure for India market with clarity on recording capabilities for quality monitoring.",
               "acceptanceCriteria": [
@@ -2404,7 +2497,10 @@
             {
               "text": "Call recording feasibility",
               "status": "now",
-              "contributors": ["Nikhil", "Susmit"],
+              "contributors": [
+                "Nikhil",
+                "Susmit"
+              ],
               "note": "Exploring call recording technical setup with Plivo, including API integration, storage, cost implications, and compliance requirements.",
               "usecase": "Helps review call quality, train AI agent, and maintain compliance records for audit and improvement purposes.",
               "acceptanceCriteria": [
@@ -2427,7 +2523,9 @@
             {
               "text": "AI Assistant 2.0",
               "status": "next",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Upgrading AI assistant with improved LLM model, better context handling, memory persistence, and enhanced response quality using RAG architecture.",
               "usecase": "Provides smarter, more contextual assistance with 50% better response relevance to enhance user engagement and support quality.",
               "acceptanceCriteria": [
@@ -2452,7 +2550,11 @@
             {
               "text": "MongoDB and Shopify data migration",
               "status": "done",
-              "contributors": ["Nikhil", "Raj", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Raj",
+                "Subhrajit"
+              ],
               "note": "Migrated core customer and transaction data from MongoDB and Shopify into Pulse CDP creating unified customer profiles.",
               "usecase": "Creates a single source of truth for customer data, enabling unified segmentation and 360-degree customer view.",
               "acceptanceCriteria": [
@@ -2475,7 +2577,10 @@
             {
               "text": "Data Hub Launch",
               "status": "done",
-              "contributors": ["Nikhil", "Subhrajit"],
+              "contributors": [
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Launched centralized Data Hub with data models, metrics framework, and feature engineering capabilities as foundation for analytics and ML.",
               "usecase": "Features: Data Models, Metrics. Enables cohort/segment creation (e.g., non-club users), powers recommendations and personalization, and supports dashboards and analytics.",
               "acceptanceCriteria": [
@@ -2498,7 +2603,9 @@
             {
               "text": "Gold Tier feature engineering",
               "status": "now",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "due": "2026-03-25",
               "note": "Engineering advanced data features for Gold Tier analytics including aggregations, derived metrics, and behavioral indicators.",
               "usecase": "Supports sophisticated analytics and ML predictions with high-quality engineered features for business insights.",
@@ -2520,7 +2627,9 @@
             {
               "text": "Gold Tier data models",
               "status": "now",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "due": "2026-03-25",
               "note": "Defining comprehensive data models for Gold Tier including schemas, relationships, and data quality rules.",
               "usecase": "Keeps data organized and consistent with clear structure for advanced analytics and reporting use cases.",
@@ -2542,7 +2651,9 @@
             {
               "text": "Gold Tier metrics",
               "status": "now",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "due": "2026-03-25",
               "note": "Defining Gold Tier business metrics including KPIs, aggregations, and calculated measures for executive dashboards.",
               "usecase": "Helps track business performance clearly with standardized, trustworthy metrics for decision-making.",
@@ -2564,7 +2675,9 @@
             {
               "text": "Dashboards",
               "status": "now",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "due": "2026-03-27",
               "note": "Publishing user-facing analytics dashboards with key metrics, trends, and insights for business teams.",
               "usecase": "Makes data-driven insights easily accessible for teams to monitor performance and make informed decisions quickly.",
@@ -2586,7 +2699,9 @@
             {
               "text": "Recommendation: ML Feature Engineering",
               "status": "now",
-              "contributors": ["Rushikesh"],
+              "contributors": [
+                "Rushikesh"
+              ],
               "due": "2026-03-27",
               "note": "Building and finalizing ~50 ML features including propensity scores, time-series patterns, statistical measures, and behavioral indicators for recommendation models.",
               "usecase": "Improves recommendation model accuracy by 35% through sophisticated feature engineering and better signal extraction.",
@@ -2608,7 +2723,9 @@
             {
               "text": "Recommendation: Persona Engine Integration",
               "status": "now",
-              "contributors": ["Rushikesh"],
+              "contributors": [
+                "Rushikesh"
+              ],
               "due": "2026-03-27",
               "note": "Integrating persona engine with long-term and contextual memory using Mem0 for memory management and Neo4j graph database for relationship tracking.",
               "usecase": "Enables deeper personalization based on user memory, behavior patterns, and relationship context for highly relevant recommendations.",
@@ -2630,7 +2747,9 @@
             {
               "text": "Recommendation: Predictive Recommendation Engine (Cold Data)",
               "status": "now",
-              "contributors": ["Rushikesh"],
+              "contributors": [
+                "Rushikesh"
+              ],
               "due": "2026-04-03",
               "note": "Building predictive recommendation models using historical (cold) data for proactive content and product suggestions based on user patterns.",
               "usecase": "Predicts user needs and preferences proactively using historical behavior, improving engagement by 25% through anticipatory recommendations.",
@@ -2652,7 +2771,9 @@
             {
               "text": "Recommendation: Contextual Recommendation Engine (Hot Data)",
               "status": "now",
-              "contributors": ["Rushikesh"],
+              "contributors": [
+                "Rushikesh"
+              ],
               "due": "2026-04-10",
               "note": "Developing real-time contextual recommendation engine using live (hot) data streams for immediate, context-aware suggestions based on current behavior.",
               "usecase": "Delivers real-time, context-aware recommendations adapting to current user session, improving conversion rates by 30%.",
@@ -2680,7 +2801,11 @@
             {
               "text": "Headless CMS Live Deployment",
               "status": "done",
-              "contributors": ["Vivek", "Nikhil", "Subhrajit"],
+              "contributors": [
+                "Vivek",
+                "Nikhil",
+                "Subhrajit"
+              ],
               "note": "Deployed headless CMS platform enabling non-technical teams to create, manage, and publish content across web, app, and email channels from single source.",
               "usecase": "Enables teams to manage and publish content independently without engineering dependency, reducing content update time from 2 days to 10 minutes.",
               "acceptanceCriteria": [
@@ -2709,7 +2834,9 @@
             {
               "text": "Personalization in Flow",
               "status": "later",
-              "contributors": ["Nikhil"],
+              "contributors": [
+                "Nikhil"
+              ],
               "note": "Introducing advanced personalization within flows using user profile data, behavioral signals, and contextual information for dynamic content adaptation.",
               "usecase": "Enables dynamic, user-specific flow experiences adapting content and paths in real-time to improve engagement by 40% and conversion outcomes.",
               "acceptanceCriteria": [
@@ -2741,7 +2868,9 @@
             {
               "text": "AWS cost optimization",
               "status": "now",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Implementing AWS cost reduction strategies including instance rightsizing, reserved capacity planning, S3 lifecycle policies, and unused resource cleanup.",
               "usecase": "Improves cost efficiency by targeting 30% monthly AWS spend reduction while maintaining performance and reliability.",
               "acceptanceCriteria": [
@@ -2764,7 +2893,9 @@
             {
               "text": "VAPT documentation",
               "status": "done",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Prepared comprehensive Vulnerability Assessment and Penetration Testing documentation including scope, findings, remediation plans, and compliance mappings.",
               "usecase": "Supports security review process and regulatory compliance requirements with complete audit trail.",
               "acceptanceCriteria": [
@@ -2788,7 +2919,9 @@
             {
               "text": "Khyaal Tours redirect issue investigation",
               "status": "now",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Conducting root cause analysis for incorrect website redirects. RCA completed and potential DNS/routing issue identified; implementing fix.",
               "usecase": "Helps resolve incorrect redirection ensuring users reach the correct Khyaal website, preventing brand confusion and lost traffic.",
               "acceptanceCriteria": [
@@ -2811,7 +2944,9 @@
             {
               "text": "S3 to GCS migration",
               "status": "done",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Migrated all file storage from AWS S3 to Google Cloud Storage (GCS) for platform consolidation and cost optimization.",
               "usecase": "Improves platform alignment by consolidating on GCP and reduces storage costs by 35% with better efficiency.",
               "acceptanceCriteria": [
@@ -2835,7 +2970,9 @@
             {
               "text": "Grafana monitoring dashboards",
               "status": "done",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Built comprehensive Grafana monitoring dashboards for infrastructure metrics, application performance, and business KPIs with real-time visualization.",
               "usecase": "Improves visibility into system health with centralized monitoring, reducing issue detection time from hours to minutes.",
               "acceptanceCriteria": [
@@ -2859,7 +2996,9 @@
             {
               "text": "Slack alerting",
               "status": "done",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Configured automated Slack alerting for critical infrastructure and application issues with smart routing to on-call teams.",
               "usecase": "Speeds up incident response time by 70% through instant team notifications for critical issues.",
               "acceptanceCriteria": [
@@ -2883,7 +3022,9 @@
             {
               "text": "Application monitoring",
               "status": "done",
-              "contributors": ["Raj"],
+              "contributors": [
+                "Raj"
+              ],
               "note": "Implemented comprehensive application performance monitoring (APM) across all production applications with distributed tracing and error tracking.",
               "usecase": "Helps maintain stability and performance with proactive issue detection, reducing downtime by 60%.",
               "acceptanceCriteria": [

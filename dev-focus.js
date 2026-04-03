@@ -59,7 +59,7 @@ function renderMyTasksView() {
                         } else {
                             myTasks.upcoming.push(task);
                         }
-                    } else if (task.status === 'now' || task.status === 'ongoing') {
+                    } else if (task.status === 'now') {
                         myTasks.thisWeek.push(task);
                     } else {
                         myTasks.upcoming.push(task);
@@ -167,7 +167,6 @@ function renderDevTaskCard(task) {
     const statusColors = {
         done: 'bg-green-500',
         now: 'bg-blue-500',
-        ongoing: 'bg-amber-500',
         next: 'bg-orange-500',
         later: 'bg-gray-500'
     };

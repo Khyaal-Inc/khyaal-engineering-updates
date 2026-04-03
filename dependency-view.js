@@ -89,7 +89,6 @@ function renderDependencyView() {
     mermaidCode += `
     classDef done fill:#10b981,stroke:#059669,color:#fff
     classDef now fill:#3b82f6,stroke:#2563eb,color:#fff
-    classDef ongoing fill:#f59e0b,stroke:#d97706,color:#fff
     classDef next fill:#f97316,stroke:#ea580c,color:#fff
     classDef later fill:#6b7280,stroke:#4b5563,color:#fff
     `;
@@ -117,10 +116,6 @@ function renderDependencyView() {
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 rounded bg-blue-500"></div>
                     <span>Now</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded bg-amber-500"></div>
-                    <span>Ongoing</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 rounded bg-orange-500"></div>
@@ -169,7 +164,6 @@ function getStatusColor(status) {
     const colorMap = {
         done: '#10b981',
         now: '#3b82f6',
-        ongoing: '#f59e0b',
         next: '#f97316',
         later: '#6b7280'
     };

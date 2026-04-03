@@ -28,7 +28,6 @@ function renderKanbanView() {
         'backlog': { title: 'Backlog', status: 'later', items: [], color: 'bg-gray-50' },
         'next': { title: 'Next', status: 'next', items: [], color: 'bg-orange-50' },
         'now': { title: 'Now', status: 'now', items: [], color: 'bg-blue-50' },
-        'ongoing': { title: 'Ongoing', status: 'ongoing', items: [], color: 'bg-amber-50' },
         'done': { title: 'Done', status: 'done', items: [], color: 'bg-emerald-50' }
     };
 
@@ -72,7 +71,7 @@ function renderKanbanView() {
             </div>
         </div>
 
-            <div class="kanban-board" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; min-height: 500px;">
+            <div class="kanban-board" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; min-height: 500px;">
                 ${Object.entries(columns).map(([key, col]) => `
                     <div class="kanban-column ${col.color} rounded-lg p-4 border-2 border-slate-200"
                          data-status="${col.status}"

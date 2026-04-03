@@ -273,7 +273,7 @@ function renderTrackView() {
             `;
 
             html += `<div id="body-${iconId}" ${collapsed ? 'style="display:none"' : ''}>`;
-            const statusOrder = { "done": 1, "ongoing": 2, "now": 3, "next": 4, "later": 5 };
+            const statusOrder = { "done": 1, "now": 2, "next": 3, "later": 4 };
 
             let items = itemsInTag.filter(item => isItemInDateRange(item) && isItemInSearch(item));
             const sortedItems = [...items].sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
@@ -565,8 +565,8 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
 // ------ Status View ------
 function renderStatusView() {
     const container = document.getElementById('status-view');
-    const statuses = ['done', 'now', 'ongoing', 'next', 'later'];
-    const statusTitles = { done: 'Done', now: 'Now', ongoing: 'On-Going', next: 'Next', later: 'Later' };
+    const statuses = ['done', 'now', 'next', 'later'];
+    const statusTitles = { done: 'Done', now: 'Now', next: 'Next', later: 'Later' };
 
     let ribbonHtml = `
         <div id="status-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -710,7 +710,7 @@ function renderContributorView() {
 
     sortedNames.forEach(name => {
         const items = contributors[name];
-        const statusOrder = ['done', 'now', 'ongoing', 'next', 'later'];
+        const statusOrder = ['done', 'now', 'next', 'later'];
         const colorClass = contributorColors[name] || 'bg-slate-600';
         const textColor = contributorColors[name] ? '' : 'text-white';
 

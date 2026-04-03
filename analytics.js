@@ -84,7 +84,7 @@ function renderKPICards() {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 if (item.status === 'done') completedItems++;
-                else if (item.status === 'now' || item.status === 'ongoing') activeItems++;
+                else if (item.status === 'now') activeItems++;
             });
         });
     });

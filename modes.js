@@ -401,7 +401,6 @@ function getModeFilter() {
         return (item) => {
             return item.priority === 'high' ||
                    item.status === 'now' ||
-                   item.status === 'ongoing' ||
                    item.blocker === true;
         };
     }

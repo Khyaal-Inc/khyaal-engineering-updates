@@ -51,7 +51,7 @@ For detailed information, refer to:
 - **Story Points** - Fibonacci scale (1,2,3,5,8,13,21)
 
 ## Status Values (Quick Ref)
-`done` | `now` | `ongoing` | `next` | `later`
+`done` | `now` | `next` | `later`
 
 ## Development Guidelines
 

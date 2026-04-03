@@ -237,7 +237,6 @@ This document describes the complete product management hierarchy implemented in
 **Status Values:**
 - `done`: Completed
 - `now`: Currently being worked on
-- `ongoing`: In progress, no specific deadline
 - `next`: Queued for near-term work
 - `later`: Future work
 

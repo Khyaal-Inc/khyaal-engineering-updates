@@ -40,7 +40,7 @@ function normalizeData() {
                 }
 
                 // Auto-assign today's date if missing for active tasks
-                if (['now', 'ongoing'].includes(item.status)) {
+                if (item.status === 'now') {
                     if (!item.startDate) item.startDate = new Date().toISOString().split('T')[0];
                 }
             });
@@ -229,7 +229,7 @@ function exportData(type) {
 // ------ Slack Digest Generator ------
 function generateDigest() {
     const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
-    let stats = { done: 0, now: 0, ongoing: 0, blocked: 0 };
+    let stats = { done: 0, now: 0, blocked: 0 };
     let recentDone = [];
     let highPriority = [];
     
@@ -244,9 +244,8 @@ function generateDigest() {
                     if (item.status === 'done') {
                         stats.done++;
                         recentDone.push(`• ${item.text} (${track.name})`);
-                    } else if (item.status === 'now' || item.status === 'ongoing') {
-                        if (item.status === 'now') stats.now++;
-                        if (item.status === 'ongoing') stats.ongoing++;
+                    } else if (item.status === 'now') {
+                        stats.now++;
                         if (item.priority === 'high') {
                             highPriority.push(`• ${item.text} [${item.status.toUpperCase()}]`);
                         }
@@ -259,7 +258,7 @@ function generateDigest() {
     
     let digest = `🚀 *Engineering Update Digest* ${activeTeam ? `for ${activeTeam}` : ''}\n\n`;
     digest += `✅ *Completed:* ${stats.done}\n`;
-    digest += `⚡ *Active:* ${stats.now + stats.ongoing}\n`;
+    digest += `⚡ *Active:* ${stats.now}\n`;
     digest += `🚨 *Blockers:* ${stats.blocked}\n\n`;
     
     if (recentDone.length > 0) {

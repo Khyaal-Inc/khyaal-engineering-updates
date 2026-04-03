@@ -63,7 +63,7 @@ function renderExecutiveSummary() {
             subtrack.items.forEach(item => {
                 totalItems++;
                 if (item.status === 'done') doneItems++;
-                if (item.status === 'now' || item.status === 'ongoing') activeItems++;
+                if (item.status === 'now') activeItems++;
                 if (item.blocker) blockedItems++;
             });
         });
