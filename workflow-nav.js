@@ -311,13 +311,18 @@ function renderWorkflowNav() {
                         document.documentElement.style.setProperty('--stage-color', stage.color);
                     }
                     
-                    // Adaptive Hero/Compact Logic
+                    // Adaptive Hero/Compact Logic: Ensure focus stages match WORKFLOW_STAGES keys
                     const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
                     let displayState = 'hero'; // Default for PM
-                    if (activeMode === 'dev') {
-                        displayState = (key === 'planning' || key === 'execution') ? 'hero' : 'compact';
+
+                    if (isActive) {
+                        displayState = 'hero'; // Selected stage is always prominent
+                    } else if (activeMode === 'dev') {
+                        // Developer focus: Planning (definition) & Execution (delivery)
+                        displayState = (key === 'definition' || key === 'delivery') ? 'hero' : 'compact';
                     } else if (activeMode === 'exec') {
-                        displayState = (key === 'strategic' || key === 'reporting') ? 'hero' : 'compact';
+                        // Executive focus: Strategic (discovery, vision) & Analytics (review)
+                        displayState = (key === 'discovery' || key === 'vision' || key === 'review') ? 'hero' : 'compact';
                     }
 
                     return `
