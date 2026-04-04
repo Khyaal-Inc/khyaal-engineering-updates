@@ -299,13 +299,13 @@ function buildPillar(pillarKey, item, context) {
 
     // Persona-based overrides for fields within a pillar
     let fields = [...pillar.fields];
-    
+
     // Developer persona: simplify WHAT and WHEN
     if (context.mode === 'dev') {
         if (pillarKey === 'what') fields = ['text']; // Just the title
         if (pillarKey === 'when') fields = ['due'];  // Just the deadline
     }
-    
+
     // Executive persona: simplify WHERE
     if (context.mode === 'exec' && pillarKey === 'where') {
         fields = ['status']; // Just the overall status
@@ -348,7 +348,7 @@ function buildContextBanner(item, context) {
     };
 
     const stage = stageMap[context.workflowStage] || stageMap.delivery;
-    
+
     return `
         <div class="context-banner shadow-sm" style="border-left: 12px solid ${stage.color}; background: white; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 4px 12px 12px 4px; border-top: 1.5px solid #f1f5f9; border-right: 1.5px solid #f1f5f9; border-bottom: 1.5px solid #f1f5f9;">
             <div class="flex items-center justify-between">
@@ -407,7 +407,7 @@ function buildFieldGroup(groupKey, item, fieldsToShow) {
 function renderField(fieldName, item) {
     const val = item[fieldName] || '';
 
-    switch(fieldName) {
+    switch (fieldName) {
         case 'text':
             return `
                 <div class="field-wrapper">
@@ -671,11 +671,11 @@ function buildDataLists() {
 
 function initCms() {
     const params = new URLSearchParams(window.location.search);
-    
+
     // Global modal behavior (works even in read-only mode if a modal is triggered)
     const modal = document.getElementById('cms-modal');
     if (modal) {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === this) closeCmsModal();
         });
     }
@@ -720,11 +720,11 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
     editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
 
     document.getElementById('modal-title').innerText = 'Edit Engineering Task';
-    
+
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(item, context);
-    document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, {trackIndex, subtrackIndex});
-    
+    document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, { trackIndex, subtrackIndex });
+
     // Inject footer buttons
     document.getElementById('modal-footer').innerHTML = `
         <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
@@ -748,11 +748,11 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
 
     document.getElementById('modal-title').innerText = 'Add New Task';
-    
+
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(defaults, context);
-    document.getElementById('modal-form').innerHTML = buildContextAwareForm(defaults, true, {trackIndex, subtrackIndex});
-    
+    document.getElementById('modal-form').innerHTML = buildContextAwareForm(defaults, true, { trackIndex, subtrackIndex });
+
     // Inject footer buttons
     document.getElementById('modal-footer').innerHTML = `
         <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
@@ -817,7 +817,7 @@ function renderTagWidget(wrapperId, initial, datalistId, type) {
                 let label = val;
                 if (type === 'dep') {
                     let found = null;
-                    UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => { if(i.id === val) found = i.text; })));
+                    UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => { if (i.id === val) found = i.text; })));
                     label = found ? found : val;
                 }
                 return `
@@ -847,7 +847,7 @@ function renderTagWidget(wrapperId, initial, datalistId, type) {
     `;
 
     const input = document.getElementById(`${wrapperId}-input`);
-    
+
     // Global access for onclicks
     window[`refresh_${wrapperId}`] = refresh;
     window[`selection_${wrapperId}`] = currentSelection;
@@ -868,7 +868,7 @@ function renderTagWidget(wrapperId, initial, datalistId, type) {
     input.oninput = (e) => {
         const val = input.value.trim();
         const availableOptions = getOptionsForType(type).filter(o => !currentSelection.includes(o.value));
-        
+
         if (val.length > 0) {
             const filtered = availableOptions.filter(o => o.text.toLowerCase().includes(val.toLowerCase()) || o.value.toLowerCase().includes(val.toLowerCase()));
             const sugBox = document.getElementById(`${wrapperId}-suggestions`);
@@ -920,7 +920,7 @@ function renderContributorTagInput(w, i) { renderTagWidget(w, i, 'contributor-li
 function openSprintEdit(sprintId) {
     const sprint = sprintId ? UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId) : { name: '', startDate: '', endDate: '', goal: '', linkedOKR: '' };
     editContext = { type: 'sprint', sprintId };
-    
+
     const okrs = UPDATE_DATA.metadata.okrs || [];
 
     document.getElementById('modal-title').innerHTML = `
@@ -1216,14 +1216,14 @@ function openRoadmapEdit(id) {
 
 function validateCmsForm() {
     const textEl = document.getElementById('edit-text') ||
-                   document.getElementById('edit-sprint-name') ||
-                   document.getElementById('edit-release-name') ||
-                   document.getElementById('edit-epic-name') ||
-                   document.getElementById('edit-okr-objective') ||
-                   document.getElementById('edit-track-name') ||
-                   document.getElementById('edit-subtrack-name') ||
-                   document.getElementById('edit-roadmap-label') ||
-                   document.getElementById('edit-roadmap-id');
+        document.getElementById('edit-sprint-name') ||
+        document.getElementById('edit-release-name') ||
+        document.getElementById('edit-epic-name') ||
+        document.getElementById('edit-okr-objective') ||
+        document.getElementById('edit-track-name') ||
+        document.getElementById('edit-subtrack-name') ||
+        document.getElementById('edit-roadmap-label') ||
+        document.getElementById('edit-roadmap-id');
     if (textEl && !textEl.value.trim()) {
         textEl.style.borderColor = '#ef4444';
         return false;
@@ -1236,14 +1236,14 @@ function saveCmsChanges() {
 
     if (editContext.type === 'item' || editContext.type === 'item-new') {
         const itemData = {};
-        
+
         // Harvest only visible fields to maintain context-awareness
         const fieldMap = {
             'text': 'edit-text', 'status': 'edit-status', 'priority': 'edit-priority',
             'note': 'edit-note', 'usecase': 'edit-usecase', 'mediaUrl': 'edit-mediaUrl',
             'startDate': 'edit-startDate', 'due': 'edit-due', 'sprintId': 'edit-sprintId',
             'releasedIn': 'edit-releasedIn', 'planningHorizon': 'edit-planningHorizon',
-            'epicId': 'edit-epicId', 'storyPoints': 'edit-storyPoints', 
+            'epicId': 'edit-epicId', 'storyPoints': 'edit-storyPoints',
             'effortLevel': 'edit-effortLevel', 'impactLevel': 'edit-impactLevel',
             'publishedDate': 'edit-publishedDate', 'blockerNote': 'edit-blockerNote'
         };
@@ -1279,8 +1279,8 @@ function saveCmsChanges() {
 
         if (editContext.type === 'item') {
             // Validate indices before access
-            if (editContext.trackIndex === undefined || editContext.subtrackIndex === undefined || 
-                !UPDATE_DATA.tracks[editContext.trackIndex] || 
+            if (editContext.trackIndex === undefined || editContext.subtrackIndex === undefined ||
+                !UPDATE_DATA.tracks[editContext.trackIndex] ||
                 !UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex]) {
                 console.error('❌ Invalid edit context for item save:', editContext);
                 alert('Error: Could not find original item location. Please refresh and try again.');
@@ -1289,7 +1289,7 @@ function saveCmsChanges() {
 
             const oldItem = UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items[editContext.itemIndex];
             const finalItem = { ...oldItem, ...itemData };
-            
+
             if (targetTi !== editContext.trackIndex || targetSi !== editContext.subtrackIndex) {
                 UPDATE_DATA.tracks[editContext.trackIndex].subtracks[editContext.subtrackIndex].items.splice(editContext.itemIndex, 1);
                 UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(finalItem);
@@ -1298,12 +1298,12 @@ function saveCmsChanges() {
             }
             logChange('Edit Item', finalItem.text);
         } else {
-            const newItem = { 
-                id: `task-${Date.now()}`, 
+            const newItem = {
+                id: `task-${Date.now()}`,
                 ...itemData,
                 publishedDate: itemData.publishedDate || new Date().toISOString().split('T')[0]
             };
-            
+
             if (UPDATE_DATA.tracks[targetTi] && UPDATE_DATA.tracks[targetTi].subtracks[targetSi]) {
                 UPDATE_DATA.tracks[targetTi].subtracks[targetSi].items.push(newItem);
                 logChange('Add Item', newItem.text);
@@ -1466,7 +1466,7 @@ function saveCmsChanges() {
         }
 
         logChange(editContext.okrId ? 'Edit OKR' : 'Add OKR', okrData.objective);
-        
+
         // AUTO-REFRESH VIEW
         if (typeof renderOkrView === 'function') renderOkrView();
         closeCmsModal();
@@ -1484,7 +1484,7 @@ function saveCmsChanges() {
             linkedObjective: document.getElementById('edit-roadmap-okr').value
         };
         if (!UPDATE_DATA.metadata.roadmap) {
-             UPDATE_DATA.metadata.roadmap = [
+            UPDATE_DATA.metadata.roadmap = [
                 { id: '1M', label: 'Now (Immediate / 1 Month)', color: 'blue' },
                 { id: '3M', label: 'Next (Strategic / 3 Months)', color: 'indigo' },
                 { id: '6M', label: 'Later (Future / 6 Months)', color: 'slate' }
@@ -1535,7 +1535,7 @@ function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value) 
 function openTrackEdit(ti) {
     const track = ti !== undefined ? UPDATE_DATA.tracks[ti] : { name: '', theme: 'blue', subtracks: [{ name: 'General', items: [] }] };
     editContext = { type: 'track', trackIndex: ti };
-    
+
     document.getElementById('modal-title').innerHTML = `
         <div class="flex items-center gap-3 text-slate-900">
             <span class="text-2xl">🏗️</span>
@@ -1606,7 +1606,7 @@ function addSubtrack(ti) {
 function openSubtrackEdit(ti, si) {
     const sub = UPDATE_DATA.tracks[ti].subtracks[si];
     editContext = { type: 'subtrack', trackIndex: ti, subtrackIndex: si };
-    
+
     document.getElementById('modal-title').innerHTML = `
         <div class="flex items-center gap-3 text-slate-900">
             <span class="text-2xl">📂</span>
@@ -1659,21 +1659,21 @@ function updateRoiPreview() {
     const impactVal = document.getElementById('edit-impactLevel')?.value;
     const effortVal = document.getElementById('edit-effortLevel')?.value;
     const previewContainer = document.getElementById('roi-preview-container');
-    
+
     if (!previewContainer) return;
-    
+
     if (!impactVal || !effortVal) {
         previewContainer.innerHTML = '';
         return;
     }
-    
+
     const impactValues = { low: 1, medium: 2, high: 3 };
     const effortValues = { low: 3, medium: 2, high: 1 };
-    
+
     const impactNum = impactValues[impactVal];
     const effortNum = effortValues[effortVal];
     const score = Math.round((impactNum * effortNum) / 9 * 100);
-    
+
     let label = 'Medium ROI';
     let color = 'bg-amber-50 text-amber-700 border-amber-200';
     if (score >= 80) {
@@ -1683,7 +1683,7 @@ function updateRoiPreview() {
         label = 'Low ROI (Time Sink)';
         color = 'bg-slate-50 text-slate-500 border-slate-200';
     }
-    
+
     previewContainer.innerHTML = `
         <div class="flex items-center justify-between p-2 rounded-lg border ${color} transition-all animate-in fade-in zoom-in duration-300">
             <span class="text-[10px] font-black uppercase tracking-wider">Calculated Priority</span>
@@ -1774,14 +1774,14 @@ async function saveToGithub() {
     const btn = document.getElementById('save-to-github-btn');
     const token = localStorage.getItem('gh_pat');
     if (!token) { alert('Unauthorized'); return; }
-    
+
     btn.disabled = true; btn.innerText = 'Saving...';
     try {
         const getRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
             headers: { 'Authorization': `token ${token}` }
         });
         const fileData = await getRes.json();
-        
+
         const putRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
             method: 'PUT',
             headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
@@ -1833,7 +1833,7 @@ function deleteItem(ti, si, ii) {
 
     UPDATE_DATA.tracks[t].subtracks[s].items.splice(i, 1);
     logChange('Delete Item', item.text);
-    
+
     closeCmsModal();
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
     switchView(currentView);
@@ -1856,7 +1856,7 @@ function toggleBlocker(ti, si, ii) {
     const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii];
     if (item.blocker) { delete item.blocker; delete item.blockerNote; logChange('Unblock Item', item.text); }
     else { const note = prompt('Blocker reason:', '') || ''; if (!note) return; item.blocker = true; item.blockerNote = note; logChange('Flag Blocker', item.text); }
-    
+
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
     switchView(currentView);
     if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
@@ -1883,7 +1883,7 @@ async function initArchiveFilter() {
 
     const container = document.getElementById('archive-filter');
     if (!container) return;
-    
+
     let html = '<div class="flex flex-wrap gap-2 items-center">';
     html += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Filters:</span>';
     html += '<button onclick="filterByDate(\'all\')" class="archive-btn active">All Entries</button>';
@@ -1921,7 +1921,7 @@ async function initArchiveFilter() {
                 html += '</div>';
             }
         }
-    } catch (e) {}
+    } catch (e) { }
     container.innerHTML = html;
 }
 
@@ -1970,7 +1970,7 @@ async function archiveAndClear() {
             headers: { 'Authorization': `token ${token}` }
         });
         const fileData = await getRes.json();
-        
+
         await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
             method: 'PUT',
             headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
@@ -2165,7 +2165,7 @@ function renderKeyResultForm(kr, idx) {
 function addKeyResult() {
     const container = document.getElementById('key-results-container');
     if (!container) return;
-    
+
     const idx = (window._editingKeyResults || []).length;
 
     const newKR = {
@@ -2180,7 +2180,7 @@ function addKeyResult() {
 
     if (!window._editingKeyResults) window._editingKeyResults = [];
     window._editingKeyResults.push(newKR);
-    
+
     // Use insertAdjacentHTML to preserve existing input values
     container.insertAdjacentHTML('beforeend', renderKeyResultForm(newKR, idx));
 }
@@ -2188,10 +2188,10 @@ function addKeyResult() {
 function removeKeyResult(idx) {
     // 1. Sync current UI state back to window._editingKeyResults before removing
     harvestKeyResultsToState();
-    
+
     // 2. Remove from state
     window._editingKeyResults.splice(idx, 1);
-    
+
     // 3. Re-render the container to update indices
     const container = document.getElementById('key-results-container');
     if (container) {
@@ -2239,7 +2239,7 @@ function deleteOKR(okrIndex) {
 function deleteSprint(sprintId) {
     const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId);
     if (!confirm(`Delete sprint "${sprint.name}"? This will not delete tasks, but they will be unlinked from this sprint.`)) return;
-    
+
     // Clear sprintId from items
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
@@ -2259,7 +2259,7 @@ function deleteSprint(sprintId) {
 function deleteRelease(releaseId) {
     const release = UPDATE_DATA.metadata.releases.find(r => r.id === releaseId);
     if (!confirm(`Delete release "${release.name}"? This will not delete tasks, but they will be unlinked from this release.`)) return;
-    
+
     // Clear releasedIn from items
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {

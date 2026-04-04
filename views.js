@@ -183,7 +183,7 @@ function renderTrackView() {
     const contentArea = document.getElementById('track-content');
     const activeTeam = getActiveTeam();
     const searchQuery = document.getElementById('track-search-input')?.value || '';
-    
+
     let html = '';
 
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
@@ -320,12 +320,12 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     const priority = item.priority || 'medium';
     const priorityInfo = priorityConfig[priority];
     const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
-    
+
     // Impact/Usecase (Focus for PM/Exec)
     const showImpactInline = (mode === 'pm' || mode === 'exec');
     const usecaseRaw = item.usecase ? `<div class="usecase-box ${!showImpactInline ? 'opacity-60 text-[11px]' : ''}"><span class="font-bold">Impact:</span> ${item.usecase}</div>` : '';
     const usecase = highlightSearch(usecaseRaw);
-    
+
     const due = renderDueDateBadge(item);
     const tags = renderTagPills(item.tags);
     const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
@@ -338,7 +338,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     // Shown prominently for PM/Exec, tucked away for Dev unless critical
     let strategicContext = '';
     const showStrategyInline = (mode === 'pm' || mode === 'exec');
-    
+
     const epics = UPDATE_DATA.metadata?.epics || [];
     const okrs = UPDATE_DATA.metadata?.okrs || [];
 
@@ -373,7 +373,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
         const effortNum = effortValues[item.effortLevel] || 1;
         const score = Math.round((impactNum * effortNum) / 9 * 100);
         const scoreColor = score >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : score >= 50 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-slate-500 bg-slate-50 border-slate-200';
-        
+
         if (mode === 'exec' || mode === 'pm') {
             roiScoreHTML = `
                 <div class="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded border ${scoreColor} text-[9px] font-black shadow-sm" title="Priority ROI Score (Impact/Effort)">
@@ -386,7 +386,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     // --- EXECUTION DETAILS (Acceptance Criteria, Effort/Impact Labels) ---
     // Shown inline for Dev/PM, hidden in Tooltip for Exec
     const showExecutionInline = (mode === 'pm' || mode === 'dev');
-    
+
     let effortImpactHTML = '';
     if ((item.effortLevel || item.impactLevel) && showExecutionInline) {
         effortImpactHTML = `
@@ -1312,13 +1312,13 @@ function drawGanttChart() {
     const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
 
     // Phase 9 Reset: High-fidelity action mapping
-    window.openAddItemModal = function(type) {
+    window.openAddItemModal = function (type) {
         if (typeof addItem === 'function') {
             // Default to first track/subtrack for discovery items
-            addItem(0, 0, { 
-                tags: [type], 
+            addItem(0, 0, {
+                tags: [type],
                 status: 'later',
-                text: type === 'spike' ? '[SPIKE] ' : '[IDEA] ' 
+                text: type === 'spike' ? '[SPIKE] ' : '[IDEA] '
             });
         } else {
             console.error('❌ CMS addItem handler not found!');
@@ -1502,7 +1502,7 @@ function renderPrimaryStageAction(currentView) {
     };
 
     const action = viewActions[currentView] || { text: 'Set Vision 🎯', target: 'okr' };
-    
+
     return `
         <button id="next-action-btn" onclick="switchView('${action.target}')" class="bg-white border-2 border-slate-100 text-slate-700 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm group">
             Next: <span class="group-hover:text-indigo-600 transition-colors">${action.text}</span>
@@ -1520,7 +1520,7 @@ function renderDiscoveryView() {
     // Correct view context retrieval
     const currentView = window.currentActiveView || 'ideation';
     const title = currentView === 'spikes' ? 'Technical Spikes' : 'Ideation Sandbox';
-    
+
     let ribbonHtml = `
         <div id="discovery-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
             <!-- Group 1: Navigation/Breadcrumb -->
@@ -1557,29 +1557,29 @@ function renderDiscoveryView() {
                             const isSpike = tags.includes('spike');
                             const isIdea = tags.includes('idea') || tags.includes('discovery') || tags.includes('exploration');
                             const isLater = i.status === 'later' || i.status === 'done';
-                            
-                             // Differentiate content by view
-                             if (allItems.length < 500) { // Safety limit
-                                 if (currentView === 'ideation' && (isIdea || (isLater && !isSpike))) {
-                                     allItems.push({ 
-                                         ...i, 
-                                         track: t.name, 
-                                         subtrack: s.name,
-                                         trackIndex: UPDATE_DATA.tracks.indexOf(t),
-                                         subtrackIndex: t.subtracks.indexOf(s),
-                                         itemIndex: s.items.indexOf(i)
-                                     });
-                                 } else if (currentView === 'spikes' && isSpike) {
-                                     allItems.push({ 
-                                         ...i, 
-                                         track: t.name, 
-                                         subtrack: s.name,
-                                         trackIndex: UPDATE_DATA.tracks.indexOf(t),
-                                         subtrackIndex: t.subtracks.indexOf(s),
-                                         itemIndex: s.items.indexOf(i)
-                                     });
-                                 }
-                             }
+
+                            // Differentiate content by view
+                            if (allItems.length < 500) { // Safety limit
+                                if (currentView === 'ideation' && (isIdea || (isLater && !isSpike))) {
+                                    allItems.push({
+                                        ...i,
+                                        track: t.name,
+                                        subtrack: s.name,
+                                        trackIndex: UPDATE_DATA.tracks.indexOf(t),
+                                        subtrackIndex: t.subtracks.indexOf(s),
+                                        itemIndex: s.items.indexOf(i)
+                                    });
+                                } else if (currentView === 'spikes' && isSpike) {
+                                    allItems.push({
+                                        ...i,
+                                        track: t.name,
+                                        subtrack: s.name,
+                                        trackIndex: UPDATE_DATA.tracks.indexOf(t),
+                                        subtrackIndex: t.subtracks.indexOf(s),
+                                        itemIndex: s.items.indexOf(i)
+                                    });
+                                }
+                            }
                         });
                     }
                 });

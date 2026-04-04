@@ -96,10 +96,10 @@ function initDashboard() {
 
     // 6. Initial Render - Default to mode-specific view
     console.log('🎨 Initial render - defaulting to mode view');
-    const defaultMode = UPDATE_DATA.metadata?.modes?.default || 'pm';
-    const defaultView = defaultMode === 'pm' ? 'okr' :
-                       defaultMode === 'dev' ? 'my-tasks' :
-                       defaultMode === 'exec' ? 'dashboard' : 'okr';
+    const mode = getCurrentMode();
+    const defaultView = mode === 'pm' ? 'okr' :
+                       mode === 'dev' ? 'my-tasks' :
+                       mode === 'exec' ? 'dashboard' : 'okr';
     switchView(defaultView);
     renderTrackView(); // from views.js
     updateBacklogBadge(); // from cms.js

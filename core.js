@@ -98,7 +98,7 @@ function renderBlockerStrip() {
 
     // Keep the full strip hidden by default, only toggle via badge or if needed
     // strip.classList.remove('hidden'); 
-    
+
     let html = `<div class="bg-red-50 p-4 rounded-2xl border border-red-200 shadow-xl animate-fadeInDown">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
@@ -154,10 +154,10 @@ function isItemInSearch(item) {
     const release = (item.releasedIn || '').toLowerCase();
     const contribs = (item.contributors || []).join(' ').toLowerCase();
     const tags = (item.tags || []).join(' ').toLowerCase();
-    
-    return text.includes(q) || note.includes(q) || usecase.includes(q) || 
-           status.includes(q) || priority.includes(q) || contribs.includes(q) || 
-           tags.includes(q) || epicId.includes(q) || sprint.includes(q) || release.includes(q);
+
+    return text.includes(q) || note.includes(q) || usecase.includes(q) ||
+        status.includes(q) || priority.includes(q) || contribs.includes(q) ||
+        tags.includes(q) || epicId.includes(q) || sprint.includes(q) || release.includes(q);
 }
 
 function isItemInDateRange(item) {
@@ -174,12 +174,12 @@ function isItemInDateRange(item) {
 
     const preset = document.getElementById('date-range-preset')?.value || 'all';
     if (preset === 'all') return true;
-    
+
     const itemDate = item.due ? new Date(item.due) : (item.startDate ? new Date(item.startDate) : null);
     if (!itemDate || isNaN(itemDate.getTime())) return preset === 'all';
 
-    const today = new Date(); today.setHours(0,0,0,0);
-    
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+
     if (preset === 'today') return itemDate.toDateString() === today.toDateString();
     if (preset === 'this-week') {
         const startOfWeek = new Date(today);
@@ -241,42 +241,42 @@ function updateTabCounts() {
 function switchView(view) {
     try {
         window.currentActiveView = view; // Set global state immediately
-        
+
         const targetId = `${view}-view`;
         const vSection = document.getElementById(targetId);
-        
+
         console.log(`🎯 switchView('${view}') - DOM Analysis:`, {
             exists: !!vSection,
             allSections: document.querySelectorAll('.view-section').length,
             targetId: targetId
         });
-        
+
         // Terminal Diagnostic: If search failed, log what's actually there
         if (!vSection) {
             const allIds = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
             console.warn('❌ CRITICAL: Target view missing. Current DOM IDs:', allIds.slice(0, 50));
         }
-        
+
         document.querySelectorAll('.view-section').forEach(v => {
             v.classList.remove('active');
             v.style.display = 'none'; // Force hide
         });
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        
+
         const btn = document.getElementById(`btn-${view}`);
         if (btn) btn.classList.add('active');
-        
+
         if (vSection) {
             vSection.classList.add('active');
             vSection.style.display = 'block'; // Force show
             console.log(`✅ switchView('${view}') - Stage Sync Initiated`);
-            
+
             // Sync breadcrumb & ribbon stage
             if (typeof detectStageFromView === 'function') {
                 detectStageFromView();
             }
         }
-        
+
         // Render the appropriate view
         if (view === 'track') renderTrackView();
         if (view === 'workflow') renderWorkflowView();
@@ -302,11 +302,11 @@ function switchView(view) {
         if (view === 'ideation' || view === 'spikes') {
             if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
         }
-        
+
         renderBlockerStrip();
         buildTagFilterBar();
         updateTabCounts();
-        
+
         // Synergistic update: Update stage detection and command strip breadcrumbs AFTER view has rendered
         if (typeof detectStageFromView === 'function') detectStageFromView();
         if (typeof updateCommandStripNav === 'function') updateCommandStripNav();
@@ -395,15 +395,15 @@ function setupKeyboardShortcuts() {
         const modal = document.getElementById('cms-modal');
         if (modal && modal.classList.contains('active')) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        const viewMap = { 
-            '1': 'epics', 
-            '2': 'roadmap', 
-            '3': 'backlog', 
-            '4': 'sprint', 
-            '5': 'track', 
-            '6': 'releases', 
-            '7': 'status', 
-            '8': 'priority', 
+        const viewMap = {
+            '1': 'epics',
+            '2': 'roadmap',
+            '3': 'backlog',
+            '4': 'sprint',
+            '5': 'track',
+            '6': 'releases',
+            '7': 'status',
+            '8': 'priority',
             '9': 'contributor',
             '0': 'dependency'
         };

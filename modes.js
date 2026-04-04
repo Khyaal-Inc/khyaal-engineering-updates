@@ -72,10 +72,22 @@ let currentUser = null; // For dev mode filtering
 
 // Initialize mode system
 function initModeSystem() {
-    // Load mode from localStorage or use default from metadata
+    // 1. Check for query parameter (highest priority)
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryMode = urlParams.get('mode')?.toLowerCase();
+    
+    // 2. Load mode from localStorage or use default from metadata
     const savedMode = localStorage.getItem('khyaal_mode');
     const defaultMode = UPDATE_DATA?.metadata?.modes?.default || 'pm';
-    currentMode = savedMode || defaultMode;
+    
+    // Determine current mode
+    if (queryMode && MODE_CONFIG[queryMode]) {
+        currentMode = queryMode;
+        localStorage.setItem('khyaal_mode', queryMode);
+        console.log(`📡 Mode set by query param: ${queryMode.toUpperCase()}`);
+    } else {
+        currentMode = savedMode || defaultMode;
+    }
 
     // Load user preference (for dev mode)
     currentUser = localStorage.getItem('khyaal_current_user');
