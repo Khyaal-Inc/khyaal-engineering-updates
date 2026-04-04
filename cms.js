@@ -923,8 +923,20 @@ function openSprintEdit(sprintId) {
     
     const okrs = UPDATE_DATA.metadata.okrs || [];
 
-    document.getElementById('modal-title').innerText = sprintId ? 'Edit Sprint' : 'Add New Sprint';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🏃</span>
+            <span class="font-black tracking-tight">${sprintId ? 'Edit Sprint' : 'Add New Sprint'}</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- Execution Stage Banner -->
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Lifecycle Stage: Delivery</div>
+            <div class="stage-desc">Standardize the sprint window. Defined goals prevent scope creep and ensure focus.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Sprint Descriptor</label>
@@ -959,9 +971,17 @@ function openSprintEdit(sprintId) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${sprintId ? `<button onclick="deleteSprint('${sprintId}')" class="cms-btn cms-btn-danger mr-auto">Delete Sprint</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${sprintId ? 'Save Changes' : 'Create Sprint'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${sprintId ? `
+            <button onclick="deleteSprint('${sprintId}')" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete Sprint
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${sprintId ? 'Save Changes' : 'Create Sprint'}
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -973,8 +993,20 @@ function openReleaseEdit(releaseId) {
 
     const okrs = UPDATE_DATA.metadata.okrs || [];
 
-    document.getElementById('modal-title').innerText = releaseId ? 'Edit Release' : 'Add New Release';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">📦</span>
+            <span class="font-black tracking-tight">${releaseId ? 'Edit Engineering Release' : 'Add New Release'}</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- Release Stage Banner -->
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Lifecycle Stage: Release Milestone</div>
+            <div class="stage-desc">Manage production shipping windows. Unified release markers provide clarity on target dates.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Strategic Release Name</label>
@@ -1004,9 +1036,17 @@ function openReleaseEdit(releaseId) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${releaseId ? `<button onclick="deleteRelease('${releaseId}')" class="cms-btn cms-btn-danger mr-auto">Delete Release</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${releaseId ? 'Save Changes' : 'Create Release'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${releaseId ? `
+            <button onclick="deleteRelease('${releaseId}')" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete Release
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${releaseId ? 'Save Changes' : 'Create Release'}
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1020,8 +1060,20 @@ function openEpicEdit(epicIndex) {
     const okrs = UPDATE_DATA.metadata.okrs || [];
     const horizons = UPDATE_DATA.metadata.roadmap || [];
 
-    document.getElementById('modal-title').innerText = epicId ? 'Edit Strategic Epic' : 'Add Strategic Epic';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🚀</span>
+            <span class="font-black tracking-tight">${epicId ? 'Edit Strategic Epic' : 'Add Strategic Epic'}</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- Defining Stage Banner -->
+        <div class="lifecycle-banner defining">
+            <div class="stage-tag">Lifecycle Stage: Definition</div>
+            <div class="stage-desc">Break down strategic OKRs into actionable initiatives. Define boundaries and business value.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Strategic Epic Name</label>
@@ -1065,9 +1117,17 @@ function openEpicEdit(epicIndex) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${epicId ? `<button onclick="deleteEpic(${epicIndex})" class="cms-btn cms-btn-danger mr-auto">Delete Epic</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${epicId ? 'Save Changes' : 'Create Epic'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${epicId ? `
+            <button onclick="deleteEpic(${epicIndex})" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete Epic
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${epicId ? 'Save Changes' : 'Create Epic'}
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1086,8 +1146,20 @@ function openRoadmapEdit(id) {
 
     const okrs = UPDATE_DATA.metadata.okrs || [];
 
-    document.getElementById('modal-title').innerText = id ? 'Edit Roadmap Category' : 'Add Roadmap Category';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🗺️</span>
+            <span class="font-black tracking-tight">${id ? 'Edit Roadmap Category' : 'Add Roadmap Category'}</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- Planning Stage Banner -->
+        <div class="lifecycle-banner strategic">
+            <div class="stage-tag">Lifecycle Stage: Strategic Roadmap</div>
+            <div class="stage-desc">Map initiatives to Now, Next, and Future horizons to provide predictability to stakeholders.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Category Title</label>
@@ -1126,9 +1198,17 @@ function openRoadmapEdit(id) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${id ? `<button onclick="deleteRoadmap('${id}')" class="cms-btn cms-btn-danger mr-auto">Delete Category</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${id ? 'Save Changes' : 'Create Category'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${id ? `
+            <button onclick="deleteRoadmap('${id}')" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete Category
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${id ? 'Save Changes' : 'Create Category'}
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1386,7 +1466,10 @@ function saveCmsChanges() {
         }
 
         logChange(editContext.okrId ? 'Edit OKR' : 'Add OKR', okrData.objective);
-
+        
+        // AUTO-REFRESH VIEW
+        if (typeof renderOkrView === 'function') renderOkrView();
+        closeCmsModal();
     } else if (window._visionEditContext && window._visionEditContext.type === 'vision') {
         const visionText = document.getElementById('edit-vision-text')?.value.trim() || '';
         UPDATE_DATA.metadata.vision = visionText;
@@ -1453,8 +1536,20 @@ function openTrackEdit(ti) {
     const track = ti !== undefined ? UPDATE_DATA.tracks[ti] : { name: '', theme: 'blue', subtracks: [{ name: 'General', items: [] }] };
     editContext = { type: 'track', trackIndex: ti };
     
-    document.getElementById('modal-title').innerText = ti !== undefined ? 'Edit Track' : 'Add New Track';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🏗️</span>
+            <span class="font-black tracking-tight">${ti !== undefined ? 'Edit Functional Track' : 'Add New Track'}</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- Infrastructure Banner -->
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Lifecycle Stage: Structural Framework</div>
+            <div class="stage-desc">Manage the primary silos of your engineering organization. Tracks represent long-lived functional domains.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Track Identifier</label>
@@ -1476,9 +1571,17 @@ function openTrackEdit(ti) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${ti !== undefined ? `<button onclick="deleteTrack(${ti})" class="cms-btn cms-btn-danger mr-auto">Delete Track</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${ti !== undefined ? 'Save Changes' : 'Create Track'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${ti !== undefined ? `
+            <button onclick="deleteTrack(${ti})" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete Track
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${ti !== undefined ? 'Save Changes' : 'Create Track'}
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1504,7 +1607,13 @@ function openSubtrackEdit(ti, si) {
     const sub = UPDATE_DATA.tracks[ti].subtracks[si];
     editContext = { type: 'subtrack', trackIndex: ti, subtrackIndex: si };
     
-    document.getElementById('modal-title').innerText = 'Edit Subtrack';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">📂</span>
+            <span class="font-black tracking-tight">Edit Engineering Subtrack</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
         <div class="space-y-5">
             <div>
@@ -1520,9 +1629,15 @@ function openSubtrackEdit(ti, si) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        <button onclick="deleteSubtrack(${ti}, ${si})" class="cms-btn cms-btn-danger mr-auto">Delete Subtrack</button>
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        <button onclick="deleteSubtrack(${ti}, ${si})" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+            <span>🗑️</span> Delete Subtrack
+        </button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> Save Changes
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1584,8 +1699,20 @@ function openMetadataEdit() {
     const meta = UPDATE_DATA.metadata;
     editContext = { type: 'metadata' };
 
-    document.getElementById('modal-title').innerText = 'Edit Project Metadata';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">⚙️</span>
+            <span class="font-black tracking-tight">Edit Project DNA & Metadata</span>
+        </div>
+    `;
+
     document.getElementById('modal-form').innerHTML = `
+        <!-- System Banner -->
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Lifecycle Stage: System Configuration</div>
+            <div class="stage-desc">Manage the global identifiers and metadata that drive the dashboard's filtering and alignment.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Dashboard Identifier</label>
@@ -1620,8 +1747,12 @@ function openMetadataEdit() {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Metadata</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> Save Metadata
+        </button>
     `;
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1902,9 +2033,20 @@ function openOKREdit(okrIndex) {
     const okrId = okrIndex !== undefined ? okr.id : undefined;
     editContext = { type: 'okr', okrIndex, okrId };
 
-    document.getElementById('modal-title').innerText = okrId ? 'Edit OKR' : 'Add New OKR';
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🎯</span>
+            <span class="font-black tracking-tight">${okrId ? 'Edit Strategic OKR' : 'Create New OKR'}</span>
+        </div>
+    `;
 
     document.getElementById('modal-form').innerHTML = `
+        <!-- Strategic Stage Banner -->
+        <div class="lifecycle-banner strategic">
+            <div class="stage-tag">Lifecycle Stage: Strategic Vision</div>
+            <div class="stage-desc">Define high-level objectives for the quarter to align technical delivery with business outcomes.</div>
+        </div>
+
         <div class="space-y-5">
             <div>
                 <label class="cms-label">Cyclical Quarter</label>
@@ -1937,9 +2079,17 @@ function openOKREdit(okrIndex) {
 
     // Set Footer
     document.getElementById('modal-footer').innerHTML = `
-        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        ${okrId ? `<button onclick="deleteOKR(${okrIndex})" class="cms-btn cms-btn-danger mr-auto">Delete OKR</button>` : ''}
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${okrId ? 'Save Changes' : 'Create OKR'}</button>
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary flex items-center gap-2">
+            <span>✕</span> Cancel
+        </button>
+        ${okrId ? `
+            <button onclick="deleteOKR(${okrIndex})" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
+                <span>🗑️</span> Delete OKR
+            </button>
+        ` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
+            <span>✓</span> ${okrId ? 'Save Changes' : 'Create OKR'}
+        </button>
     `;
 
     // Activate modal with background lock
@@ -1952,12 +2102,14 @@ function openOKREdit(okrIndex) {
 
 function renderKeyResultForm(kr, idx) {
     const epics = UPDATE_DATA.metadata.epics || [];
-
     return `
-        <div class="key-result-item p-5 bg-white border border-slate-300 shadow-sm rounded-xl" data-kr-index="${idx}">
+        <div class="cms-card" data-kr-index="${idx}">
             <div class="flex justify-between items-start mb-4">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Key Result ${idx + 1}</span>
-                <button type="button" onclick="removeKeyResult(${idx})" class="text-[9px] font-black text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-200 hover:border-rose-500 px-2 py-1 rounded transition-all uppercase tracking-widest">
+                <div class="flex flex-col">
+                    <span class="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-1">Execution Metric</span>
+                    <span class="text-xs font-bold text-slate-800 uppercase tracking-widest">Key Result ${idx + 1}</span>
+                </div>
+                <button type="button" onclick="removeKeyResult(${idx})" class="text-[9px] font-black text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-200 hover:border-rose-500 px-2.5 py-1.5 rounded-lg transition-all uppercase tracking-widest">
                     Remove
                 </button>
             </div>
@@ -1991,10 +2143,10 @@ function renderKeyResultForm(kr, idx) {
                     <div>
                         <label class="cms-label !text-[9px]">Strategic Drift</label>
                         <select class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" data-kr-field="status" data-kr-idx="${idx}">
-                            <option value="on-track" ${kr.status === 'on-track' ? 'selected' : ''}>On-Track</option>
-                            <option value="at-risk" ${kr.status === 'at-risk' ? 'selected' : ''}>At-Risk</option>
-                            <option value="behind" ${kr.status === 'behind' ? 'selected' : ''}>Behind</option>
-                            <option value="achieved" ${kr.status === 'achieved' ? 'selected' : ''}>Achieved</option>
+                            <option value="on-track" ${kr.status === 'on-track' ? 'selected' : ''}>🟢 On-Track</option>
+                            <option value="at-risk" ${kr.status === 'at-risk' ? 'selected' : ''}>🟡 At-Risk</option>
+                            <option value="behind" ${kr.status === 'behind' ? 'selected' : ''}>🔴 Behind</option>
+                            <option value="achieved" ${kr.status === 'achieved' ? 'selected' : ''}>🏆 Achieved</option>
                         </select>
                     </div>
                     <div>
@@ -2012,7 +2164,9 @@ function renderKeyResultForm(kr, idx) {
 
 function addKeyResult() {
     const container = document.getElementById('key-results-container');
-    const idx = window._editingKeyResults.length;
+    if (!container) return;
+    
+    const idx = (window._editingKeyResults || []).length;
 
     const newKR = {
         id: `kr-${Date.now()}`,
@@ -2020,20 +2174,48 @@ function addKeyResult() {
         target: 100,
         current: 0,
         unit: '%',
-        progress: 0,
         status: 'on-track',
         linkedEpic: ''
     };
 
+    if (!window._editingKeyResults) window._editingKeyResults = [];
     window._editingKeyResults.push(newKR);
-    container.innerHTML += renderKeyResultForm(newKR, idx);
+    
+    // Use insertAdjacentHTML to preserve existing input values
+    container.insertAdjacentHTML('beforeend', renderKeyResultForm(newKR, idx));
 }
 
 function removeKeyResult(idx) {
+    // 1. Sync current UI state back to window._editingKeyResults before removing
+    harvestKeyResultsToState();
+    
+    // 2. Remove from state
     window._editingKeyResults.splice(idx, 1);
-    // Re-render all key results with updated indices
+    
+    // 3. Re-render the container to update indices
     const container = document.getElementById('key-results-container');
-    container.innerHTML = window._editingKeyResults.map((kr, i) => renderKeyResultForm(kr, i)).join('');
+    if (container) {
+        container.innerHTML = window._editingKeyResults.map((kr, i) => renderKeyResultForm(kr, i)).join('');
+    }
+}
+
+/**
+ * Harvests all OKR key result inputs from the DOM into window._editingKeyResults
+ * This is used to ensure state is preserved before destructive re-renders (like removal)
+ */
+function harvestKeyResultsToState() {
+    const krFields = document.querySelectorAll('[data-kr-field]');
+    if (!window._editingKeyResults) window._editingKeyResults = [];
+
+    krFields.forEach(field => {
+        const idx = parseInt(field.getAttribute('data-kr-idx'));
+        const fieldName = field.getAttribute('data-kr-field');
+        if (window._editingKeyResults[idx]) {
+            let val = field.value;
+            if (fieldName === 'target' || fieldName === 'current') val = parseFloat(val) || 0;
+            window._editingKeyResults[idx][fieldName] = val;
+        }
+    });
 }
 
 function deleteOKR(okrIndex) {

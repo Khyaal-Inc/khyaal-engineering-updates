@@ -2215,28 +2215,83 @@ body {
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    color: #64748b; /* slate-500 */
+    color: #334155; /* slate-700 - Higher Contrast */
     margin-bottom: 0.5rem;
 }
 
+.cms-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0; /* slate-200 */
+    border-left: 4px solid #6366f1; /* indigo-500 indicator */
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+}
+
+.cms-card:hover {
+    border-color: #6366f1; /* indigo-500 */
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
+}
+
+.lifecycle-banner {
+    margin-bottom: 24px;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f1f5f9; /* default slate */
+    border-left: 8px solid #64748b;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    color: #1e293b; /* slate-900 - Ensures legibility on gradients */
+}
+
+.lifecycle-banner.strategic {
+    background: linear-gradient(to right, #eef2ff, #f5f3ff); /* indigo to violet 50 */
+    border-left-color: #4f46e5; /* indigo-600 */
+    color: #312e81; /* indigo-900 */
+}
+
+.lifecycle-banner.defining {
+    background: linear-gradient(to right, #fdf4ff, #fff1f2); /* fuchsia to rose 50 */
+    border-left-color: #c026d3; /* fuchsia-600 */
+    color: #701a75; /* fuchsia-900 */
+}
+
+.lifecycle-banner.execution {
+    background: linear-gradient(to right, #f0fdf4, #ecfdf5); /* green to emerald 50 */
+    border-left-color: #16a34a; /* green-600 */
+    color: #064e3b; /* emerald-900 */
+}
+
+.lifecycle-banner .stage-tag {
+    font-size: 9px;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: inherit;
+    opacity: 0.6;
+}
+
+.lifecycle-banner .stage-desc {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
 .cms-input {
-    border: 1.5px solid #cbd5e1; /* slate-300 - Higher Contrast */
+    border: 1.5px solid #cbd5e1;
     border-radius: 8px;
     padding: 10px 12px;
     width: 100%;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 13px;
     color: #1e293b;
-    background: #f8fafc; /* slate-50 */
+    background: #ffffff; /* shifted from slate-50 to white for cleaner feel */
 }
 
-.cms-input:focus {
-    outline: none;
-    background: white;
-    border-color: #6366f1; /* indigo-500 */
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), inset 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.cms-input::placeholder {
-    color: #94a3b8; /* slate-400 - Higher Visibility */
+.cms-input:hover {
+    border-color: #94a3b8; /* slate-400 */
 }
