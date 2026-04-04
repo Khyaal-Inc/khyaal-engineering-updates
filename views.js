@@ -447,6 +447,26 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
         `;
     }
 
+    // --- STRATEGIC CONNECTORS (Tactical Level) ---
+    const personaLabels = {
+        frontend: { label: '👤 FRONTEND', class: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
+        backend: { label: '👤 BACKEND', class: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+        sre: { label: '👤 SRE / OPS', class: 'bg-rose-50 text-rose-700 border-rose-100' },
+        product: { label: '👤 PRODUCT', class: 'bg-amber-50 text-amber-700 border-amber-100' },
+        executive: { label: '👤 EXECUTIVE', class: 'bg-slate-900 text-white border-slate-900' },
+        external: { label: '👤 EXTERNAL', class: 'bg-pink-50 text-pink-700 border-pink-100' }
+    };
+
+    const personaInfo = item.persona ? (personaLabels[item.persona] || { label: '👤 ALL personas', class: 'bg-slate-50 text-slate-500 border-slate-200' }) : null;
+    const personaHTML = personaInfo ? `<span class="persona-badge ${personaInfo.class} mb-1">${personaInfo.label}</span>` : '';
+
+    const metricRowHTML = item.successMetric ? `
+        <div class="strategic-metric-row">
+            <div class="strategic-metric-label">Quantitative Success Metric</div>
+            <div class="strategic-metric-value">📊 ${item.successMetric}</div>
+        </div>
+    ` : '';
+
     return `
         ${blockerStrip}
         <div class="item-row ${status.bucket} ${mode}-perspective"
@@ -459,6 +479,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                         <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-1">
                             <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
                             <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
+                            ${personaHTML}
                         </div>
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                             <div class="info-wrapper mb-1">
@@ -473,6 +494,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                 ${mode !== 'exec' && tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
                             </div>
                             <div class="mb-2">${usecase}</div>
+                            ${metricRowHTML}
                             ${effortImpactHTML}
                             ${acHTML}
                             <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -536,8 +558,6 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                     </div>
                                 ` : ''}
                             </div>
-                        </div>
-                    </div>
                         </div>
                     </div>
                     <div class="flex-shrink-0 flex flex-col items-end justify-between min-w-[110px] py-0.5">
@@ -820,12 +840,42 @@ function renderBacklogView() {
 }
 
 // ------ Epics View ------
+function renderEpicLifecycle(currentStage) {
+    const stages = [
+        { id: 'vision', label: 'Vision', icon: '🎯' },
+        { id: 'definition', label: 'Definition', icon: '📂' },
+        { id: 'delivery', label: 'Delivery', icon: '⚡' },
+        { id: 'review', label: 'Review', icon: '📊' }
+    ];
+
+    const currentIdx = stages.findIndex(s => s.id === currentStage);
+    const effectiveIdx = currentIdx === -1 ? 1 : currentIdx; // Default to definition
+
+    return `
+        <div class="epic-lifecycle-container px-2 pb-6">
+            ${stages.map((s, idx) => {
+        const isActive = idx <= effectiveIdx;
+        const isCurrent = idx === effectiveIdx;
+        return `
+                    <div class="epic-stage-pill ${isActive ? 'active' : ''}" style="${isActive ? `--stage-color: ${idx === 0 ? '#8b5cf6' : idx === 1 ? '#3b82f6' : idx === 2 ? '#10b981' : '#f59e0b'}` : ''}">
+                        <div class="epic-stage-label ${isCurrent ? 'font-black' : ''}">
+                            ${s.icon} ${s.label}
+                        </div>
+                    </div>
+                `;
+    }).join('')}
+        </div>
+    `;
+}
+
+// ------ Epics View ------
 function renderEpicsView() {
     const container = document.getElementById('epics-view');
     if (!container) return;
 
     const data = window.UPDATE_DATA || {};
     const epics = (data.metadata && data.metadata.epics) || [];
+    const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
     let ribbonHtml = `
         <div id="epics-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -874,7 +924,7 @@ function renderEpicsView() {
         const epicHorizon = data.metadata.roadmap?.find(h => h.id === e.planningHorizon);
 
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex flex-wrap gap-2 ml-4">
+            <div class="flex flex-wrap gap-2 ml-auto">
                 <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded">Edit</button>
                 <button onclick="deleteEpic(${idx})" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-widest bg-rose-50 px-2 py-1 rounded">Delete</button>
                 <button onclick="groomEpicTasks('${e.id}')" class="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest bg-sky-50 px-2 py-1 rounded">Groom Tasks 📚</button>
@@ -882,46 +932,104 @@ function renderEpicsView() {
             </div>
         ` : '';
 
-        html += `
-            <div class="sprint-card bg-white border-2 border-slate-900 rounded-xl overflow-hidden mb-8 shadow-xl">
-                <div class="p-6 bg-slate-50 border-b-2 border-slate-900">
-                    <div class="flex justify-between items-stretch gap-6">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest mr-3">Strategic Epic</span>
-                                <div class="font-black text-2xl text-slate-900">${e.name}</div>
-                                ${cmsActions}
+        // COMPACT IA Section Mapping: WHAT, WHERE, WHEN, HOW
+        const strategicGrid = `
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4 items-start">
+                <!-- WHAT: Vision & Success -->
+                <div class="md:col-span-1 space-y-2">
+                    <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Epic Vision (The What)</span>
+                    <div class="text-xs font-bold text-slate-800 leading-snug line-clamp-3" title="${e.description || ''}">${e.description || 'No vision statement provided.'}</div>
+                    ${e.successCriteria ? `
+                    <div class="bg-indigo-50/50 p-2 rounded-lg border border-indigo-100 mt-2">
+                        <span class="text-indigo-400 font-black uppercase text-[8px] tracking-[0.2em] block mb-1">Success Criteria</span>
+                        <div class="text-[10px] font-black text-indigo-900 leading-tight">${e.successCriteria}</div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- WHERE: Strategic Alignment -->
+                <div class="space-y-2">
+                    <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Alignment (The Where)</span>
+                    ${epicOKR ? `
+                        <div class="px-3 py-2 bg-white border border-indigo-600/10 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <div class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Objective</div>
+                                ${e.strategicWeight ? `<div class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1 rounded">${e.strategicWeight}% Weight</div>` : ''}
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mt-3 leading-relaxed max-w-2xl">
-                                <span class="text-slate-900 font-extrabold uppercase text-[10px] tracking-widest block mb-1">Business Value & Goal</span>
-                                ${e.description || e.objective || 'No description provided.'}
-                            </div>
+                            <div class="text-[10px] font-black text-slate-800 leading-tight truncate" title="${epicOKR.objective}">🎯 ${epicOKR.objective}</div>
                         </div>
-                        
-                        <!-- Epic Metadata Tray -->
-                        <div class="flex-shrink-0 flex flex-col items-end justify-between min-w-[150px] py-1 border-l border-slate-200 pl-6">
-                            <div class="flex flex-col items-end gap-2">
-                                ${epicOKR ? `<div class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-[9px] font-black uppercase tracking-widest border border-indigo-200 whitespace-nowrap">🎯 OKR: ${epicOKR.id}</div>` : ''}
-                                ${epicHorizon ? `<div class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[9px] font-black uppercase tracking-widest border border-slate-200 whitespace-nowrap">🗺️ ${epicHorizon.label.split('(')[0]}</div>` : ''}
-                            </div>
-                            
-                            <div class="flex flex-col items-end gap-3 mt-auto w-full">
-                                <div class="flex justify-between items-center w-full text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
-                                    <span>${progress}% Done</span>
-                                    <span class="px-2 py-0.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded border border-current">
-                                        ${e.health === 'on-track' ? 'ON-TRACK' : (e.health === 'at-risk' ? 'AT-RISK' : 'DELAYED')}
-                                    </span>
-                                </div>
-                                <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden border border-slate-300 shadow-inner">
-                                    <div class="h-full bg-indigo-600 transition-all duration-500" style="width: ${progress}%"></div>
-                                </div>
-                                <div class="text-[9px] font-bold text-slate-400">${doneCount}/${epicItems.length} Tasks Complete</div>
-                            </div>
+                    ` : ''}
+                    ${epicHorizon ? `
+                        <div class="px-3 py-2 bg-white border border-slate-900/10 rounded-lg shadow-sm mt-2">
+                            <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Horizon</div>
+                            <div class="text-[10px] font-black text-slate-800 truncate">🗺️ ${epicHorizon.label.split('(')[0]}</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- WHEN: Lifecycle -->
+                <div class="md:col-span-1">
+                     <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block mb-3 px-1">Epic Lifecycle (The When)</span>
+                     ${renderEpicLifecycle(e.stage)}
+                </div>
+
+                <!-- HOW: Progress & Health -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Health (The How)</span>
+                        <span class="px-1.5 py-0.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded font-black text-[8px] border border-current uppercase">
+                            ${e.health}
+                        </span>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-black text-slate-700">${progress}% Complete</span>
+                            <span class="text-[9px] font-bold text-slate-400">${doneCount}/${epicItems.length} Tasks</span>
+                        </div>
+                        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                            <div class="h-full bg-indigo-600 transition-all duration-700 ease-out" style="width: ${progress}%"></div>
                         </div>
                     </div>
                 </div>
-                <div class="p-2 space-y-4">
-                    ${renderGroupedItems(epicItems)}
+            </div>
+        `;
+
+        html += `
+            <div class="sprint-card">
+                <div class="epic-section-header">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-md ring-2 ring-slate-100">
+                            ${(progress === 100) ? '✅' : (e.health === 'on-track' ? '🚀' : '⚠️')}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <div class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Strategic Epic</div>
+                                ${e.riskType && e.riskType !== 'none' ? `<span class="risk-badge risk-${e.riskType}">${e.riskType} Risk</span>` : ''}
+                            </div>
+                            <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none">${e.name}</h2>
+                        </div>
+                        ${cmsActions}
+                    </div>
+                </div>
+                
+                <div class="p-5 bg-white border-b border-slate-50">
+                    ${strategicGrid}
+                </div>
+
+                <!-- HOW Context: Tactical Execution (Unified Progressive Disclosure) -->
+                <div class="bg-slate-50 border-t border-slate-100 items-contain">
+                    <details class="epic-tactical-details group">
+                        <summary class="epic-tactical-summary">
+                            <span class="group-open:rotate-180 transition-transform">▼</span>
+                            ${activeMode === 'exec' 
+                                ? 'View Tactical Execution Details' 
+                                : 'View Execution Backlog & Strategic Tools <span class="pm-mode-indicator">PM Mode</span>'}
+                        </summary>
+                        <div class="epic-tactical-scroll p-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                            ${renderGroupedItems(epicItems)}
+                        </div>
+                    </details>
                 </div>
             </div>`;
     });
@@ -1215,7 +1323,7 @@ function renderGroupedItems(items) {
                 <div class="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white rounded-t-lg" style="background: ${color}">
                     ${trackName}
                 </div>
-                <div class="border border-t-0 p-1 rounded-b-lg space-y-1">
+                <div class="border border-t-0 p-0 rounded-b-lg overflow-hidden">
                     ${group.items.map(item => renderItem(item, '', item.trackIndex, item.subtrackIndex, item.itemIndex)).join('')}
                 </div>
             </div>

@@ -114,7 +114,7 @@ const FIELD_GROUPS = {
         label: 'WHAT',
         title: 'Goal & Intent',
         icon: '🎯',
-        fields: ['text', 'usecase', 'epicId', 'tags'],
+        fields: ['text', 'usecase', 'epicId', 'persona', 'tags'],
         color: '#6366f1' // indigo
     },
     when: {
@@ -135,7 +135,7 @@ const FIELD_GROUPS = {
         label: 'HOW',
         title: 'Spec & Effort',
         icon: '🛠️',
-        fields: ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel'],
+        fields: ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel', 'successMetric'],
         color: '#f59e0b' // amber
     }
 };
@@ -580,6 +580,30 @@ function renderField(fieldName, item) {
                         <option value="high" ${val === 'high' ? 'selected' : ''}>High (Major Complexities)</option>
                     </select>
                     <div id="roi-preview-container" class="mt-3"></div>
+                </div>
+            `;
+
+        case 'persona':
+            return `
+                <div class="field-wrapper">
+                    <label class="cms-label">👤 Target Persona</label>
+                    <select id="edit-persona" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="none" ${val === 'none' ? 'selected' : ''}>General / All</option>
+                        <option value="frontend" ${val === 'frontend' ? 'selected' : ''}>Frontend Developer</option>
+                        <option value="backend" ${val === 'backend' ? 'selected' : ''}>Backend Developer</option>
+                        <option value="sre" ${val === 'sre' ? 'selected' : ''}>SRE / Ops Engineer</option>
+                        <option value="product" ${val === 'product' ? 'selected' : ''}>Product Manager</option>
+                        <option value="executive" ${val === 'executive' ? 'selected' : ''}>Executive Stakeholder</option>
+                        <option value="external" ${val === 'external' ? 'selected' : ''}>External Customer</option>
+                    </select>
+                </div>
+            `;
+
+        case 'successMetric':
+            return `
+                <div class="field-wrapper">
+                    <label class="cms-label text-indigo-500 font-bold">📊 Quantitative Success Metric</label>
+                    <input type="text" id="edit-successMetric" value="${val}" class="cms-input shadow-sm focus:shadow-md border-indigo-50" placeholder="e.g. Latency < 200ms or 99.9% Uptime">
                 </div>
             `;
 
@@ -1099,6 +1123,15 @@ function openEpicEdit(epicIndex) {
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
+                    <label class="cms-label">Lifecycle Stage (Vision-First)</label>
+                    <select id="edit-epic-stage" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="vision" ${epic.stage === 'vision' ? 'selected' : ''}>🎯 Vision (Alignment)</option>
+                        <option value="definition" ${epic.stage === 'definition' || !epic.stage ? 'selected' : ''}>📂 Definition (Planning)</option>
+                        <option value="delivery" ${epic.stage === 'delivery' ? 'selected' : ''}>⚡ Delivery (Execution)</option>
+                        <option value="review" ${epic.stage === 'review' ? 'selected' : ''}>📊 Review (Analytics)</option>
+                    </select>
+                </div>
+                <div>
                     <label class="cms-label">Execution Health</label>
                     <select id="edit-epic-health" class="cms-input shadow-sm focus:shadow-md">
                         <option value="on-track" ${epic.health === 'on-track' ? 'selected' : ''}>🟢 On-Track</option>
@@ -1110,7 +1143,29 @@ function openEpicEdit(epicIndex) {
 
             <div>
                 <label class="cms-label">Business Value & Intent</label>
-                <textarea id="edit-epic-desc" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="What strategic value does this Epic provide?">${epic.description || ''}</textarea>
+                <textarea id="edit-epic-desc" class="cms-input shadow-sm focus:shadow-md" rows="2" placeholder="What strategic value does this Epic provide?">${epic.description || ''}</textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="cms-label">Strategic Weight (%)</label>
+                    <input type="number" id="edit-epic-weight" value="${epic.strategicWeight || 0}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. 25" min="0" max="100">
+                    <p class="text-[9px] text-slate-400 mt-1">Contribution to parent OKR</p>
+                </div>
+                <div>
+                    <label class="cms-label">Primary Risk Type</label>
+                    <select id="edit-epic-risk" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="none" ${epic.riskType === 'none' ? 'selected' : ''}>None / Neutral</option>
+                        <option value="technical" ${epic.riskType === 'technical' ? 'selected' : ''}>🛠️ Technical (Complexity)</option>
+                        <option value="market" ${epic.riskType === 'market' ? 'selected' : ''}>📈 Market (Adoption)</option>
+                        <option value="operational" ${epic.riskType === 'operational' ? 'selected' : ''}>⚙️ Operational (Internal)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="cms-label text-indigo-600 font-black">Success Criteria (ROI Focus)</label>
+                <textarea id="edit-epic-success" class="cms-input shadow-sm focus:shadow-md border-indigo-100" rows="2" placeholder="What specific outcome defines success? (e.g. 95% reduction in latency)">${epic.successCriteria || ''}</textarea>
             </div>
         </div>
     `;
@@ -1245,7 +1300,8 @@ function saveCmsChanges() {
             'releasedIn': 'edit-releasedIn', 'planningHorizon': 'edit-planningHorizon',
             'epicId': 'edit-epicId', 'storyPoints': 'edit-storyPoints',
             'effortLevel': 'edit-effortLevel', 'impactLevel': 'edit-impactLevel',
-            'publishedDate': 'edit-publishedDate', 'blockerNote': 'edit-blockerNote'
+            'publishedDate': 'edit-publishedDate', 'blockerNote': 'edit-blockerNote',
+            'persona': 'edit-persona', 'successMetric': 'edit-successMetric'
         };
 
         Object.entries(fieldMap).forEach(([key, id]) => {
@@ -1383,8 +1439,12 @@ function saveCmsChanges() {
             name: document.getElementById('edit-epic-name').value.trim(),
             description: document.getElementById('edit-epic-desc').value.trim(),
             health: document.getElementById('edit-epic-health').value,
+            stage: document.getElementById('edit-epic-stage').value,
+            successCriteria: document.getElementById('edit-epic-success').value.trim(),
             linkedOKR: document.getElementById('edit-epic-okr').value,
-            planningHorizon: document.getElementById('edit-epic-horizon').value
+            planningHorizon: document.getElementById('edit-epic-horizon').value,
+            strategicWeight: parseInt(document.getElementById('edit-epic-weight').value) || 0,
+            riskType: document.getElementById('edit-epic-risk').value
         };
         if (!UPDATE_DATA.metadata.epics) UPDATE_DATA.metadata.epics = [];
         if (editContext.epicId) {

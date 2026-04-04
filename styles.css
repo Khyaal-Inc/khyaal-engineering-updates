@@ -77,6 +77,29 @@ body {
     background: #f3f4f6;
 }
 
+/* Animations */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeInDown {
+    animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes bounce-horizontal {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+.animate-bounce-horizontal {
+    animation: bounce-horizontal 1s infinite;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
 .badge-done {
     background: #22c55e;
     color: white;
@@ -269,12 +292,12 @@ body {
 
 /* Item Styling */
 .item-row {
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    border-bottom: 1.5px solid #e2e8f0; /* Clearer separator (slate-200) */
     display: flex;
     align-items: flex-start;
     gap: 1.5rem;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .item-content {
@@ -1465,14 +1488,212 @@ body {
     background: #f1f5f9;
 }
 
-/* Sprint */
+/* Sprint & Epic Cards */
 .sprint-card {
     background: #fff;
-    border-radius: 14px;
-    border: 2px solid #e2e8f0;
-    margin-bottom: 1.5rem;
+    border-radius: 20px;
+    border: none; /* No more hard border */
+    margin-bottom: 2rem;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    /* Deep Premium Elevation Shadow */
+    box-shadow: 
+        0 10px 15px -3px rgba(0, 0, 0, 0.04), 
+        0 4px 6px -2px rgba(0, 0, 0, 0.02),
+        0 0 0 1px rgba(0, 0, 0, 0.05); 
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.sprint-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.2);
+}
+
+.epic-section-header {
+    background: #fff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+}
+
+/* Persona Perspectives Utility */
+.mode-exec .pm-only {
+    display: none !important;
+}
+
+.mode-pm .exec-only {
+    display: none !important;
+}
+
+.exec-perspective-summary {
+    background: #f1f5f9;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    margin: 1rem 0;
+}
+
+/* Epic Lifecycle Stepper (Vision-First Alignment) */
+.epic-lifecycle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-bottom: 1.5rem;
+}
+
+.epic-stage-pill {
+    flex: 1;
+    height: 6px;
+    border-radius: 9999px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: visible; /* To see labels clearly */
+}
+
+.epic-stage-pill.active {
+    background: var(--stage-color, #6366f1);
+    box-shadow: 0 0 15px var(--stage-color, rgba(99, 102, 241, 0.1));
+}
+
+.epic-stage-label {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    white-space: nowrap;
+    transition: color 0.3s ease;
+}
+
+/* Tactical Scroll Container */
+.epic-tactical-scroll {
+    display: block;
+    position: relative;
+    max-height: 500px; /* Increased for better visibility */
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f8fafc;
+    z-index: 1; /* Ensure containment */
+}
+
+.epic-tactical-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.epic-tactical-scroll::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.epic-tactical-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid #f8fafc;
+}
+
+/* Strategic Connectors (Task Level) */
+.persona-badge {
+    font-size: 8px;
+    font-weight: 1000;
+    padding: 1px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.strategic-metric-row {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 6px 10px;
+    border-left: 3.5px solid #6366f1;
+    margin: 8px 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.strategic-metric-label {
+    font-size: 8px;
+    font-weight: 900;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+}
+
+.strategic-metric-value {
+    font-size: 11px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: tight;
+}
+
+.risk-badge {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border: 1px solid currentColor;
+}
+
+.risk-technical { background: #fff7ed; color: #ea580c; }
+.risk-market { background: #fdf2f8; color: #db2777; }
+.risk-operational { background: #f0fdf4; color: #16a34a; }
+.risk-none { background: #f8fafc; color: #64748b; }
+
+/* Unified Progressive Disclosure (Toggles) */
+.epic-tactical-details {
+    border-top: 1px solid #f1f5f9;
+}
+
+.epic-tactical-summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 1000;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #94a3b8;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #f8fafc;
+    list-style: none;
+}
+
+.epic-tactical-summary::-webkit-details-marker {
+    display: none;
+}
+
+.epic-tactical-summary:hover {
+    color: #6366f1;
+    background: #f5f3ff;
+}
+
+.epic-tactical-details[open] .epic-tactical-summary {
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.pm-mode-indicator {
+    padding: 2px 8px;
+    background: #6366f1;
+    color: white;
+    border-radius: 4px;
+    margin-left: 10px;
+    font-size: 8px;
+}
+
+.epic-stage-pill.active .epic-stage-label {
+    color: var(--stage-color, #6366f1);
 }
 
 .sprint-header {
