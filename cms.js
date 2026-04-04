@@ -12,6 +12,69 @@ const CMS_CONFIG = {
     filePath: 'data.json'
 };
 
+// ========================================
+// CMS CORE UTILITIES
+// ========================================
+
+/**
+ * Standard change logging for strategic visibility
+ */
+function logChange(action, target) {
+    if (!UPDATE_DATA.metadata.activity) UPDATE_DATA.metadata.activity = [];
+    const entry = {
+        id: `act-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        action: action,
+        target: target,
+        author: 'PM / Strategist'
+    };
+    UPDATE_DATA.metadata.activity.unshift(entry);
+    if (UPDATE_DATA.metadata.activity.length > 50) UPDATE_DATA.metadata.activity.pop();
+}
+
+/**
+ * Refreshes all view counts and tab markers
+ */
+function updateTabCounts() {
+    // This usually relies on individual view renderers, 
+    // but here we ensure the mini-pipeline and counters are updated
+    if (typeof renderMiniPipeline === 'function') renderMiniPipeline();
+}
+
+/**
+ * Global View Orchestrator
+ */
+function switchView(viewId) {
+    // 1. Close any open modals
+    closeCmsModal();
+
+    // 2. Hide all views
+    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+
+    // 3. Show target view
+    const target = document.getElementById(`${viewId}-view`);
+    if (target) {
+        target.classList.add('active');
+        // Trigger specific renderers
+        if (viewId === 'track' && typeof renderTrackView === 'function') renderTrackView();
+        if (viewId === 'roadmap' && typeof renderRoadmapView === 'function') renderRoadmapView();
+        if (viewId === 'epics' && typeof renderEpicsView === 'function') renderEpicsView();
+        if (viewId === 'okr' && typeof renderOkrView === 'function') renderOkrView();
+        if (viewId === 'sprint' && typeof renderSprintView === 'function') renderSprintView();
+        if (viewId === 'releases' && typeof renderReleasesView === 'function') renderReleasesView();
+        if (viewId === 'backlog' && typeof renderBacklogView === 'function') renderBacklogView();
+        if (viewId === 'kanban' && typeof renderKanbanView === 'function') renderKanbanView();
+        if (viewId === 'analytics' && typeof renderAnalyticsView === 'function') renderAnalyticsView();
+        if (viewId === 'status' && typeof renderStatusView === 'function') renderStatusView();
+        if (viewId === 'priority' && typeof renderPriorityView === 'function') renderPriorityView();
+    }
+
+    // 4. Update tab state
+    document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('onclick')?.includes(viewId));
+    });
+}
+
 function toggleCmsDrawer() {
     const drawer = document.getElementById('cms-drawer');
     if (drawer) {
@@ -287,18 +350,18 @@ function buildContextBanner(item, context) {
     const stage = stageMap[context.workflowStage] || stageMap.delivery;
     
     return `
-        <div class="context-banner" style="border-left: 8px solid ${stage.color}">
+        <div class="context-banner shadow-sm" style="border-left: 12px solid ${stage.color}; background: white; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 4px 12px 12px 4px; border-top: 1.5px solid #f1f5f9; border-right: 1.5px solid #f1f5f9; border-bottom: 1.5px solid #f1f5f9;">
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <span class="text-3xl">${stage.icon}</span>
+                <div class="flex items-center gap-5">
+                    <span class="text-4xl filter drop-shadow-sm">${stage.icon}</span>
                     <div>
-                        <div class="context-banner-stage">${stage.label}</div>
-                        <div class="context-banner-view">Refining: ${context.view.toUpperCase()}</div>
+                        <div class="context-banner-stage !text-xs !font-black uppercase tracking-widest" style="color: ${stage.color}">${stage.label}</div>
+                        <div class="context-banner-view !text-slate-800 !font-bold">Execution Context: ${context.view.toUpperCase()}</div>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <span class="context-badge">Mode: ${context.mode.toUpperCase()}</span>
-                    ${item.id ? `<span class="context-badge">ID: ${item.id}</span>` : ''}
+                    <span class="context-badge !bg-slate-100 !text-slate-600 !border-slate-200">Mode: ${context.mode.toUpperCase()}</span>
+                    ${item.id ? `<span class="context-badge !bg-indigo-50 !text-indigo-700 !border-indigo-100 font-mono">ID: ${item.id}</span>` : ''}
                 </div>
             </div>
         </div>
@@ -348,24 +411,24 @@ function renderField(fieldName, item) {
         case 'text':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🎯 Task Title *</label>
-                    <input type="text" id="edit-text" value="${val}" class="cms-input" placeholder="What needs to be done?" required>
+                    <label class="cms-label">🎯 Task Title *</label>
+                    <input type="text" id="edit-text" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="What mission-critical task needs attention?" required>
                 </div>
             `;
 
         case 'note':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">📝 Description</label>
-                    <textarea id="edit-note" class="cms-input" rows="3" placeholder="Technical details or notes...">${val}</textarea>
+                    <label class="cms-label">📝 Engineering Context / Description</label>
+                    <textarea id="edit-note" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="Technical implementation details or operational notes...">${val}</textarea>
                 </div>
             `;
 
         case 'status':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🚦 Status</label>
-                    <select id="edit-status" class="cms-input">
+                    <label class="cms-label">🚦 Engineering Lifecycle State</label>
+                    <select id="edit-status" class="cms-input shadow-sm focus:shadow-md">
                         <option value="later" ${val === 'later' ? 'selected' : ''}>Backlog (Later)</option>
                         <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Planned (Next)</option>
                         <option value="now" ${val === 'now' ? 'selected' : ''}>Developing (Now)</option>
@@ -381,8 +444,8 @@ function renderField(fieldName, item) {
         case 'priority':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🔥 Priority</label>
-                    <select id="edit-priority" class="cms-input">
+                    <label class="cms-label">🔥 Strategic Priority</label>
+                    <select id="edit-priority" class="cms-input shadow-sm focus:shadow-md">
                         <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
                         <option value="medium" ${val === 'medium' || !val ? 'selected' : ''}>Medium</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
@@ -393,8 +456,8 @@ function renderField(fieldName, item) {
         case 'usecase':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">💡 Impact / Usecase</label>
-                    <input type="text" id="edit-usecase" value="${val}" class="cms-input" placeholder="Why is this important?">
+                    <label class="cms-label">💡 Business Value / Usecase</label>
+                    <input type="text" id="edit-usecase" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="Strategic alignment or user impact statement...">
                 </div>
             `;
 
@@ -402,9 +465,9 @@ function renderField(fieldName, item) {
             const epics = UPDATE_DATA.metadata.epics || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🚀 Linked Epic</label>
-                    <select id="edit-epicId" class="cms-input">
-                        <option value="">None</option>
+                    <label class="cms-label">🚀 Strategic Epic Link</label>
+                    <select id="edit-epicId" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="">None (Tactical / BAU)</option>
                         ${epics.map(e => `<option value="${e.id}" ${val === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                     </select>
                 </div>
@@ -413,12 +476,12 @@ function renderField(fieldName, item) {
         case 'planningHorizon':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🗺️ Planning Horizon</label>
-                    <select id="edit-planningHorizon" class="cms-input">
+                    <label class="cms-label">🗺️ Roadmap Horizon</label>
+                    <select id="edit-planningHorizon" class="cms-input shadow-sm focus:shadow-md">
                         <option value="">None</option>
-                        <option value="1M" ${val === '1M' ? 'selected' : ''}>1 Month</option>
-                        <option value="3M" ${val === '3M' ? 'selected' : ''}>3 Months</option>
-                        <option value="6M" ${val === '6M' ? 'selected' : ''}>6 Months</option>
+                        <option value="1M" ${val === '1M' ? 'selected' : ''}>Now (1 Month)</option>
+                        <option value="3M" ${val === '3M' ? 'selected' : ''}>Next (3 Months)</option>
+                        <option value="6M" ${val === '6M' ? 'selected' : ''}>Later (6 Months)</option>
                         <option value="1Y" ${val === '1Y' ? 'selected' : ''}>1 Year</option>
                     </select>
                 </div>
@@ -428,8 +491,8 @@ function renderField(fieldName, item) {
             const sprints = UPDATE_DATA.metadata.sprints || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🏃 Sprint</label>
-                    <select id="edit-sprintId" class="cms-input">
+                    <label class="cms-label">🏃 Execution Sprint</label>
+                    <select id="edit-sprintId" class="cms-input shadow-sm focus:shadow-md">
                         <option value="">None</option>
                         ${sprints.map(s => `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                     </select>
@@ -439,15 +502,15 @@ function renderField(fieldName, item) {
         case 'startDate':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">📅 Start Date</label>
-                    <input type="date" id="edit-startDate" value="${val}" class="cms-input">
+                    <label class="cms-label">📅 Planned Start</label>
+                    <input type="date" id="edit-startDate" value="${val}" class="cms-input shadow-sm focus:shadow-md">
                 </div>
             `;
 
         case 'due':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">⌛ Due Date</label>
+                    <label class="cms-label">⌛ Target Delivery Date</label>
                     <input type="date" id="edit-due" value="${val}" class="cms-input">
                 </div>
             `;
@@ -455,25 +518,25 @@ function renderField(fieldName, item) {
         case 'contributors':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">👥 Contributors</label>
-                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                    <label class="cms-label">👥 Team Contributors</label>
+                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
                 </div>
             `;
 
         case 'blockerNote':
             return `
-                <div class="field-wrapper blocker-field">
-                    <label class="field-label">🛑 Blocker Reason</label>
-                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input" placeholder="What's blocking this task?">
-                    <p class="field-hint">⚠️ Setting this will flag the task as blocked</p>
+                <div class="field-wrapper blocker-field p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                    <label class="cms-label !text-rose-600">🛑 Critical Blocker Reason</label>
+                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input !border-rose-300 shadow-sm focus:shadow-md" placeholder="What's blocking this mission?">
+                    <p class="text-[10px] text-rose-500 mt-2 font-bold uppercase tracking-tight">⚠️ Flagged as Blocked</p>
                 </div>
             `;
 
         case 'dependencies':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🔗 Dependencies</label>
-                    <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                    <label class="cms-label">🔗 Technical Dependencies</label>
+                    <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
                 </div>
             `;
 
@@ -481,9 +544,9 @@ function renderField(fieldName, item) {
             const releases = UPDATE_DATA.metadata.releases || [];
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">📦 Release</label>
-                    <select id="edit-releasedIn" class="cms-input">
-                        <option value="">None</option>
+                    <label class="cms-label">📦 Target Release</label>
+                    <select id="edit-releasedIn" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="">None (Continuous / BAU)</option>
                         ${releases.map(r => `<option value="${r.id}" ${val === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
                     </select>
                 </div>
@@ -492,39 +555,39 @@ function renderField(fieldName, item) {
         case 'mediaUrl':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🔗 Media URL</label>
-                    <input type="text" id="edit-mediaUrl" value="${val}" class="cms-input" placeholder="https://...">
-                    <p class="field-hint">Screenshots, demos, or documentation links</p>
+                    <label class="cms-label">🔗 Strategic Evidence / Media URL</label>
+                    <input type="text" id="edit-mediaUrl" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="https://external-resource-link...">
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Screenshots, demos, or documentation links</p>
                 </div>
             `;
 
         case 'storyPoints':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🔢 Story Points</label>
-                    <input type="number" id="edit-storyPoints" value="${val}" class="cms-input" placeholder="e.g. 1, 2, 3, 5, 8">
+                    <label class="cms-label">🔢 Complexity (Story Points)</label>
+                    <input type="number" id="edit-storyPoints" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. 1, 2, 3, 5, 8">
                 </div>
             `;
 
         case 'effortLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🛠️ Implementation Effort</label>
-                    <select id="edit-effortLevel" class="cms-input" onchange="updateRoiPreview()">
+                    <label class="cms-label">🛠️ Implementation Effort (ROI)</label>
+                    <select id="edit-effortLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()">
                         <option value="">Select Effort...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Easy Wins)</option>
                         <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Standard Cycle)</option>
                         <option value="high" ${val === 'high' ? 'selected' : ''}>High (Major Complexities)</option>
                     </select>
-                    <div id="roi-preview-container" class="mt-2"></div>
+                    <div id="roi-preview-container" class="mt-3"></div>
                 </div>
             `;
 
         case 'impactLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">💎 Business Value (Impact)</label>
-                    <select id="edit-impactLevel" class="cms-input" onchange="updateRoiPreview()">
+                    <label class="cms-label">💎 Strategic Impact (Value)</label>
+                    <select id="edit-impactLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()">
                         <option value="">Select Value...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Tactical/Minor)</option>
                         <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Baseline Support)</option>
@@ -536,26 +599,26 @@ function renderField(fieldName, item) {
         case 'acceptanceCriteria':
             const acVal = Array.isArray(val) ? val.join('\n') : val;
             return `
-                <div class="field-wrapper full-width">
-                    <label class="field-label">✅ Acceptance Criteria</label>
-                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[100px]" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
-                    <p class="field-hint">💡 one per line</p>
+                <div class="field-wrapper full-width mt-4">
+                    <label class="cms-label">✅ Definition of Done / Acceptance Criteria</label>
+                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[120px] shadow-sm focus:shadow-md" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight italic">Enter one criterion per line</p>
                 </div>
             `;
 
         case 'publishedDate':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">📅 Published Date</label>
-                    <input type="date" id="edit-publishedDate" value="${val}" class="cms-input">
+                    <label class="cms-label">📅 Operational Date</label>
+                    <input type="date" id="edit-publishedDate" value="${val}" class="cms-input shadow-sm focus:shadow-md">
                 </div>
             `;
 
         case 'tags':
             return `
                 <div class="field-wrapper">
-                    <label class="field-label">🏷️ Tags</label>
-                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px]"></div>
+                    <label class="cms-label">🏷️ Categorization Tags</label>
+                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
                 </div>
             `;
 
@@ -862,38 +925,46 @@ function openSprintEdit(sprintId) {
 
     document.getElementById('modal-title').innerText = sprintId ? 'Edit Sprint' : 'Add New Sprint';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-3">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1">Sprint Name</label>
-                <input type="text" id="edit-sprint-name" value="${sprint.name}" class="cms-input" placeholder="e.g. Sprint 42">
+                <label class="cms-label">Sprint Descriptor</label>
+                <input type="text" id="edit-sprint-name" value="${sprint.name}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Foundation Sprint 01">
             </div>
             
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold mb-1">Start Date</label>
-                    <input type="date" id="edit-sprint-start" value="${sprint.startDate || ''}" class="cms-input">
+                    <label class="cms-label">Start Date</label>
+                    <input type="date" id="edit-sprint-start" value="${sprint.startDate || ''}" class="cms-input shadow-sm focus:shadow-md">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold mb-1">End Date</label>
-                    <input type="date" id="edit-sprint-end" value="${sprint.endDate || ''}" class="cms-input">
+                    <label class="cms-label">Target Completion</label>
+                    <input type="date" id="edit-sprint-end" value="${sprint.endDate || ''}" class="cms-input shadow-sm focus:shadow-md">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1">Strategic Objective Alignment</label>
-                <select id="edit-sprint-okr" class="cms-input">
+                <label class="cms-label">Objective Alignment</label>
+                <select id="edit-sprint-okr" class="cms-input shadow-sm focus:shadow-md">
                     <option value="">None (Tactical / Unlinked)</option>
                     ${okrs.map(o => `<option value="${o.id}" ${sprint.linkedOKR === o.id ? 'selected' : ''}>${o.quarter}: ${o.objective}</option>`).join('')}
                 </select>
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1">Sprint Goal</label>
-                <textarea id="edit-sprint-goal" class="cms-input" rows="2">${sprint.goal || ''}</textarea>
+                <label class="cms-label">Core Sprint Goal</label>
+                <textarea id="edit-sprint-goal" class="cms-input shadow-sm focus:shadow-md" rows="2" placeholder="What is the primary mission of this cycle?">${sprint.goal || ''}</textarea>
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${sprintId ? `<button onclick="deleteSprint('${sprintId}')" class="cms-btn cms-btn-danger mr-auto">Delete Sprint</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${sprintId ? 'Save Changes' : 'Create Sprint'}</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function openReleaseEdit(releaseId) {
@@ -904,32 +975,41 @@ function openReleaseEdit(releaseId) {
 
     document.getElementById('modal-title').innerText = releaseId ? 'Edit Release' : 'Add New Release';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-3">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1">Release Name</label>
-                <input type="text" id="edit-release-name" value="${release.name}" class="cms-input" placeholder="e.g. v2.1 (The Spark)">
+                <label class="cms-label">Strategic Release Name</label>
+                <input type="text" id="edit-release-name" value="${release.name}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. v2.1 (The Spark)">
             </div>
             
-            <div>
-                <label class="block text-sm font-bold mb-1">Target Date</label>
-                <input type="date" id="edit-release-date" value="${release.targetDate || ''}" class="cms-input">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="cms-label">Target Launch Date</label>
+                    <input type="date" id="edit-release-date" value="${release.targetDate || ''}" class="cms-input shadow-sm focus:shadow-md">
+                </div>
+                <div>
+                    <label class="cms-label">Strategic OKR Alignment</label>
+                    <select id="edit-release-okr" class="cms-input shadow-sm focus:shadow-md">
+                        <option value="">None (Unlinked)</option>
+                        ${okrs.map(o => `<option value="${o.id}" ${release.linkedOKR === o.id ? 'selected' : ''}>${o.quarter}: ${o.objective}</option>`).join('')}
+                    </select>
+                </div>
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1">Strategic OKR Alignment</label>
-                <select id="edit-release-okr" class="cms-input">
-                    <option value="">None (Unlinked)</option>
-                    ${okrs.map(o => `<option value="${o.id}" ${release.linkedOKR === o.id ? 'selected' : ''}>${o.quarter}: ${o.objective}</option>`).join('')}
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-1">Goal/Focus</label>
-                <textarea id="edit-release-goal" class="cms-input" rows="2">${release.goal || ''}</textarea>
+                <label class="cms-label">Market Impact & Release Goal</label>
+                <textarea id="edit-release-goal" class="cms-input shadow-sm focus:shadow-md" rows="2" placeholder="Primary mission or customer impact of this release...">${release.goal || ''}</textarea>
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${releaseId ? `<button onclick="deleteRelease('${releaseId}')" class="cms-btn cms-btn-danger mr-auto">Delete Release</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${releaseId ? 'Save Changes' : 'Create Release'}</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function openEpicEdit(epicIndex) {
@@ -942,23 +1022,23 @@ function openEpicEdit(epicIndex) {
 
     document.getElementById('modal-title').innerText = epicId ? 'Edit Strategic Epic' : 'Add Strategic Epic';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Epic Name</label>
-                <input type="text" id="edit-epic-name" value="${epic.name}" class="cms-input" placeholder="e.g. Platform Migration V2">
+                <label class="cms-label">Strategic Epic Name</label>
+                <input type="text" id="edit-epic-name" value="${epic.name}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Platform Migration V2">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Strategic Objective</label>
-                    <select id="edit-epic-okr" class="cms-input">
+                    <label class="cms-label">Strategic Objective</label>
+                    <select id="edit-epic-okr" class="cms-input shadow-sm focus:shadow-md">
                         <option value="">None (BAU / Unlinked)</option>
                         ${okrs.map(o => `<option value="${o.id}" ${epic.linkedOKR === o.id ? 'selected' : ''}>${o.objective}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Planning Horizon</label>
-                    <select id="edit-epic-horizon" class="cms-input">
+                    <label class="cms-label">Planning Horizon</label>
+                    <select id="edit-epic-horizon" class="cms-input shadow-sm focus:shadow-md">
                         <option value="">No Specific Horizon</option>
                         ${horizons.map(h => `<option value="${h.id}" ${epic.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
                     </select>
@@ -967,8 +1047,8 @@ function openEpicEdit(epicIndex) {
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Health Status</label>
-                    <select id="edit-epic-health" class="cms-input">
+                    <label class="cms-label">Execution Health</label>
+                    <select id="edit-epic-health" class="cms-input shadow-sm focus:shadow-md">
                         <option value="on-track" ${epic.health === 'on-track' ? 'selected' : ''}>🟢 On-Track</option>
                         <option value="at-risk" ${epic.health === 'at-risk' ? 'selected' : ''}>🟡 At-Risk</option>
                         <option value="delayed" ${epic.health === 'delayed' ? 'selected' : ''}>🔴 Delayed</option>
@@ -977,12 +1057,20 @@ function openEpicEdit(epicIndex) {
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description / Business Value</label>
-                <textarea id="edit-epic-desc" class="cms-input" rows="3" placeholder="What strategic value does this Epic provide?">${epic.description || ''}</textarea>
+                <label class="cms-label">Business Value & Intent</label>
+                <textarea id="edit-epic-desc" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="What strategic value does this Epic provide?">${epic.description || ''}</textarea>
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${epicId ? `<button onclick="deleteEpic(${epicIndex})" class="cms-btn cms-btn-danger mr-auto">Delete Epic</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${epicId ? 'Save Changes' : 'Create Epic'}</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function openRoadmapEdit(id) {
@@ -1000,21 +1088,21 @@ function openRoadmapEdit(id) {
 
     document.getElementById('modal-title').innerText = id ? 'Edit Roadmap Category' : 'Add Roadmap Category';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Category Label</label>
-                <input type="text" id="edit-roadmap-label" value="${horizon.label}" class="cms-input" placeholder="e.g. Next Month">
+                <label class="cms-label">Category Title</label>
+                <input type="text" id="edit-roadmap-label" value="${horizon.label}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Q4 Strategic Focus">
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Internal ID</label>
-                    <input type="text" id="edit-roadmap-id" value="${horizon.id}" class="cms-input" placeholder="e.g. 1M" ${id ? 'readonly' : ''}>
-                    <p class="text-[10px] text-slate-400 mt-1">${id ? 'Locked' : 'Unique ID for tasks.'}</p>
+                    <label class="cms-label">Internal Identifier</label>
+                    <input type="text" id="edit-roadmap-id" value="${horizon.id}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. 1M" ${id ? 'readonly' : ''}>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">${id ? 'Immutable Key' : 'Unique key for linkage'}</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-slate-700">Supporting Objective</label>
-                    <select id="edit-roadmap-okr" class="cms-input">
+                    <label class="cms-label">Alignment Objective</label>
+                    <select id="edit-roadmap-okr" class="cms-input shadow-sm focus:shadow-md">
                         <option value="">No Specific OKR</option>
                         ${okrs.map(o => `<option value="${o.id}" ${horizon.linkedObjective === o.id ? 'selected' : ''}>${o.objective}</option>`).join('')}
                     </select>
@@ -1022,8 +1110,8 @@ function openRoadmapEdit(id) {
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
-                <select id="edit-roadmap-color" class="cms-input">
+                <label class="cms-label">Horizon Aesthetic</label>
+                <select id="edit-roadmap-color" class="cms-input shadow-sm focus:shadow-md">
                     <option value="blue" ${horizon.color === 'blue' ? 'selected' : ''}>Blue</option>
                     <option value="indigo" ${horizon.color === 'indigo' ? 'selected' : ''}>Indigo</option>
                     <option value="violet" ${horizon.color === 'violet' ? 'selected' : ''}>Violet</option>
@@ -1035,7 +1123,15 @@ function openRoadmapEdit(id) {
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${id ? `<button onclick="deleteRoadmap('${id}')" class="cms-btn cms-btn-danger mr-auto">Delete Category</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${id ? 'Save Changes' : 'Create Category'}</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function validateCmsForm() {
@@ -1359,14 +1455,14 @@ function openTrackEdit(ti) {
     
     document.getElementById('modal-title').innerText = ti !== undefined ? 'Edit Track' : 'Add New Track';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Track Name</label>
-                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input" placeholder="e.g. Platform Team">
+                <label class="cms-label">Track Identifier</label>
+                <input type="text" id="edit-track-name" value="${track.name}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Platform Team">
             </div>
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Theme Color</label>
-                <select id="edit-track-theme" class="cms-input">
+                <label class="cms-label">Strategic Theme</label>
+                <select id="edit-track-theme" class="cms-input shadow-sm focus:shadow-md">
                     <option value="blue" ${track.theme === 'blue' ? 'selected' : ''}>Standard Blue</option>
                     <option value="emerald" ${track.theme === 'emerald' ? 'selected' : ''}>Emerald Green</option>
                     <option value="violet" ${track.theme === 'violet' ? 'selected' : ''}>Violet Purple</option>
@@ -1377,12 +1473,21 @@ function openTrackEdit(ti) {
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${ti !== undefined ? `<button onclick="deleteTrack(${ti})" class="cms-btn cms-btn-danger mr-auto">Delete Track</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${ti !== undefined ? 'Save Changes' : 'Create Track'}</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function deleteTrack(ti) {
     if (!confirm(`Delete track "${UPDATE_DATA.tracks[ti].name}" and ALL its items?`)) return;
     UPDATE_DATA.tracks.splice(ti, 1);
+    closeCmsModal();
     renderTrackView();
     updateTabCounts();
 }
@@ -1401,17 +1506,32 @@ function openSubtrackEdit(ti, si) {
     
     document.getElementById('modal-title').innerText = 'Edit Subtrack';
     document.getElementById('modal-form').innerHTML = `
-        <label class="block text-sm font-bold mb-1">Subtrack Name</label>
-        <input type="text" id="edit-subtrack-name" value="${sub.name}" class="cms-input">
-        <label class="block text-sm font-bold mb-1">Subtrack Note</label>
-        <textarea id="edit-subtrack-note" class="cms-input">${sub.note || ''}</textarea>
+        <div class="space-y-5">
+            <div>
+                <label class="cms-label">Subtrack Header</label>
+                <input type="text" id="edit-subtrack-name" value="${sub.name}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Core Features">
+            </div>
+            <div>
+                <label class="cms-label">Context / Internal Notes</label>
+                <textarea id="edit-subtrack-note" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="Operational context for this group...">${sub.note || ''}</textarea>
+            </div>
+        </div>
+    `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="deleteSubtrack(${ti}, ${si})" class="cms-btn cms-btn-danger mr-auto">Delete Subtrack</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes</button>
     `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function deleteSubtrack(ti, si) {
     if (!confirm(`Delete subtrack "${UPDATE_DATA.tracks[ti].subtracks[si].name}"?`)) return;
     UPDATE_DATA.tracks[ti].subtracks.splice(si, 1);
+    closeCmsModal();
     renderTrackView();
     updateTabCounts();
 }
@@ -1466,65 +1586,50 @@ function openMetadataEdit() {
 
     document.getElementById('modal-title').innerText = 'Edit Project Metadata';
     document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Project Title</label>
-                <input type="text" id="edit-meta-title" value="${meta.title}" class="cms-input">
+                <label class="cms-label">Dashboard Identifier</label>
+                <input type="text" id="edit-meta-title" value="${meta.title}" class="cms-input shadow-sm focus:shadow-md">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="cms-label">Cycle / Quarter</label>
+                    <input type="text" id="edit-meta-dateRange" value="${meta.dateRange}" class="cms-input shadow-sm focus:shadow-md">
+                </div>
+                <div>
+                    <label class="cms-label">Review Cadence</label>
+                    <input type="text" id="edit-meta-nextReview" value="${meta.nextReview || ''}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. April 15">
+                </div>
             </div>
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Date Range / Status</label>
-                <input type="text" id="edit-meta-dateRange" value="${meta.dateRange}" class="cms-input">
+                <label class="cms-label">Dashboard Vision Statement</label>
+                <textarea id="edit-meta-description" class="cms-input shadow-sm focus:shadow-md" rows="2">${meta.description}</textarea>
             </div>
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Next Review / Milestone</label>
-                <input type="text" id="edit-meta-nextReview" value="${meta.nextReview || ''}" class="cms-input" placeholder="e.g. Next Update: April 15">
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description</label>
-                <textarea id="edit-meta-description" class="cms-input" rows="2">${meta.description}</textarea>
-            </div>
-            <div>
-                <label class="block text-[11px] font-black uppercase text-slate-500 mb-2 tracking-wider">Custom Statuses (JSON)</label>
-                <textarea id="edit-meta-customStatuses" class="cms-input font-mono text-xs p-3 bg-slate-50" rows="6">${JSON.stringify(meta.customStatuses || [], null, 2)}</textarea>
-                <p class="text-[10px] text-slate-400 mt-1">Format: [{"id":"status_id", "label":"Label", "class":"css_class", "bucket":"status_bucket"}]</p>
-            </div>
-        </div>
-    `;
-    document.getElementById('cms-modal').classList.add('active');
-}
-
-
-function openSubtrackEdit(trackIndex, subtrackIndex) {
-    const sub = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex];
-    editContext = { type: 'subtrack', trackIndex, subtrackIndex };
-
-    document.getElementById('modal-title').innerText = 'Edit Subtrack';
-    document.getElementById('modal-form').innerHTML = `
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Subtrack Name</label>
-                <input type="text" id="edit-subtrack-name" value="${sub.name}" class="cms-input">
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Description / Note</label>
-                <textarea id="edit-subtrack-note" class="cms-input" rows="3">${sub.note || ''}</textarea>
+                <label class="cms-label">Engineering Lifecycle States (JSON)</label>
+                <div class="border border-slate-200 rounded-lg overflow-hidden focus-within:border-indigo-400 transition-colors">
+                    <textarea id="edit-meta-customStatuses" class="cms-input font-mono text-xs p-4 !border-none !rounded-none focus:!shadow-none bg-slate-50" rows="8">${JSON.stringify(meta.customStatuses || [], null, 2)}</textarea>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-100 flex items-center justify-center text-[8px]">!</span>
+                    Format: [{"id":"status_id", "label":"Label", "class":"css_class", "bucket":"status_bucket"}]
+                </p>
             </div>
         </div>
     `;
+
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Metadata</button>
+    `;
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
-function deleteSubtrack(trackIndex, subtrackIndex) {
-    if (!confirm('Delete this subtrack and all its items?')) return;
-    UPDATE_DATA.tracks[trackIndex].subtracks.splice(subtrackIndex, 1);
-    renderTrackView();
-    updateTabCounts();
-}
 
-function logoutAll() {
-    localStorage.removeItem('gh_pat');
-    location.reload();
-}
+// DELETED DUPLICATE openSubtrackEdit, deleteSubtrack, logoutAll here.
+// Unique functions follow:
 
 function updateMoveSubtrackOpts(ti) {
     const subSel = document.getElementById('edit-move-subtrack');
@@ -1588,11 +1693,19 @@ function deleteComment(ti, si, ii, cid) {
 }
 
 function deleteItem(ti, si, ii) {
-    if (!confirm('Delete item?')) return;
-    UPDATE_DATA.tracks[ti].subtracks[si].items.splice(ii, 1);
+    const t = ti !== undefined ? ti : editContext.trackIndex;
+    const s = si !== undefined ? si : editContext.subtrackIndex;
+    const i = ii !== undefined ? ii : editContext.itemIndex;
+
+    const item = UPDATE_DATA.tracks[t].subtracks[s].items[i];
+    if (!confirm(`Delete task: "${item.text}"?`)) return;
+
+    UPDATE_DATA.tracks[t].subtracks[s].items.splice(i, 1);
+    logChange('Delete Item', item.text);
+    
+    closeCmsModal();
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    if (currentView === 'track') renderTrackView();
-    else if (currentView === 'backlog') renderBacklogView();
+    switchView(currentView);
     updateTabCounts();
 }
 
@@ -1602,16 +1715,20 @@ function sendToBacklog(ti, si, ii) {
     if (bIdx === -1) { track.subtracks.push({ name: 'Backlog', items: [] }); bIdx = track.subtracks.length - 1; }
     const [item] = track.subtracks[si].items.splice(ii, 1);
     track.subtracks[bIdx].items.push(item);
-    renderTrackView();
+    logChange('Move to Backlog', item.text);
+    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+    switchView(currentView);
     updateTabCounts();
 }
 
 function toggleBlocker(ti, si, ii) {
     const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii];
-    if (item.blocker) { delete item.blocker; delete item.blockerNote; }
-    else { item.blocker = true; item.blockerNote = prompt('Blocker reason:', '') || ''; }
-    renderTrackView();
-    renderBlockerStrip();
+    if (item.blocker) { delete item.blocker; delete item.blockerNote; logChange('Unblock Item', item.text); }
+    else { const note = prompt('Blocker reason:', '') || ''; if (!note) return; item.blocker = true; item.blockerNote = note; logChange('Flag Blocker', item.text); }
+    
+    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+    switchView(currentView);
+    if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
 }
 
 // ------ ARCHIVE MANAGEMENT ------
@@ -1787,40 +1904,47 @@ function openOKREdit(okrIndex) {
 
     document.getElementById('modal-title').innerText = okrId ? 'Edit OKR' : 'Add New OKR';
 
-    // Build form with key results editor
-    let formHtml = `
-        <div class="space-y-4">
+    document.getElementById('modal-form').innerHTML = `
+        <div class="space-y-5">
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Quarter</label>
-                <input type="text" id="edit-okr-quarter" value="${okr.quarter}" class="cms-input" placeholder="e.g. Q1 2026">
+                <label class="cms-label">Cyclical Quarter</label>
+                <input type="text" id="edit-okr-quarter" value="${okr.quarter}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Q1 2026">
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Objective</label>
-                <textarea id="edit-okr-objective" class="cms-input" rows="2" placeholder="What do you want to achieve this quarter?">${okr.objective}</textarea>
+                <label class="cms-label">Primary Strategic Objective</label>
+                <textarea id="edit-okr-objective" class="cms-input shadow-sm focus:shadow-md" rows="2" placeholder="What mission-critical objective are we targeting?">${okr.objective}</textarea>
             </div>
 
             <div>
-                <label class="block text-sm font-bold mb-1.5 text-slate-700">Owner / Team</label>
-                <input type="text" id="edit-okr-owner" value="${okr.owner}" class="cms-input" placeholder="e.g. Platform Team">
+                <label class="cms-label">Accountable Owner / Team</label>
+                <input type="text" id="edit-okr-owner" value="${okr.owner}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. Architecture Team">
             </div>
         </div>
 
-        <div class="mt-6">
-            <div class="flex justify-between items-center mb-3">
-                <label class="block text-sm font-bold text-slate-700">Key Results</label>
-                <button type="button" onclick="addKeyResult()" class="text-xs px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded font-bold transition-colors">
+        <div class="mt-8 pt-6 border-t border-slate-200">
+            <div class="flex justify-between items-center mb-4">
+                <label class="cms-label !mb-0">Key Results (Execution Metrics)</label>
+                <button type="button" onclick="addKeyResult()" class="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200 rounded-lg transition-all">
                     + Add Key Result
                 </button>
             </div>
-            <div id="key-results-container" class="space-y-3">
+            <div id="key-results-container" class="space-y-4">
                 ${(okr.keyResults || []).map((kr, idx) => renderKeyResultForm(kr, idx)).join('')}
             </div>
         </div>
     `;
 
-    document.getElementById('modal-form').innerHTML = formHtml;
+    // Set Footer
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        ${okrId ? `<button onclick="deleteOKR(${okrIndex})" class="cms-btn cms-btn-danger mr-auto">Delete OKR</button>` : ''}
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">${okrId ? 'Save Changes' : 'Create OKR'}</button>
+    `;
+
+    // Activate modal with background lock
     document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 
     // Store key results in global state for manipulation
     window._editingKeyResults = okr.keyResults || [];
@@ -1830,43 +1954,43 @@ function renderKeyResultForm(kr, idx) {
     const epics = UPDATE_DATA.metadata.epics || [];
 
     return `
-        <div class="key-result-item p-4 bg-slate-50 border border-slate-200 rounded-lg" data-kr-index="${idx}">
-            <div class="flex justify-between items-start mb-2">
-                <span class="text-xs font-bold text-slate-500 uppercase">KR ${idx + 1}</span>
-                <button type="button" onclick="removeKeyResult(${idx})" class="text-xs text-red-600 hover:text-red-800 font-bold">
+        <div class="key-result-item p-5 bg-white border border-slate-300 shadow-sm rounded-xl" data-kr-index="${idx}">
+            <div class="flex justify-between items-start mb-4">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Key Result ${idx + 1}</span>
+                <button type="button" onclick="removeKeyResult(${idx})" class="text-[9px] font-black text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-200 hover:border-rose-500 px-2 py-1 rounded transition-all uppercase tracking-widest">
                     Remove
                 </button>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-600">Description</label>
-                    <input type="text" class="cms-input !mb-0 text-sm" placeholder="What will you measure?"
+                    <label class="cms-label !text-[9px]">Success Metric Descriptor</label>
+                    <input type="text" class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" placeholder="e.g. Reduce latent performance by 15%..."
                            value="${kr.description || ''}" data-kr-field="description" data-kr-idx="${idx}">
                 </div>
 
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-600">Target</label>
-                        <input type="number" class="cms-input !mb-0 text-sm" placeholder="100"
+                        <label class="cms-label !text-[9px]">Target</label>
+                        <input type="number" class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" placeholder="100"
                                value="${kr.target || ''}" data-kr-field="target" data-kr-idx="${idx}">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-600">Current</label>
-                        <input type="number" class="cms-input !mb-0 text-sm" placeholder="75"
+                        <label class="cms-label !text-[9px]">Current</label>
+                        <input type="number" class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" placeholder="75"
                                value="${kr.current || 0}" data-kr-field="current" data-kr-idx="${idx}">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-600">Unit</label>
-                        <input type="text" class="cms-input !mb-0 text-sm" placeholder="%"
+                        <label class="cms-label !text-[9px]">Unit</label>
+                        <input type="text" class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" placeholder="%"
                                value="${kr.unit || ''}" data-kr-field="unit" data-kr-idx="${idx}">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-600">Status</label>
-                        <select class="cms-input !mb-0 text-sm" data-kr-field="status" data-kr-idx="${idx}">
+                        <label class="cms-label !text-[9px]">Strategic Drift</label>
+                        <select class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" data-kr-field="status" data-kr-idx="${idx}">
                             <option value="on-track" ${kr.status === 'on-track' ? 'selected' : ''}>On-Track</option>
                             <option value="at-risk" ${kr.status === 'at-risk' ? 'selected' : ''}>At-Risk</option>
                             <option value="behind" ${kr.status === 'behind' ? 'selected' : ''}>Behind</option>
@@ -1874,9 +1998,9 @@ function renderKeyResultForm(kr, idx) {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold mb-1 text-slate-600">Linked Epic</label>
-                        <select class="cms-input !mb-0 text-sm" data-kr-field="linkedEpic" data-kr-idx="${idx}">
-                            <option value="">None</option>
+                        <label class="cms-label !text-[9px]">Linked Execution Source</label>
+                        <select class="cms-input !mb-0 text-sm shadow-sm focus:shadow-md" data-kr-field="linkedEpic" data-kr-idx="${idx}">
+                            <option value="">None (Unlinked)</option>
                             ${epics.map(e => `<option value="${e.id}" ${kr.linkedEpic === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                         </select>
                     </div>
@@ -1926,7 +2050,7 @@ function deleteOKR(okrIndex) {
 
     UPDATE_DATA.metadata.okrs.splice(okrIndex, 1);
     logChange('Delete OKR', okr.objective);
-    if (typeof renderOkrView === 'function') renderOkrView();
+    switchView('okr');
     updateTabCounts();
 }
 
@@ -1986,10 +2110,12 @@ function deleteRoadmap(id) {
     const idx = UPDATE_DATA.metadata.roadmap.findIndex(r => r.id === id);
     UPDATE_DATA.metadata.roadmap.splice(idx, 1);
     logChange('Delete Roadmap', horizon.label);
-    renderRoadmapView();
+    switchView('roadmap');
 }
 
+// System logout
 function logoutAll() {
+    localStorage.removeItem('gh_pat');
     localStorage.removeItem('khyaal_site_auth');
     localStorage.removeItem('GITHUB_CMS_TOKEN');
     location.reload();

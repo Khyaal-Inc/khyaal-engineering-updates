@@ -2207,3 +2207,36 @@ body {
     box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -8px rgba(0, 0, 0, 0.1);
     border-color: #cbd5e1; /* slate-300 */
 }
+
+/* Premium CMS Form Utilities */
+.cms-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #64748b; /* slate-500 */
+    margin-bottom: 0.5rem;
+}
+
+.cms-input {
+    border: 1.5px solid #cbd5e1; /* slate-300 - Higher Contrast */
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 100%;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    color: #1e293b;
+    background: #f8fafc; /* slate-50 */
+}
+
+.cms-input:focus {
+    outline: none;
+    background: white;
+    border-color: #6366f1; /* indigo-500 */
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.cms-input::placeholder {
+    color: #94a3b8; /* slate-400 - Higher Visibility */
+}
