@@ -319,6 +319,8 @@ function toggleSubtrack(trackId, subtrackName, iconId) {
 }
 
 function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIndex, isGrooming = false) {
+    const isRoadmap = viewPrefix === 'roadmap';
+    const isEpicView = viewPrefix === 'epic';
     const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
     const status = statusConfig[item.status];
     const priority = item.priority || 'medium';
@@ -442,7 +444,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     let cmsControls = '';
     if (shouldShowManagement()) {
         cmsControls = `
-            <div class="flex items-center gap-3 mt-1.5 flex-wrap">
+            <div class="flex items-center gap-3 mt-1.5 flex-wrap ${isRoadmap ? 'opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-300' : ''}">
                 <span onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                 <span onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
                 <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn">→ Backlog</button>
@@ -493,16 +495,20 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             </div>
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 ${strategicContext}
-                                ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints || []).find(s => s.id === item.sprintId)?.name || item.sprintId}</span>` : ''}
-                                ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}</span>` : ''}
+                                ${!isRoadmap ? `
+                                    ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints || []).find(s => s.id === item.sprintId)?.name || item.sprintId}</span>` : ''}
+                                    ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}</span>` : ''}
+                                ` : ''}
                                 ${mode !== 'exec' && tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
                             </div>
-                            <div class="mb-2">${usecase}</div>
-                            ${metricRowHTML}
-                            ${effortImpactHTML}
-                            ${acHTML}
+                            ${!isRoadmap ? `
+                                <div class="mb-2">${usecase}</div>
+                                ${metricRowHTML}
+                                ${effortImpactHTML}
+                                ${acHTML}
+                            ` : ''}
                             <div class="flex flex-wrap items-center gap-2 mt-2">
-                                <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments || []).length} Comments</button>
+                                <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-bold px-2 py-1 ${isRoadmap ? 'bg-slate-50 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} rounded transition-all">💬 ${(item.comments || []).length} Comments</button>
                                 ${cmsControls ? `<div>${cmsControls}</div>` : ''}
                             </div>
 
@@ -1120,17 +1126,48 @@ function renderRoadmapView() {
                     </div>
                     
                     ${horizonOKR ? `
-                        <div class="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm animate-fade-in">
-                            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Alignment:</span>
-                            <span class="text-xs font-bold text-indigo-700">🎯 ${horizonOKR.objective}</span>
+                        <div class="w-full max-w-4xl px-8 py-6 bg-indigo-600 text-white rounded-3xl shadow-2xl relative overflow-hidden group">
+                            <!-- Background Decoration -->
+                            <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                            
+                            <div class="relative z-10 flex flex-col gap-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200">Primary Strategic Alignment</span>
+                                    <div class="h-[1px] flex-1 bg-indigo-400/30"></div>
+                                </div>
+                                <h3 class="text-xl font-black leading-tight flex items-start gap-4">
+                                    <span class="text-3xl mt-1">🎯</span>
+                                    <span>${horizonOKR.objective}</span>
+                                </h3>
+                                ${horizonOKR.keyResults ? `
+                                    <div class="mt-4 pt-4 border-t border-indigo-400/30 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        ${Array.isArray(horizonOKR.keyResults) 
+                                            ? horizonOKR.keyResults.map(kr => `
+                                                <div class="flex items-start gap-2 text-xs font-medium text-indigo-100">
+                                                    <span class="text-indigo-300">↳</span>
+                                                    ${kr.description || kr}
+                                                </div>
+                                            `).join('')
+                                            : (typeof horizonOKR.keyResults === 'string' ? horizonOKR.keyResults.split('\n').filter(s => s.trim()).map(s => `
+                                                <div class="flex items-start gap-2 text-xs font-medium text-indigo-100">
+                                                    <span class="text-indigo-300">↳</span>
+                                                    ${s}
+                                                </div>
+                                            `).join('') : '')
+                                        }
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
                     ` : `
-                        <div class="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No specific strategic objective linked</div>
+                        <div class="px-6 py-4 bg-slate-50 border border-slate-200 border-dashed rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
+                            No specific strategic objective linked to this horizon
+                        </div>
                     `}
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
-                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems) : '<div class="text-center py-16 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 italic text-sm">No strategic initiatives mapped to this horizon.</div>'}
+                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems, 'roadmap') : '<div class="text-center py-16 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 italic text-sm">No strategic initiatives mapped to this horizon.</div>'}
                 </div>
             </div>`;
     });
