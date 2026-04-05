@@ -62,27 +62,32 @@ function renderDashboard() {
     // 2. Re-normalize data structures (IDs, dates, counts)
     normalizeData();
     
-    // 3. Trigger all primary view renders to update their internal DOM
-    // Aligned with switchView(view) in core.js
-    if (typeof renderWorkflowView === 'function') renderWorkflowView();
-    if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
-    if (typeof renderTrackView === 'function') renderTrackView();
-    if (typeof renderContributorView === 'function') renderContributorView();
-    if (typeof renderStatusView === 'function') renderStatusView();
-    if (typeof renderPriorityView === 'function') renderPriorityView();
-    if (typeof renderDependencyView === 'function') renderDependencyView();
-    if (typeof renderGanttView === 'function') renderGanttView();
-    if (typeof renderSprintView === 'function') renderSprintView();
-    if (typeof renderReleasesView === 'function') renderReleasesView();
-    if (typeof renderRoadmapView === 'function') renderRoadmapView();
-    if (typeof renderOkrView === 'function') renderOkrView();
-    if (typeof renderEpicsView === 'function') renderEpicsView();
-    if (typeof renderBacklogView === 'function') renderBacklogView();
-    if (typeof renderKanbanView === 'function') renderKanbanView();
-    if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
-    if (typeof renderCapacityView === 'function') renderCapacityView();
-    if (typeof renderMyTasksView === 'function') renderMyTasksView();
-    if (typeof renderExecutiveDashboard === 'function') renderExecutiveDashboard();
+    // 3. Trigger all primary view renders with Error Shielding (Phase 34)
+    const runSafe = (fn, name) => {
+        if (typeof fn === 'function') {
+            try { fn(); } catch (e) { console.error(`❌ Render error in ${name}:`, e); }
+        }
+    };
+
+    runSafe(renderWorkflowView, 'Workflow');
+    runSafe(renderDiscoveryView, 'Discovery');
+    runSafe(renderTrackView, 'Track');
+    runSafe(renderContributorView, 'Contributor');
+    runSafe(renderStatusView, 'Status');
+    runSafe(renderPriorityView, 'Priority');
+    runSafe(renderDependencyView, 'Dependency');
+    runSafe(renderGanttView, 'Gantt');
+    runSafe(renderSprintView, 'Sprint');
+    runSafe(renderReleasesView, 'Releases');
+    runSafe(renderRoadmapView, 'Roadmap');
+    runSafe(renderOkrView, 'OKR');
+    runSafe(renderEpicsView, 'Epics');
+    runSafe(renderBacklogView, 'Backlog');
+    runSafe(renderKanbanView, 'Kanban');
+    runSafe(renderAnalyticsView, 'Analytics');
+    runSafe(renderCapacityView, 'Capacity');
+    runSafe(renderMyTasksView, 'MyTasks');
+    runSafe(renderExecutiveDashboard, 'ExecutiveDashboard');
     
     // 4. Update cross-view indicators
     if (typeof updateTabCounts === 'function') updateTabCounts();
@@ -102,6 +107,12 @@ function initDashboard() {
         return;
     }
 
+    // 🏆 Phase 35: Immediate State Allocation
+    // Ensure global UI state is available before ANY sub-initialization or render
+    if (!window.uiState) window.uiState = { openEpics: new Set(), openComments: new Set() };
+    if (!window.uiState.openComments) window.uiState.openComments = new Set();
+    if (!window.uiState.openEpics) window.uiState.openEpics = new Set();
+
     // Initial setup
     syncMetadataToUI();
     normalizeData();
@@ -116,10 +127,6 @@ function initDashboard() {
     // Initial view set
     const mode = getCurrentMode();
     const defaultView = mode === 'pm' ? 'okr' : mode === 'dev' ? 'my-tasks' : mode === 'exec' ? 'dashboard' : 'okr';
-    
-    // Ensure global UI state for transient elements
-    if (!window.uiState) window.uiState = { openEpics: new Set(), openComments: new Set() };
-    if (!window.uiState.openComments) window.uiState.openComments = new Set();
     
     // Perform initial render loop
     switchView(defaultView);

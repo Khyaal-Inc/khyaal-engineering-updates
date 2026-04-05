@@ -2220,6 +2220,9 @@ async function archiveAndClear() {
             })
         });
 
+        // 5. Hard-Sync Local Browser State
+        saveToLocalStorage();
+        
         alert('Archive successful!');
         location.reload();
     } catch (e) {

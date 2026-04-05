@@ -551,7 +551,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                     </div>
                                 </div>
                             ` : ''}
-                            <div id="${viewPrefix}-comments-${item.id}" class="${window.uiState.openComments.has(item.id) ? '' : 'hidden'} w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
+                            <div id="${viewPrefix}-comments-${item.id}" class="${window.uiState?.openComments?.has(item.id) ? '' : 'hidden'} w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
                                 <div id="${viewPrefix}-thread-${item.id}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
                                     ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex, item.id, viewPrefix)}
                                 </div>

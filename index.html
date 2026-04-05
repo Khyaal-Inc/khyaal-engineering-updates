@@ -35,8 +35,12 @@
                 };
 
                 const initLocalLoad = () => {
-                    // 🏆 Phase 29: Unified Reconciliation Path (Prioritize Local Storage)
-                    const cachedData = localStorage.getItem('khyaal_data');
+                    // 🏆 Phase 33: Archive Context Isolation
+                    // If viewing an archive, ignore LocalStorage to ensure historical accuracy
+                    const params = new URLSearchParams(window.location.search);
+                    const isArchive = params.get('archive');
+                    const cachedData = !isArchive ? localStorage.getItem('khyaal_data') : null;
+
                     if (cachedData) {
                         try {
                             window.UPDATE_DATA = JSON.parse(cachedData);
@@ -89,6 +93,7 @@
         </div>
 
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
+        <!-- CORE SCRIPTS -->
         <script src="core.js?v=04031"></script>
         <script src="views.js?v=04031"></script>
         <script src="cms.js?v=04031"></script>
@@ -346,8 +351,12 @@
                     const result = await response.json();
 
                     if (result.authenticated && result.data) {
-                        // 🏆 Phase 29: Prioritize local edits even after auth re-check
-                        const cachedData = localStorage.getItem('khyaal_data');
+                        // 🏆 Phase 33 & 34: Archive Context Isolation in Auth
+                        // If viewing an archive, strictly ignore LocalStorage to ensure historical accuracy
+                        const urlParams = new URL(window.location.href).searchParams;
+                        const isArchive = urlParams.get('archive');
+                        const cachedData = !isArchive ? localStorage.getItem('khyaal_data') : null;
+
                         if (cachedData) {
                             try {
                                 window.UPDATE_DATA = JSON.parse(cachedData);
