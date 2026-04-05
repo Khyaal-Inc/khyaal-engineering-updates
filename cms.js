@@ -792,9 +792,10 @@ function isFieldProtected(fieldName) {
     // Developers are PREVENTED from editing Strategic alignment
     if (persona === 'dev') {
         const protectedStrategicFields = [
-            'epicId', 'impactLevel', 'successMetric', 'acceptanceCriteria', 
-            'planningHorizon', 'releasedIn', 'strategicWeight', 'riskType', 
-            'effortLevel', 'publishedDate'
+            'epicId', 'impactLevel', 'successMetric', 'acceptanceCriteria',
+            'planningHorizon', 'releasedIn', 'strategicWeight', 'riskType',
+            'effortLevel', 'publishedDate', 'priority', 'usecase', 'persona',
+            'sprintId'
         ];
         return protectedStrategicFields.includes(fieldName);
     }
