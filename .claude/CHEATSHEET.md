@@ -89,5 +89,25 @@ Path-specific instructions that load only when relevant:
 - **Core files**: app.js, core.js, views.js, cms.js
 - **Modules**: modes.js, okr-module.js, kanban-view.js, etc.
 
+## CMS Modal Field Visibility (Quick Ref)
+`cms.js` uses a 4-pillar system. Key functions:
+- `getVisibleFieldGroups(context)` → pillar list per persona (cms.js:164)
+- `LIFECYCLE_FIELD_MAP` → fields shown per view (cms.js:148)
+- `buildPillar()` → intersects pillar fields with lifecycle map (cms.js:343)
+- `isFieldProtected()` → dev mode strategic field lockout (cms.js:793)
+
+**LIFECYCLE_FIELD_MAP per view:**
+| View | Key Fields |
+|------|-----------|
+| backlog | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
+| sprint | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
+| track | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
+| kanban | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
+| releases | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
+| roadmap | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
+| epics | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
+
+**Dev-protected (readonly) fields:** epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId
+
 ## Memory File
 Key context is stored in `.claude/memory.md` - Claude reads this automatically to understand your project structure without needing to re-explain.

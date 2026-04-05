@@ -173,6 +173,51 @@ Khyaal Engineering Pulse now features **three distinct persona modes** tailored 
 
 ---
 
+## CMS Edit Modal Architecture
+
+The "Edit Engineering Task" modal (`cms.js`) uses a **4-Pillar Lifecycle-Aware** layout. Fields shown adapt based on (1) the active view/stage and (2) the current persona mode.
+
+### The 4 Pillars
+
+| Pillar | Label | Fields |
+|--------|-------|--------|
+| 🎯 WHAT | Goal & Intent | Task Title, Business Value, Strategic Epic Link, Target Persona, Tags, Engineering Notes |
+| 📅 WHEN | Timeline & Cycle | Planning Horizon, Sprint, Start Date, Due Date, Release, Published Date |
+| ⚡ WHERE | Action & Routing | Lifecycle Status, Contributors, Blocker Reason, Dependencies, Media URL |
+| 🛠️ HOW | Sync & Effort | Story Points (Fibonacci), Priority, Acceptance Criteria, Impact Level, Effort Level, Success Metric, Strategic Weight, Risk Type |
+
+### Pillar Visibility by Persona
+
+| Persona | Pillars Shown | Order |
+|---------|--------------|-------|
+| 👨‍💼 PM | All 4 | WHAT → WHEN → WHERE → HOW |
+| 👩‍💻 Developer | All 4 (strategic fields readonly 🔒) | WHERE → HOW → WHAT → WHEN |
+| 👔 Executive | 3 only (no Sync & Effort) | WHAT → WHEN → WHERE |
+
+### Lifecycle Field Filtering (LIFECYCLE_FIELD_MAP)
+
+By default, only fields relevant to the active view are shown. Toggle **"Show All"** to see every field in a pillar.
+
+| View | Fields Shown by Default |
+|------|------------------------|
+| **backlog** | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
+| **sprint** | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
+| **track** | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
+| **kanban** | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
+| **releases** | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
+| **roadmap** | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
+| **epics** | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
+
+### Developer Field Protection (Strategic Shield)
+
+When in Developer mode, the following fields are **read-only** (cannot be changed by devs):
+`epicId`, `impactLevel`, `successMetric`, `acceptanceCriteria`, `planningHorizon`, `releasedIn`, `strategicWeight`, `riskType`, `effortLevel`, `publishedDate`, `priority`, `usecase`, `persona`, `sprintId`
+
+### Story Points
+Always use **Fibonacci scale only**: 1, 2, 3, 5, 8, 13, 21. The field is enforced as a dropdown (no free-form number entry).
+
+---
+
 ## Architecture
 
 ```

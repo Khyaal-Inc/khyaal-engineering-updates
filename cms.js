@@ -279,14 +279,14 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
     const context = getFormContext();
     const persona = context.mode; // Respect the global dashboard mode
     const showAll = window.uiState.showAllTechnical;
-    const visiblePillars = ['what', 'when', 'where', 'how']; // Show all pillars but filter fields within them
+    const visiblePillars = getVisibleFieldGroups(context); // Persona-aware: exec=3 pillars, dev=execution-first order, pm=all 4
 
     let html = '';
 
     // Global Lifecycle Perspective Header
-    const colorClass = persona === 'dev' ? 'bg-emerald-50 border-emerald-200' : 'bg-indigo-50 border-indigo-200';
-    const dotColor = persona === 'dev' ? 'bg-emerald-500' : 'bg-indigo-500';
-    const personaLabel = persona === 'dev' ? 'Developer' : 'Product Manager';
+    const colorClass = persona === 'dev' ? 'bg-emerald-50 border-emerald-200' : persona === 'exec' ? 'bg-purple-50 border-purple-200' : 'bg-indigo-50 border-indigo-200';
+    const dotColor = persona === 'dev' ? 'bg-emerald-500' : persona === 'exec' ? 'bg-purple-500' : 'bg-indigo-500';
+    const personaLabel = persona === 'dev' ? 'Developer' : persona === 'exec' ? 'Executive' : 'Product Manager';
 
     html += `
         <div class="flex items-center justify-between mb-8 p-4 ${colorClass} border rounded-2xl shadow-sm">
@@ -302,7 +302,7 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
             </div>
             <label class="flex items-center gap-3 cursor-pointer group">
                 <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
-                    ${persona === 'dev' ? 'Show All Strategic Details' : 'Show All Technical Details'}
+                    ${persona === 'dev' ? 'Show All Strategic Details' : persona === 'exec' ? 'Show All Details' : 'Show All Technical Details'}
                 </span>
                 <div class="relative inline-flex items-center">
                     <input type="checkbox" class="sr-only peer" ${showAll ? 'checked' : ''} onchange="toggleShowAllTechnical()">
@@ -648,7 +648,11 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🔢 Complexity (Story Points)</label>
-                    <input type="number" id="edit-storyPoints" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="e.g. 1, 2, 3, 5, 8">
+                    <select id="edit-storyPoints" class="cms-input shadow-sm focus:shadow-md" ${attr}>
+                        <option value="">— Select Points —</option>
+                        ${[1,2,3,5,8,13,21].map(n => `<option value="${n}" ${val == n ? 'selected' : ''}>${n} pt${n > 1 ? 's' : ''}</option>`).join('')}
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Fibonacci scale · 1=trivial · 5=1 day · 13=1 week</p>
                 </div>
             `;
 

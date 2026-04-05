@@ -26,6 +26,25 @@ For detailed information, refer to:
 - `index.html` - Main structure and navigation
 - `data.json` - Single source of truth (GitHub-backed)
 
+## CMS Edit Modal — 4-Pillar System
+The Edit Engineering Task modal (`cms.js`) uses a lifecycle-aware 4-pillar layout:
+
+| Pillar | Key | Fields |
+|--------|-----|--------|
+| 🎯 Goal & Intent | `what` | text, usecase, epicId, persona, tags, note |
+| 📅 Timeline & Cycle | `when` | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
+| ⚡ Action & Routing | `where` | status, contributors, blockerNote, dependencies, mediaUrl |
+| 🛠️ Sync & Effort | `how` | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
+
+**Pillar visibility by persona** (`getVisibleFieldGroups()` in cms.js:164):
+- **PM**: all 4 pillars (WHAT → WHEN → WHERE → HOW)
+- **Developer**: all 4 pillars, execution-first (WHERE → HOW → WHAT → WHEN), strategic fields readonly (🔒)
+- **Executive**: 3 pillars only (WHAT → WHEN → WHERE — no Sync & Effort)
+
+**Field visibility per view** (`LIFECYCLE_FIELD_MAP` in cms.js:148): Fields shown depend on active view (backlog/sprint/track/kanban/releases/roadmap/epics). Toggle "Show All" to see all fields for a pillar.
+
+**Story points**: Fibonacci select only (1,2,3,5,8,13,21) — free-number input removed.
+
 ## Module System
 - `modes.js` - PM/Developer/Executive persona modes
 - `okr-module.js` - OKR tracking with auto-progress
