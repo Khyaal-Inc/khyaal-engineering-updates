@@ -283,37 +283,42 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
 
     let html = '';
 
-    // Global Lifecycle Perspective Header
-    const colorClass = persona === 'dev' ? 'bg-emerald-50 border-emerald-200' : persona === 'exec' ? 'bg-purple-50 border-purple-200' : 'bg-indigo-50 border-indigo-200';
+    // Slim Perspective Strip (replaces old 52px banner)
     const dotColor = persona === 'dev' ? 'bg-emerald-500' : persona === 'exec' ? 'bg-purple-500' : 'bg-indigo-500';
     const personaLabel = persona === 'dev' ? 'Developer' : persona === 'exec' ? 'Executive' : 'Product Manager';
+    const stripClass = persona === 'dev' ? 'strip-dev' : persona === 'exec' ? 'strip-exec' : 'strip-pm';
+
+    // Calculate hidden field count for toggle hint
+    const nativeFields = LIFECYCLE_FIELD_MAP[context.view] || [];
+    const allPillarFields = visiblePillars.flatMap(pk => FIELD_GROUPS[pk]?.fields || []);
+    const hiddenCount = allPillarFields.filter(f => !nativeFields.includes(f)).length;
+    const toggleLabel = showAll
+        ? 'Showing all fields'
+        : `Show all fields${hiddenCount > 0 ? ` (+${hiddenCount})` : ''}`;
 
     html += `
-        <div class="flex items-center justify-between mb-8 p-4 ${colorClass} border rounded-2xl shadow-sm">
+        <div class="cms-perspective-strip ${stripClass}">
             <div class="flex items-center gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-20"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
-                    </span>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Perspective: ${personaLabel}</span>
-                    ${persona === 'dev' ? '<span class="text-[9px] font-bold text-emerald-700 bg-white/60 px-1.5 py-0.5 rounded border border-emerald-100 ml-2">🔒 Strategic Shield Active</span>' : ''}
-                </div>
-            </div>
-            <label class="flex items-center gap-3 cursor-pointer group">
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
-                    ${persona === 'dev' ? 'Show All Strategic Details' : persona === 'exec' ? 'Show All Details' : 'Show All Technical Details'}
+                <span class="relative flex h-1.5 w-1.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-30"></span>
+                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 ${dotColor}"></span>
                 </span>
+                <span class="strip-label">${personaLabel}</span>
+                ${persona === 'dev' ? '<span class="strip-badge">🔒 Shield Active</span>' : ''}
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <span class="strip-toggle-label">${toggleLabel}</span>
                 <div class="relative inline-flex items-center">
                     <input type="checkbox" class="sr-only peer" ${showAll ? 'checked' : ''} onchange="toggleShowAllTechnical()">
-                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500"></div>
                 </div>
             </label>
         </div>
     `;
 
-    // Main 4-Pillar Grid
-    html += '<div class="cms-pillars-grid">';
+    // Main 4-Pillar Grid — persona-aware column sizing
+    const gridPersonaClass = visiblePillars.length === 4 && persona === 'dev' ? 'pillars-4-dev' : `pillars-${visiblePillars.length}`;
+    html += `<div class="cms-pillars-grid ${gridPersonaClass}">`;
 
     visiblePillars.forEach(pillarKey => {
         html += buildPillar(pillarKey, item, { ...context, mode: persona, showAll });
@@ -453,16 +458,17 @@ function buildFieldGroup(groupKey, item, fieldsToShow) {
  */
 function renderField(fieldName, item) {
     const val = item[fieldName] || '';
-    const protected = isFieldProtected(fieldName);
-    const attr = protected ? 'readonly disabled' : '';
+    const isProtected = isFieldProtected(fieldName);
+    const attr = isProtected ? 'readonly disabled' : '';
     const persona = window.uiState.modalPersona || (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
 
     switch (fieldName) {
         case 'text':
             return `
                 <div class="field-wrapper">
-                    <label class="cms-label">🎯 Task Title *</label>
-                    <input type="text" id="edit-text" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="What mission-critical task needs attention?" required ${attr}>
+                    <label class="cms-label">🎯 Task Title <span class="text-rose-400">*</span></label>
+                    <input type="text" id="edit-text" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="What mission-critical task needs attention?" required onblur="validateRequired(this)" ${attr}>
+                    <p id="edit-text-error" class="text-[10px] text-rose-500 font-bold hidden mt-0.5">Title is required</p>
                 </div>
             `;
 
@@ -516,7 +522,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🚀 Strategic Epic Link</label>
-                    <select id="edit-epicId" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-epicId" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="">None (Tactical / BAU)</option>
                         ${epics.map(e => `<option value="${e.id}" ${val === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                     </select>
@@ -546,7 +552,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🏃 Execution Sprint</label>
-                    <select id="edit-sprintId" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-sprintId" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="">None</option>
                         ${sprints.map(s => `<option value="${s.id}" ${val === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                     </select>
@@ -557,7 +563,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">📅 Planned Start</label>
-                    <input type="date" id="edit-startDate" value="${val}" class="cms-input shadow-sm focus:shadow-md">
+                    <input type="date" id="edit-startDate" value="${val}" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                 </div>
             `;
 
@@ -565,7 +571,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">⌛ Target Delivery Date</label>
-                    <input type="date" id="edit-due" value="${val}" class="cms-input">
+                    <input type="date" id="edit-due" value="${val}" class="cms-input" ${attr}>
                 </div>
             `;
 
@@ -573,7 +579,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">👥 Team Contributors</label>
-                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
+                    <div id="contrib-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm" data-placeholder="Type name, press Enter..."></div>
                 </div>
             `;
 
@@ -581,8 +587,11 @@ function renderField(fieldName, item) {
             const isBlocked = item.blocker === true || item.status === 'blocked';
             return `
                 <div class="field-wrapper ${isBlocked ? 'blocker-field p-4 bg-rose-50 border border-rose-200 rounded-xl' : ''}">
-                    <label class="cms-label ${isBlocked ? '!text-rose-600' : ''}">🛑 Blocker Reason <span class="text-[9px] font-normal text-slate-400">(optional — fill when blocked)</span></label>
-                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input shadow-sm focus:shadow-md ${isBlocked ? '!border-rose-300' : ''}" placeholder="What's blocking this?">
+                    <label class="cms-label ${isBlocked ? '!text-rose-600' : ''}">
+                        ${isBlocked ? '🛑' : '💬'} ${isBlocked ? 'Critical Blocker Reason' : 'Blocker Note'}
+                        ${!isBlocked ? '<span class="text-[9px] font-normal text-slate-400 ml-1">(fill if blocked)</span>' : ''}
+                    </label>
+                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input shadow-sm focus:shadow-md ${isBlocked ? '!border-rose-300' : ''}" placeholder="${isBlocked ? 'What\'s blocking this mission?' : 'Describe any blocker if applicable...'}">
                     ${isBlocked ? '<p class="text-[10px] text-rose-500 mt-2 font-bold uppercase tracking-tight">⚠️ Currently flagged as blocked</p>' : ''}
                 </div>
             `;
@@ -591,7 +600,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🔗 Technical Dependencies</label>
-                    <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
+                    <div id="deps-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm" data-placeholder="Paste task ID or search..."></div>
                 </div>
             `;
 
@@ -600,7 +609,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">📦 Target Release</label>
-                    <select id="edit-releasedIn" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-releasedIn" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="">None (Continuous / BAU)</option>
                         ${releases.map(r => `<option value="${r.id}" ${val === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
                     </select>
@@ -681,7 +690,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">👤 Target Persona</label>
-                    <select id="edit-persona" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-persona" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="none" ${val === 'none' ? 'selected' : ''}>General / All</option>
                         <option value="frontend" ${val === 'frontend' ? 'selected' : ''}>Frontend Developer</option>
                         <option value="backend" ${val === 'backend' ? 'selected' : ''}>Backend Developer</option>
@@ -697,7 +706,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label text-indigo-500 font-bold">📊 Quantitative Success Metric</label>
-                    <input type="text" id="edit-successMetric" value="${val}" class="cms-input shadow-sm focus:shadow-md border-indigo-50" placeholder="e.g. Latency < 200ms or 99.9% Uptime">
+                    <input type="text" id="edit-successMetric" value="${val}" class="cms-input shadow-sm focus:shadow-md border-indigo-50" placeholder="e.g. Latency < 200ms or 99.9% Uptime" ${attr}>
                 </div>
             `;
 
@@ -706,7 +715,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label ${impactColors[val] || ''}">💎 Strategic Impact</label>
-                    <select id="edit-impactLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()">
+                    <select id="edit-impactLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()" ${attr}>
                         <option value="">Select Impact...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>🔵 Low — Tactical / Minor</option>
                         <option value="medium" ${val === 'medium' ? 'selected' : ''}>🟡 Medium — Baseline Support</option>
@@ -716,12 +725,16 @@ function renderField(fieldName, item) {
             `;
 
         case 'acceptanceCriteria':
-            const acVal = Array.isArray(val) ? val.join('\n') : val;
+            const acVal = Array.isArray(val) ? val.join('\n') : (val || '');
+            const lineCount = acVal ? acVal.split('\n').filter(l => l.trim()).length : 0;
             return `
-                <div class="field-wrapper full-width mt-4 ${protected ? 'persona-protected' : ''}">
-                    <label class="cms-label">${protected ? '🔒' : '✅'} Definition of Done / Acceptance Criteria</label>
-                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[120px] shadow-sm focus:shadow-md ${protected ? 'bg-slate-50 opacity-80 cursor-not-allowed italic' : ''}" rows="4" placeholder="List criteria (one per line)..." ${protected ? 'readonly disabled' : ''}>${acVal}</textarea>
-                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight italic">${protected ? 'Protected Strategy Field (PM Level Only)' : 'Enter one criterion per line'}</p>
+                <div class="field-wrapper full-width mt-4 ${isProtected ? 'persona-protected' : ''}">
+                    <label class="cms-label">${isProtected ? '🔒' : '✅'} Acceptance Criteria</label>
+                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[100px] shadow-sm focus:shadow-md ${isProtected ? 'bg-slate-50 opacity-80 cursor-not-allowed italic' : ''}" rows="4" placeholder="One criterion per line:&#10;✓ User can log in with email&#10;✓ Session persists 7 days" oninput="updateAcCount(this)" ${isProtected ? 'readonly disabled' : ''}>${acVal}</textarea>
+                    <div class="flex justify-between mt-1">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tight">${isProtected ? 'Protected — PM level only' : 'One criterion per line'}</p>
+                        <span id="ac-line-count" class="text-[10px] text-slate-400 font-bold">${lineCount > 0 ? lineCount + ' criteria' : ''}</span>
+                    </div>
                 </div>
             `;
 
@@ -729,7 +742,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🏷️ Categorization Tags</label>
-                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm"></div>
+                    <div id="tags-tag-input-edit" class="tag-input-wrapper min-h-[44px] shadow-sm" data-placeholder="Add tag..."></div>
                 </div>
             `;
 
@@ -743,23 +756,25 @@ function renderField(fieldName, item) {
  */
 function buildMoveFields(trackIndex, subtrackIndex) {
     return `
-        <div class="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-2xl shadow-inner">
-            <label class="block text-[11px] uppercase font-black text-slate-500 mb-4 tracking-[0.2em] text-center">Move Item (Routing)</label>
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Track</label>
-                    <select id="edit-move-track" class="cms-input !mb-0 shadow-sm" onchange="updateMoveSubtrackOpts(this.value)">
-                        ${UPDATE_DATA.tracks.map((t, idx) => `<option value="${idx}" ${idx === trackIndex ? 'selected' : ''}>${t.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Subtrack</label>
-                    <select id="edit-move-subtrack" class="cms-input !mb-0 shadow-sm">
-                        ${UPDATE_DATA.tracks[trackIndex].subtracks.map((s, idx) => `<option value="${idx}" ${idx === subtrackIndex ? 'selected' : ''}>${s.name}</option>`).join('')}
-                    </select>
+        <details class="cms-move-section mt-6">
+            <summary class="cms-move-trigger">↪ Move to different track / subtrack</summary>
+            <div class="cms-move-body">
+                <div class="grid grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Track</label>
+                        <select id="edit-move-track" class="cms-input !mb-0 shadow-sm" onchange="updateMoveSubtrackOpts(this.value)">
+                            ${UPDATE_DATA.tracks.map((t, idx) => `<option value="${idx}" ${idx === trackIndex ? 'selected' : ''}>${t.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[12px] font-bold mb-2 text-slate-600">Target Subtrack</label>
+                        <select id="edit-move-subtrack" class="cms-input !mb-0 shadow-sm">
+                            ${UPDATE_DATA.tracks[trackIndex].subtracks.map((s, idx) => `<option value="${idx}" ${idx === subtrackIndex ? 'selected' : ''}>${s.name}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
             </div>
-        </div>
+        </details>
     `;
 }
 
@@ -784,7 +799,8 @@ function buildDataLists() {
 window.uiState = {
     openEpics: new Set(), // Track Epic IDs that are currently expanded
     modalPersona: null,   // Current persona in modal ('pm' or 'dev')
-    showAllTechnical: false // PM deep-dive toggle
+    showAllTechnical: false, // PM deep-dive toggle
+    isDirty: false // Unsaved changes tracker
 };
 
 /**
@@ -817,6 +833,32 @@ function toggleModalPersona(p) {
         const data = getValidatedItemContext(editContext.itemId || { trackIndex: editContext.trackIndex, subtrackIndex: editContext.subtrackIndex, itemIndex: editContext.itemIndex });
         if (data) {
             document.getElementById('modal-form').innerHTML = buildContextAwareForm(data.item, editContext.type === 'item-new', { trackIndex: data.ti, subtrackIndex: data.si });
+            attachModalFormListeners();
+        }
+    }
+}
+
+/**
+ * Acceptance Criteria live line count
+ */
+function updateAcCount(el) {
+    const count = el.value.split('\n').filter(l => l.trim()).length;
+    const counter = document.getElementById('ac-line-count');
+    if (counter) counter.textContent = count > 0 ? count + ' criteria' : '';
+}
+
+/**
+ * Required field blur validation
+ */
+function validateRequired(el) {
+    const err = document.getElementById(el.id + '-error');
+    if (err) {
+        if (!el.value.trim()) {
+            el.classList.add('!border-rose-300');
+            err.classList.remove('hidden');
+        } else {
+            el.classList.remove('!border-rose-300');
+            err.classList.add('hidden');
         }
     }
 }
@@ -824,12 +866,28 @@ function toggleModalPersona(p) {
 /**
  * PM Deep-Dive Toggle
  */
+function attachModalFormListeners() {
+    const formEl = document.getElementById('modal-form');
+    if (!formEl) return;
+    formEl.addEventListener('input', () => { window.uiState.isDirty = true; }, { passive: true });
+    formEl.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); saveCms(); }
+    });
+}
+
 function toggleShowAllTechnical() {
     window.uiState.showAllTechnical = !window.uiState.showAllTechnical;
     if (editContext) {
         const data = getValidatedItemContext(editContext.itemId || { trackIndex: editContext.trackIndex, subtrackIndex: editContext.subtrackIndex, itemIndex: editContext.itemIndex });
         if (data) {
             document.getElementById('modal-form').innerHTML = buildContextAwareForm(data.item, editContext.type === 'item-new', { trackIndex: data.ti, subtrackIndex: data.si });
+            attachModalFormListeners();
+            setTimeout(() => {
+                renderTagWidget('contrib-tag-input-edit', data.item.contributors || [], 'contributor-list', 'author');
+                renderTagWidget('tags-tag-input-edit', data.item.tags || [], 'tag-list', 'tag');
+                renderTagWidget('deps-tag-input-edit', data.item.dependencies || [], 'item-list', 'dep');
+                if (typeof updateRoiPreview === 'function') updateRoiPreview();
+            }, 10);
         }
     }
 }
@@ -950,29 +1008,39 @@ function openItemEdit(ti, si, ii, itemId) {
     const item = data.item;
     editContext = { type: 'item', trackIndex: data.ti, subtrackIndex: data.si, itemIndex: data.ii, itemId: item.id };
 
-    document.getElementById('modal-title').innerText = 'Edit Engineering Task';
+    const statusLabels = { now: '🔵 Developing', next: '🟠 Planned', later: '⚪ Backlog',
+        qa: '🧪 Testing', review: '🟣 In Review', blocked: '🔴 Blocked',
+        onhold: '🟡 On Hold', done: '🟢 Done' };
+    const effectiveStatus = (item.blocker === true && item.status !== 'blocked') ? 'blocked' : item.status;
+    const stagePill = effectiveStatus ? `<span class="modal-stage-pill">${statusLabels[effectiveStatus] || effectiveStatus}</span>` : '';
+    document.getElementById('modal-title').innerHTML = `Edit Task ${stagePill}`;
 
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(item, context);
     document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, { trackIndex: data.ti, subtrackIndex: data.si });
 
-    // Inject footer buttons
+    // Inject footer buttons — Delete on left, Save on right
     document.getElementById('modal-footer').innerHTML = `
+        <div class="footer-left">
+            <button onclick="deleteItem(undefined, undefined, undefined, '${item.id}')" class="cms-btn cms-btn-danger">🗑 Delete</button>
+        </div>
         <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        <button onclick="deleteItem(undefined, undefined, undefined, '${item.id}')" class="cms-btn cms-btn-danger mr-auto">Delete Item</button>
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes <span class="kbd-hint">⌘↵</span></button>
     `;
 
     document.getElementById('cms-modal').classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent scroll
+    document.body.style.overflow = 'hidden';
 
-    // Initialize widgets
+    // Initialize widgets first, then enable dirty tracking after they settle
+    window.uiState.isDirty = false;
     setTimeout(() => {
         renderTagWidget('contrib-tag-input-edit', item.contributors || [], 'contributor-list', 'author');
         renderTagWidget('tags-tag-input-edit', item.tags || [], 'tag-list', 'tag');
         renderTagWidget('deps-tag-input-edit', item.dependencies || [], 'item-list', 'dep');
         if (typeof updateRoiPreview === 'function') updateRoiPreview();
-    }, 10);
+        // Attach dirty tracking AFTER widgets are done so their init doesn't trigger isDirty
+        attachModalFormListeners();
+    }, 50);
 }
 
 function addItem(trackIndex, subtrackIndex, defaults = {}) {
@@ -982,7 +1050,7 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
 
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
 
-    document.getElementById('modal-title').innerText = 'Add New Task';
+    document.getElementById('modal-title').innerHTML = `New Task <span class="modal-stage-pill">✨ Draft</span>`;
 
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(defaults, context);
@@ -991,23 +1059,32 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
     // Inject footer buttons
     document.getElementById('modal-footer').innerHTML = `
         <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Create Task</button>
+        <button onclick="saveCms()" class="cms-btn cms-btn-primary">Create Task <span class="kbd-hint">⌘↵</span></button>
     `;
 
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
 
+    // Initialize widgets first, then enable dirty tracking after they settle
+    window.uiState.isDirty = false;
     setTimeout(() => {
         renderTagWidget('contrib-tag-input-edit', defaults.contributors || [], 'contributor-list', 'author');
         renderTagWidget('tags-tag-input-edit', defaults.tags || [], 'tag-list', 'tag');
         renderTagWidget('deps-tag-input-edit', defaults.dependencies || [], 'item-list', 'dep');
-    }, 10);
+        // Attach dirty tracking AFTER widgets are done so their init doesn't trigger isDirty
+        attachModalFormListeners();
+    }, 50);
 }
 
 function closeCmsModal() {
+    if (window.uiState.isDirty) {
+        const confirmed = confirm('You have unsaved changes. Discard them?');
+        if (!confirmed) return;
+    }
+    window.uiState.isDirty = false;
     const modal = document.getElementById('cms-modal');
     if (modal) modal.classList.remove('active');
-    document.body.style.overflow = ''; // Unlock global page scroll
+    document.body.style.overflow = '';
     editContext = null;
 }
 
@@ -1790,7 +1867,8 @@ function saveCmsChanges() {
 
     saveToLocalStorage();
     renderDashboard();
-    
+
+    window.uiState.isDirty = false; // Saved — bypass unsaved-changes guard
     closeCmsModal();
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
     if (typeof switchView === 'function') switchView(currentView);
@@ -2148,6 +2226,7 @@ function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
 
     // Prevent background refreshes from killing the modal
     window.isActionLockActive = true;
+    window.uiState.isDirty = false; // Disarm unsaved-changes guard before any confirm dialog
 
     // Decouple from event loop to prevent instant closure
     setTimeout(() => {
