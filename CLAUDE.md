@@ -1,115 +1,131 @@
-# Khyaal Engineering Pulse
+# Khyaal Engineering Pulse — Claude Context
 
-> This file provides persistent context to Claude Code. Only the essential information is loaded at startup to conserve tokens. Additional details are in README.md (loaded on-demand via imports).
+> Loaded at every session. Keep this concise. Full details in README.md.
 
-## Project Overview
-A zero-deployment, GitHub-backed engineering dashboard for project management, OKR tracking, and team analytics.
+## Project
+Zero-deployment GitHub-backed engineering dashboard. Frontend-only SPA — no build step, no server.
+- **Stack**: Vanilla JS ES6+, Tailwind CSS (CDN), Mermaid.js, Google Charts
+- **Data**: `data.json` on GitHub, fetched via AWS Lambda gatekeeper
+- **Auth**: `?cms=true` + GitHub PAT → unlocks CMS. Site password via Lambda hash check.
+- **Cache-busting**: All `<script>` tags use `?v=04031`; data fetched with `?v=${Date.now()}`
 
-## Quick Reference
-- **Type**: Frontend-only SPA (no backend server)
-- **Data**: GitHub-hosted data.json (fetched via AWS Lambda)
-- **Stack**: Vanilla JS, Tailwind CSS, Mermaid.js, Google Charts
-- **Auth**: AWS Lambda gatekeeper (auth_gatekeeper.js)
+## File Map (what each file owns)
 
-## Documentation Imports
-For detailed information, refer to:
-- Architecture details: @README.md (lines 156-187)
-- View reference: @README.md (lines 383-543)
-- Data model: @README.md (lines 545-603)
-- Keyboard shortcuts: @README.md (lines 605-621)
+| File | Owns |
+|------|------|
+| `index.html` | HTML shell, auth gatekeeper, script tags, view containers |
+| `app.js` | `UPDATE_DATA` global, `renderDashboard()`, `switchView()`, `normalizeData()`, search, keyboard shortcuts |
+| `core.js` | Constants (`statusConfig`, `contributorColors`), `highlightSearch()`, `renderBlockerStrip()`, `isItemInSearch()`, `isItemInDateRange()` |
+| `views.js` | `renderTrackView()`, `renderStatusView()`, `renderPriorityView()`, `renderContributorView()`, `renderBacklogView()`, `renderSprintView()`, `renderReleasesView()`, `renderGanttView()`, `renderWorkflowView()`, `renderDiscoveryView()`, `renderRoadmapView()`, `renderEpicsView()` |
+| `cms.js` | CRUD modal (`openItemEdit`, `addItem`, `saveCms`, `deleteItem`), GitHub sync (`saveToGithub`), 4-pillar form, metadata editors |
+| `modes.js` | `switchMode()`, `getCurrentMode()`, `getCurrentUser()`, `getModeFilter()`, mode navigation, Alt+1/2/3 |
+| `okr-module.js` | `renderOkrView()`, OKR progress calculation |
+| `kanban-view.js` | `renderKanbanView()`, drag-drop handlers |
+| `dependency-view.js` | `renderDependencyView()`, Mermaid digraph |
+| `analytics.js` | `renderAnalyticsView()`, velocity/burndown charts |
+| `capacity-planning.js` | `renderCapacityView()`, workload calc |
+| `dev-focus.js` | `renderMyTasksView()`, personal task categories |
+| `executive-dashboard.js` | `renderExecutiveDashboard()`, KPI summary |
+| `styles.css` | Custom CSS: `.cms-*`, `.view-section`, `.item-row`, `.kanban-*`, `.badge-*`, `.track-header` |
+| `auth_gatekeeper.js` | AWS Lambda: validates password hash, fetches data.json from GitHub |
 
-## Key Files
-- `app.js` - Data normalization, GitHub integration
-- `core.js` - State management, keyboard shortcuts, view routing
-- `views.js` - Core view renderers (Track, Status, Priority, etc.)
-- `cms.js` - Full Management UI (Add/Edit/Delete operations)
-- `index.html` - Main structure and navigation
-- `data.json` - Single source of truth (GitHub-backed)
+## Global State: `UPDATE_DATA`
+```
+UPDATE_DATA {
+  metadata: { title, dateRange, okrs[], epics[], sprints[], releases[], roadmap[],
+              capacity{teamMembers[]}, velocityHistory[], activity[], modes{default} }
+  tracks[]: { id, name, theme, subtracks[]: { name, items[]: { ...item fields } } }
+}
+```
+**Item key fields**: `id, text, status, priority, storyPoints, epicId, sprintId, planningHorizon, contributors[], tags[], dependencies[], blockerNote, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType, mediaUrl, startDate, due, releasedIn, note, usecase, comments[]`
 
-## CMS Edit Modal — 4-Pillar System
-The Edit Engineering Task modal (`cms.js`) uses a lifecycle-aware 4-pillar layout:
+**Status values**: `now | next | later | qa | review | blocked | onhold | done`  
+**Story points**: Fibonacci only — `1, 2, 3, 5, 8, 13, 21` (enforced as select in CMS)  
+**Planning horizon**: `1M | 3M | 6M | 1Y`
 
-| Pillar | Key | Fields |
-|--------|-----|--------|
-| 🎯 Goal & Intent | `what` | text, usecase, epicId, persona, tags, note |
-| 📅 Timeline & Cycle | `when` | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
-| ⚡ Action & Routing | `where` | status, contributors, blockerNote, dependencies, mediaUrl |
-| 🛠️ Sync & Effort | `how` | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
+## Three Persona Modes (`modes.js`)
+| Mode | Key | Default View | Alt Shortcut | Theme |
+|------|-----|-------------|--------------|-------|
+| PM | `pm` | `okr` | Alt+1 | Blue |
+| Developer | `dev` | `my-tasks` | Alt+2 | Green |
+| Executive | `exec` | `dashboard` | Alt+3 | Purple |
 
-**Pillar visibility by persona** (`getVisibleFieldGroups()` in cms.js:164):
-- **PM**: all 4 pillars (WHAT → WHEN → WHERE → HOW)
-- **Developer**: all 4 pillars, execution-first (WHERE → HOW → WHAT → WHEN), strategic fields readonly (🔒)
-- **Executive**: 3 pillars only (WHAT → WHEN → WHERE — no Sync & Effort)
+- **Dev mode**: filters items to `currentUser`'s tasks; strategic fields readonly in edit modal
+- **Exec mode**: filters to high-priority/blocked/now items; shows only 3 CMS pillars (no HOW)
+- Mode persists in `localStorage['khyaal_current_mode']`; user persists in `localStorage['khyaal_current_user']`
 
-**Field visibility per view** (`LIFECYCLE_FIELD_MAP` in cms.js:148): Fields shown depend on active view (backlog/sprint/track/kanban/releases/roadmap/epics). Toggle "Show All" to see all fields for a pillar.
+## All Views & Render Functions
+| View ID | Renderer | Personas |
+|---------|----------|---------|
+| `okr` | `renderOkrView()` | PM, Exec |
+| `epics` | `renderEpicsView()` | PM, Exec |
+| `roadmap` | `renderRoadmapView()` | PM, Exec |
+| `backlog` | `renderBacklogView()` | PM |
+| `sprint` | `renderSprintView()` | PM, Dev |
+| `track` | `renderTrackView()` | PM, Dev |
+| `kanban` | `renderKanbanView()` | PM, Dev |
+| `dependency` | `renderDependencyView()` | PM, Dev |
+| `analytics` | `renderAnalyticsView()` | PM, Exec |
+| `capacity` | `renderCapacityView()` | PM |
+| `releases` | `renderReleasesView()` | PM, Exec |
+| `status` | `renderStatusView()` | PM |
+| `priority` | `renderPriorityView()` | PM |
+| `contributor` | `renderContributorView()` | PM |
+| `gantt` | `renderGanttView()` | PM |
+| `my-tasks` | `renderMyTasksView()` | Dev |
+| `dashboard` | `renderExecutiveDashboard()` | Exec |
+| `workflow` | `renderWorkflowView()` | PM, Dev |
+| `ideation`/`spikes` | `renderDiscoveryView()` | PM, Exec |
 
-**Story points**: Fibonacci select only (1,2,3,5,8,13,21) — free-number input removed.
+## CMS Edit Modal — 4-Pillar System (`cms.js`)
+**Entry points**: `openItemEdit(ti,si,ii,itemId)` · `addItem(trackIndex,subtrackIndex,defaults)`
 
-## Module System
-- `modes.js` - PM/Developer/Executive persona modes
-- `okr-module.js` - OKR tracking with auto-progress
-- `kanban-view.js` - Drag-and-drop Kanban board
-- `dependency-view.js` - Mermaid.js dependency graphs
-- `analytics.js` - Sprint velocity and metrics
-- `capacity-planning.js` - Team workload management
-- `dev-focus.js` - Developer "My Tasks" view
-- `executive-dashboard.js` - Executive summary
+**4 Pillars** (FIELD_GROUPS at cms.js:114):
+| Key | Label | Fields |
+|-----|-------|--------|
+| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags, note |
+| `when` | 📅 Timeline & Cycle | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
+| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, mediaUrl |
+| `how` | 🛠️ Sync & Effort | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
 
-## Three Persona Modes
-1. **PM Mode** (Blue, Alt+1) - Full feature access, starts with Epics view
-2. **Developer Mode** (Green, Alt+2) - Focused on "My Tasks" view
-3. **Executive Mode** (Purple, Alt+3) - Dashboard with high-level metrics
+**Pillar visibility by persona** (`getVisibleFieldGroups()` cms.js:164):
+- PM → `[what, when, where, how]`
+- Dev → `[where, how, what, when]` (execution-first; strategic fields readonly)
+- Exec → `[what, when, where]` (no Sync & Effort panel)
 
-## Data Model Key Concepts
-- **Tracks** - Product areas (e.g., "Khyaal Platform")
-- **Subtracks** - Feature groups within tracks
-- **Items** - Individual tasks with status, priority, story points
-- **Epics** - Strategic business outcomes
-- **OKRs** - Quarterly objectives with key results
-- **Sprints** - 2-week execution cycles
-- **Story Points** - Fibonacci scale (1,2,3,5,8,13,21)
+**Field visibility by view** (`LIFECYCLE_FIELD_MAP` cms.js:148) — only native fields shown unless "Show All" toggled:
+| View | Native fields |
+|------|--------------|
+| backlog | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
+| sprint | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
+| track | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
+| kanban | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
+| releases | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
+| roadmap | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
+| epics | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
 
-## Status Values (Quick Ref)
-`done` | `now` | `next` | `later`
+**Dev-protected fields** (readonly in dev mode, `isFieldProtected()` cms.js:793):
+`epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId`
 
-## Development Guidelines
+**Move fields** (PM only, existing items): Target Track + Target Subtrack dropdowns via `buildMoveFields()`
 
-### Code Style
-- Vanilla JavaScript (ES6+), no transpilation
-- Minimal dependencies (CDN-only: Tailwind, Mermaid, Google Charts)
-- Client-side rendering only (no server logic)
+## Key Patterns & Gotchas
+- `window.isActionLockActive = true` prevents background renders during modal operations
+- `saveCms()` → writes to `UPDATE_DATA` → `saveToLocalStorage()` → `renderDashboard()` (NOT GitHub — user must click "Save to GitHub")
+- `saveToGithub()` requires GET for SHA first, then PUT (GitHub API constraint)
+- Tag widget fields (contributors, tags, dependencies) use `window[selection_${id}]` dynamic callbacks
+- Dev mode prompts user selection first time via `promptUserSelection()`
+- Search (`globalSearchQuery`) triggers full re-render of active view
+- `?archive` param bypasses localStorage to show historical data
 
-### Common Tasks
-- **Add feature**: Edit relevant module file (e.g., okr-module.js for OKR features)
-- **Fix bug**: Use browser DevTools, check core.js for state issues
-- **Update UI**: Modify views.js or specific module file
-- **Data changes**: Edit data.json structure, update app.js normalization
+## Development Rules
+- No semicolons · ES6+ · async/await · functional patterns (map/filter/reduce)
+- No DOM manipulation in loops · cache DOM queries · event delegation
+- Don't mutate `UPDATE_DATA` directly outside of CMS functions
+- New fields → add to `normalizeData()` in app.js with safe default
+- New views → add container in index.html + case in `switchView()` + update `modes.js` MODE_CONFIG
 
-### File Exclusions (Token Savings)
-- `archive/` folder - Large, historical data (excluded by .claudeignore)
-- `lambda.zip` - Deployment artifact (excluded)
-- `data.json` - Read only when explicitly needed
-
-### Performance Notes
-- All rendering is client-side (check browser console for errors)
-- data.json is the live dataset (~moderate size, ok to read if needed)
-- Archive folder contains old sprints (avoid unless explicitly requested)
-
-## Common Workflows
-### PM: Plan Sprint
-1. Groom Backlog (assign story points)
-2. Check Capacity Planning
-3. Move tasks to Sprint
-4. Monitor via Kanban & Analytics
-
-### Developer: Daily Work
-1. Check My Tasks (Alt+2)
-2. Drag to "Now" in Kanban
-3. Flag blockers if stuck
-4. Mark Done with PR link
-
-### Executive: Health Check
-1. View Dashboard (Alt+3)
-2. Review Epic health
-3. Check OKR progress
-4. Monitor velocity trends
+## Excluded from Claude reads
+- `archive/` — historical data, large, excluded by .claudeignore
+- `lambda.zip` — deployment artifact
+- `data.json` — read only when explicitly needed for data debugging

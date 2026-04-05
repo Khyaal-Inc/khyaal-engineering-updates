@@ -1,828 +1,286 @@
 # Khyaal Engineering Pulse
 
-> A comprehensive engineering status and product management dashboard for the Khyaal team — secure, real-time, and designed for PMs, Developers, and Executives.
-
----
-
-## 📋 Table of Contents
-
-1. [Feature Overview](#feature-overview)
-2. [Three Persona Modes](#three-persona-modes)
-3. [Architecture](#architecture)
-4. [Authentication & Setup](#authentication--setup)
-5. [PM How-To Guide](#pm-how-to-guide)
-6. [Developer How-To Guide](#developer-how-to-guide)
-7. [Executive How-To Guide](#executive-how-to-guide)
-8. [View Reference](#view-reference)
-9. [Data Model Reference](#data-model-reference)
-10. [Keyboard Shortcuts](#keyboard-shortcuts)
-
----
-
-## Feature Overview
-
-### 🚀 The 8-Stage Engineering Lifecycle
-The platform is architected around an **End-to-End Delivery** funnel. Every item in the engineering pulse moves through eight distinct strategic stages:
-
-| Stage | Name | Purpose | Shortcut |
-|---|---|---|---|
-| **Phase 1** | **Backlog (Later)** | Future vision and unrefined ideas | 3 (Backlog) |
-| **Phase 2** | **Planned (Next)** | Groomed and ready for pickup | 2 (Roadmap) |
-| **Phase 3** | **Developing (Now)** | Active engineering in progress | - |
-| **Phase 4** | **Testing (QA)** | Quality assurance and verification | - |
-| **Phase 5** | **In Review (UAT)** | Stakeholder review and sign-off | - |
-| **Phase 6** | **Blocked (Urgent)** | Immediate attention required | - |
-| **Phase 7** | **On Hold (Parked)** | Context-switched or deprioritized | - |
-| **Phase 8** | **Production (Done)** | Shipped and live in the world | 6 (Releases) |
-
----
-
-### 🎭 Three Persona Modes
-
-Khyaal Engineering Pulse now features **three distinct persona modes** tailored to different roles:
-
-- **👨‍💼 PM Mode** (Blue) - Full product management toolkit
-- **👩‍💻 Developer Mode** (Green) - Focused task execution view
-- **👔 Executive Mode** (Purple) - High-level strategic overview
-
-**Switch modes using:** `Alt + 1` (PM), `Alt + 2` (Dev), `Alt + 3` (Exec)
-
----
-
-### 🗺️ Views Available
-
-#### PM Mode Views
-| View | Shortcut | Description |
-|---|---|---|
-| **🚀 Discovery** | - | Phase 1: Ideation Sandbox and Technical Spikes capturing |
-| **🚀 Epics** | 1 | Strategic goals with health tracking and OKR linkage |
-| **🗺️ Roadmap** | 2 | Planning horizons (Now / Next / Later) with timeline view |
-| **📚 Backlog** | 3 | Grooming hub with inline prioritization and estimation |
-| **🏃 Sprints** | 4 | 2-week execution cycles with velocity tracking |
-| **📊 Kanban** | - | Drag-and-drop workflow board with swimlanes |
-| **🕸️ Dependencies** | 0 | Mermaid.js dependency graph with blocker highlighting |
-| **🎯 OKRs** | - | Objectives & Key Results with auto-progress tracking |
-| **👥 Capacity** | - | Team workload distribution and sprint planning |
-| **📈 Analytics** | - | Velocity charts, burndown, and KPI dashboard |
-| **🏗️ Tracks** | 5 | Engineering execution grouped by product area |
-| **📦 Releases** | 6 | Version milestones with completion tracking |
-| **🧩 By Status** | 7 | Tasks grouped by delivery status |
-| **🔥 By Priority** | 8 | High/Medium/Low impact sorting |
-| **👩‍💻 By Contributor** | 9 | Per-person task breakdown |
-| **📅 Gantt** | - | Timeline view with date-based visualization |
-| **🛠️ Playbook** | - | Step-by-step PM and Dev workflow guide |
-
-#### Developer Mode Views
-| View | Description |
-|---|---|
-| **📋 My Tasks** | Personalized task list (Today / This Week / Upcoming / Blocked) |
-| **📊 Kanban** | Quick drag-and-drop status updates |
-| **🏗️ Tracks** | Your team's work across all subtracks |
-| **🕸️ Dependencies** | What's blocking you or what you're blocking |
-| **🏃 Sprint** | Current sprint goals and progress |
-| **🛠️ Playbook** | Developer workflow best practices |
-
-#### Executive Mode Views
-| View | Description |
-|---|---|
-| **📊 Dashboard** | Executive summary with OKR progress, epic health, and risks |
-| **🚀 Epics** | Strategic initiative health and timeline |
-| **🎯 OKRs** | Quarter objectives with key result tracking |
-| **📈 Analytics** | Team velocity, burndown charts, and sprint metrics |
-| **🗺️ Roadmap** | Strategic planning horizons |
-| **📦 Releases** | Milestone delivery tracking |
-
----
-
-### 🎯 Item Statuses
-
-| status | Meaning | Kanban Column |
-|---|---|---|
-| 🟢 **done** | Shipped & live | Production (Done) |
-| 🟡 **onhold** | Temporarily paused | On Hold (Parked) |
-| 🔴 **blocked** | Stuck on dependency | Blocked (Urgent) |
-| 🟣 **review** | Awaiting sign-off | In Review (UAT) |
-| 🧪 **qa** | Being verified | Testing (QA) |
-| 🔵 **now** | Active coding | Developing (Now) |
-| 🟠 **next** | High priority queue | Planned (Next) |
-| ⚪ **later** | Idea sandbox | Backlog (Later) |
-
----
-
-## Three Persona Modes
-
-### 👨‍💼 PM Mode (Product Manager)
-**Default View:** Epics
-**Color Theme:** Blue
-**Key Features:**
-- Complete access to all 15+ views
-- OKR tracking with auto-calculated progress
-- Capacity planning and resource allocation
-- Sprint velocity analytics and forecasting
-- Backlog grooming mode with inline editing
-- Dependency visualization with Mermaid.js
-- Drag-and-drop Kanban workflow
-
-**Typical Workflow:**
-1. Define strategic Epics with business goals
-2. Break down into OKRs and Key Results
-3. Groom Backlog with story points and priorities
-4. Plan Sprint capacity and assign tasks
-5. Monitor progress via Kanban and Analytics
-6. Identify and resolve blockers via Dependencies
-
----
-
-### 👩‍💻 Developer Mode
-**Default View:** My Tasks
-**Color Theme:** Green
-**Key Features:**
-- Personalized task list with smart categorization
-- Today / This Week / Upcoming / Blocked sections
-- Quick Kanban access for status updates
-- Dependency view to see what's blocking you
-- Sprint goals and current commitments
-- Developer-focused workflow playbook
-
-**Typical Workflow:**
-1. Check "My Tasks" for today's priorities
-2. Flag blockers immediately when stuck
-3. Update status via Kanban drag-and-drop
-4. Mark tasks Done with PR links in notes
-5. Review Dependencies to unblock others
-
----
-
-### 👔 Executive Mode
-**Default View:** Dashboard
-**Color Theme:** Purple
-**Key Features:**
-- High-level OKR progress summary (% complete)
-- Epic health indicators (On-Track / At-Risk / Delayed)
-- Top risks and active blockers
-- Team velocity trends
-- Sprint completion rates
-- Strategic roadmap view
-
-**Typical Workflow:**
-1. View Dashboard for overall health snapshot
-2. Drill into at-risk Epics for details
-3. Review OKR progress by quarter
-4. Check Analytics for velocity trends
-5. Monitor Roadmap for strategic alignment
-
----
-
-## CMS Edit Modal Architecture
-
-The "Edit Engineering Task" modal (`cms.js`) uses a **4-Pillar Lifecycle-Aware** layout. Fields shown adapt based on (1) the active view/stage and (2) the current persona mode.
-
-### The 4 Pillars
-
-| Pillar | Label | Fields |
-|--------|-------|--------|
-| 🎯 WHAT | Goal & Intent | Task Title, Business Value, Strategic Epic Link, Target Persona, Tags, Engineering Notes |
-| 📅 WHEN | Timeline & Cycle | Planning Horizon, Sprint, Start Date, Due Date, Release, Published Date |
-| ⚡ WHERE | Action & Routing | Lifecycle Status, Contributors, Blocker Reason, Dependencies, Media URL |
-| 🛠️ HOW | Sync & Effort | Story Points (Fibonacci), Priority, Acceptance Criteria, Impact Level, Effort Level, Success Metric, Strategic Weight, Risk Type |
-
-### Pillar Visibility by Persona
-
-| Persona | Pillars Shown | Order |
-|---------|--------------|-------|
-| 👨‍💼 PM | All 4 | WHAT → WHEN → WHERE → HOW |
-| 👩‍💻 Developer | All 4 (strategic fields readonly 🔒) | WHERE → HOW → WHAT → WHEN |
-| 👔 Executive | 3 only (no Sync & Effort) | WHAT → WHEN → WHERE |
-
-### Lifecycle Field Filtering (LIFECYCLE_FIELD_MAP)
-
-By default, only fields relevant to the active view are shown. Toggle **"Show All"** to see every field in a pillar.
-
-| View | Fields Shown by Default |
-|------|------------------------|
-| **backlog** | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
-| **sprint** | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
-| **track** | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
-| **kanban** | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
-| **releases** | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
-| **roadmap** | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
-| **epics** | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
-
-### Developer Field Protection (Strategic Shield)
-
-When in Developer mode, the following fields are **read-only** (cannot be changed by devs):
-`epicId`, `impactLevel`, `successMetric`, `acceptanceCriteria`, `planningHorizon`, `releasedIn`, `strategicWeight`, `riskType`, `effortLevel`, `publishedDate`, `priority`, `usecase`, `persona`, `sprintId`
-
-### Story Points
-Always use **Fibonacci scale only**: 1, 2, 3, 5, 8, 13, 21. The field is enforced as a dropdown (no free-form number entry).
+> Zero-deployment, GitHub-backed engineering dashboard for Khyaal team. Frontend-only SPA — no build step, no server.
 
 ---
 
 ## Architecture
 
 ```
-index.html              → Dashboard structure and navigation (w/ ?v=04031 cache-busting)
-core.js                 → State management, filtering, keyboard shortcuts
-views.js                → Core view renderers (Track, Status, Priority, etc.)
-cms.js                  → Full Management UI (Add/Edit/Delete/Groom)
-app.js                  → Normalization, GitHub integration, archiving
-data.json               → Single Source of Truth on GitHub
-styles.css              → Custom CSS with mode-specific theming
-
-### 🏗️ Lifecycle-Aware UI System
-The platform dynamically adjusts its interface as the user progresses:
-- **Adaptive Header/Ribbon**: Each stage (e.g., Discovery) has its own action ribbon. The **Indigo Ribbon** in Discovery provides "Capture Idea" and "Capture Spike" buttons directly in context.
-- **Stage Navigation**: The breadcrumb system acts as a progress bar. Clicking the active stage opens the **Strategic Menu**.
-
-NEW MODULES:
-modes.js                → Persona mode system with view filtering
-dependency-view.js      → Mermaid.js dependency graph visualization
-kanban-view.js          → Drag-and-drop Kanban board
-okr-module.js           → OKR tracking with auto-progress
-analytics.js            → Sprint velocity and metrics dashboard
-capacity-planning.js    → Team workload and resource management
-dev-focus.js            → Developer "My Tasks" view
-executive-dashboard.js  → Executive summary dashboard
+index.html          → Shell, auth gatekeeper, view containers, script tags (?v=04031)
+app.js              → UPDATE_DATA global, renderDashboard(), switchView(), normalizeData()
+core.js             → statusConfig, contributorColors, search/filter helpers, blocker strip
+views.js            → All primary view renderers (Track, Backlog, Sprint, Status, etc.)
+cms.js              → CRUD modal, 4-pillar form, GitHub sync, metadata editors
+modes.js            → Persona system (PM/Dev/Exec), mode filtering, navigation
+okr-module.js       → OKR view and progress calculation
+kanban-view.js      → Drag-and-drop Kanban board
+dependency-view.js  → Mermaid.js dependency graph
+analytics.js        → Velocity/burndown charts (Google Charts)
+capacity-planning.js→ Team workload and sprint capacity
+dev-focus.js        → Developer "My Tasks" view
+executive-dashboard.js → Executive KPI summary
+styles.css          → Custom CSS (cms-*, view-section, kanban-*, badge-*, track-header)
+auth_gatekeeper.js  → AWS Lambda: validates password hash, proxies GitHub data fetch
+data.json           → Single source of truth (hosted on GitHub)
 ```
 
-**Pulse Data Flow:**
+**Data flow:**
 ```
-GitHub (data.json)
-    ↓ securely fetched via AWS Lambda
-Browser Memory (UPDATE_DATA)
-    ↓ groomed & edited via CMS
-    ↓ persisted via "Save to GitHub"
-GitHub (data.json updated)
+GitHub (data.json) → Lambda fetch → UPDATE_DATA (memory + localStorage)
+                                         ↓ CMS edits
+                                    saveToLocalStorage()
+                                         ↓ "Save to GitHub"
+                                    saveToGithub() → GitHub PUT
 ```
 
 ---
 
 ## Authentication & Setup
 
-### One-Time Setup
-1. Deploy the Lambda gatekeeper: `sh deploy_auth.sh`
-2. Set your `GITHUB_TOKEN` on Lambda
-3. Replace the `LAMBDA_URL` in `index.html`
+### Site Auth
+Password → SHA-256 → Lambda validates against `EXPECTED_PASSWORD_HASH` → `showProtectedContent()`  
+Session cached in `localStorage['khyaal_site_auth']` — auto-login on return.
 
-### Managing the Pulse
-- Append `?cms=true` to the URL
-- Authenticate with your GitHub Personal Access Token
-- Your session is cached — you only need to log in once per machine
+### CMS Auth (edit mode)
+1. Navigate to `?cms=true`
+2. Enter GitHub Personal Access Token (PAT) → stored in `localStorage['gh_pat']`
+3. Action buttons appear: Save to GitHub, Archive, Settings, Logout
 
----
-
-## PM How-To Guide
-
-> This section explains how to use **Khyaal Engineering Pulse** to lead with vision and manage the engineering pipeline.
+One-time Lambda setup: `sh deploy_auth.sh` → set `GITHUB_TOKEN` env var → update `LAMBDA_URL` in index.html.
 
 ---
 
-### Step 1: Discovery & R&D Capture
-**Start here.** Use the **Discovery** view to capture `#idea` and `#spike` items.
-- Use the **Indigo Ribbon** (+ Add) to capture live explorative items.
-- Transition items to Phase 2 (Vision) once feasibility is proven.
+## Three Persona Modes
 
-### Step 2: Strategic Epic Vision & OKRs
-**Start here.** Define the "Why" in the **🚀 Epics** view and link to **🎯 OKRs**.
+Switch with `Alt+1` / `Alt+2` / `Alt+3`. Mode persists in localStorage.
 
-**How to create an Epic:**
-1. Navigate to Epics view
-2. Click "Add Strategic Epic"
-3. Set Name, Description, Health, and Track
-4. Link to OKR by using the same ID
+| Mode | Key | Default View | Theme | Filter |
+|------|-----|-------------|-------|--------|
+| 👨‍💼 Product Manager | `pm` | OKRs | Blue | All items |
+| 👩‍💻 Developer | `dev` | My Tasks | Green | Current user's items only |
+| 👔 Executive | `exec` | Dashboard | Purple | High-priority/blocked/now |
 
-**How to create OKRs:**
-1. Access Settings (CMS Dashboard)
-2. Add OKR with Objective and 3-5 Key Results
-3. Link Key Results to Epic IDs
-4. Progress auto-calculates from linked tasks
+**Developer mode specifics:**
+- Prompts user name selection on first switch (stored in `localStorage['khyaal_current_user']`)
+- Strategic fields are readonly (🔒) in the edit modal
+- CMS pillars: WHERE → HOW → WHAT → WHEN (execution-first order)
 
----
-
-### Step 2: Strategic Roadmap Alignment
-Align your epics and tasks into strategic timeframes in the **🗺️ Roadmap** view:
-- **Now (1M)**: Current commitments
-- **Next (3M)**: Validated near-term focus
-- **Later (6M+)**: Future vision parking lot
-
-**Pro Tip:** Use the Roadmap Edit feature to add custom planning horizons.
+**Executive mode specifics:**
+- Only 3 CMS pillars shown (no Sync & Effort / HOW panel)
+- Views limited to: Dashboard, Epics, OKRs, Analytics, Roadmap, Releases, Ideation, Spikes
 
 ---
 
-### Step 3: Backlog Grooming with Story Points
-Refine requirements in the **📚 Backlog** view using **Grooming Mode**.
+## Views
 
-**In Grooming Mode you can:**
-- Assign story points (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
-- Set priority (High / Medium / Low)
-- Link to Epics, Sprints, Releases
-- Set planning horizons
-- Add acceptance criteria
+### PM Mode Views
+| View ID | Shortcut | Description |
+|---------|----------|-------------|
+| `okr` | 1 | OKRs with auto-calculated progress from linked items |
+| `roadmap` | 2 | Planning horizons (1M/3M/6M/1Y) |
+| `backlog` | 3 | Grooming hub — story points, epic links, priorities |
+| `sprint` | 4 | 2-week cycles with velocity tracking |
+| `track` | 5 | Work grouped by product area / subtrack |
+| `releases` | 6 | Version milestones with completion tracking |
+| `status` | 7 | Items grouped by delivery status |
+| `priority` | 8 | High/Medium/Low sorting |
+| `contributor` | 9 | Per-person task breakdown |
+| `dependency` | 0 | Mermaid.js dependency graph |
+| `kanban` | — | Drag-and-drop board (8 status columns) |
+| `epics` | — | Strategic goals with health tracking |
+| `analytics` | — | Velocity charts, burndown, KPIs |
+| `capacity` | — | Team workload vs. sprint capacity |
+| `gantt` | — | Timeline visualization |
+| `workflow` | — | PM/Dev playbook |
+| `ideation` | — | Idea capture (#idea, #spike tags) |
 
-**Story Point Guide:**
-- 1-2: Trivial change (< 1 hour)
-- 3-5: Small feature (1-2 days)
-- 8: Medium feature (3-5 days)
-- 13: Large feature (1 week)
-- 21: Epic-level work (needs breakdown)
+### Developer Mode Views
+`my-tasks`, `kanban`, `track`, `dependency`, `sprint`, `workflow`, `ideation`, `spikes`
 
----
-
-### Step 4: Capacity Planning & Sprint Commitment
-Before committing to a Sprint, check **👥 Capacity Planning**.
-
-**Capacity View shows:**
-- Total team capacity (story points per sprint)
-- Current utilization % per team member
-- Over-allocation warnings
-- Recommended sprint load (80-90%)
-
-**Sprint Planning Best Practices:**
-1. Calculate total capacity (team size × points/person)
-2. Aim for 80-90% utilization (leave buffer for unplanned work)
-3. Balance workload across team members
-4. Flag over-allocated team members in red
+### Executive Mode Views
+`dashboard`, `epics`, `okr`, `analytics`, `roadmap`, `releases`, `ideation`, `spikes`
 
 ---
 
-### Step 5: Track Execution via Kanban & Analytics
-Monitor progress in real-time with the **📊 Kanban** board and **📈 Analytics** dashboard.
+## Item Status Values
 
-**Kanban Features:**
-- Drag-and-drop status updates
-- Swimlanes by contributor
-- WIP limits per column
-- Quick-edit cards
-
-**Analytics Dashboard:**
-- Average velocity (story points/sprint)
-- Sprint completion % (actual vs. planned)
-- Burndown/burnup charts
-- Velocity trend forecasting
+| Status | Meaning | Kanban Column |
+|--------|---------|---------------|
+| `later` | Backlog / ideas | Backlog |
+| `next` | Planned, ready | Planned (Next) |
+| `now` | Active work | Developing (Now) |
+| `qa` | Being verified | Testing (QA) |
+| `review` | Awaiting sign-off | In Review (UAT) |
+| `blocked` | Stuck on dependency | Blocked (Urgent) |
+| `onhold` | Paused | On Hold (Parked) |
+| `done` | Shipped | Production (Done) |
 
 ---
 
-### Step 6: Monitor Dependencies & Unblock
-Use the **🕸️ Dependencies** view to visualize task relationships.
+## Data Model
 
-**Dependency Features:**
-- Mermaid.js graph visualization
-- Blocker highlighting (red edges)
-- Critical path detection
-- PNG export for stakeholder reports
-
----
-
-## Developer How-To Guide
-
-### Step 1: Find Your Tasks
-**Switch to Developer Mode** (Alt + 2) to access your personalized **📋 My Tasks** view.
-
-**Tasks are categorized as:**
-- **🚨 Blocked**: Tasks waiting on dependencies
-- **📅 Due Today**: Tasks due today
-- **📆 This Week**: Tasks for current sprint
-- **🔮 Upcoming**: Future work
-
----
-
-### Step 2: Signal Activity via Kanban
-When starting work, drag your task to the **Now** column in **📊 Kanban**.
-
-This signals to the PM and team that work is in progress.
-
----
-
-### Step 3: Flag Blockers Immediately
-If you hit an impediment:
-1. Click "Flag Blocker" on the task
-2. Add blocker reason/note
-3. This triggers the Global Blocker Strip (red alert banner)
-4. PM gets notified to escalate and unblock
-
----
-
-### Step 4: Mark Done & Close Loop
-Once shipped:
-1. Update status to "Done"
-2. Add PR link in Note field
-3. Save to GitHub
-4. This auto-updates Epic and OKR progress
-
----
-
-## Executive How-To Guide
-
-### Executive Dashboard Overview
-The **📊 Dashboard** provides a 30-second health snapshot:
-
-**Key Metrics Shown:**
-- **OKR Progress**: Average % across all objectives
-- **Epic Health**: Count of On-Track / At-Risk / Delayed
-- **Completion Rate**: % of tasks done (overall)
-- **Critical Blockers**: Count requiring immediate attention
-
----
-
-### Reading Epic Health
-**Health Indicators:**
-- 🟢 **On-Track**: Progressing as planned
-- 🟡 **At-Risk**: Needs attention, may slip
-- 🔴 **Delayed**: Behind schedule, requires escalation
-
----
-
-### OKR Tracking
-**OKR Progress Formula:**
-- Auto-calculated from linked tasks
-- Green: ≥ 90% complete
-- Blue: 70-89% complete
-- Amber: 50-69% complete
-- Red: < 50% complete
-
----
-
-### Velocity Trends
-The **Team Velocity Trend** shows:
-- Last 3 sprints' completion rates
-- Average velocity (story points/sprint)
-- Trend indicator (📈 improving / 📉 declining)
-
-**Healthy Velocity:**
-- 80-90%: Sustainable pace
-- > 90%: Risk of burnout
-- < 70%: Under-planning or blockers
-
----
-
-## View Reference
-
-### 🚀 Epics View
-**Purpose:** Strategic business outcome tracking
-**Features:**
-- Health status (On-Track / At-Risk / Delayed)
-- Progress bar (% of linked tasks complete)
-- Timeline and owner tracking
-- Linked OKR display
-- Groom Tasks button (filters Backlog to epic)
-
----
-
-### 🎯 OKRs View
-**Purpose:** Quarterly objectives and key results
-**Features:**
-- Objective with owner and quarter
-- 3-5 Key Results per objective
-- Auto-progress calculation from linked tasks
-- Status indicators (Achieved / On-Track / At-Risk)
-- Linked epic and task display
-
-**Data Model:**
+### Item Schema
 ```json
 {
-  "okrs": [
-    {
-      "id": "okr-q1-2026-platform",
-      "quarter": "Q1 2026",
-      "objective": "Modernize platform infrastructure",
-      "owner": "Platform Team",
-      "keyResults": [
-        {
-          "id": "kr-platform-1",
-          "description": "Migrate 100% of legacy pages",
-          "target": 29,
-          "current": 29,
-          "unit": "pages",
-          "progress": 100,
-          "status": "achieved",
-          "linkedEpic": "platform-modernization"
-        }
-      ],
-      "overallProgress": 99
-    }
-  ]
-}
-```
-
----
-
-### 📊 Kanban View
-**Purpose:** Visual workflow management
-**Features:**
-- 4 columns: Backlog → Next → Now → Done
-- Drag-and-drop status updates
-- Swimlanes by contributor (optional)
-- WIP limits per column
-- Quick-edit card modal
-- Blocker highlighting
-
----
-
-### 📈 Analytics View
-**Purpose:** Sprint metrics and velocity tracking
-**Features:**
-- KPI Cards: Avg Velocity, Sprint Completion, Active Items, Done Count
-- Velocity Trend Chart (Google Charts)
-- Sprint Burndown Chart
-- Sprint History Table
-- Forecasting based on historical velocity
-
----
-
-### 👥 Capacity Planning View
-**Purpose:** Resource management and sprint planning
-**Features:**
-- Total team capacity (story points)
-- Current utilization % (planned vs. capacity)
-- Per-person workload breakdown
-- Over-allocation warnings (red)
-- Sprint planning recommendations
-
-**Capacity Data Model:**
-```json
-{
-  "capacity": {
-    "teamMembers": [
-      {
-        "name": "Subhrajit",
-        "capacity": 13,
-        "track": "Khyaal Platform",
-        "role": "Full Stack Engineer"
-      }
-    ],
-    "totalCapacity": 86
-  }
-}
-```
-
----
-
-### 📋 My Tasks View (Developer Mode)
-**Purpose:** Personalized developer task list
-**Features:**
-- Smart categorization (Blocked / Today / Week / Upcoming)
-- Due date highlighting
-- Blocker alerts with reasons
-- Quick links to Kanban, Dependencies, Sprint
-- Story point display
-
----
-
-### 🕸️ Dependencies View
-**Purpose:** Blocker and dependency visualization
-**Features:**
-- Mermaid.js directed graph
-- Red edges for active blockers
-- Critical path highlighting
-- PNG export for reports
-- Item linking via task IDs
-
-**How to add dependencies:**
-1. Edit any task
-2. In Dependencies field, enter task IDs
-3. Graph auto-generates on Dependencies view
-
----
-
-### 🗺️ Roadmap View
-**Purpose:** Strategic planning horizons
-**Features:**
-- Custom horizon categories (editable)
-- Now / Next / Later default grouping
-- Color-coded by timeframe
-- Add/Edit/Delete horizon categories
-- Quick-add tasks to horizons
-
----
-
-### 🏃 Sprints View
-**Purpose:** 2-week execution cycles
-**Features:**
-- Sprint goals and dates
-- Planned vs. completed story points
-- Progress bars
-- Task lists grouped by track
-- Sprint velocity calculation
-
----
-
-### 📚 Backlog View
-**Purpose:** Task refinement and grooming hub
-**Features:**
-- Grooming Mode toggle
-- Inline priority/epic/sprint assignment
-- Story point estimation
-- Acceptance criteria editing
-- Move to Sprint button
-
----
-
-## Data Model Reference
-
-### Item Structure (Granular Schema)
-Every task item includes the following fields for lifecycle tracking:
-
-```json
-{
-  "id": "task-unique-id",
-  "text": "Task description",
-  "status": "now", // now | qa | review | blocked | onhold | done | next | later
-  "priority": "high", // high | medium | low
-  "storyPoints": 5, // Fibonacci: 1, 2, 3, 5, 8, 13, 21
-  "effortLevel": "medium", // low | medium | high
-  "impactLevel": "high", // low | medium | high
-  "acceptanceCriteria": [
-    "Criterion 1",
-    "Criterion 2"
-  ],
-  "contributors": ["Subhrajit", "Vivek"],
-  "tags": ["spike", "frontend"], // Used for stage routing (#idea, #discovery, #spike)
-  "dependencies": ["other-task-id"],
-  "trackIndex": 0, // Critical for CMS routing
-  "subtrackIndex": 1, // Critical for CMS routing
-  "itemIndex": 5, // Auto-persisted for edits
-  "blocker": false,
-  "blockerNote": "",
-  "startDate": "2026-02-01",
-  "due": "2026-02-15",
+  "id": "unique-id",
+  "text": "Task title",
+  "status": "now",
+  "priority": "high",
+  "storyPoints": 5,
+  "planningHorizon": "1M",
   "sprintId": "sprint-1",
   "epicId": "epic-platform",
   "releasedIn": "v2.1",
-  "planningHorizon": "1M", // 1M (Now) | 3M (Next) | 6M (Later)
-  "usecase": "User/Business impact description",
-  "note": "Technical notes and implementation details",
-  "comments": [
-    {"author": "Vivek", "text": "PR #123 linked", "date": "2026-04-03"}
-  ],
-  "publishedDate": "2026-03-20"
+  "contributors": ["Subhrajit", "Vivek"],
+  "tags": ["feature", "frontend"],
+  "dependencies": ["other-task-id"],
+  "blockerNote": "",
+  "blocker": false,
+  "acceptanceCriteria": "Criterion 1\nCriterion 2",
+  "impactLevel": "high",
+  "effortLevel": "medium",
+  "successMetric": "Latency < 200ms",
+  "strategicWeight": 75,
+  "riskType": "technical",
+  "mediaUrl": "https://...",
+  "usecase": "User/business impact",
+  "note": "Technical implementation notes",
+  "startDate": "2026-02-01",
+  "due": "2026-02-15",
+  "publishedDate": "2026-03-20",
+  "comments": [{ "id": "c1", "text": "PR #123", "author": "PM", "timestamp": "..." }],
+  "createdAt": "2026-01-01",
+  "updatedAt": "2026-04-05"
 }
 ```
 
-### Metadata Structure
+**Story points**: Fibonacci only — `1, 2, 3, 5, 8, 13, 21`  
+**Planning horizon**: `1M` (Now) · `3M` (Next) · `6M` (Later) · `1Y` (TBD)
 
+### Metadata Schema (key fields)
 ```json
 {
   "metadata": {
     "title": "Khyaal Engineering Pulse",
-    "dateRange": "Feb 1 – Mar 18, 2026",
-    "modes": {
-      "default": "pm"
-    },
-    "epics": [...],
-    "okrs": [...],
-    "sprints": [...],
-    "releases": [...],
-    "roadmap": [...],
-    "capacity": {
-      "teamMembers": [...],
-      "totalCapacity": 86
-    },
-    "velocityHistory": [...]
+    "okrs": [{ "id", "quarter", "objective", "owner", "keyResults[]", "overallProgress" }],
+    "epics": [{ "id", "name", "usecase", "status", "health", "linkedOKR" }],
+    "sprints": [{ "id", "name", "status", "startDate", "endDate", "plannedPoints" }],
+    "releases": [{ "id", "name", "releaseDate", "status", "linkedEpic" }],
+    "roadmap": [{ "name", "theme", "horizon", "status" }],
+    "capacity": { "totalCapacity": 86, "teamMembers": [{ "name", "capacity", "role" }] },
+    "velocityHistory": [{ "sprint", "planned", "completed" }],
+    "activity": [{ "id", "timestamp", "action", "target" }]
   }
 }
 ```
+
+---
+
+## CMS Edit Modal — 4-Pillar System
+
+The edit modal (`cms.js`) adapts to both the current **persona** and the **active view**.
+
+### 4 Pillars
+
+| Pillar | Label | Fields |
+|--------|-------|--------|
+| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags, note |
+| `when` | 📅 Timeline & Cycle | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
+| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, mediaUrl |
+| `how` | 🛠️ Sync & Effort | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
+
+### Pillar Visibility by Persona
+- **PM**: `[what → when → where → how]` — all 4
+- **Developer**: `[where → how → what → when]` — all 4, execution-first; strategic fields readonly
+- **Executive**: `[what → when → where]` — 3 only, no Sync & Effort
+
+### Field Visibility by View (LIFECYCLE_FIELD_MAP)
+Default = only native fields shown. Toggle "Show All" to expand.
+
+| View | Native fields shown |
+|------|-------------------|
+| `backlog` | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
+| `sprint` | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
+| `track` | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
+| `kanban` | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
+| `releases` | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
+| `roadmap` | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
+| `epics` | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
+
+### Developer Field Protection (Strategic Shield)
+Fields readonly in dev mode:
+`epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId`
 
 ---
 
 ## Keyboard Shortcuts
 
-### View Navigation
-| Key | View |
-|---|---|
-| **1** | 🚀 Epics |
-| **2** | 🗺️ Roadmap |
-| **3** | 📚 Backlog |
-| **4** | 🏃 Sprints |
-| **5** | 🏗️ Tracks |
-| **6** | 📦 Releases |
-| **7** | 🧩 By Status |
-| **8** | 🎯 By Priority |
-| **9** | 👩‍💻 By Contributor |
-| **0** | 🔗 Dependencies |
-| **/** | Focus Search |
-
-### Mode Switching
-| Key | Mode |
-|---|---|
-| **Alt + 1** | 👨‍💼 PM Mode |
-| **Alt + 2** | 👩‍💻 Developer Mode |
-| **Alt + 3** | 👔 Executive Mode |
+| Key | View/Action |
+|-----|-------------|
+| `1` | Epics |
+| `2` | Roadmap |
+| `3` | Backlog |
+| `4` | Sprint |
+| `5` | Track |
+| `6` | Releases |
+| `7` | By Status |
+| `8` | By Priority |
+| `9` | By Contributor |
+| `0` | Dependencies |
+| `/` | Focus search |
+| `Alt+1` | PM mode |
+| `Alt+2` | Developer mode |
+| `Alt+3` | Executive mode |
 
 ---
 
-## Advanced Features
+## Product Hierarchy (OKR → Delivery)
 
-### Story Point Estimation
-**Fibonacci Scale:** 1, 2, 3, 5, 8, 13, 21
-
-**Estimation Guide:**
-- **1-2**: Trivial (< 1 hour)
-- **3**: Small (1-2 hours)
-- **5**: Medium (1 day)
-- **8**: Large (2-3 days)
-- **13**: Very Large (1 week)
-- **21**: Epic (needs breakdown)
-
-### Effort vs. Impact Matrix
-**Effort Levels:** Low / Medium / High
-**Impact Levels:** Low / Medium / High
-
-**Prioritization:**
-- High Impact + Low Effort = Quick Wins (do first)
-- High Impact + High Effort = Strategic Bets (plan carefully)
-- Low Impact + Low Effort = Fill-ins (do if time permits)
-- Low Impact + High Effort = Avoid (unless strategic)
-
-### Acceptance Criteria
-Each task can have an array of acceptance criteria:
-```json
-{
-  "acceptanceCriteria": [
-    "User can log in with email",
-    "Password reset flow works",
-    "Session persists for 7 days"
-  ]
-}
+```
+Vision (metadata.vision)              — Multi-year north star
+  └─ OKRs (metadata.okrs[])          — Quarterly measurable outcomes
+       └─ Epics (metadata.epics[])   — Large strategic initiatives (linkedOKR)
+            └─ Releases (metadata.releases[])  — Shippable increments (linkedEpic)
+                 └─ Backlog items    — Granular tasks (epicId, releasedIn, sprintId)
+                      └─ Sprints (metadata.sprints[])  — 2-week execution cycles
 ```
 
-### Velocity Tracking
-**Formula:** (Completed Story Points / Planned Story Points) × 100
-
-**Healthy Velocity:**
-- 80-90%: Sustainable
-- 90-100%: Optimal
-- < 80%: Under-delivery (investigate blockers)
-- > 100%: Over-planning or scope creep
-
 ---
 
-## Best Practices
+## Development Guide
 
-### For Product Managers
-1. **Start with OKRs** - Define quarterly objectives first
-2. **Link everything** - Connect tasks → Epics → OKRs
-3. **Groom weekly** - Keep backlog refined and estimated
-4. **Plan at 80%** - Leave 20% buffer for unplanned work
-5. **Monitor blockers** - Check Global Blocker Strip daily
-6. **Track velocity** - Use historical data for forecasting
+### Adding a Field
+1. Default in `app.js normalizeData()`
+2. `case 'fieldName':` in `cms.js renderField()` returning HTML
+3. Add to pillar in `FIELD_GROUPS` (cms.js:114)
+4. Add to relevant `LIFECYCLE_FIELD_MAP` views (cms.js:148)
+5. Read back in `saveCmsChanges()` via `getElementById('edit-fieldName')`
 
-### For Developers
-1. **Check My Tasks daily** - Start your day with focus
-2. **Flag blockers early** - Don't wait until standup
-3. **Update status actively** - Keep Kanban current
-4. **Add PR links** - Document completed work
-5. **Estimate honestly** - Use story points realistically
+### Adding a View
+1. Container in index.html: `<div id="viewname-view" class="view-section"></div>`
+2. Case in `switchView()` in app.js
+3. Add to `availableViews` + `VIEW_METADATA` in modes.js
+4. Render function in new `.js` file + `<script>` tag in index.html
 
-### For Executives
-1. **Review Dashboard weekly** - 5-minute health check
-2. **Focus on trends** - Velocity over time matters more than single sprints
-3. **Escalate at-risk epics** - Intervene when health is yellow/red
-4. **Celebrate wins** - Acknowledge achieved OKRs and Key Results
+### Code Style
+- Vanilla JS ES6+, no transpilation, no semicolons
+- No DOM manipulation in loops — build HTML strings, set `innerHTML` once
+- Don't mutate `UPDATE_DATA` directly — use CMS functions
+- New dependencies: CDN only
 
----
-
-## Troubleshooting
-
-### Issue: Dependency graph not rendering
-**Solution:** Ensure Mermaid.js is loaded. Check browser console for errors.
-
-### Issue: OKR progress not updating
-**Solution:** Verify tasks are linked to correct `epicId` which maps to OKR's `linkedEpic`.
-
-### Issue: Kanban drag-and-drop not working
-**Solution:** Check that CMS mode is enabled (`?cms=true`). Drag-drop requires edit permissions.
-
-### Issue: Capacity planning shows wrong utilization
-**Solution:** Ensure all tasks in sprint have `storyPoints` assigned and `sprintId` matches.
-
----
-
-## Contributing
-
-### Data Structure Changes
-When modifying `data.json` structure:
-1. Update this README
-2. Update CMS forms in `cms.js`
-3. Test with both local and GitHub-hosted data
-4. Archive old data format before migrating
-
-### Adding New Views
-1. Create new `.js` file (e.g., `my-new-view.js`)
-2. Add `<script src="my-new-view.js"></script>` to `index.html`
-3. Add view container: `<div id="my-new-view" class="view-section"></div>`
-4. Add routing in `core.js` switchView function
-5. Update this README with view documentation
+### Troubleshooting
+- **Nothing renders**: check `window.isActionLockActive` — may be stuck `true`
+- **Data stale**: `localStorage['khyaal_data']` may be cached; clear or use `?archive` param
+- **Graph not rendering**: Mermaid.js CDN may be slow; check console
+- **OKR progress wrong**: verify `item.epicId` matches `epic.id` which matches `okr.linkedEpic`
+- **Kanban drag not working**: requires `?cms=true` mode active
 
 ---
 
 ## Credits
 
-**Built for:** Khyaal Engineering Team
-**Architecture:** Zero-deployment, GitHub-backed, client-side rendering
-**Security:** AWS Lambda authentication gatekeeper
-**Visualization:** Mermaid.js (Dependencies), Google Charts (Analytics)
-**Styling:** Tailwind CSS via CDN
+Built for Khyaal Engineering Team · Zero-deployment · GitHub-backed · Client-side rendering  
+Security: AWS Lambda auth gatekeeper · Visualization: Mermaid.js + Google Charts · Styling: Tailwind CSS CDN
 
----
-
-© 2026 Khyaal Inc. | Engineering Pulse Dashboard
+© 2026 Khyaal Inc.

@@ -1,113 +1,99 @@
-# Claude Code Efficiency Cheat Sheet
+# Khyaal Pulse — Claude Quick Reference
 
-## Token-Saving Command Patterns
+## Where to Look for What
 
-### ✅ EFFICIENT (Low Token)
+| Task | File | Key function/line |
+|------|------|------------------|
+| View routing | app.js | `switchView()` |
+| Data normalization | app.js | `normalizeData()` |
+| Search/filter | core.js | `isItemInSearch()`, `isItemInDateRange()` |
+| Status/priority configs | core.js | `statusConfig`, `priorityConfig` |
+| Persona switching | modes.js | `switchMode()`, `getCurrentMode()` |
+| Mode filters | modes.js | `getModeFilter()` |
+| Edit modal form | cms.js | `buildContextAwareForm()` (line ~278) |
+| Pillar visibility | cms.js | `getVisibleFieldGroups()` (line 164) |
+| Field visibility per view | cms.js | `LIFECYCLE_FIELD_MAP` (line 148) |
+| Field inputs rendered | cms.js | `renderField()` (line ~452) |
+| Dev field protection | cms.js | `isFieldProtected()` (line 793) |
+| GitHub save | cms.js | `saveToGithub()` |
+| Blocker strip | core.js | `renderBlockerStrip()` |
+| Track/subtrack CRUD | cms.js | `openTrackEdit()`, `openSubtrackEdit()` |
+| Sprint/Release/Epic CRUD | cms.js | `openSprintEdit()`, `openReleaseEdit()`, `openEpicEdit()` |
+
+## Common Edit Patterns
+
+**Add a new item field:**
+1. Add field to `UPDATE_DATA` item shape with default in `app.js normalizeData()`
+2. Add `case 'fieldName':` in `cms.js renderField()` returning HTML
+3. Add field to appropriate FIELD_GROUPS pillar (`what/when/where/how`) in cms.js:114
+4. Add field to relevant LIFECYCLE_FIELD_MAP views in cms.js:148
+5. Read the value back in `saveCmsChanges()` via `document.getElementById('edit-fieldName')`
+
+**Add a new view:**
+1. Add `<div id="viewname-view" class="view-section"></div>` in index.html
+2. Add `case 'viewname': renderViewnameView(); break;` in `switchView()` in app.js
+3. Add view to `availableViews` in relevant MODE_CONFIG entries in modes.js
+4. Add to VIEW_METADATA in modes.js for nav label/icon
+5. Create render function in a new `.js` file, load via `<script>` tag in index.html
+
+**Fix a rendering bug:**
+- Check browser console first (all render functions have try/catch error shielding in Phase 34)
+- State lives in `UPDATE_DATA` — check it via `console.log(UPDATE_DATA)` in DevTools
+- `window.isActionLockActive` being stuck `true` will prevent all re-renders
+- `currentActiveView` must match a registered view ID or switchView silently no-ops
+
+## Data Flow
 ```
-Use code-review skill
-Use quick-fix skill with "auth timeout issue"
-Use code-explain skill for okr-module.js
-Read core.js lines 100-150
-Check the kanban-view.js file
+GitHub (data.json)
+  ↓ Lambda fetch (auth_gatekeeper.js)
+UPDATE_DATA (in-memory + localStorage)
+  ↓ CMS edits → saveCms() → saveToLocalStorage()
+  ↓ "Save to GitHub" → saveToGithub() → PUT to GitHub API
+GitHub (data.json updated)
 ```
 
-### ❌ INEFFICIENT (High Token)
+## Auth Flow
+- **Site auth**: password → SHA-256 → Lambda validates → `showProtectedContent()`
+- **CMS auth**: `?cms=true` + GitHub PAT stored in `localStorage['gh_pat']`
+- Both independent: site auth shows dashboard, CMS auth enables edits + GitHub push
+
+## Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| `1` | Epics view |
+| `2` | Roadmap |
+| `3` | Backlog |
+| `4` | Sprint |
+| `5` | Track |
+| `6` | Releases |
+| `7` | By Status |
+| `8` | By Priority |
+| `9` | By Contributor |
+| `0` | Dependencies |
+| `/` | Focus search |
+| `Alt+1/2/3` | Switch PM/Dev/Exec mode |
+
+## CMS Modal 3-Layer Visibility
+1. **Persona** → which pillars visible (`getVisibleFieldGroups`)
+2. **Active view** → which fields in each pillar (`LIFECYCLE_FIELD_MAP`)
+3. **"Show All" toggle** → override layer 2, show all pillar fields
+
+## Global State Shape (quick ref)
+```js
+UPDATE_DATA.tracks[ti].subtracks[si].items[ii]  // item access by index
+UPDATE_DATA.metadata.epics[]                      // strategic epics
+UPDATE_DATA.metadata.sprints[]                    // sprint definitions
+UPDATE_DATA.metadata.okrs[]                       // OKR definitions
+UPDATE_DATA.metadata.capacity.teamMembers[]       // team capacity
+UPDATE_DATA.metadata.velocityHistory[]            // sprint velocity data
+window.uiState.showAllTechnical                   // CMS "show all" toggle
+window.uiState.openEpics                          // Set of expanded epic IDs
+window.isActionLockActive                         // prevents re-renders during modal
 ```
-Search the entire codebase for...
-Read all files and find...
-Explore everything related to...
-Show me all code that does...
-```
 
-## Skills (Auto-Loaded, Progressive Disclosure)
-Skills load in 3 stages to save tokens:
-1. **Metadata** (~100 tokens) - Name and description loaded at startup
-2. **Instructions** (<5k tokens) - Loaded when skill is invoked
-3. **Resources** (unlimited) - External files executed via bash
-
-### Available Skills
-- `code-review` - Review recent git changes (quality, bugs, performance)
-- `quick-fix` - Surgical bug fixes with minimal context
-- `code-explain` - Concise explanations under 150 words
-- `feature-add` - Add features with minimal viable implementation
-- `performance-optimize` - Identify and fix bottlenecks
-
-**How to use**: Simply mention the skill trigger words in your prompt
-- "review my code" → triggers code-review
-- "fix this bug" → triggers quick-fix
-- "explain this function" → triggers code-explain
-
-## File Reference Format
-Always use: `file:line` format for precision
-Example: "Check core.js:245 for the switchView function"
-
-## Smart Search Strategies
-1. **Specific file first**: "Check app.js for normalizeData"
-2. **Pattern matching**: "Find *.js files with 'OKR' in name"
-3. **Targeted grep**: "Search for 'switchView' in core.js"
-
-## Advanced Features
-
-### Hooks (Automated)
-Hooks run automatically on events:
-- **userPromptSubmit**: Warns about archive requests, broad searches
-- **preToolUse**: Blocks reading excluded files, auto-approves safe reads
-- **postToolUse**: Warns when large files are read
-- **sessionStart**: Shows optimization tips
-
-### Modular Rules (.claude/rules/)
-Path-specific instructions that load only when relevant:
-- `javascript-files.md` - Code style for *.js files
-- `data-model.md` - Rules for data.json modifications
-- `ui-modules.md` - Guidelines for UI module files
-
-### Memory Systems
-**CLAUDE.md** (project-level) - Essential context, loads at startup
-**MEMORY.md** (auto memory) - First 200 lines at startup, topics on-demand
-
-## Context Windows (Configured)
-- Max tokens per request: 50,000
-- File read limit: 20 files
-- Auto memory load limit: 200 lines
-
-## Files Auto-Excluded (.claudeignore + hooks)
-- `archive/` folder - Blocked by preToolUse hook
-- `node_modules/` - Standard exclusion
-- `*.zip`, `*.log`, `*.min.js` - Build artifacts
-- Lock files, media, large data
-
-## Quick Wins
-1. Start new chat for new topics (don't thread indefinitely)
-2. Reference specific files by path
-3. Use slash commands for common tasks
-4. Ask incremental questions (not one huge request)
-5. Let Claude use Task tool for broad searches
-
-## Project-Specific Tips
-- **data.json** is live dataset (moderate size, ok to read)
-- **archive/** is large (excluded unless explicit)
-- **Core files**: app.js, core.js, views.js, cms.js
-- **Modules**: modes.js, okr-module.js, kanban-view.js, etc.
-
-## CMS Modal Field Visibility (Quick Ref)
-`cms.js` uses a 4-pillar system. Key functions:
-- `getVisibleFieldGroups(context)` → pillar list per persona (cms.js:164)
-- `LIFECYCLE_FIELD_MAP` → fields shown per view (cms.js:148)
-- `buildPillar()` → intersects pillar fields with lifecycle map (cms.js:343)
-- `isFieldProtected()` → dev mode strategic field lockout (cms.js:793)
-
-**LIFECYCLE_FIELD_MAP per view:**
-| View | Key Fields |
-|------|-----------|
-| backlog | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
-| sprint | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
-| track | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
-| kanban | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
-| releases | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
-| roadmap | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
-| epics | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
-
-**Dev-protected (readonly) fields:** epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId
-
-## Memory File
-Key context is stored in `.claude/memory.md` - Claude reads this automatically to understand your project structure without needing to re-explain.
+## Skills Available
+- `code-review` — review recent git changes
+- `quick-fix` — surgical bug fix
+- `code-explain` — explain a function (under 150 words)
+- `feature-add` — add feature, minimal implementation
+- `performance-optimize` — find and fix bottlenecks
