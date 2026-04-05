@@ -510,7 +510,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                 <div class="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4" onclick="event.stopPropagation()">
                                     <div>
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Priority</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
                                             <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
                                             <option value="low" ${item.priority === 'low' ? 'selected' : ''}>Low</option>
@@ -518,21 +518,21 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Epic</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Epic</option>
                                             ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🏃 Sprint</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'sprintId', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'sprintId', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Sprint</option>
                                             ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">📦 Release</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'releasedIn', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'releasedIn', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Release</option>
                                             ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}
                                             ${(UPDATE_DATA.metadata.releases || []).map(r => `<option value="${r.id}" ${item.releasedIn === r.id ? 'selected' : ''}>${r.name}</option>`).join('')}
@@ -540,7 +540,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🎯 Horizon</label>
-                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value)" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">None</option>
                                             ${((UPDATE_DATA.metadata && UPDATE_DATA.metadata.roadmap) || [
                 { id: '1M', label: 'Now (Immediate / 1 Month)' },

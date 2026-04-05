@@ -1654,16 +1654,22 @@ function saveCmsChanges() {
     if (typeof switchView === 'function') switchView(currentView);
 }
 
-function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value) {
-    const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
-    item[field] = value;
-    logChange(`Groom Item (${field})`, item.text);
+function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value, itemId) {
+    // 🏆 Phase 32: Use Universal Resolver for absolute ID-first matching
+    const data = getValidatedItemContext(itemId || { trackIndex, subtrackIndex, itemIndex });
+    if (!data) {
+        console.error('❌ updateItemGrooming: Item context not found', { trackIndex, subtrackIndex, itemIndex, itemId });
+        return;
+    }
+    
+    data.item[field] = value;
+    logChange(`Groom Item (${field})`, data.item.text);
     
     saveToLocalStorage();
     renderDashboard();
     
-    // Auto-refresh the view to show status changes
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'backlog';
+    // Auto-refresh the current view
+    const currentView = window.currentActiveView || 'backlog';
     if (typeof switchView === 'function') switchView(currentView);
 }
 
