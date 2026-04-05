@@ -1955,28 +1955,42 @@ function toggleComments(ti, si, ii, itemId, viewPrefix = 'main') {
 }
 
 function addComment(ti, si, ii, itemId, viewPrefix = 'main') {
-    const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii], ti, si, ii };
-    if (!data) return;
-    const input = document.getElementById(`${viewPrefix}-comment-input-${data.item.id}`);
-    if (!input || !input.value.trim()) return;
-    if (!data.item.comments) data.item.comments = [];
-    data.item.comments.push({ id: `c-${Date.now()}`, text: input.value.trim(), author: 'PM', timestamp: new Date().toISOString() });
-    input.value = '';
+    // 🏆 Phase 31: Use Universal Resolver for absolute ID-first matching
+    const data = getValidatedItemContext(itemId || { trackIndex: ti, subtrackIndex: si, itemIndex: ii });
+    if (!data) {
+        console.error('❌ addComment: Item context not found', { ti, si, ii, itemId });
+        return;
+    }
     
+    const inputId = `${viewPrefix}-comment-input-${data.item.id}`;
+    const input = document.getElementById(inputId);
+    if (!input || !input.value.trim()) return;
+    
+    if (!data.item.comments) data.item.comments = [];
+    data.item.comments.push({ 
+        id: `c-${Date.now()}`, 
+        text: input.value.trim(), 
+        author: 'PM', 
+        timestamp: new Date().toISOString() 
+    });
+    
+    input.value = '';
     saveToLocalStorage();
     
-    // 🏆 Phase 29: Smart re-render (maintains open state)
+    // Phase 29: Smart re-render (maintains open state)
     renderDashboard(); 
 }
 
 function deleteComment(ti, si, ii, cid, itemId, viewPrefix = 'main') {
-    const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii], ti, si, ii };
+    // 🏆 Phase 31: Use Universal Resolver for absolute ID-first matching
+    const data = getValidatedItemContext(itemId || { trackIndex: ti, subtrackIndex: si, itemIndex: ii });
     if (!data) return;
+    
     data.item.comments = (data.item.comments || []).filter(c => c.id !== cid);
     
     saveToLocalStorage();
     
-    // 🏆 Phase 29: Smart re-render (maintains open state)
+    // Phase 29: Smart re-render (maintains open state)
     renderDashboard(); 
 }
 

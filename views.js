@@ -646,7 +646,7 @@ function renderStatusView() {
                             <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
                                 ${item.track} &rarr; ${item.subtrack}
                             </span>
-                            ${renderItem(item, 'priority', item.trackIndex, item.subtrackIndex, item.itemIndex)}
+                            ${renderItem(item, 'status', item.trackIndex, item.subtrackIndex, item.itemIndex)}
                         </div>
                     </div>`;
             });
