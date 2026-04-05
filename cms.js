@@ -116,14 +116,14 @@ const FIELD_GROUPS = {
         label: 'WHAT',
         title: 'Goal & Intent',
         icon: '🎯',
-        fields: ['text', 'usecase', 'epicId', 'persona', 'tags'],
+        fields: ['text', 'usecase', 'epicId', 'persona', 'tags', 'note'], // Added Note (Description)
         color: '#6366f1' // indigo
     },
     when: {
         label: 'WHEN',
         title: 'Timeline & Cycle',
         icon: '📅',
-        fields: ['planningHorizon', 'sprintId', 'startDate', 'due', 'releasedIn'],
+        fields: ['planningHorizon', 'sprintId', 'startDate', 'due', 'releasedIn', 'publishedDate'], // Added PublishedDate
         color: '#8b5cf6' // purple
     },
     where: {
@@ -137,9 +137,23 @@ const FIELD_GROUPS = {
         label: 'HOW',
         title: 'Spec & Effort',
         icon: '🛠️',
-        fields: ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel', 'successMetric'],
+        fields: ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel', 'successMetric', 'strategicWeight', 'riskType'], // Added Weight & Risk
         color: '#f59e0b' // amber
     }
+};
+
+/**
+ * Mapping: Which fields are NATIVE to which view (Stage-specific primary exposure)
+ */
+const LIFECYCLE_FIELD_MAP = {
+    okr: ['text', 'epicId', 'planningHorizon', 'impactLevel', 'successMetric', 'usecase', 'strategicWeight', 'riskType', 'mediaUrl'],
+    epics: ['text', 'usecase', 'persona', 'planningHorizon', 'impactLevel', 'status', 'epicId', 'successMetric', 'strategicWeight', 'riskType', 'mediaUrl'],
+    roadmap: ['text', 'planningHorizon', 'startDate', 'usecase', 'epicId', 'status', 'tags', 'impactLevel', 'effortLevel', 'riskType'],
+    backlog: ['text', 'usecase', 'persona', 'sprintId', 'planningHorizon', 'status', 'epicId', 'priority', 'storyPoints', 'tags', 'impactLevel', 'effortLevel'],
+    sprint: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'sprintId', 'startDate', 'due', 'status', 'contributors', 'storyPoints', 'priority', 'blockerNote', 'note'],
+    track: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'due', 'sprintId', 'status', 'contributors', 'storyPoints', 'priority', 'dependencies', 'blockerNote', 'note'],
+    releases: ['text', 'releasedIn', 'publishedDate', 'status', 'mediaUrl', 'tags', 'note'],
+    kanban: ['text', 'sprintId', 'status', 'contributors', 'priority', 'storyPoints', 'blockerNote']
 };
 
 /**
@@ -263,21 +277,52 @@ function getRecommendedFieldGroups(context) {
  */
 function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
     const context = getFormContext();
-    const visiblePillars = getVisibleFieldGroups(context);
+    const persona = context.mode; // Respect the global dashboard mode
+    const showAll = window.uiState.showAllTechnical;
+    const visiblePillars = ['what', 'when', 'where', 'how']; // Show all pillars but filter fields within them
 
     let html = '';
+
+    // Global Lifecycle Perspective Header
+    const colorClass = persona === 'dev' ? 'bg-emerald-50 border-emerald-200' : 'bg-indigo-50 border-indigo-200';
+    const dotColor = persona === 'dev' ? 'bg-emerald-500' : 'bg-indigo-500';
+    const personaLabel = persona === 'dev' ? 'Developer' : 'Product Manager';
+
+    html += `
+        <div class="flex items-center justify-between mb-8 p-4 ${colorClass} border rounded-2xl shadow-sm">
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-20"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
+                    </span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Perspective: ${personaLabel}</span>
+                    ${persona === 'dev' ? '<span class="text-[9px] font-bold text-emerald-700 bg-white/60 px-1.5 py-0.5 rounded border border-emerald-100 ml-2">🔒 Strategic Shield Active</span>' : ''}
+                </div>
+            </div>
+            <label class="flex items-center gap-3 cursor-pointer group">
+                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
+                    ${persona === 'dev' ? 'Show All Strategic Details' : 'Show All Technical Details'}
+                </span>
+                <div class="relative inline-flex items-center">
+                    <input type="checkbox" class="sr-only peer" ${showAll ? 'checked' : ''} onchange="toggleShowAllTechnical()">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </div>
+            </label>
+        </div>
+    `;
 
     // Main 4-Pillar Grid
     html += '<div class="cms-pillars-grid">';
 
     visiblePillars.forEach(pillarKey => {
-        html += buildPillar(pillarKey, item, context);
+        html += buildPillar(pillarKey, item, { ...context, mode: persona, showAll });
     });
 
     html += '</div>';
 
     // Move/routing fields (only for existing items in PM mode)
-    if (!isNewItem && context.mode === 'pm' && trackInfo.trackIndex !== undefined) {
+    if (!isNewItem && persona === 'pm' && trackInfo.trackIndex !== undefined) {
         html += buildMoveFields(trackInfo.trackIndex, trackInfo.subtrackIndex);
     }
 
@@ -299,24 +344,22 @@ function buildPillar(pillarKey, item, context) {
     const pillar = FIELD_GROUPS[pillarKey];
     if (!pillar) return '';
 
-    // Persona-based overrides for fields within a pillar
+    // Phase 43: Lifecycle-Aware Filtering
+    // If NOT showing all, filter fields to only those native to the current stage
     let fields = [...pillar.fields];
-
-    // Developer persona: simplify WHAT and WHEN
-    if (context.mode === 'dev') {
-        if (pillarKey === 'what') fields = ['text']; // Just the title
-        if (pillarKey === 'when') fields = ['due'];  // Just the deadline
+    
+    if (!context.showAll) {
+        const nativeFieldsForView = LIFECYCLE_FIELD_MAP[context.view] || [];
+        fields = fields.filter(f => nativeFieldsForView.includes(f));
     }
 
-    // Executive persona: simplify WHERE
-    if (context.mode === 'exec' && pillarKey === 'where') {
-        fields = ['status']; // Just the overall status
-    }
+    // Defensive check: If a pillar becomes empty in a specific view, we might still want to show Title
+    if (fields.length === 0) return '';
 
     let html = `
         <div class="cms-pillar pillar-${pillarKey}">
             <div class="cms-pillar-header">
-                <div class="cms-pillar-icon">${pillar.icon}</div>
+                <div class="cms-pillar-icon" style="background: ${pillar.color}20; color: ${pillar.color};">${pillar.icon}</div>
                 <div>
                     <div class="cms-pillar-label">${pillar.label}</div>
                     <div class="cms-pillar-title">${pillar.title}</div>
@@ -408,13 +451,16 @@ function buildFieldGroup(groupKey, item, fieldsToShow) {
  */
 function renderField(fieldName, item) {
     const val = item[fieldName] || '';
+    const protected = isFieldProtected(fieldName);
+    const attr = protected ? 'readonly disabled' : '';
+    const persona = window.uiState.modalPersona || (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
 
     switch (fieldName) {
         case 'text':
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🎯 Task Title *</label>
-                    <input type="text" id="edit-text" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="What mission-critical task needs attention?" required>
+                    <input type="text" id="edit-text" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="What mission-critical task needs attention?" required ${attr}>
                 </div>
             `;
 
@@ -422,7 +468,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">📝 Engineering Context / Description</label>
-                    <textarea id="edit-note" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="Technical implementation details or operational notes...">${val}</textarea>
+                    <textarea id="edit-note" class="cms-input shadow-sm focus:shadow-md" rows="3" placeholder="Technical implementation details or operational notes..." ${attr}>${val}</textarea>
                 </div>
             `;
 
@@ -430,7 +476,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🚦 Engineering Lifecycle State</label>
-                    <select id="edit-status" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-status" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="later" ${val === 'later' ? 'selected' : ''}>Backlog (Later)</option>
                         <option value="next" ${val === 'next' || !val ? 'selected' : ''}>Planned (Next)</option>
                         <option value="now" ${val === 'now' ? 'selected' : ''}>Developing (Now)</option>
@@ -554,6 +600,41 @@ function renderField(fieldName, item) {
                 </div>
             `;
 
+        case 'publishedDate':
+            return `
+                <div class="field-wrapper">
+                    <label class="cms-label">🚀 Milestone / Publish Date</label>
+                    <input type="date" id="edit-publishedDate" value="${val}" class="cms-input shadow-sm focus:shadow-md" ${attr}>
+                </div>
+            `;
+
+        case 'strategicWeight':
+            return `
+                <div class="field-wrapper">
+                    <label class="cms-label">⚖️ Strategic Weight (%)</label>
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="edit-strategicWeight" value="${val || 0}" class="cms-input shadow-sm focus:shadow-md w-24" min="0" max="100" ${attr}>
+                        <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-500 transition-all duration-500" style="width: ${val || 0}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        case 'riskType':
+            return `
+                <div class="field-wrapper">
+                    <label class="cms-label">⚠️ Primary Risk Profile</label>
+                    <select id="edit-riskType" class="cms-input shadow-sm focus:shadow-md" ${attr}>
+                        <option value="none" ${val === 'none' ? 'selected' : ''}>None / Low Risk</option>
+                        <option value="technical" ${val === 'technical' ? 'selected' : ''}>🛠️ Technical (Architecture/Legacy)</option>
+                        <option value="market" ${val === 'market' ? 'selected' : ''}>📈 Market (Adoption/ROI)</option>
+                        <option value="operational" ${val === 'operational' ? 'selected' : ''}>⚙️ Operational (Resource/Timeline)</option>
+                        <option value="security" ${val === 'security' ? 'selected' : ''}>🛡️ Security / Compliance</option>
+                    </select>
+                </div>
+            `;
+
         case 'mediaUrl':
             return `
                 <div class="field-wrapper">
@@ -575,7 +656,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🛠️ Implementation Effort (ROI)</label>
-                    <select id="edit-effortLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()">
+                    <select id="edit-effortLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()" ${attr}>
                         <option value="">Select Effort...</option>
                         <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Easy Wins)</option>
                         <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Standard Cycle)</option>
@@ -625,10 +706,10 @@ function renderField(fieldName, item) {
         case 'acceptanceCriteria':
             const acVal = Array.isArray(val) ? val.join('\n') : val;
             return `
-                <div class="field-wrapper full-width mt-4">
-                    <label class="cms-label">✅ Definition of Done / Acceptance Criteria</label>
-                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[120px] shadow-sm focus:shadow-md" rows="4" placeholder="List criteria (one per line)...">${acVal}</textarea>
-                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight italic">Enter one criterion per line</p>
+                <div class="field-wrapper full-width mt-4 ${protected ? 'persona-protected' : ''}">
+                    <label class="cms-label">${protected ? '🔒' : '✅'} Definition of Done / Acceptance Criteria</label>
+                    <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[120px] shadow-sm focus:shadow-md ${protected ? 'bg-slate-50 opacity-80 cursor-not-allowed italic' : ''}" rows="4" placeholder="List criteria (one per line)..." ${protected ? 'readonly disabled' : ''}>${acVal}</textarea>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight italic">${protected ? 'Protected Strategy Field (PM Level Only)' : 'Enter one criterion per line'}</p>
                 </div>
             `;
 
@@ -697,8 +778,56 @@ function buildDataLists() {
 
 // Global UI State for Persistence
 window.uiState = {
-    openEpics: new Set() // Track Epic IDs that are currently expanded
+    openEpics: new Set(), // Track Epic IDs that are currently expanded
+    modalPersona: null,   // Current persona in modal ('pm' or 'dev')
+    showAllTechnical: false // PM deep-dive toggle
 };
+
+/**
+ * Persona Helper: Identify if a field is protected (Read-Only) for the current persona
+ */
+function isFieldProtected(fieldName) {
+    const persona = window.uiState.modalPersona || (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
+    
+    // Developers are PREVENTED from editing Strategic alignment
+    if (persona === 'dev') {
+        const protectedStrategicFields = [
+            'epicId', 'impactLevel', 'successMetric', 'acceptanceCriteria', 
+            'planningHorizon', 'releasedIn', 'strategicWeight', 'riskType', 
+            'effortLevel', 'publishedDate'
+        ];
+        return protectedStrategicFields.includes(fieldName);
+    }
+    
+    return false;
+}
+
+/**
+ * Persona Toggle Handler
+ */
+function toggleModalPersona(p) {
+    window.uiState.modalPersona = p;
+    // Re-render the form if open
+    if (editContext) {
+        const data = getValidatedItemContext(editContext.itemId || { trackIndex: editContext.trackIndex, subtrackIndex: editContext.subtrackIndex, itemIndex: editContext.itemIndex });
+        if (data) {
+            document.getElementById('modal-form').innerHTML = buildContextAwareForm(data.item, editContext.type === 'item-new', { trackIndex: data.ti, subtrackIndex: data.si });
+        }
+    }
+}
+
+/**
+ * PM Deep-Dive Toggle
+ */
+function toggleShowAllTechnical() {
+    window.uiState.showAllTechnical = !window.uiState.showAllTechnical;
+    if (editContext) {
+        const data = getValidatedItemContext(editContext.itemId || { trackIndex: editContext.trackIndex, subtrackIndex: editContext.subtrackIndex, itemIndex: editContext.itemIndex });
+        if (data) {
+            document.getElementById('modal-form').innerHTML = buildContextAwareForm(data.item, editContext.type === 'item-new', { trackIndex: data.ti, subtrackIndex: data.si });
+        }
+    }
+}
 
 /**
  * Universal Item Context Resolver
@@ -809,8 +938,12 @@ function openItemEdit(ti, si, ii, itemId) {
     const data = getValidatedItemContext(itemId || { trackIndex: ti, subtrackIndex: si, itemIndex: ii });
     if (!data) return;
 
+    // Reset Modal Persona UI State
+    window.uiState.modalPersona = null; // Revert to view-based default
+    window.uiState.showAllTechnical = false;
+
     const item = data.item;
-    editContext = { type: 'item', trackIndex: data.ti, subtrackIndex: data.si, itemIndex: data.ii };
+    editContext = { type: 'item', trackIndex: data.ti, subtrackIndex: data.si, itemIndex: data.ii, itemId: item.id };
 
     document.getElementById('modal-title').innerText = 'Edit Engineering Task';
 
@@ -838,6 +971,10 @@ function openItemEdit(ti, si, ii, itemId) {
 }
 
 function addItem(trackIndex, subtrackIndex, defaults = {}) {
+    // Reset Modal Persona UI State
+    window.uiState.modalPersona = null;
+    window.uiState.showAllTechnical = false;
+
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
 
     document.getElementById('modal-title').innerText = 'Add New Task';
