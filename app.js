@@ -51,6 +51,7 @@ function normalizeData() {
 /**
  * Universal Dashboard Orchestrator
  * Performs a silent, global refresh of all UI modules to match current UPDATE_DATA.
+ * Names aligned with core.js switchView mapping.
  */
 function renderDashboard() {
     console.log('🔄 renderDashboard() triggered - Synchronizing all views...');
@@ -62,6 +63,7 @@ function renderDashboard() {
     normalizeData();
     
     // 3. Trigger all primary view renders to update their internal DOM
+    // Aligned with switchView(view) in core.js
     if (typeof renderWorkflowView === 'function') renderWorkflowView();
     if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
     if (typeof renderTrackView === 'function') renderTrackView();
@@ -74,8 +76,13 @@ function renderDashboard() {
     if (typeof renderReleasesView === 'function') renderReleasesView();
     if (typeof renderRoadmapView === 'function') renderRoadmapView();
     if (typeof renderOkrView === 'function') renderOkrView();
-    if (typeof renderEpicListView === 'function') renderEpicListView();
+    if (typeof renderEpicsView === 'function') renderEpicsView();
     if (typeof renderBacklogView === 'function') renderBacklogView();
+    if (typeof renderKanbanView === 'function') renderKanbanView();
+    if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
+    if (typeof renderCapacityView === 'function') renderCapacityView();
+    if (typeof renderMyTasksView === 'function') renderMyTasksView();
+    if (typeof renderExecutiveDashboard === 'function') renderExecutiveDashboard();
     
     // 4. Update cross-view indicators
     if (typeof updateTabCounts === 'function') updateTabCounts();
