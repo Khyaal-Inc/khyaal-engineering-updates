@@ -4,6 +4,7 @@ let editContext = null;
 let _selectedContributors = [];
 let _selectedTags = [];
 let _selectedDeps = [];
+window.isActionLockActive = false; // Management Lock to prevent UI refreshes during modals
 
 // CMS Config
 const CMS_CONFIG = {
@@ -45,6 +46,7 @@ function updateTabCounts() {
  * Global View Orchestrator
  */
 function switchView(viewId) {
+    if (window.isActionLockActive) return; // Ignore view switches while an action is in progress
     // 1. Close any open modals
     closeCmsModal();
 
@@ -693,6 +695,98 @@ function buildDataLists() {
     `;
 }
 
+// Global UI State for Persistence
+window.uiState = {
+    openEpics: new Set() // Track Epic IDs that are currently expanded
+};
+
+/**
+ * Robust Item Context Resolver
+ * High-reliability lookup for task actions.
+ */
+function getValidatedItemContext(itemId) {
+    if (!itemId) return null;
+    const found = findItemById(itemId);
+    if (found) return found;
+
+    // Fallback for Modal actions
+    if (editContext && editContext.itemIndex !== undefined) {
+        const track = UPDATE_DATA.tracks[editContext.trackIndex];
+        if (track && track.subtracks[editContext.subtrackIndex]) {
+            return {
+                item: track.subtracks[editContext.subtrackIndex].items[editContext.itemIndex],
+                ti: editContext.trackIndex,
+                si: editContext.subtrackIndex,
+                ii: editContext.itemIndex
+            };
+        }
+    }
+    return null;
+}
+
+/**
+ * Robust Item Context Resolver
+ * High-reliability lookup for task actions.
+ */
+function getValidatedItemContext(itemId) {
+    if (!itemId) return null;
+    const found = findItemById(itemId);
+    if (found) return found;
+
+    // Fallback for Modal actions
+    if (editContext && editContext.itemIndex !== undefined) {
+        const track = UPDATE_DATA.tracks[editContext.trackIndex];
+        if (track && track.subtracks[editContext.subtrackIndex]) {
+            return {
+                item: track.subtracks[editContext.subtrackIndex].items[editContext.itemIndex],
+                ti: editContext.trackIndex,
+                si: editContext.subtrackIndex,
+                ii: editContext.itemIndex
+            };
+        }
+    }
+    return null;
+}
+
+/**
+ * Robust Item Context Resolver
+ * High-reliability lookup for task actions.
+ */
+function getValidatedItemContext(itemId) {
+    if (!itemId) return null;
+    const found = findItemById(itemId);
+    if (found) return found;
+
+    // Fallback for Modal actions
+    if (editContext && editContext.itemIndex !== undefined) {
+        const track = UPDATE_DATA.tracks[editContext.trackIndex];
+        if (track && track.subtracks[editContext.subtrackIndex]) {
+            return {
+                item: track.subtracks[editContext.subtrackIndex].items[editContext.itemIndex],
+                ti: editContext.trackIndex,
+                si: editContext.subtrackIndex,
+                ii: editContext.itemIndex
+            };
+        }
+    }
+    return null;
+}
+
+function findItemById(itemId) {
+    if (!UPDATE_DATA) return null;
+    for (let ti = 0; ti < UPDATE_DATA.tracks.length; ti++) {
+        const track = UPDATE_DATA.tracks[ti];
+        for (let si = 0; si < track.subtracks.length; si++) {
+            const sub = track.subtracks[si];
+            const ii = sub.items.findIndex(item => item.id === itemId);
+            if (ii !== -1) {
+                return { item: sub.items[ii], ti, si, ii };
+            }
+        }
+    }
+    return null;
+}
+
 function initCms() {
     const params = new URLSearchParams(window.location.search);
 
@@ -739,9 +833,12 @@ function logoutCms() {
 }
 
 // ------ MODAL OPS (FULL) ------
-function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
-    const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
-    editContext = { type: 'item', trackIndex, subtrackIndex, itemIndex };
+function openItemEdit(ti, si, ii, itemId) {
+    const data = getValidatedItemContext(itemId || { trackIndex: ti, subtrackIndex: si, itemIndex: ii });
+    if (!data) return;
+
+    const item = data.item;
+    editContext = { type: 'item', trackIndex: data.ti, subtrackIndex: data.si, itemIndex: data.ii };
 
     document.getElementById('modal-title').innerText = 'Edit Engineering Task';
 
@@ -752,7 +849,7 @@ function openItemEdit(trackIndex, subtrackIndex, itemIndex) {
     // Inject footer buttons
     document.getElementById('modal-footer').innerHTML = `
         <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
-        <button onclick="deleteItem()" class="cms-btn cms-btn-danger mr-auto">Delete Item</button>
+        <button onclick="deleteItem(undefined, undefined, undefined, '${item.id}')" class="cms-btn cms-btn-danger mr-auto">Delete Item</button>
         <button onclick="saveCms()" class="cms-btn cms-btn-primary">Save Changes</button>
     `;
 
@@ -1860,66 +1957,115 @@ async function saveToGithub() {
 }
 
 // ------ COMMENTS ------
-function toggleComments(ti, si, ii) {
-    const id = `comments-${ti}-${si}-${ii}`;
+function toggleComments(ti, si, ii, itemId, viewPrefix = 'main') {
+    const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii] };
+    if (!data) return;
+    const id = `${viewPrefix}-comments-${data.item.id}`;
     document.getElementById(id)?.classList.toggle('hidden');
 }
 
-function addComment(ti, si, ii) {
-    const input = document.getElementById(`comment-input-${ti}-${si}-${ii}`);
+function addComment(ti, si, ii, itemId, viewPrefix = 'main') {
+    const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii], ti, si, ii };
+    if (!data) return;
+    const input = document.getElementById(`${viewPrefix}-comment-input-${data.item.id}`);
     if (!input || !input.value.trim()) return;
-    const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii];
-    if (!item.comments) item.comments = [];
-    item.comments.push({ id: `c-${Date.now()}`, text: input.value.trim(), author: 'PM', timestamp: new Date().toISOString() });
+    if (!data.item.comments) data.item.comments = [];
+    data.item.comments.push({ id: `c-${Date.now()}`, text: input.value.trim(), author: 'PM', timestamp: new Date().toISOString() });
     input.value = '';
-    const thread = document.getElementById(`thread-${ti}-${si}-${ii}`);
-    if (thread) thread.innerHTML = renderCommentThread(item.comments, ti, si, ii);
+    const thread = document.getElementById(`${viewPrefix}-thread-${data.item.id}`);
+    if (thread) thread.innerHTML = renderCommentThread(data.item.comments, data.ti, data.si, data.ii, data.item.id, viewPrefix);
 }
 
-function deleteComment(ti, si, ii, cid) {
-    const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii];
-    item.comments = (item.comments || []).filter(c => c.id !== cid);
-    const thread = document.getElementById(`thread-${ti}-${si}-${ii}`);
-    if (thread) thread.innerHTML = renderCommentThread(item.comments, ti, si, ii);
+function deleteComment(ti, si, ii, cid, itemId, viewPrefix = 'main') {
+    const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii], ti, si, ii };
+    if (!data) return;
+    data.item.comments = (data.item.comments || []).filter(c => c.id !== cid);
+    const threadId = `${viewPrefix}-thread-${data.item.id}`;
+    const thread = document.getElementById(threadId);
+    if (thread) thread.innerHTML = renderCommentThread(data.item.comments, data.ti, data.si, data.ii, data.item.id, viewPrefix);
 }
 
-function deleteItem(ti, si, ii) {
-    const t = ti !== undefined ? ti : editContext.trackIndex;
-    const s = si !== undefined ? si : editContext.subtrackIndex;
-    const i = ii !== undefined ? ii : editContext.itemIndex;
+function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
+    const data = getValidatedItemContext(itemId);
+    if (!data) return;
 
-    const item = UPDATE_DATA.tracks[t].subtracks[s].items[i];
-    if (!confirm(`Delete task: "${item.text}"?`)) return;
+    // Prevent background refreshes from killing the modal
+    window.isActionLockActive = true;
 
-    UPDATE_DATA.tracks[t].subtracks[s].items.splice(i, 1);
-    logChange('Delete Item', item.text);
+    // Decouple from event loop to prevent instant closure
+    setTimeout(() => {
+        const confirmResult = confirm(`Delete task: "${data.item.text}"?`);
+        if (!confirmResult) { window.isActionLockActive = false; return; }
 
-    closeCmsModal();
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
-    updateTabCounts();
+        UPDATE_DATA.tracks[data.ti].subtracks[data.si].items.splice(data.ii, 1);
+        logChange('Delete Item', data.item.text);
+
+        closeCmsModal();
+        saveToLocalStorage();
+        
+        // Final refresh
+        if (viewPrefix) {
+            renderDashboard();
+            switchView(viewPrefix);
+        } else {
+            const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+            switchView(currentView);
+        }
+        updateTabCounts();
+        
+        // Release the lock
+        window.isActionLockActive = false;
+    }, 0);
 }
 
-function sendToBacklog(ti, si, ii) {
-    const track = UPDATE_DATA.tracks[ti];
-    let bIdx = track.subtracks.findIndex(s => s.name === 'Backlog');
-    if (bIdx === -1) { track.subtracks.push({ name: 'Backlog', items: [] }); bIdx = track.subtracks.length - 1; }
-    const [item] = track.subtracks[si].items.splice(ii, 1);
-    track.subtracks[bIdx].items.push(item);
-    logChange('Move to Backlog', item.text);
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
-    updateTabCounts();
+function sendToBacklog(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
+    const data = getValidatedItemContext(itemId);
+    if (!data) return;
+
+    window.isActionLockActive = true;
+    setTimeout(() => {
+        const track = UPDATE_DATA.tracks[data.ti];
+        let bIdx = track.subtracks.findIndex(s => s.name === 'Backlog');
+        if (bIdx === -1) { track.subtracks.push({ name: 'Backlog', items: [] }); bIdx = track.subtracks.length - 1; }
+        const [item] = track.subtracks[data.si].items.splice(data.ii, 1);
+        track.subtracks[bIdx].items.push(item);
+        logChange('Move to Backlog', item.text);
+        
+        saveToLocalStorage();
+        
+        if (viewPrefix) {
+            renderDashboard();
+            switchView(viewPrefix);
+        } else {
+            const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+            switchView(currentView);
+        }
+        updateTabCounts();
+        window.isActionLockActive = false;
+    }, 0);
 }
 
-function toggleBlocker(ti, si, ii) {
-    const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii];
-    if (item.blocker) { delete item.blocker; delete item.blockerNote; logChange('Unblock Item', item.text); }
-    else { const note = prompt('Blocker reason:', '') || ''; if (!note) return; item.blocker = true; item.blockerNote = note; logChange('Flag Blocker', item.text); }
+function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
+    const data = getValidatedItemContext(itemId);
+    if (!data) return;
 
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
-    if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
+    window.isActionLockActive = true;
+    setTimeout(() => {
+        if (data.item.blocker) { delete data.item.blocker; delete data.item.blockerNote; logChange('Unblock Item', data.item.text); }
+        else { const note = prompt('Blocker reason:', '') || ''; if (!note) { window.isActionLockActive = false; return; } data.item.blocker = true; data.item.blockerNote = note; logChange('Flag Blocker', data.item.text); }
+
+        saveToLocalStorage();
+        
+        if (viewPrefix) {
+            renderDashboard();
+            switchView(viewPrefix);
+        } else {
+            const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+            switchView(currentView);
+        }
+        if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
+        window.isActionLockActive = false;
+    }, 0);
 }
 
 // ------ ARCHIVE MANAGEMENT ------
@@ -2361,4 +2507,23 @@ function logoutAll() {
     localStorage.removeItem('khyaal_site_auth');
     localStorage.removeItem('GITHUB_CMS_TOKEN');
     location.reload();
+}
+
+// Toggle Epic Backlog Persistence
+function toggleEpicBacklog(epicId, isOpen) {
+    if (isOpen) {
+        window.uiState.openEpics.add(epicId);
+    } else {
+        window.uiState.openEpics.delete(epicId);
+    }
+}
+
+/**
+ * Silent Data Persistence
+ * Persists data to LocalStorage without refreshing the page.
+ */
+function saveToLocalStorage() {
+    if (!UPDATE_DATA) return;
+    localStorage.setItem('khyaal_data', JSON.stringify(UPDATE_DATA));
+    console.log('✅ Changes persisted silently to LocalStorage');
 }

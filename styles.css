@@ -79,8 +79,15 @@ body {
 
 /* Animations */
 @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-fadeInDown {
@@ -88,8 +95,15 @@ body {
 }
 
 @keyframes bounce-horizontal {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
 }
 
 .animate-bounce-horizontal {
@@ -293,7 +307,8 @@ summary::-webkit-details-marker {
 /* Item Styling */
 .item-row {
     padding: 1rem 1.5rem;
-    border-bottom: 1.5px solid #e2e8f0; /* Clearer separator (slate-200) */
+    border-bottom: 1.5px solid #e2e8f0;
+    /* Clearer separator (slate-200) */
     display: flex;
     align-items: flex-start;
     gap: 1.5rem;
@@ -1492,14 +1507,15 @@ summary::-webkit-details-marker {
 .sprint-card {
     background: #fff;
     border-radius: 20px;
-    border: none; /* No more hard border */
+    border: none;
+    /* No more hard border */
     margin-bottom: 2rem;
     overflow: hidden;
     /* Deep Premium Elevation Shadow */
-    box-shadow: 
-        0 10px 15px -3px rgba(0, 0, 0, 0.04), 
+    box-shadow:
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
         0 4px 6px -2px rgba(0, 0, 0, 0.02),
-        0 0 0 1px rgba(0, 0, 0, 0.05); 
+        0 0 0 1px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
@@ -1546,7 +1562,8 @@ summary::-webkit-details-marker {
     border-radius: 9999px;
     background: #e2e8f0;
     position: relative;
-    overflow: visible; /* To see labels clearly */
+    overflow: visible;
+    /* To see labels clearly */
 }
 
 .epic-stage-pill.active {
@@ -1572,12 +1589,14 @@ summary::-webkit-details-marker {
 .epic-tactical-scroll {
     display: block;
     position: relative;
-    max-height: 500px; /* Increased for better visibility */
+    max-height: 500px;
+    /* Increased for better visibility */
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f8fafc;
-    z-index: 1; /* Ensure containment */
+    z-index: 1;
+    /* Ensure containment */
 }
 
 .epic-tactical-scroll::-webkit-scrollbar {
@@ -1603,7 +1622,7 @@ summary::-webkit-details-marker {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     display: inline-block;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .strategic-metric-row {
@@ -1612,7 +1631,7 @@ summary::-webkit-details-marker {
     padding: 6px 10px;
     border-left: 3.5px solid #6366f1;
     margin: 8px 0;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .strategic-metric-label {
@@ -1641,10 +1660,25 @@ summary::-webkit-details-marker {
     border: 1px solid currentColor;
 }
 
-.risk-technical { background: #fff7ed; color: #ea580c; }
-.risk-market { background: #fdf2f8; color: #db2777; }
-.risk-operational { background: #f0fdf4; color: #16a34a; }
-.risk-none { background: #f8fafc; color: #64748b; }
+.risk-technical {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.risk-market {
+    background: #fdf2f8;
+    color: #db2777;
+}
+
+.risk-operational {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.risk-none {
+    background: #f8fafc;
+    color: #64748b;
+}
 
 /* Unified Progressive Disclosure (Toggles) */
 .epic-tactical-details {

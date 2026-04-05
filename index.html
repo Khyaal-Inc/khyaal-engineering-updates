@@ -25,15 +25,32 @@
                 const SITE_AUTH_KEY = 'khyaal_site_auth';
 
                 const initLocalLoad = () => {
+                    // 🏆 Phase 26: Prioritize LocalStorage data for silent session persistence
+                    const cachedData = localStorage.getItem('khyaal_data');
+                    if (cachedData) {
+                        try {
+                            window.UPDATE_DATA = JSON.parse(cachedData);
+                            localStorage.setItem(SITE_AUTH_KEY, 'true');
+                            console.log('✅ Synchronized with LocalData');
+                            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                                if (typeof initDashboard === 'function') initDashboard();
+                            } else {
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    if (typeof initDashboard === 'function') initDashboard();
+                                });
+                            }
+                            return; // Stop here, we have the latest data
+                        } catch (e) {
+                            console.error('LocalStorage Data Corrupt, falling back to data.json');
+                        }
+                    }
+
                     fetch('./data.json?v=' + Date.now())
                         .then(r => r.json())
                         .then(data => {
                             window.UPDATE_DATA = data;
                             localStorage.setItem(SITE_AUTH_KEY, 'true');
-                            // Management buttons (Edit/Delete) will NOT appear by default
-                            // They will only be authorized by cms.js upon GitHub PAT entry
-
-                            // Wait for DOM to be ready and all scripts to be loaded
+                            // ... rest same ...
                             if (document.readyState === 'complete' || document.readyState === 'interactive') {
                                 if (typeof initDashboard === 'function') initDashboard();
                             } else {

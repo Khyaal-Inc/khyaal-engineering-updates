@@ -84,6 +84,7 @@ function initWorkflowNav() {
 
 // Detect workflow stage based on current active view
 function detectStageFromView() {
+    if (window.isActionLockActive) return; // Prevent navigation sync during active tactical actions
     try {
         const sections = document.querySelectorAll('.view-section.active');
         if (sections.length === 0) return;

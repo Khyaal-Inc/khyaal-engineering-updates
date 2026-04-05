@@ -51,7 +51,7 @@ function renderTagPills(tags) {
     }).join(' ');
 }
 
-function renderCommentThread(comments, ti, si, ii) {
+function renderCommentThread(comments, ti, si, ii, itemId, viewPrefix = 'main') {
     if (!comments || comments.length === 0) return '<div class="text-slate-400 text-xs italic p-2 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">No discussion notes yet.</div>';
 
     return comments.map(c => {
@@ -62,7 +62,7 @@ function renderCommentThread(comments, ti, si, ii) {
                     <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500">${(c.author || 'P').charAt(0)}</span>
                     <span class="text-[11px] font-black text-slate-800 uppercase tracking-wider">${c.author || 'PM'}</span>
                     <span class="text-[10px] text-slate-400 font-medium">${dateStr}</span>
-                    ${shouldShowManagement() ? `<button onclick="event.stopPropagation(); deleteComment(${ti},${si},${ii},'${c.id}')" class="ml-auto text-slate-300 hover:text-red-500 transition-colors">
+                    ${shouldShowManagement() ? `<button onclick="event.stopPropagation(); deleteComment(${ti},${si},${ii},'${c.id}', '${itemId}', '${viewPrefix}')" class="ml-auto text-slate-300 hover:text-red-500 transition-colors">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>` : ''}
                 </div>
@@ -283,7 +283,7 @@ function renderTrackView() {
             } else {
                 sortedItems.forEach((item) => {
                     const originalIndex = subtrack.items.indexOf(item);
-                    html += renderItem(item, subtrack.note, trackIndex, subtrackIndex, originalIndex);
+                    html += renderItem(item, 'track', trackIndex, subtrackIndex, originalIndex);
                 });
             }
 
@@ -314,7 +314,7 @@ function toggleSubtrack(trackId, subtrackName, iconId) {
     setSubtrackCollapsed(trackId, subtrackName, isNowCollapsed);
 }
 
-function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, isGrooming = false) {
+function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIndex, isGrooming = false) {
     const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
     const status = statusConfig[item.status];
     const priority = item.priority || 'medium';
@@ -332,7 +332,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
 
     const storyPointsHTML = item.storyPoints ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[9px] border border-slate-200 shadow-sm" title="Story Points">${item.storyPoints} SP</span>` : '';
     const displayText = highlightSearch(item.text);
-    const effectiveNote = item.note || subtrackNote;
+    const effectiveNote = item.note || '';
 
     // --- STRATEGIC CONTEXT (Epics/OKRs) ---
     // Shown prominently for PM/Exec, tucked away for Dev unless critical
@@ -439,10 +439,10 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
     if (shouldShowManagement()) {
         cmsControls = `
             <div class="flex items-center gap-3 mt-1.5 flex-wrap">
-                <span onclick="event.stopPropagation(); openItemEdit(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
-                <span onclick="event.stopPropagation(); deleteItem(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
-                <button onclick="event.stopPropagation(); sendToBacklog(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="send-to-backlog-btn">→ Backlog</button>
-                <button onclick="event.stopPropagation(); toggleBlocker(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="send-to-backlog-btn ${item.blocker ? 'text-red-600 border-red-200 bg-red-50' : ''}">${item.blocker ? '&#128275; Unblock' : '&#128274; Flag Blocker'}</button>
+                <span onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
+                <span onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
+                <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn">→ Backlog</button>
+                <button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn ${item.blocker ? 'text-red-600 border-red-200 bg-red-50' : ''}">${item.blocker ? '&#128275; Unblock' : '&#128274; Flag Blocker'}</button>
             </div>
         `;
     }
@@ -484,8 +484,8 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                             <div class="info-wrapper mb-1">
                                 <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
-                                <button class="info-btn" aria-label="More information">i</button>
-                                ${tooltipHTML}
+                                <button class="info-btn" aria-label="More information" onclick="event.stopPropagation(); document.getElementById('${viewPrefix}-tooltip-${item.id}').classList.toggle('visible')">i</button>
+                                <span id="${viewPrefix}-tooltip-${item.id}" class="tooltip">${item.description || 'No detailed description available.'}</span>
                             </div>
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 ${strategicContext}
@@ -498,7 +498,7 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                             ${effortImpactHTML}
                             ${acHTML}
                             <div class="flex flex-wrap items-center gap-2 mt-2">
-                                <button id="comment-btn-${trackIndex}-${subtrackIndex}-${itemIndex}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments || []).length} Comments</button>
+                                <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">💬 ${(item.comments || []).length} Comments</button>
                                 ${cmsControls ? `<div>${cmsControls}</div>` : ''}
                             </div>
 
@@ -547,14 +547,14 @@ function renderItem(item, subtrackNote, trackIndex, subtrackIndex, itemIndex, is
                                     </div>
                                 </div>
                             ` : ''}
-                            <div id="comments-${trackIndex}-${subtrackIndex}-${itemIndex}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
-                                <div id="thread-${trackIndex}-${subtrackIndex}-${itemIndex}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
-                                    ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex)}
+                            <div id="${viewPrefix}-comments-${item.id}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
+                                <div id="${viewPrefix}-thread-${item.id}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
+                                    ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex, item.id, viewPrefix)}
                                 </div>
                                 ${shouldShowManagement() ? `
                                     <div class="flex gap-2 relative">
-                                        <input type="text" id="comment-input-${trackIndex}-${subtrackIndex}-${itemIndex}" placeholder="Type @ to tag contributors..." class="cms-input flex-1 !mb-0 text-xs" onkeyup="if(event.key==='Enter') addComment(${trackIndex},${subtrackIndex},${itemIndex})">
-                                        <button onclick="addComment(${trackIndex}, ${subtrackIndex}, ${itemIndex})" class="cms-btn cms-btn-primary !px-3 !py-1 flex-shrink-0 text-xs shadow-sm">Post</button>
+                                        <input type="text" id="${viewPrefix}-comment-input-${item.id}" placeholder="Type @ to tag contributors..." class="cms-input flex-1 !mb-0 text-xs" onkeyup="if(event.key==='Enter') addComment(${trackIndex},${subtrackIndex},${itemIndex}, '${item.id}', '${viewPrefix}')">
+                                        <button onclick="addComment(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="cms-btn cms-btn-primary !px-3 !py-1 flex-shrink-0 text-xs shadow-sm">Post</button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -642,7 +642,7 @@ function renderStatusView() {
                             <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
                                 ${item.track} &rarr; ${item.subtrack}
                             </span>
-                            ${renderItem(item, '', item.trackIndex, item.subtrackIndex, item.itemIndex)}
+                            ${renderItem(item, 'priority', item.trackIndex, item.subtrackIndex, item.itemIndex)}
                         </div>
                     </div>`;
             });
@@ -692,7 +692,7 @@ function renderPriorityView() {
                         <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
                             ${item.track} &rarr; ${item.subtrack}
                         </span>
-                        ${renderItem(item, '', item.trackIndex, item.subtrackIndex, item.itemIndex)}
+                        ${renderItem(item, 'priority', item.trackIndex, item.subtrackIndex, item.itemIndex)}
                     </div>`;
             });
             html += `</div></div>`;
@@ -832,7 +832,7 @@ function renderBacklogView() {
             </div>
             <div class="p-3 space-y-3 bg-white">`;
         backlogSub.items.forEach((item, ii) => {
-            html += renderItem(item, '', trackIndex, si, ii, groomingMode);
+            html += renderItem(item, 'status', trackIndex, si, ii, groomingMode);
         });
         html += `</div></div>`;
     });
@@ -995,8 +995,11 @@ function renderEpicsView() {
             </div>
         `;
 
+        let epicItemsForCard = findItemsByMetadataId('epicId', e.id);
+        const epicItemsHtml = epicItemsForCard.map(item => renderItem(item, 'epic', item.trackIndex, item.subtrackIndex, item.itemIndex)).join('');
+
         html += `
-            <div class="sprint-card">
+            <div class="sprint-card epic-card p-0 mb-8 overflow-hidden rounded-3xl" id="epic-${e.id}">
                 <div class="epic-section-header">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-md ring-2 ring-slate-100">
@@ -1019,15 +1022,17 @@ function renderEpicsView() {
 
                 <!-- HOW Context: Tactical Execution (Unified Progressive Disclosure) -->
                 <div class="bg-slate-50 border-t border-slate-100 items-contain">
-                    <details class="epic-tactical-details group">
+                    <details class="epic-tactical-details group" ${window.uiState.openEpics.has(e.id) ? 'open' : ''} ontoggle="toggleEpicBacklog('${e.id}', this.open)">
                         <summary class="epic-tactical-summary">
                             <span class="group-open:rotate-180 transition-transform">▼</span>
-                            ${activeMode === 'exec' 
-                                ? 'View Tactical Execution Details' 
-                                : 'View Execution Backlog & Strategic Tools <span class="pm-mode-indicator">PM Mode</span>'}
+                            ${activeMode === 'exec'
+                ? 'View Tactical Execution Details'
+                : 'View Execution Backlog & Strategic Tools <span class="pm-mode-indicator">PM Mode</span>'}
                         </summary>
                         <div class="epic-tactical-scroll p-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                            ${renderGroupedItems(epicItems)}
+                            <div class="border border-t-0 p-0 rounded-b-lg overflow-hidden">
+                                ${epicItemsHtml}
+                            </div>
                         </div>
                     </details>
                 </div>
@@ -1306,7 +1311,7 @@ function findItemsByMetadataId(key, value) {
     return found;
 }
 
-function renderGroupedItems(items) {
+function renderGroupedItems(items, viewPrefix = 'main') {
     if (items.length === 0) return '<div class="text-center py-8 text-slate-400 italic text-sm">No items assigned yet.</div>';
 
     const grouped = {};
@@ -1324,7 +1329,7 @@ function renderGroupedItems(items) {
                     ${trackName}
                 </div>
                 <div class="border border-t-0 p-0 rounded-b-lg overflow-hidden">
-                    ${group.items.map(item => renderItem(item, '', item.trackIndex, item.subtrackIndex, item.itemIndex)).join('')}
+                    ${group.items.map(item => renderItem(item, viewPrefix, item.trackIndex, item.subtrackIndex, item.itemIndex)).join('')}
                 </div>
             </div>
         `;

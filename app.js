@@ -3,7 +3,7 @@
 // ------ DATA NORMALIZATION ------
 function normalizeData() {
     if (!UPDATE_DATA) return;
-    
+
     // 1. Populate Global Team Filter if it exists
     const filterEl = document.getElementById('global-team-filter');
     if (filterEl && !filterEl.dataset.populated) {
@@ -53,7 +53,7 @@ function normalizeData() {
 function initDashboard() {
     console.log('🚀 initDashboard() called');
     console.log('📊 UPDATE_DATA:', UPDATE_DATA);
-    
+
     if (!UPDATE_DATA) {
         console.error('❌ UPDATE_DATA is null or undefined');
         return;
@@ -62,15 +62,15 @@ function initDashboard() {
     // 1. Sync metadata to UI
     console.log('🔄 Syncing metadata to UI...');
     syncMetadataToUI();
-    
+
     // 2. Prep data structures
     console.log('🔧 Normalizing data...');
     normalizeData();
-    
+
     // 3. Build contributor list
     console.log('👥 Building contributor list...');
     buildContributorList(); // from core.js
-    
+
     // 4. Setup global behaviors
     console.log('⚙️ Setting up global behaviors...');
     setupKeyboardShortcuts(); // from core.js
@@ -98,15 +98,15 @@ function initDashboard() {
     console.log('🎨 Initial render - defaulting to mode view');
     const mode = getCurrentMode();
     const defaultView = mode === 'pm' ? 'okr' :
-                       mode === 'dev' ? 'my-tasks' :
-                       mode === 'exec' ? 'dashboard' : 'okr';
+        mode === 'dev' ? 'my-tasks' :
+            mode === 'exec' ? 'dashboard' : 'okr';
     switchView(defaultView);
     renderTrackView(); // from views.js
     updateBacklogBadge(); // from cms.js
     buildTagFilterBar(); // from core.js
     updateTabCounts(); // from core.js
     renderBlockerStrip(); // from core.js
-    
+
     console.log('✅ Dashboard initialization complete');
 }
 
@@ -116,13 +116,13 @@ function syncMetadataToUI() {
 
     const titleEl = document.getElementById('page-title');
     if (titleEl) titleEl.textContent = meta.title;
-    
+
     const dateEl = document.getElementById('page-date');
     if (dateEl) dateEl.textContent = meta.dateRange;
-    
+
     const descEl = document.getElementById('page-desc');
     if (descEl) descEl.textContent = meta.description;
-    
+
     const footerEl = document.getElementById('footer-text');
     if (footerEl) footerEl.textContent = `${meta.title} • ${meta.dateRange}`;
 
@@ -151,7 +151,7 @@ function applyDatePreset() {
     const preset = document.getElementById('date-range-preset').value;
     const customInputs = document.getElementById('custom-date-inputs');
     if (customInputs) customInputs.classList.toggle('hidden', preset !== 'custom');
-    
+
     // Re-render current view with new date filters
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
     switchView(currentView);
@@ -190,17 +190,17 @@ function exportGantt() {
 // ------ Data Export (CSV) ------
 function exportData(type) {
     if (type !== 'csv') return;
-    
+
     const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
     const rows = [["Track", "Subtrack", "Task", "Status", "Priority", "Owner", "Due"]];
-    
+
     UPDATE_DATA.tracks.forEach(track => {
         if (activeTeam && activeTeam !== track.name) return;
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
                 const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
-                
+
                 if (searchMatch && dateMatch) {
                     rows.push([
                         track.name,
@@ -215,7 +215,7 @@ function exportData(type) {
             });
         });
     });
-    
+
     let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -232,14 +232,14 @@ function generateDigest() {
     let stats = { done: 0, now: 0, blocked: 0 };
     let recentDone = [];
     let highPriority = [];
-    
+
     UPDATE_DATA.tracks.forEach(track => {
         if (activeTeam && activeTeam !== track.name) return;
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
                 const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
-                
+
                 if (searchMatch && dateMatch) {
                     if (item.status === 'done') {
                         stats.done++;
@@ -255,22 +255,22 @@ function generateDigest() {
             });
         });
     });
-    
+
     let digest = `🚀 *Engineering Update Digest* ${activeTeam ? `for ${activeTeam}` : ''}\n\n`;
     digest += `✅ *Completed:* ${stats.done}\n`;
     digest += `⚡ *Active:* ${stats.now}\n`;
     digest += `🚨 *Blockers:* ${stats.blocked}\n\n`;
-    
+
     if (recentDone.length > 0) {
         digest += `*Highlights:* \n${recentDone.slice(0, 5).join('\n')}\n\n`;
     }
-    
+
     if (highPriority.length > 0) {
         digest += `*Critical Focus:* \n${highPriority.slice(0, 5).join('\n')}\n\n`;
     }
-    
+
     digest += `🔗 View full dashboard for details.`;
-    
+
     // Create temporary modal to show the digest
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4';
