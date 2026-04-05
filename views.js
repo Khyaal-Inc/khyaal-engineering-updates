@@ -836,7 +836,7 @@ function renderBacklogView() {
             </div>
             <div class="p-3 space-y-3 bg-white">`;
         backlogSub.items.forEach((item, ii) => {
-            html += renderItem(item, 'status', trackIndex, si, ii, groomingMode);
+            html += renderItem(item, 'backlog', trackIndex, si, ii, groomingMode);
         });
         html += `</div></div>`;
     });
@@ -1213,7 +1213,7 @@ function renderSprintView() {
                     </div>
                 </div>
                 <div class="p-2 space-y-4">
-                    ${renderGroupedItems(sprintItems)}
+                    ${renderGroupedItems(sprintItems, 'sprint')}
                 </div>
             </div>`;
     });
@@ -1292,7 +1292,7 @@ function renderReleasesView() {
                     </div>
                 </div>
                 <div class="p-2 space-y-4">
-                    ${renderGroupedItems(releaseItems)}
+                    ${renderGroupedItems(releaseItems, 'release')}
                 </div>
             </div>`;
     });
