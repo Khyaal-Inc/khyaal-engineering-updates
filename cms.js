@@ -701,63 +701,35 @@ window.uiState = {
 };
 
 /**
- * Robust Item Context Resolver
- * High-reliability lookup for task actions.
+ * Universal Item Context Resolver
+ * Handles both Unique ID (string) and Index-based Pointer (object) lookups.
  */
-function getValidatedItemContext(itemId) {
-    if (!itemId) return null;
-    const found = findItemById(itemId);
-    if (found) return found;
+function getValidatedItemContext(arg) {
+    if (!arg) return null;
 
-    // Fallback for Modal actions
-    if (editContext && editContext.itemIndex !== undefined) {
-        const track = UPDATE_DATA.tracks[editContext.trackIndex];
-        if (track && track.subtracks[editContext.subtrackIndex]) {
-            return {
-                item: track.subtracks[editContext.subtrackIndex].items[editContext.itemIndex],
-                ti: editContext.trackIndex,
-                si: editContext.subtrackIndex,
-                ii: editContext.itemIndex
-            };
+    // A: Look up by Unique String ID (Modern Protocol)
+    if (typeof arg === 'string') {
+        const found = findItemById(arg);
+        if (found) return found;
+    }
+
+    // B: Look up by Object Indices { trackIndex, subtrackIndex, itemIndex } (Kanban/Legacy)
+    if (typeof arg === 'object' && arg.itemIndex !== undefined) {
+        const track = UPDATE_DATA.tracks[arg.trackIndex];
+        if (track && track.subtracks[arg.subtrackIndex]) {
+            const item = track.subtracks[arg.subtrackIndex].items[arg.itemIndex];
+            if (item) {
+                return {
+                    item: item,
+                    ti: arg.trackIndex,
+                    si: arg.subtrackIndex,
+                    ii: arg.itemIndex
+                };
+            }
         }
     }
-    return null;
-}
 
-/**
- * Robust Item Context Resolver
- * High-reliability lookup for task actions.
- */
-function getValidatedItemContext(itemId) {
-    if (!itemId) return null;
-    const found = findItemById(itemId);
-    if (found) return found;
-
-    // Fallback for Modal actions
-    if (editContext && editContext.itemIndex !== undefined) {
-        const track = UPDATE_DATA.tracks[editContext.trackIndex];
-        if (track && track.subtracks[editContext.subtrackIndex]) {
-            return {
-                item: track.subtracks[editContext.subtrackIndex].items[editContext.itemIndex],
-                ti: editContext.trackIndex,
-                si: editContext.subtrackIndex,
-                ii: editContext.itemIndex
-            };
-        }
-    }
-    return null;
-}
-
-/**
- * Robust Item Context Resolver
- * High-reliability lookup for task actions.
- */
-function getValidatedItemContext(itemId) {
-    if (!itemId) return null;
-    const found = findItemById(itemId);
-    if (found) return found;
-
-    // Fallback for Modal actions
+    // C: Modal Context Fallback (Last Resort)
     if (editContext && editContext.itemIndex !== undefined) {
         const track = UPDATE_DATA.tracks[editContext.trackIndex];
         if (track && track.subtracks[editContext.subtrackIndex]) {
@@ -844,7 +816,7 @@ function openItemEdit(ti, si, ii, itemId) {
 
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(item, context);
-    document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, { trackIndex, subtrackIndex });
+    document.getElementById('modal-form').innerHTML = buildContextAwareForm(item, false, { trackIndex: data.ti, subtrackIndex: data.si });
 
     // Inject footer buttons
     document.getElementById('modal-footer').innerHTML = `
