@@ -26,6 +26,41 @@ function shouldShowManagement() {
     return params.get('cms') === 'true' && (!!window.isGithubAuthenticated || isSiteAuthed);
 }
 
+/**
+ * Exec filter banner: shown when exec mode filters visible items
+ * @param {number} shownCount - number of items after exec filter
+ * @param {number} totalCount - total items before exec filter
+ * @param {string} viewId - session key for "show all" toggle state
+ */
+function renderExecFilterBanner(shownCount, totalCount, viewId) {
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
+    if (mode !== 'exec' || totalCount === 0) return '';
+    const sessionKey = `exec_show_all_${viewId}`;
+    const showingAll = sessionStorage.getItem(sessionKey) === 'true';
+    if (shownCount >= totalCount && !showingAll) return '';
+    const displayed = showingAll ? totalCount : shownCount;
+    return `
+        <div class="exec-filter-banner">
+            <span>📊 Showing <strong>${displayed}</strong> of <strong>${totalCount}</strong> items — filtered to high-impact &amp; active</span>
+            <button onclick="sessionStorage.setItem('exec_show_all_${viewId}', '${showingAll ? 'false' : 'true'}'); if(typeof render${viewId.charAt(0).toUpperCase() + viewId.slice(1)}View === 'function') render${viewId.charAt(0).toUpperCase() + viewId.slice(1)}View();" class="exec-filter-toggle">
+                ${showingAll ? 'Show filtered' : 'Show all'}
+            </button>
+        </div>
+    `;
+}
+
+/**
+ * Apply exec mode filter to an items array, respecting session "show all" toggle
+ */
+function applyExecFilter(items, viewId) {
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
+    if (mode !== 'exec') return items;
+    const sessionKey = `exec_show_all_${viewId}`;
+    if (sessionStorage.getItem(sessionKey) === 'true') return items;
+    const filter = typeof getModeFilter === 'function' ? getModeFilter() : null;
+    return filter ? items.filter(filter) : items;
+}
+
 function renderContributors(contributors) {
     return (contributors || []).map(name =>
         `<span class="contributor-tag ${contributorColors[name] || 'bg-gray-100 text-gray-600'}">${name}</span>`
@@ -1099,10 +1134,12 @@ function renderRoadmapView() {
         return;
     }
 
-    let html = ribbonHtml + `<div class="grid grid-cols-1 gap-12">`;
+    const _allRoadmapItems = horizons.flatMap(h => findItemsByMetadataId('planningHorizon', h.id));
+    const _filteredRoadmapItems = applyExecFilter(_allRoadmapItems, 'roadmap');
+    let html = ribbonHtml + renderExecFilterBanner(_filteredRoadmapItems.length, _allRoadmapItems.length, 'roadmap') + `<div class="grid grid-cols-1 gap-12">`;
 
     horizons.forEach(h => {
-        const horizonItems = findItemsByMetadataId('planningHorizon', h.id);
+        const horizonItems = applyExecFilter(findItemsByMetadataId('planningHorizon', h.id), 'roadmap');
         const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
 
         const cmsActions = shouldShowManagement() ? `
@@ -1172,6 +1209,21 @@ function renderRoadmapView() {
             </div>`;
     });
 
+    html += '</div>';
+
+    // Add backlog navigation footer — single authoritative entry point for unplanned items
+    if (showManagement) {
+        const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
+        if (mode !== 'exec') {
+            html += `
+                <div class="roadmap-backlog-footer">
+                    <span class="roadmap-backlog-label">📚 Backlog <span class="roadmap-backlog-sub">(items not yet assigned to a planning horizon)</span></span>
+                    <button onclick="switchView('backlog')" class="roadmap-backlog-link">→ Open full Backlog view</button>
+                </div>
+            `;
+        }
+    }
+
     container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use the button to add your first planning category.</div>';
 }
 
@@ -1209,7 +1261,10 @@ function renderSprintView() {
         </div>
     `;
 
-    let html = ribbonHtml;
+    // Collect all sprint items for exec banner total count
+    const _allSprintItems = sprints.flatMap(s => findItemsByMetadataId('sprintId', s.id));
+    const _filteredSprintItems = applyExecFilter(_allSprintItems, 'sprint');
+    let html = ribbonHtml + renderExecFilterBanner(_filteredSprintItems.length, _allSprintItems.length, 'sprint');
 
     if (sprints.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No sprints defined</div>';
@@ -1217,7 +1272,7 @@ function renderSprintView() {
     }
 
     sprints.forEach((s, idx) => {
-        const sprintItems = findItemsByMetadataId('sprintId', s.id);
+        const sprintItems = applyExecFilter(findItemsByMetadataId('sprintId', s.id), 'sprint');
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-2 ml-4">
                 <button onclick="openSprintEdit('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
@@ -1227,6 +1282,16 @@ function renderSprintView() {
         ` : '';
 
         const sprintOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === s.linkedOKR);
+
+        // Sprint density: done vs total items
+        const doneItems = sprintItems.filter(i => i.status === 'done').length;
+        const totalSprintItems = sprintItems.length;
+        const donePct = totalSprintItems > 0 ? Math.round((doneItems / totalSprintItems) * 100) : 0;
+        const densityDots = totalSprintItems > 0
+            ? Array.from({ length: Math.min(totalSprintItems, 10) }, (_, i) =>
+                `<span class="sprint-density-dot ${i < Math.round(doneItems / totalSprintItems * Math.min(totalSprintItems, 10)) ? 'done' : ''}"></span>`
+              ).join('')
+            : '';
 
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
@@ -1241,8 +1306,14 @@ function renderSprintView() {
                             <div class="text-sm font-bold text-slate-500 mt-1">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</div>
                         </div>
                         <div class="text-right">
-                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</div>
-                             <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold uppercase tracking-wider">${sprintItems.length} Tasks</span>
+                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Capacity</div>
+                             <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold uppercase tracking-wider">${totalSprintItems} Tasks</span>
+                             ${totalSprintItems > 0 ? `
+                             <div class="sprint-density-bar mt-2">
+                                 ${densityDots}
+                             </div>
+                             <div class="text-[10px] text-slate-400 mt-1 font-bold">${doneItems}/${totalSprintItems} done · ${donePct}%</div>
+                             ` : ''}
                         </div>
                     </div>
                     <div class="mt-4 p-3 bg-white rounded-lg border border-slate-200 text-sm text-slate-600 italic">
@@ -1291,7 +1362,9 @@ function renderReleasesView() {
         </div>
     `;
 
-    let html = ribbonHtml;
+    const _allReleaseItems = releases.flatMap(r => findItemsByMetadataId('releasedIn', r.id));
+    const _filteredReleaseItems = applyExecFilter(_allReleaseItems, 'releases');
+    let html = ribbonHtml + renderExecFilterBanner(_filteredReleaseItems.length, _allReleaseItems.length, 'releases');
 
     if (releases.length === 0) {
         container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No releases defined</div>';
@@ -1299,7 +1372,7 @@ function renderReleasesView() {
     }
 
     releases.forEach((r, idx) => {
-        const releaseItems = findItemsByMetadataId('releasedIn', r.id);
+        const releaseItems = applyExecFilter(findItemsByMetadataId('releasedIn', r.id), 'releases');
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-2 ml-4">
                 <button onclick="openReleaseEdit('${r.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>

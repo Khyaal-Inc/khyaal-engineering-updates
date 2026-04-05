@@ -71,6 +71,21 @@ function renderMyTasksView() {
 
     const totalTasks = Object.values(myTasks).reduce((sum, arr) => sum + arr.length, 0);
 
+    if (totalTasks === 0) {
+        container.innerHTML = `
+            <div class="bg-white p-12 rounded-xl border border-slate-200 shadow-sm text-center max-w-lg mx-auto mt-12">
+                <div class="text-6xl mb-4">🔍</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">No tasks assigned to ${currentUser}</h3>
+                <p class="text-slate-500 text-sm mb-6">You may not have any items yet, or your name might not match what's in the contributor list. Ask your PM to add <strong>${currentUser}</strong> to item contributors.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="promptUserSelection()" class="cms-btn cms-btn-secondary">Change my name</button>
+                    <button onclick="switchView('kanban')" class="cms-btn cms-btn-primary">View full Kanban</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
     container.innerHTML = `
         <div class="space-y-6">
             <!-- Unified Pulse Ribbon -->

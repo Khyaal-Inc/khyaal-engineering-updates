@@ -129,6 +129,9 @@ function switchMode(mode, stayInModal = false) {
     }
 
     console.log(`Switched to ${config.name} mode ${stayInModal ? '(staying in modal)' : ''}`);
+
+    // Show brief persona-switch banner
+    showPersonaSwitchBanner(config);
 }
 
 // Apply mode-specific styling and restrictions
@@ -199,7 +202,7 @@ function renderModeSwitcher() {
 
             <div class="flex items-center gap-2">
                 <span class="text-xs font-black uppercase tracking-widest">${config.name}</span>
-                <span class="text-[8px] opacity-20 group-hover:opacity-100 transition-opacity translate-y-[0.5px]">▼</span>
+                <span class="text-[8px] opacity-50 group-hover:opacity-100 transition-opacity translate-y-[0.5px]">▾</span>
             </div>
         </button>
     `;
@@ -432,6 +435,32 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
     }
 });
+
+// Show a brief auto-dismiss banner after persona switch
+function showPersonaSwitchBanner(config) {
+    const existing = document.getElementById('persona-switch-banner');
+    if (existing) existing.remove();
+
+    const viewCount = config.availableViews ? config.availableViews.length : 0;
+    const colorMap = { blue: '#3b82f6', green: '#10b981', purple: '#8b5cf6' };
+    const bgColor = colorMap[config.color] || '#3b82f6';
+
+    const banner = document.createElement('div');
+    banner.id = 'persona-switch-banner';
+    banner.style.cssText = `
+        position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+        background: ${bgColor}; color: white; padding: 8px 20px;
+        border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+        z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        display: flex; align-items: center; gap: 8px;
+        animation: slideDownFade 0.25s ease;
+        white-space: nowrap;
+    `;
+    banner.innerHTML = `${config.icon} Switched to ${config.name} · ${viewCount} views available <button onclick="this.parentElement.remove()" style="background:none;border:none;color:white;opacity:0.7;cursor:pointer;font-size:1rem;line-height:1;padding:0 0 0 6px">×</button>`;
+    document.body.appendChild(banner);
+
+    setTimeout(() => { if (banner.parentElement) banner.remove(); }, 3500);
+}
 
 // Export functions for global use
 window.initModeSystem = initModeSystem;

@@ -293,8 +293,8 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
     const allPillarFields = visiblePillars.flatMap(pk => FIELD_GROUPS[pk]?.fields || []);
     const hiddenCount = allPillarFields.filter(f => !nativeFields.includes(f)).length;
     const toggleLabel = showAll
-        ? 'Showing all fields'
-        : `Show all fields${hiddenCount > 0 ? ` (+${hiddenCount})` : ''}`;
+        ? `Hide optional fields (${hiddenCount} extra)`
+        : hiddenCount > 0 ? `Show all fields (${hiddenCount} hidden)` : 'Show all fields';
 
     html += `
         <div class="cms-perspective-strip ${stripClass}">
@@ -315,6 +315,19 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
             </label>
         </div>
     `;
+
+    // Dev mode: show protected-fields notice banner
+    if (persona === 'dev') {
+        const protectedInView = visiblePillars.flatMap(pk => FIELD_GROUPS[pk]?.fields || [])
+            .filter(f => isFieldProtected(f) && (showAll || (LIFECYCLE_FIELD_MAP[context.view] || []).includes(f)));
+        if (protectedInView.length > 0) {
+            html += `
+                <div class="dev-protected-banner">
+                    🔒 <strong>${protectedInView.length} field${protectedInView.length > 1 ? 's are' : ' is'} read-only</strong> — managed by PM. <button type="button" onclick="switchMode('pm', true)" class="underline font-bold hover:text-indigo-900">Switch to PM</button> to edit.
+                </div>
+            `;
+        }
+    }
 
     // Main 4-Pillar Grid — persona-aware column sizing
     const gridPersonaClass = visiblePillars.length === 4 && persona === 'dev' ? 'pillars-4-dev' : `pillars-${visiblePillars.length}`;
@@ -462,6 +475,16 @@ function renderField(fieldName, item) {
     const attr = isProtected ? 'readonly disabled' : '';
     const persona = window.uiState.modalPersona || (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
 
+    const fieldHtml = renderFieldInner(fieldName, item, val, isProtected, attr, persona);
+    if (!fieldHtml) return '';
+
+    if (isProtected) {
+        return `<div class="protected-field-wrapper relative opacity-60" title="Managed by PM — read-only in Developer mode">${fieldHtml}<span class="protected-lock-badge">🔒</span></div>`;
+    }
+    return fieldHtml;
+}
+
+function renderFieldInner(fieldName, item, val, isProtected, attr, persona) {
     switch (fieldName) {
         case 'text':
             return `
@@ -1013,7 +1036,15 @@ function openItemEdit(ti, si, ii, itemId) {
         onhold: '🟡 On Hold', done: '🟢 Done' };
     const effectiveStatus = (item.blocker === true && item.status !== 'blocked') ? 'blocked' : item.status;
     const stagePill = effectiveStatus ? `<span class="modal-stage-pill">${statusLabels[effectiveStatus] || effectiveStatus}</span>` : '';
-    document.getElementById('modal-title').innerHTML = `Edit Task ${stagePill}`;
+    const viewTitleMap = {
+        backlog: 'Edit Backlog Item', sprint: 'Edit Sprint Item', track: 'Edit Track Item',
+        kanban: 'Edit Kanban Item', roadmap: 'Edit Roadmap Item', releases: 'Edit Release Item',
+        epics: 'Edit Epic Item', okr: 'Edit OKR Item', 'my-tasks': 'Edit My Task',
+        dependency: 'Edit Task', status: 'Edit Task', priority: 'Edit Task', contributor: 'Edit Task'
+    };
+    const activeViewForTitle = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+    const modalTitleText = viewTitleMap[activeViewForTitle] || 'Edit Task';
+    document.getElementById('modal-title').innerHTML = `${modalTitleText} ${stagePill}`;
 
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(item, context);
@@ -1050,7 +1081,14 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
 
     editContext = { type: 'item-new', trackIndex, subtrackIndex, defaults };
 
-    document.getElementById('modal-title').innerHTML = `New Task <span class="modal-stage-pill">✨ Draft</span>`;
+    const _addViewTitleMap = {
+        backlog: 'New Backlog Item', sprint: 'New Sprint Item', track: 'New Track Item',
+        kanban: 'New Kanban Item', roadmap: 'New Roadmap Item', releases: 'New Release Item',
+        epics: 'New Epic Item', okr: 'New OKR Item', 'my-tasks': 'New Task'
+    };
+    const _addActiveView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
+    const _addModalTitle = _addViewTitleMap[_addActiveView] || 'New Task';
+    document.getElementById('modal-title').innerHTML = `${_addModalTitle} <span class="modal-stage-pill">✨ Draft</span>`;
 
     const context = getFormContext();
     document.getElementById('modal-banner').innerHTML = buildContextBanner(defaults, context);

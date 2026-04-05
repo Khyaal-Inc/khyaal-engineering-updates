@@ -94,6 +94,11 @@ body {
     animation: fadeInDown 0.3s ease-out;
 }
 
+@keyframes slideDownFade {
+    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
 @keyframes bounce-horizontal {
 
     0%,
@@ -793,7 +798,7 @@ summary::-webkit-details-marker {
 /* Named column layouts per pillar count + persona */
 .cms-pillars-grid.pillars-4     { grid-template-columns: 1fr 1fr 1.4fr 1fr; }    /* PM: WHAT WHEN WHERE HOW */
 .cms-pillars-grid.pillars-4-dev { grid-template-columns: 1.4fr 1fr 1fr 1fr; }    /* Dev: WHERE HOW WHAT WHEN */
-.cms-pillars-grid.pillars-3     { grid-template-columns: 1fr 1fr 1.4fr; }         /* Exec: WHAT WHEN WHERE */
+.cms-pillars-grid.pillars-3     { grid-template-columns: 1fr 1fr 1fr; }            /* Exec: WHAT WHEN WHERE — equal weight */
 .cms-pillars-grid.pillars-2     { grid-template-columns: 1fr 1.4fr; }
 .cms-pillars-grid.pillars-1     { grid-template-columns: 1fr; }
 
@@ -1047,6 +1052,138 @@ summary::-webkit-details-marker {
     margin-left: 6px;
 }
 .strip-toggle-label { color: #94a3b8; font-weight: 700; font-size: 0.6rem; text-transform: none; letter-spacing: 0; }
+
+/* Protected field wrapper (dev mode) */
+.protected-field-wrapper {
+    position: relative;
+}
+.protected-lock-badge {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.65rem;
+    opacity: 0.7;
+    pointer-events: none;
+    user-select: none;
+}
+.protected-field-wrapper .cms-input,
+.protected-field-wrapper select,
+.protected-field-wrapper textarea,
+.protected-field-wrapper input {
+    background: #f8fafc !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    border-color: #e2e8f0 !important;
+}
+.protected-field-wrapper .cms-label {
+    color: #94a3b8;
+}
+
+/* Sprint density bar */
+.sprint-density-bar {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-end;
+}
+.sprint-density-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: inline-block;
+}
+.sprint-density-dot.done {
+    background: #10b981;
+}
+
+/* Roadmap backlog footer — single entry point to backlog view */
+.roadmap-backlog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-top: 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.roadmap-backlog-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+.roadmap-backlog-sub {
+    font-weight: 400;
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+.roadmap-backlog-link {
+    background: white;
+    border: 1px solid #6366f1;
+    border-radius: 8px;
+    color: #4f46e5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+.roadmap-backlog-link:hover { background: #eef2ff; }
+
+/* Exec filter banner */
+.exec-filter-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.72rem;
+    color: #5b21b6;
+    margin-bottom: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.exec-filter-toggle {
+    background: white;
+    border: 1px solid #a78bfa;
+    border-radius: 6px;
+    color: #7c3aed;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.exec-filter-toggle:hover { background: #ede9fe; }
+
+/* Dev mode protected-fields banner */
+.dev-protected-banner {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.7rem;
+    color: #78350f;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.dev-protected-banner button {
+    color: #92400e;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 0.7rem;
+}
 
 /* Move Item collapsible */
 .cms-move-section {
