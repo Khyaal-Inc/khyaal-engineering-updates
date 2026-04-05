@@ -24,22 +24,25 @@
             (function () {
                 const SITE_AUTH_KEY = 'khyaal_site_auth';
 
+                const initDashboardOrWait = () => {
+                    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                        if (typeof initDashboard === 'function') initDashboard();
+                    } else {
+                        window.addEventListener('DOMContentLoaded', () => {
+                            if (typeof initDashboard === 'function') initDashboard();
+                        });
+                    }
+                };
+
                 const initLocalLoad = () => {
-                    // 🏆 Phase 26: Prioritize LocalStorage data for silent session persistence
+                    // 🏆 Phase 29: Unified Reconciliation Path (Prioritize Local Storage)
                     const cachedData = localStorage.getItem('khyaal_data');
                     if (cachedData) {
                         try {
                             window.UPDATE_DATA = JSON.parse(cachedData);
-                            localStorage.setItem(SITE_AUTH_KEY, 'true');
-                            console.log('✅ Synchronized with LocalData');
-                            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                                if (typeof initDashboard === 'function') initDashboard();
-                            } else {
-                                window.addEventListener('DOMContentLoaded', () => {
-                                    if (typeof initDashboard === 'function') initDashboard();
-                                });
-                            }
-                            return; // Stop here, we have the latest data
+                            console.log('✅ Session Synced: Prioritizing local data state');
+                            initDashboardOrWait();
+                            return; 
                         } catch (e) {
                             console.error('LocalStorage Data Corrupt, falling back to data.json');
                         }
@@ -49,17 +52,10 @@
                         .then(r => r.json())
                         .then(data => {
                             window.UPDATE_DATA = data;
-                            localStorage.setItem(SITE_AUTH_KEY, 'true');
-                            // ... rest same ...
-                            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                                if (typeof initDashboard === 'function') initDashboard();
-                            } else {
-                                window.addEventListener('DOMContentLoaded', () => {
-                                    if (typeof initDashboard === 'function') initDashboard();
-                                });
-                            }
+                            console.log('✅ Server Synced: Initializing from data.json');
+                            initDashboardOrWait();
                         })
-                        .catch(e => console.log('Local load fallback:', e));
+                        .catch(e => console.log('Critical load error:', e));
                 };
 
                 if (localStorage.getItem(SITE_AUTH_KEY)) {
@@ -350,11 +346,22 @@
                     const result = await response.json();
 
                     if (result.authenticated && result.data) {
-                        UPDATE_DATA = result.data; // Store the secure data in memory
-                        localStorage.setItem(SITE_AUTH_KEY, hashedInput); // Store hash for persistence
+                        // 🏆 Phase 29: Prioritize local edits even after auth re-check
+                        const cachedData = localStorage.getItem('khyaal_data');
+                        if (cachedData) {
+                            try {
+                                window.UPDATE_DATA = JSON.parse(cachedData);
+                                console.log('✅ Auth Reconciled: Prioritizing local edits over server data');
+                            } catch (e) {
+                                window.UPDATE_DATA = result.data;
+                            }
+                        } else {
+                            window.UPDATE_DATA = result.data;
+                        }
+
+                        localStorage.setItem(SITE_AUTH_KEY, hashedInput); 
                         showProtectedContent();
                     } else if (result.authenticated && result.error) {
-                        // Correct password but token missing/invalid
                         authMessage.innerText = result.error + ' (Please set token in CMS settings)';
                     } else {
                         authMessage.innerText = 'Invalid password. Please try again.';
@@ -368,13 +375,11 @@
 
             function showProtectedContent() {
                 if (!UPDATE_DATA) return;
-
                 document.getElementById('auth-loading').style.display = 'none';
                 document.getElementById('auth-gatekeeper').classList.add('hidden');
                 document.getElementById('main-content').classList.add('visible');
-
-                // Initialize the modular dashboard
-                initDashboard();
+                // Ensure modular initialization
+                if (typeof initDashboard === 'function') initDashboard();
             }
 
             function logoutAll() {

@@ -1646,18 +1646,25 @@ function saveCmsChanges() {
         renderTrackView();
     }
 
+    saveToLocalStorage();
+    renderDashboard();
+    
     closeCmsModal();
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
+    if (typeof switchView === 'function') switchView(currentView);
 }
 
 function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value) {
     const item = UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex];
     item[field] = value;
     logChange(`Groom Item (${field})`, item.text);
+    
+    saveToLocalStorage();
+    renderDashboard();
+    
     // Auto-refresh the view to show status changes
     const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'backlog';
-    switchView(currentView);
+    if (typeof switchView === 'function') switchView(currentView);
 }
 
 // Consolidated Track Management
@@ -1932,8 +1939,19 @@ async function saveToGithub() {
 function toggleComments(ti, si, ii, itemId, viewPrefix = 'main') {
     const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii] };
     if (!data) return;
+    
     const id = `${viewPrefix}-comments-${data.item.id}`;
-    document.getElementById(id)?.classList.toggle('hidden');
+    const el = document.getElementById(id);
+    if (!el) return;
+    
+    const isNowVisible = el.classList.toggle('hidden') === false;
+    
+    // 🏆 Phase 29: Track open state to survive silent re-renders
+    if (isNowVisible) {
+        window.uiState.openComments.add(data.item.id);
+    } else {
+        window.uiState.openComments.delete(data.item.id);
+    }
 }
 
 function addComment(ti, si, ii, itemId, viewPrefix = 'main') {
@@ -1944,17 +1962,22 @@ function addComment(ti, si, ii, itemId, viewPrefix = 'main') {
     if (!data.item.comments) data.item.comments = [];
     data.item.comments.push({ id: `c-${Date.now()}`, text: input.value.trim(), author: 'PM', timestamp: new Date().toISOString() });
     input.value = '';
-    const thread = document.getElementById(`${viewPrefix}-thread-${data.item.id}`);
-    if (thread) thread.innerHTML = renderCommentThread(data.item.comments, data.ti, data.si, data.ii, data.item.id, viewPrefix);
+    
+    saveToLocalStorage();
+    
+    // 🏆 Phase 29: Smart re-render (maintains open state)
+    renderDashboard(); 
 }
 
 function deleteComment(ti, si, ii, cid, itemId, viewPrefix = 'main') {
     const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii], ti, si, ii };
     if (!data) return;
     data.item.comments = (data.item.comments || []).filter(c => c.id !== cid);
-    const threadId = `${viewPrefix}-thread-${data.item.id}`;
-    const thread = document.getElementById(threadId);
-    if (thread) thread.innerHTML = renderCommentThread(data.item.comments, data.ti, data.si, data.ii, data.item.id, viewPrefix);
+    
+    saveToLocalStorage();
+    
+    // 🏆 Phase 29: Smart re-render (maintains open state)
+    renderDashboard(); 
 }
 
 function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
@@ -2005,13 +2028,15 @@ function sendToBacklog(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
         
         saveToLocalStorage();
         
+        // Force full view reflection
+        renderDashboard(); 
         if (viewPrefix) {
-            renderDashboard();
             switchView(viewPrefix);
         } else {
             const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
             switchView(currentView);
         }
+        
         updateTabCounts();
         window.isActionLockActive = false;
     }, 0);
@@ -2023,19 +2048,35 @@ function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
 
     window.isActionLockActive = true;
     setTimeout(() => {
-        if (data.item.blocker) { delete data.item.blocker; delete data.item.blockerNote; logChange('Unblock Item', data.item.text); }
-        else { const note = prompt('Blocker reason:', '') || ''; if (!note) { window.isActionLockActive = false; return; } data.item.blocker = true; data.item.blockerNote = note; logChange('Flag Blocker', data.item.text); }
+        if (data.item.blocker) { 
+            delete data.item.blocker; 
+            delete data.item.blockerNote; 
+            logChange('Unblock Item', data.item.text); 
+        } else { 
+            const note = prompt('Blocker reason:', '') || ''; 
+            if (!note) { 
+                window.isActionLockActive = false; 
+                return; 
+            } 
+            data.item.blocker = true; 
+            data.item.blockerNote = note; 
+            logChange('Flag Blocker', data.item.text); 
+        }
 
         saveToLocalStorage();
         
+        // Force full view reflection
+        renderDashboard(); 
         if (viewPrefix) {
-            renderDashboard();
             switchView(viewPrefix);
         } else {
             const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
             switchView(currentView);
         }
+        
         if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
+        
+        // Ensure lock is released after all state-changing rendering is complete
         window.isActionLockActive = false;
     }, 0);
 }

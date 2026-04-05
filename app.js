@@ -48,6 +48,42 @@ function normalizeData() {
     });
 }
 
+/**
+ * Universal Dashboard Orchestrator
+ * Performs a silent, global refresh of all UI modules to match current UPDATE_DATA.
+ */
+function renderDashboard() {
+    console.log('🔄 renderDashboard() triggered - Synchronizing all views...');
+    
+    // 1. Refresh global metadata displays
+    syncMetadataToUI();
+    
+    // 2. Re-normalize data structures (IDs, dates, counts)
+    normalizeData();
+    
+    // 3. Trigger all primary view renders to update their internal DOM
+    if (typeof renderWorkflowView === 'function') renderWorkflowView();
+    if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
+    if (typeof renderTrackView === 'function') renderTrackView();
+    if (typeof renderContributorView === 'function') renderContributorView();
+    if (typeof renderStatusView === 'function') renderStatusView();
+    if (typeof renderPriorityView === 'function') renderPriorityView();
+    if (typeof renderDependencyView === 'function') renderDependencyView();
+    if (typeof renderGanttView === 'function') renderGanttView();
+    if (typeof renderSprintView === 'function') renderSprintView();
+    if (typeof renderReleasesView === 'function') renderReleasesView();
+    if (typeof renderRoadmapView === 'function') renderRoadmapView();
+    if (typeof renderOkrView === 'function') renderOkrView();
+    if (typeof renderEpicListView === 'function') renderEpicListView();
+    if (typeof renderBacklogView === 'function') renderBacklogView();
+    
+    // 4. Update cross-view indicators
+    if (typeof updateTabCounts === 'function') updateTabCounts();
+    if (typeof updateBacklogBadge === 'function') updateBacklogBadge();
+    if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
+    if (typeof buildTagFilterBar === 'function') buildTagFilterBar();
+}
+
 // ------ CORE APP INITIALIZATION ------
 // This is called by index.html after a successful basic auth login
 function initDashboard() {
@@ -59,53 +95,28 @@ function initDashboard() {
         return;
     }
 
-    // 1. Sync metadata to UI
-    console.log('🔄 Syncing metadata to UI...');
+    // Initial setup
     syncMetadataToUI();
-
-    // 2. Prep data structures
-    console.log('🔧 Normalizing data...');
     normalizeData();
-
-    // 3. Build contributor list
-    console.log('👥 Building contributor list...');
     buildContributorList(); // from core.js
-
-    // 4. Setup global behaviors
-    console.log('⚙️ Setting up global behaviors...');
     setupKeyboardShortcuts(); // from core.js
     initCms(); // from cms.js
 
-    // 5. Initialize Mode System
-    console.log('🎭 Initializing mode system...');
-    if (typeof initModeSystem === 'function') {
-        initModeSystem(); // from modes.js
-    }
+    if (typeof initModeSystem === 'function') initModeSystem(); // from modes.js
+    if (typeof initWizard === 'function') initWizard(); // from wizard.js
+    if (typeof initWorkflowNav === 'function') initWorkflowNav(); // from workflow-nav.js
 
-    // 5a. Initialize Onboarding Wizard (shows if needed)
-    console.log('🧙 Checking for onboarding wizard...');
-    if (typeof initWizard === 'function') {
-        initWizard(); // from wizard.js
-    }
-
-    // 5b. Initialize Workflow Navigation
-    console.log('🗺️ Initializing workflow navigation...');
-    if (typeof initWorkflowNav === 'function') {
-        initWorkflowNav(); // from workflow-nav.js
-    }
-
-    // 6. Initial Render - Default to mode-specific view
-    console.log('🎨 Initial render - defaulting to mode view');
+    // Initial view set
     const mode = getCurrentMode();
-    const defaultView = mode === 'pm' ? 'okr' :
-        mode === 'dev' ? 'my-tasks' :
-            mode === 'exec' ? 'dashboard' : 'okr';
+    const defaultView = mode === 'pm' ? 'okr' : mode === 'dev' ? 'my-tasks' : mode === 'exec' ? 'dashboard' : 'okr';
+    
+    // Ensure global UI state for transient elements
+    if (!window.uiState) window.uiState = { openEpics: new Set(), openComments: new Set() };
+    if (!window.uiState.openComments) window.uiState.openComments = new Set();
+    
+    // Perform initial render loop
     switchView(defaultView);
-    renderTrackView(); // from views.js
-    updateBacklogBadge(); // from cms.js
-    buildTagFilterBar(); // from core.js
-    updateTabCounts(); // from core.js
-    renderBlockerStrip(); // from core.js
+    renderDashboard();
 
     console.log('✅ Dashboard initialization complete');
 }
@@ -132,7 +143,7 @@ function syncMetadataToUI() {
     }
 }
 
-// Helper: Update backog badge (needed for initial load)
+// Helper: Update backlog badge (needed for initial load)
 function updateBacklogBadge() {
     let count = 0;
     UPDATE_DATA.tracks.forEach(t => {
@@ -147,148 +158,11 @@ function updateBacklogBadge() {
 }
 
 // ------ DATE FILTERS (Extended) ------
-function applyDatePreset() {
-    const preset = document.getElementById('date-range-preset').value;
-    const customInputs = document.getElementById('custom-date-inputs');
-    if (customInputs) customInputs.classList.toggle('hidden', preset !== 'custom');
+function applyDatePreset(preset) {
+    if (!window.UPDATE_DATA) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Re-render current view with new date filters
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
-}
-
-function filterData() {
-    const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
-    switchView(currentView);
-}
-
-// ------ Gantt Export Helper ------
-function exportGantt() {
-    const container = document.getElementById('gantt-chart-container');
-    const svg = container.querySelector('svg');
-    if (!svg) return;
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-
-    img.onload = function () {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        const link = document.createElement('a');
-        link.download = `gantt_chart_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    };
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-}
-
-// ------ Data Export (CSV) ------
-function exportData(type) {
-    if (type !== 'csv') return;
-
-    const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
-    const rows = [["Track", "Subtrack", "Task", "Status", "Priority", "Owner", "Due"]];
-
-    UPDATE_DATA.tracks.forEach(track => {
-        if (activeTeam && activeTeam !== track.name) return;
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
-                const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
-
-                if (searchMatch && dateMatch) {
-                    rows.push([
-                        track.name,
-                        subtrack.name,
-                        item.text,
-                        item.status,
-                        item.priority,
-                        (item.contributors || []).join('; '),
-                        item.due || ''
-                    ]);
-                }
-            });
-        });
-    });
-
-    let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `khyaal_engineering_export_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// ------ Slack Digest Generator ------
-function generateDigest() {
-    const activeTeam = (typeof getActiveTeam === 'function') ? getActiveTeam() : '';
-    let stats = { done: 0, now: 0, blocked: 0 };
-    let recentDone = [];
-    let highPriority = [];
-
-    UPDATE_DATA.tracks.forEach(track => {
-        if (activeTeam && activeTeam !== track.name) return;
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                const searchMatch = (typeof isItemInSearch === 'function') ? isItemInSearch(item) : true;
-                const dateMatch = (typeof isItemInDateRange === 'function') ? isItemInDateRange(item) : true;
-
-                if (searchMatch && dateMatch) {
-                    if (item.status === 'done') {
-                        stats.done++;
-                        recentDone.push(`• ${item.text} (${track.name})`);
-                    } else if (item.status === 'now') {
-                        stats.now++;
-                        if (item.priority === 'high') {
-                            highPriority.push(`• ${item.text} [${item.status.toUpperCase()}]`);
-                        }
-                    }
-                    if (item.blocker) stats.blocked++;
-                }
-            });
-        });
-    });
-
-    let digest = `🚀 *Engineering Update Digest* ${activeTeam ? `for ${activeTeam}` : ''}\n\n`;
-    digest += `✅ *Completed:* ${stats.done}\n`;
-    digest += `⚡ *Active:* ${stats.now}\n`;
-    digest += `🚨 *Blockers:* ${stats.blocked}\n\n`;
-
-    if (recentDone.length > 0) {
-        digest += `*Highlights:* \n${recentDone.slice(0, 5).join('\n')}\n\n`;
-    }
-
-    if (highPriority.length > 0) {
-        digest += `*Critical Focus:* \n${highPriority.slice(0, 5).join('\n')}\n\n`;
-    }
-
-    digest += `🔗 View full dashboard for details.`;
-
-    // Create temporary modal to show the digest
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4';
-    modal.innerHTML = `
-        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-8 animate-scale-in">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h3 class="text-2xl font-black text-slate-900">Engineering Digest</h3>
-                    <p class="text-slate-500 text-sm font-medium mt-1">Copy this to your Slack channel</p>
-                </div>
-                <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <textarea id="digest-textarea" readonly class="w-full h-80 p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm font-mono text-slate-700 mb-6 focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all">${digest}</textarea>
-            <div class="flex gap-3">
-                <button onclick="const ta = document.getElementById('digest-textarea'); ta.select(); navigator.clipboard.writeText(ta.value); this.innerText='Copied!'" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-xl">Copy to Clipboard</button>
-                <button onclick="this.closest('.fixed').remove()" class="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-sm hover:bg-slate-200 transition-all">Close</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    // This logic is mostly for reporting views
+    renderDashboard();
 }

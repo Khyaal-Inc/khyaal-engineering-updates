@@ -10,6 +10,10 @@ function setWorkflowTab(tab) {
     }
 }
 
+// Ensure global UI state for transient elements
+if (!window.uiState) window.uiState = { openEpics: new Set(), openComments: new Set() };
+if (!window.uiState.openComments) window.uiState.openComments = new Set();
+
 window.setWorkflowTab = setWorkflowTab;
 window.renderWorkflowView = renderWorkflowView;
 window.renderDiscoveryView = renderDiscoveryView;
@@ -547,7 +551,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                     </div>
                                 </div>
                             ` : ''}
-                            <div id="${viewPrefix}-comments-${item.id}" class="hidden w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
+                            <div id="${viewPrefix}-comments-${item.id}" class="${window.uiState.openComments.has(item.id) ? '' : 'hidden'} w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg" onclick="event.stopPropagation()">
                                 <div id="${viewPrefix}-thread-${item.id}" class="space-y-3 mb-3 max-h-48 overflow-y-auto pr-2">
                                     ${renderCommentThread(item.comments, trackIndex, subtrackIndex, itemIndex, item.id, viewPrefix)}
                                 </div>
