@@ -116,7 +116,7 @@ const FIELD_GROUPS = {
         label: 'WHAT',
         title: 'Goal & Intent',
         icon: '🎯',
-        fields: ['text', 'usecase', 'epicId', 'persona', 'tags', 'note'], // Added Note (Description)
+        fields: ['text', 'usecase', 'epicId', 'persona', 'tags'],
         color: '#6366f1' // indigo
     },
     when: {
@@ -130,7 +130,7 @@ const FIELD_GROUPS = {
         label: 'WHERE',
         title: 'Action & Routing',
         icon: '⚡',
-        fields: ['status', 'contributors', 'blockerNote', 'dependencies', 'mediaUrl'],
+        fields: ['status', 'contributors', 'blockerNote', 'dependencies', 'note', 'mediaUrl'],
         color: '#10b981' // green
     },
     how: {
@@ -326,8 +326,10 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
         html += buildMoveFields(trackInfo.trackIndex, trackInfo.subtrackIndex);
     }
 
-    // Always include a hidden Note field if not already shown
-    if (!item.note && !visiblePillars.some(p => FIELD_GROUPS[p].fields.includes('note'))) {
+    // Always include a hidden Note field if not visible in any pillar (preserves value on save)
+    const noteVisible = visiblePillars.some(p => FIELD_GROUPS[p].fields.includes('note'))
+        && (window.uiState.showAllTechnical || (LIFECYCLE_FIELD_MAP[context.view] || []).includes('note'));
+    if (!noteVisible) {
         html += `<input type="hidden" id="edit-note" value="${item.note || ''}">`;
     }
 
@@ -492,11 +494,11 @@ function renderField(fieldName, item) {
         case 'priority':
             return `
                 <div class="field-wrapper">
-                    <label class="cms-label">🔥 Strategic Priority</label>
-                    <select id="edit-priority" class="cms-input shadow-sm focus:shadow-md">
-                        <option value="high" ${val === 'high' ? 'selected' : ''}>High</option>
-                        <option value="medium" ${val === 'medium' || !val ? 'selected' : ''}>Medium</option>
-                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low</option>
+                    <label class="cms-label">🔥 Priority</label>
+                    <select id="edit-priority" class="cms-input shadow-sm focus:shadow-md" ${attr}>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>🔴 High</option>
+                        <option value="medium" ${val === 'medium' || !val ? 'selected' : ''}>🟡 Medium</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>🟢 Low</option>
                     </select>
                 </div>
             `;
@@ -505,7 +507,7 @@ function renderField(fieldName, item) {
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">💡 Business Value / Usecase</label>
-                    <input type="text" id="edit-usecase" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="Strategic alignment or user impact statement...">
+                    <input type="text" id="edit-usecase" value="${val}" class="cms-input shadow-sm focus:shadow-md" placeholder="Strategic alignment or user impact statement..." ${attr}>
                 </div>
             `;
 
@@ -522,16 +524,20 @@ function renderField(fieldName, item) {
             `;
 
         case 'planningHorizon':
+            const knownHorizons = ['1M','3M','6M','1Y'];
+            const isLegacyHorizon = val && !knownHorizons.includes(val);
             return `
                 <div class="field-wrapper">
                     <label class="cms-label">🗺️ Roadmap Horizon</label>
-                    <select id="edit-planningHorizon" class="cms-input shadow-sm focus:shadow-md">
+                    <select id="edit-planningHorizon" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="">None</option>
                         <option value="1M" ${val === '1M' ? 'selected' : ''}>Now (1 Month)</option>
                         <option value="3M" ${val === '3M' ? 'selected' : ''}>Next (3 Months)</option>
                         <option value="6M" ${val === '6M' ? 'selected' : ''}>Later (6 Months)</option>
-                        <option value="1Y" ${val === '1Y' ? 'selected' : ''}>1 Year</option>
+                        <option value="1Y" ${val === '1Y' ? 'selected' : ''}>Long-term (1 Year)</option>
+                        ${isLegacyHorizon ? `<option value="${val}" selected>Legacy: ${val}</option>` : ''}
                     </select>
+                    ${isLegacyHorizon ? '<p class="text-[10px] text-amber-500 mt-1 font-bold uppercase tracking-tight">⚠️ Legacy value — update to standard horizon</p>' : ''}
                 </div>
             `;
 
@@ -572,11 +578,12 @@ function renderField(fieldName, item) {
             `;
 
         case 'blockerNote':
+            const isBlocked = item.blocker === true || item.status === 'blocked';
             return `
-                <div class="field-wrapper blocker-field p-4 bg-rose-50 border border-rose-200 rounded-xl">
-                    <label class="cms-label !text-rose-600">🛑 Critical Blocker Reason</label>
-                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input !border-rose-300 shadow-sm focus:shadow-md" placeholder="What's blocking this mission?">
-                    <p class="text-[10px] text-rose-500 mt-2 font-bold uppercase tracking-tight">⚠️ Flagged as Blocked</p>
+                <div class="field-wrapper ${isBlocked ? 'blocker-field p-4 bg-rose-50 border border-rose-200 rounded-xl' : ''}">
+                    <label class="cms-label ${isBlocked ? '!text-rose-600' : ''}">🛑 Blocker Reason <span class="text-[9px] font-normal text-slate-400">(optional — fill when blocked)</span></label>
+                    <input type="text" id="edit-blockerNote" value="${val}" class="cms-input shadow-sm focus:shadow-md ${isBlocked ? '!border-rose-300' : ''}" placeholder="What's blocking this?">
+                    ${isBlocked ? '<p class="text-[10px] text-rose-500 mt-2 font-bold uppercase tracking-tight">⚠️ Currently flagged as blocked</p>' : ''}
                 </div>
             `;
 
@@ -659,12 +666,12 @@ function renderField(fieldName, item) {
         case 'effortLevel':
             return `
                 <div class="field-wrapper">
-                    <label class="cms-label">🛠️ Implementation Effort (ROI)</label>
+                    <label class="cms-label">🛠️ Implementation Effort</label>
                     <select id="edit-effortLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()" ${attr}>
                         <option value="">Select Effort...</option>
-                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Easy Wins)</option>
-                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Standard Cycle)</option>
-                        <option value="high" ${val === 'high' ? 'selected' : ''}>High (Major Complexities)</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>🟢 Low — Easy Win</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>🟡 Medium — Standard Cycle</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>🔴 High — Major Complexity</option>
                     </select>
                     <div id="roi-preview-container" class="mt-3"></div>
                 </div>
@@ -695,14 +702,15 @@ function renderField(fieldName, item) {
             `;
 
         case 'impactLevel':
+            const impactColors = { high: 'text-emerald-600', medium: 'text-amber-500', low: 'text-slate-400' };
             return `
                 <div class="field-wrapper">
-                    <label class="cms-label">💎 Strategic Impact (Value)</label>
+                    <label class="cms-label ${impactColors[val] || ''}">💎 Strategic Impact</label>
                     <select id="edit-impactLevel" class="cms-input shadow-sm focus:shadow-md" onchange="updateRoiPreview()">
-                        <option value="">Select Value...</option>
-                        <option value="low" ${val === 'low' ? 'selected' : ''}>Low (Tactical/Minor)</option>
-                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>Medium (Baseline Support)</option>
-                        <option value="high" ${val === 'high' ? 'selected' : ''}>High (Strategic/Major)</option>
+                        <option value="">Select Impact...</option>
+                        <option value="low" ${val === 'low' ? 'selected' : ''}>🔵 Low — Tactical / Minor</option>
+                        <option value="medium" ${val === 'medium' ? 'selected' : ''}>🟡 Medium — Baseline Support</option>
+                        <option value="high" ${val === 'high' ? 'selected' : ''}>🟢 High — Strategic / Major</option>
                     </select>
                 </div>
             `;
@@ -714,14 +722,6 @@ function renderField(fieldName, item) {
                     <label class="cms-label">${protected ? '🔒' : '✅'} Definition of Done / Acceptance Criteria</label>
                     <textarea id="edit-acceptanceCriteria" class="cms-input !min-h-[120px] shadow-sm focus:shadow-md ${protected ? 'bg-slate-50 opacity-80 cursor-not-allowed italic' : ''}" rows="4" placeholder="List criteria (one per line)..." ${protected ? 'readonly disabled' : ''}>${acVal}</textarea>
                     <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight italic">${protected ? 'Protected Strategy Field (PM Level Only)' : 'Enter one criterion per line'}</p>
-                </div>
-            `;
-
-        case 'publishedDate':
-            return `
-                <div class="field-wrapper">
-                    <label class="cms-label">📅 Operational Date</label>
-                    <input type="date" id="edit-publishedDate" value="${val}" class="cms-input shadow-sm focus:shadow-md">
                 </div>
             `;
 

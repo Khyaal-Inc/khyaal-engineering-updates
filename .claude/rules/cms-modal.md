@@ -29,8 +29,10 @@ Always think in this order when adding/changing form fields:
      </div>`
 
 2. Add to FIELD_GROUPS pillar (line 114) — choose the right pillar:
-   what: goal/intent fields  when: time/cycle fields
-   where: routing/people     how: effort/quality fields
+   what: text, usecase, epicId, persona, tags (goal/intent — NO note)
+   when: planningHorizon, sprintId, startDate, due, releasedIn, publishedDate
+   where: status, contributors, blockerNote, dependencies, note, mediaUrl
+   how: storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType
 
 3. Add to LIFECYCLE_FIELD_MAP views (line 148) where it makes sense
 

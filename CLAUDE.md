@@ -83,9 +83,9 @@ UPDATE_DATA {
 **4 Pillars** (FIELD_GROUPS at cms.js:114):
 | Key | Label | Fields |
 |-----|-------|--------|
-| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags, note |
+| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags |
 | `when` | 📅 Timeline & Cycle | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
-| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, mediaUrl |
+| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, note, mediaUrl |
 | `how` | 🛠️ Sync & Effort | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
 
 **Pillar visibility by persona** (`getVisibleFieldGroups()` cms.js:164):
