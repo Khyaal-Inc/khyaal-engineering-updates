@@ -273,7 +273,9 @@ function drawVelocityChart(data) {
         chartArea: { width: '80%', height: '70%' }
     };
 
-    const chart = new google.visualization.LineChart(document.getElementById('velocity-chart'));
+    const chartContainer = document.getElementById('velocity-chart');
+    if (!chartContainer) return;
+    const chart = new google.visualization.LineChart(chartContainer);
     chart.draw(dataTable, options);
 }
 
@@ -304,7 +306,9 @@ function drawBurndownChart() {
         chartArea: { width: '80%', height: '70%' }
     };
 
-    const chart = new google.visualization.LineChart(document.getElementById('burndown-chart'));
+    const chartContainer = document.getElementById('burndown-chart');
+    if (!chartContainer) return;
+    const chart = new google.visualization.LineChart(chartContainer);
     chart.draw(dataTable, options);
 }
 

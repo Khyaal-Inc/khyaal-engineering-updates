@@ -379,7 +379,6 @@ function buildContributorList() {
 
 // Export for global use
 window.switchView = switchView;
-window.initDashboard = initDashboard;
 if (typeof addItem === 'function') {
     window.openAddItemModal = addItem; // Map ribbon buttons to CMS addItem
 } else {

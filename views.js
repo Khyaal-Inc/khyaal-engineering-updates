@@ -1813,6 +1813,9 @@ function renderGanttView() {
 }
 
 function drawGanttChart() {
+    const container = document.getElementById('gantt-chart-container');
+    if (!container) return;
+
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'Task ID');
     data.addColumn('string', 'Task Name');
@@ -1859,6 +1862,9 @@ function drawGanttChart() {
 
         if (startDate && endDate && startDate < endDate) {
             const percent = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+            // Map epic.dependencies (array) into comma-separated string for Google Gantt Links
+            const depString = (epic.dependencies && epic.dependencies.length > 0) ? epic.dependencies.join(',') : null;
+            
             rows.push([
                 epic.id,
                 epic.name,
@@ -1867,9 +1873,49 @@ function drawGanttChart() {
                 endDate,
                 null,
                 percent,
-                null
+                depString
             ]);
         }
+    });
+
+    const validRowIds = new Set(rows.map(r => r[0]));
+    const itemRowsPendingDeps = [];
+
+    // Map Items to Gantt
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                let startDate = item.startDate ? new Date(item.startDate) : null;
+                let endDate = item.due ? new Date(item.due) : null;
+                
+                if (startDate && endDate && startDate < endDate) {
+                    const percent = item.status === 'done' ? 100 : item.status === 'now' ? 50 : 0;
+                    const resource = item.epicId ? (epics.find(e => e.id === item.epicId)?.name || 'Task') : 'Orphan Task';
+                    
+                    validRowIds.add(item.id);
+                    itemRowsPendingDeps.push({
+                        row: [
+                            item.id,
+                            item.text.substring(0, 30),
+                            resource,
+                            startDate,
+                            endDate,
+                            null,
+                            percent,
+                            '' // Placeholder for filtered deps
+                        ],
+                        deps: item.dependencies || []
+                    });
+                }
+            });
+        });
+    });
+
+    // Safely rebuild dependencies string using only valid rows
+    itemRowsPendingDeps.forEach(itemInfo => {
+        const safeDeps = itemInfo.deps.filter(dId => validRowIds.has(dId));
+        itemInfo.row[7] = safeDeps.length > 0 ? safeDeps.join(',') : null;
+        rows.push(itemInfo.row);
     });
 
     if (!rows.length) {
@@ -1892,7 +1938,7 @@ function drawGanttChart() {
             barCornerRadius: 4
         }
     };
-    const chart = new google.visualization.Gantt(document.getElementById('gantt-chart-container'));
+    const chart = new google.visualization.Gantt(container);
 
     // Phase 9 Reset: High-fidelity action mapping
     window.openAddItemModal = function (type) {

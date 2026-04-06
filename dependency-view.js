@@ -66,17 +66,18 @@ function renderDependencyView() {
 
     // Add nodes with styling
     connectedItems.forEach(item => {
-        const shortId = item.id.substring(0, 15);
-        const label = item.text.substring(0, 30);
+        const safeId = 'node_' + item.id.replace(/[^a-zA-Z0-9]/g, '_');
+        // Sanitize label to prevent syntax errors (remove quotes and brackets)
+        const label = item.text.substring(0, 30).replace(/["\\[\\]{}()]/g, '');
         const statusColor = getStatusColor(item.status);
 
-        mermaidCode += `    ${shortId}["${label}"]:::${item.status}\n`;
+        mermaidCode += `    ${safeId}["${label}"]:::${item.status}\n`;
     });
 
     // Add edges
     edges.forEach(edge => {
-        const fromId = edge.from.substring(0, 15);
-        const toId = edge.to.substring(0, 15);
+        const fromId = 'node_' + edge.from.replace(/[^a-zA-Z0-9]/g, '_');
+        const toId = 'node_' + edge.to.replace(/[^a-zA-Z0-9]/g, '_');
 
         if (edge.type === 'blocker') {
             mermaidCode += `    ${fromId} -.->|blocker| ${toId}\n`;
