@@ -792,7 +792,7 @@ function renderCadenceNudgeBanner() {
     if (!bar) return
     const nudge = getCadenceNudge()
     if (!nudge) { bar.style.display = 'none'; return }
-    const dismissed = sessionStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
+    const dismissed = localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
     if (dismissed) { bar.style.display = 'none'; return }
     bar.style.display = 'flex'
     bar.innerHTML = `
@@ -802,7 +802,7 @@ function renderCadenceNudgeBanner() {
             <span class="cnb-msg">${nudge.msg}</span>
         </div>
         <button class="cnb-cta" onclick="switchView('${nudge.view}');document.getElementById('cadence-nudge-bar').style.display='none'">${nudge.label.split(' ')[0]} View →</button>
-        <button class="cnb-dismiss" onclick="sessionStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');document.getElementById('cadence-nudge-bar').style.display='none'">✕</button>
+        <button class="cnb-dismiss" onclick="localStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');document.getElementById('cadence-nudge-bar').style.display='none'">✕</button>
     `
 }
 window.renderCadenceNudgeBanner = renderCadenceNudgeBanner
@@ -1031,6 +1031,20 @@ Object.assign(QA_DEFS, {
             _qaSave(); showHandoffToast(`Due date set: ${val} ✓`, null, null, 2500)
         }
     },
+    'update-kr-progress': {
+        label: '🎯 Update OKR Progress', type: 'action',
+        exec: (item) => {
+            const linkedEpic = item.epicId ? (window.UPDATE_DATA?.metadata?.epics || []).find(e => e.id === item.epicId) : null;
+            if (linkedEpic && linkedEpic.linkedOKR) {
+                const okrIndex = (window.UPDATE_DATA?.metadata?.okrs || []).findIndex(o => o.id === linkedEpic.linkedOKR);
+                if (okrIndex >= 0 && typeof openOKREdit === 'function') {
+                    openOKREdit(okrIndex);
+                    return;
+                }
+            }
+            showHandoffToast('Not linked to an OKR.', 'Strategy Hub →', () => switchView('okr'), 4000);
+        }
+    },
     'create-spike': {
         label: '🧪 Create Spike', type: 'inline-text', placeholder: 'What do you need to research?',
         exec: (item, question) => {
@@ -1082,6 +1096,7 @@ window._getQuickActionsExtended = function(item, viewId) {
         if (!item.due) acts.push('set-due-date')
         if (viewId === 'sprint' && s !== 'done') acts.push('clone-item')
         if (viewId === 'ideation' || viewId === 'spikes') acts.push('create-spike')
+        if (item.epicId) acts.push('update-kr-progress')
     }
     return acts
 }
