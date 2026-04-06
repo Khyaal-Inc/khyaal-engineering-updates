@@ -1931,9 +1931,26 @@ function drawGanttChart() {
         return;
     }
 
+    // Calculate dynamic width based on timeline spread to prevent tasks from being squished
+    let minDate = null, maxDate = null;
+    rows.forEach(r => {
+        if (r[3] && (!minDate || r[3] < minDate)) minDate = r[3];
+        if (r[4] && (!maxDate || r[4] > maxDate)) maxDate = r[4];
+    });
+    
+    let chartWidth = 1200; // minimum
+    if (minDate && maxDate) {
+        const days = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+        chartWidth = Math.max(1200, Math.round(days * 15)); // 15px per day ensures 7-day sprints are readable
+    }
+
+    const containerEl = document.getElementById('gantt-chart-container');
+    containerEl.style.width = chartWidth + 'px';
+
     data.addRows(rows);
     const options = {
         height: rows.length * 45 + 50,
+        width: chartWidth,
         gantt: {
             trackHeight: 45,
             labelStyle: { fontName: 'Inter', fontSize: 11, color: '#1e293b' },

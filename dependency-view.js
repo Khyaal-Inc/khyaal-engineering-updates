@@ -151,8 +151,11 @@ function renderDependencyView() {
             </div>
 
             <!-- Mermaid Diagram -->
-            <div class="mermaid-container overflow-x-auto bg-slate-50 relative border border-slate-200 rounded-lg" style="min-height: 400px; display:flex; align-items:center; justify-content:center; padding: 2rem;">
-                <pre class="mermaid">${mermaidCode}</pre>
+            <style>
+                .mermaid svg { width: 100%; height: auto; min-width: 800px; max-width: none !important; }
+            </style>
+            <div class="mermaid-container overflow-x-auto bg-slate-50 border border-slate-200 rounded-lg p-6" style="min-height: 400px; width: 100%;">
+                <div class="mermaid w-full flex justify-center">${mermaidCode}</div>
             </div>
 
             <!-- Critical Path Highlighting -->
