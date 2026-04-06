@@ -139,6 +139,7 @@ function renderOKRSummary() {
                     
                     const color = progress >= 90 ? 'bg-emerald-500' : progress >= 70 ? 'bg-blue-500' : progress >= 50 ? 'bg-amber-500' : 'bg-red-500';
                     const textColor = progress >= 90 ? 'text-emerald-600' : progress >= 70 ? 'text-blue-600' : 'text-slate-900';
+                    const healthSignal = progress >= 70 ? '🟢 On Track' : progress >= 40 ? '🟡 At Risk' : '🔴 Behind';
 
                     return `
                         <div class="group p-5 bg-slate-50 hover:bg-slate-100/50 rounded-2xl border border-slate-100 transition-all duration-500 hover:shadow-lg hover:-translate-y-1">
@@ -162,7 +163,10 @@ function renderOKRSummary() {
                             </div>
                             
                             <div class="pt-3 border-t border-slate-200/50 flex justify-between items-center">
-                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Owner: ${okr.owner}</span>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Owner: ${okr.owner || '—'}</span>
+                                    <span class="text-[10px] font-black mt-0.5 block">${healthSignal}</span>
+                                </div>
                                 <button onclick="switchView('okr')" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm transition-all hover:scale-105 active:scale-95">Strategy Hub 🎯</button>
                             </div>
                         </div>
@@ -205,63 +209,110 @@ function renderEpicHealth() {
 }
 
 function renderTopRisks() {
-    const risks = [];
+    const blockedItems = [];
+    const atRiskOkrs = [];
 
-    // Find blocked items
+    // Collect all blocked items with full context
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
-                if (item.blocker) {
-                    risks.push({
-                        type: 'blocker',
-                        item: item.text,
+                if (item.blocker || item.status === 'blocked') {
+                    blockedItems.push({
+                        id: item.id,
+                        text: item.text,
                         track: track.name,
-                        note: item.blockerNote || 'Dependencies not met',
-                        priority: item.priority
+                        subtrack: subtrack.name,
+                        contributors: item.contributors || [],
+                        blockerNote: item.blockerNote || 'No details provided',
+                        priority: item.priority,
+                        due: item.due,
+                        epicId: item.epicId
                     });
                 }
             });
         });
     });
 
-    // Check for at-risk OKRs
+    // At-risk OKRs (< 50% progress)
     const okrs = UPDATE_DATA.metadata?.okrs || [];
     okrs.forEach(okr => {
-        if (okr.overallProgress < 50) {
-            risks.push({
-                type: 'okr-risk',
-                item: okr.objective,
-                note: `Only ${okr.overallProgress}% progress`,
-                priority: 'high'
-            });
+        if ((okr.overallProgress || 0) < 50) {
+            atRiskOkrs.push(okr);
         }
     });
 
-    if (risks.length === 0) {
+    const totalRisks = blockedItems.length + atRiskOkrs.length;
+
+    if (totalRisks === 0) {
         return `
-            <div class="bg-green-50 p-6 rounded-xl border border-green-200">
-                <h2 class="text-2xl font-bold text-green-900 mb-2">✅ No Critical Risks</h2>
-                <p class="text-green-800">All systems on track. No blockers or at-risk initiatives.</p>
+            <div class="bg-green-50 p-6 rounded-xl border border-green-200 flex items-center gap-4">
+                <span class="text-4xl">✅</span>
+                <div>
+                    <h2 class="text-xl font-bold text-green-900">No Critical Risks</h2>
+                    <p class="text-green-700 text-sm mt-1">All items are progressing normally. No blockers or at-risk goals detected.</p>
+                </div>
             </div>
         `;
     }
 
+    const epics = UPDATE_DATA.metadata?.epics || [];
+
     return `
-        <div class="bg-white p-6 rounded-xl border-2 border-red-500 shadow-xl">
-            <h2 class="text-2xl font-bold text-red-900 mb-4">⚠️ Top Risks & Blockers (${risks.length})</h2>
-            <div class="space-y-3">
-                ${risks.slice(0, 5).map(risk => `
-                    <div class="p-4 bg-red-50 rounded-lg border border-red-200">
-                        <div class="flex justify-between items-start mb-1">
-                            <div class="font-bold text-red-900">${risk.item}</div>
-                            <span class="text-xs px-2 py-1 bg-red-200 text-red-800 rounded font-bold uppercase">${risk.type}</span>
+        <div class="bg-white rounded-2xl border-2 border-red-200 shadow-lg overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 bg-red-50 border-b border-red-100">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🚨</span>
+                    <div>
+                        <h2 class="text-lg font-black text-red-900">Blockers & At-Risk Items</h2>
+                        <p class="text-xs text-red-600 font-bold">${totalRisks} item${totalRisks > 1 ? 's' : ''} need${totalRisks === 1 ? 's' : ''} attention</p>
+                    </div>
+                </div>
+                <button onclick="switchMode('pm'); switchView('kanban');" class="exec-drill-btn">
+                    View Full Board →
+                </button>
+            </div>
+
+            ${blockedItems.length > 0 ? `
+            <div class="p-4 space-y-3">
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">🔴 Blocked Items (${blockedItems.length})</div>
+                ${blockedItems.slice(0, 6).map(b => {
+                    const epic = b.epicId ? epics.find(e => e.id === b.epicId) : null;
+                    const priorityColor = b.priority === 'high' ? 'bg-red-100 text-red-700 border-red-200' : b.priority === 'medium' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200';
+                    return `
+                        <div class="exec-blocker-row">
+                            <div class="exec-blocker-main">
+                                <div class="exec-blocker-title">${b.text}</div>
+                                <div class="exec-blocker-meta">
+                                    <span class="exec-blocker-track">🏗️ ${b.track}</span>
+                                    ${b.contributors.length ? `<span>· 👤 ${b.contributors.join(', ')}</span>` : ''}
+                                    ${b.due ? `<span>· 📅 Due ${b.due}</span>` : ''}
+                                    ${epic ? `<span>· 📍 ${epic.name}</span>` : ''}
+                                </div>
+                                <div class="exec-blocker-note">⚠️ ${b.blockerNote}</div>
+                            </div>
+                            <span class="exec-blocker-badge ${priorityColor}">${b.priority || 'medium'}</span>
                         </div>
-                        <p class="text-sm text-red-800">${risk.note}</p>
-                        ${risk.track ? `<div class="text-xs text-red-600 mt-1">Track: ${risk.track}</div>` : ''}
+                    `;
+                }).join('')}
+                ${blockedItems.length > 6 ? `<div class="text-xs text-slate-400 font-bold px-2">+ ${blockedItems.length - 6} more blocked items — <button onclick="switchMode('pm'); switchView('kanban');" class="underline text-indigo-600">view all</button></div>` : ''}
+            </div>
+            ` : ''}
+
+            ${atRiskOkrs.length > 0 ? `
+            <div class="p-4 pt-0 space-y-3 border-t border-slate-100">
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2 pt-3">🟡 At-Risk Goals (${atRiskOkrs.length})</div>
+                ${atRiskOkrs.map(okr => `
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                        <span class="text-xl">⚡</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold text-slate-800 truncate">${okr.objective}</div>
+                            <div class="text-xs text-amber-700 mt-0.5">Only ${okr.overallProgress || 0}% complete — needs to accelerate</div>
+                        </div>
+                        <button onclick="switchView('okr')" class="exec-drill-btn-sm">Review</button>
                     </div>
                 `).join('')}
             </div>
-            ${risks.length > 5 ? `<div class="text-sm text-slate-600 mt-3">+ ${risks.length - 5} more risks</div>` : ''}
+            ` : ''}
         </div>
     `;
 }

@@ -1079,6 +1079,37 @@ summary::-webkit-details-marker {
     color: #94a3b8;
 }
 
+/* Kanban card — acceptance criteria subtitle */
+.kanban-card-ac {
+    font-size: 0.65rem;
+    color: #64748b;
+    font-style: italic;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    padding: 3px 6px;
+    background: #f8fafc;
+    border-radius: 4px;
+    border-left: 2px solid #c7d2fe;
+}
+
+/* Sprint → Release link pill */
+.sprint-release-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+.sprint-release-pill:hover { background: #fef3c7; }
+
 /* Sprint density bar */
 .sprint-density-bar {
     display: flex;
@@ -1639,6 +1670,142 @@ summary::-webkit-details-marker {
     border: 2px solid #e2e8f0;
     margin-bottom: 2rem;
 }
+
+/* Exec Dashboard — Blockers panel */
+.exec-drill-btn {
+    background: white;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+.exec-drill-btn:hover { background: #fef2f2; }
+.exec-drill-btn-sm {
+    background: white;
+    border: 1px solid #fcd34d;
+    color: #92400e;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.exec-drill-btn-sm:hover { background: #fffbeb; }
+.exec-blocker-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+}
+.exec-blocker-main { flex: 1; min-width: 0; }
+.exec-blocker-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 3px;
+}
+.exec-blocker-meta {
+    font-size: 0.65rem;
+    color: #64748b;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.exec-blocker-track { font-weight: 700; }
+.exec-blocker-note {
+    font-size: 0.7rem;
+    color: #dc2626;
+    font-style: italic;
+}
+.exec-blocker-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    white-space: nowrap;
+    align-self: flex-start;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Dev task card — Epic/OKR context row */
+.dev-task-context-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    margin: -4px -4px 8px -4px;
+    background: #f0fdf4;
+    border-radius: 6px 6px 0 0;
+    border-bottom: 1px solid #bbf7d0;
+}
+.dev-task-context-epic {
+    font-weight: 700;
+    color: #065f46;
+}
+.dev-task-context-sep {
+    color: #6ee7b7;
+    font-weight: 900;
+}
+.dev-task-context-okr {
+    color: #047857;
+    font-style: italic;
+}
+
+/* Backlog inline sprint assignment */
+.backlog-item-wrapper {
+    border-bottom: 1px solid #f1f5f9;
+}
+.backlog-item-wrapper:last-child { border-bottom: none; }
+.backlog-sprint-assign {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 8px 12px;
+    background: #f8fafc;
+}
+.backlog-sprint-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.backlog-sprint-badge.assigned {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+.backlog-sprint-badge.unplanned {
+    background: #f8fafc;
+    color: #94a3b8;
+    border: 1px dashed #cbd5e1;
+}
+.backlog-sprint-select {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #4f46e5;
+    background: white;
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+    padding: 2px 6px;
+    cursor: pointer;
+    outline: none;
+}
+.backlog-sprint-select:hover { background: #eef2ff; }
 
 .backlog-count-badge {
     background: #ef4444;

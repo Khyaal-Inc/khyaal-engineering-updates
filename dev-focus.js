@@ -188,8 +188,21 @@ function renderDevTaskCard(task) {
 
     const statusColor = statusColors[task.status] || 'bg-gray-500';
 
+    // Resolve Epic and OKR context for "why does this task matter?"
+    const epics = UPDATE_DATA.metadata?.epics || [];
+    const okrs = UPDATE_DATA.metadata?.okrs || [];
+    const epic = task.epicId ? epics.find(e => e.id === task.epicId) : null;
+    const okr = epic?.linkedOKR ? okrs.find(o => o.id === epic.linkedOKR) : null;
+    const contextRow = epic ? `
+        <div class="dev-task-context-row">
+            <span class="dev-task-context-epic">📍 ${epic.name}</span>
+            ${okr ? `<span class="dev-task-context-sep">→</span><span class="dev-task-context-okr">🎯 ${okr.objective.length > 60 ? okr.objective.substring(0, 60) + '…' : okr.objective}</span>` : ''}
+        </div>
+    ` : '';
+
     return `
         <div class="p-4 bg-white rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
+            ${contextRow}
             <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
                     <h3 class="font-bold text-slate-900">${task.text}</h3>

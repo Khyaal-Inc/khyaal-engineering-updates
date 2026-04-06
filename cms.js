@@ -146,14 +146,21 @@ const FIELD_GROUPS = {
  * Mapping: Which fields are NATIVE to which view (Stage-specific primary exposure)
  */
 const LIFECYCLE_FIELD_MAP = {
-    okr: ['text', 'epicId', 'planningHorizon', 'impactLevel', 'successMetric', 'usecase', 'strategicWeight', 'riskType', 'mediaUrl'],
-    epics: ['text', 'usecase', 'persona', 'planningHorizon', 'impactLevel', 'status', 'epicId', 'successMetric', 'strategicWeight', 'riskType', 'mediaUrl'],
-    roadmap: ['text', 'planningHorizon', 'startDate', 'usecase', 'epicId', 'status', 'tags', 'impactLevel', 'effortLevel', 'riskType'],
-    backlog: ['text', 'usecase', 'persona', 'sprintId', 'planningHorizon', 'status', 'epicId', 'priority', 'storyPoints', 'tags', 'impactLevel', 'effortLevel'],
-    sprint: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'sprintId', 'startDate', 'due', 'status', 'contributors', 'storyPoints', 'priority', 'blockerNote', 'note'],
+    // Vision: OKR ownership, rationale, and status are core to managing objectives
+    okr: ['text', 'usecase', 'epicId', 'planningHorizon', 'impactLevel', 'successMetric', 'strategicWeight', 'riskType', 'mediaUrl', 'contributors', 'note', 'status'],
+    // Vision: Epics need owners, start dates, and end dates — not just description
+    epics: ['text', 'usecase', 'persona', 'planningHorizon', 'impactLevel', 'status', 'successMetric', 'strategicWeight', 'riskType', 'mediaUrl', 'contributors', 'startDate', 'due'],
+    // Vision→Definition: Roadmap items need ownership, sequencing, and rationale
+    roadmap: ['text', 'planningHorizon', 'startDate', 'usecase', 'epicId', 'status', 'tags', 'impactLevel', 'effortLevel', 'riskType', 'contributors', 'note', 'priority'],
+    // Definition: Backlog grooming needs AC, contributors, dependencies, and due date — core grooming fields
+    backlog: ['text', 'usecase', 'persona', 'sprintId', 'planningHorizon', 'status', 'epicId', 'priority', 'storyPoints', 'tags', 'impactLevel', 'effortLevel', 'contributors', 'acceptanceCriteria', 'dependencies', 'due'],
+    // Delivery: Sprint needs dependencies visible so devs can see what blocks them
+    sprint: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'sprintId', 'startDate', 'due', 'status', 'contributors', 'storyPoints', 'priority', 'blockerNote', 'note', 'dependencies'],
     track: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'due', 'sprintId', 'status', 'contributors', 'storyPoints', 'priority', 'dependencies', 'blockerNote', 'note'],
-    releases: ['text', 'releasedIn', 'publishedDate', 'status', 'mediaUrl', 'tags', 'note'],
-    kanban: ['text', 'sprintId', 'status', 'contributors', 'priority', 'storyPoints', 'blockerNote']
+    // Release notes: need epic link, business rationale, and contributor credit
+    releases: ['text', 'releasedIn', 'publishedDate', 'status', 'mediaUrl', 'tags', 'note', 'epicId', 'usecase', 'contributors'],
+    // Kanban board: cards need due date for urgency and AC for definition-of-done
+    kanban: ['text', 'sprintId', 'status', 'contributors', 'priority', 'storyPoints', 'blockerNote', 'due', 'acceptanceCriteria']
 };
 
 /**
@@ -1113,6 +1120,20 @@ function addItem(trackIndex, subtrackIndex, defaults = {}) {
         attachModalFormListeners();
     }, 50);
 }
+
+/**
+ * Quick-assign a sprint to a backlog item without opening the full modal.
+ * Called from the inline "Assign to Sprint" select on backlog cards.
+ */
+function quickAssignSprint(itemId, sprintId) {
+    const found = findItemById(itemId);
+    if (!found) return;
+    found.item.sprintId = sprintId || '';
+    logChange('sprint-assign', found.item.text);
+    saveToLocalStorage();
+    renderBacklogView();
+}
+window.quickAssignSprint = quickAssignSprint;
 
 function closeCmsModal() {
     if (window.uiState.isDirty) {

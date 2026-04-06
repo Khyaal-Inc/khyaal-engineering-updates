@@ -81,7 +81,7 @@ function renderKanbanView() {
                         <span class="text-white text-xl">📋</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Execution Delivery</span>
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Delivery · Drag cards to update live status — your team's work in motion</span>
                         <h2 class="text-base font-black text-slate-800">Unified Kanban</h2>
                     </div>
                 </div>
@@ -176,7 +176,9 @@ function renderKanbanCard(item) {
             </div>
 
             <h4 class="text-[12px] font-black text-slate-900 leading-tight mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
-            
+
+            ${item.acceptanceCriteria ? `<div class="kanban-card-ac">${item.acceptanceCriteria.split('\n')[0].substring(0, 80)}${item.acceptanceCriteria.length > 80 ? '…' : ''}</div>` : ''}
+
             ${epicBadge}
 
             <div class="flex justify-between items-center text-[9px] text-slate-800 mt-2 pt-1.5 border-t border-slate-100">
@@ -186,9 +188,9 @@ function renderKanbanCard(item) {
                     </div>
                     <span class="capitalize tracking-tighter">${contributors}</span>
                 </div>
-                <div class="flex items-center gap-1">
-                    ${item.blocker ? '<span class="text-[7px] font-black bg-red-100 text-red-800 px-1 py-0.5 rounded border border-red-200 animate-pulse">🛑</span>' : 
-                      (item.due ? `<span class="font-black text-slate-900 bg-slate-50 px-1 py-0.5 rounded border border-slate-100">📅 ${item.due.split('-').slice(1).join('/')}</span>` : '')}
+                <div class="flex items-center gap-1.5">
+                    ${item.blocker ? '<span class="text-[7px] font-black bg-red-100 text-red-800 px-1 py-0.5 rounded border border-red-200 animate-pulse">🛑 Blocked</span>' : ''}
+                    ${item.due ? `<span class="font-black text-slate-500 bg-slate-50 px-1 py-0.5 rounded border border-slate-100 text-[8px]">📅 ${item.due.split('-').slice(1).join('/')}</span>` : ''}
                 </div>
             </div>
             

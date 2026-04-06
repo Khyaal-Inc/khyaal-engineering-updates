@@ -153,6 +153,14 @@ function renderTrackView() {
 
         container.innerHTML = `
             <div id="track-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 0: Title -->
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">🏗️</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · All work organized by engineering team — see who owns what</span>
+                        <h2 class="text-sm font-black text-slate-800">Engineering Tracks</h2>
+                    </div>
+                </div>
                 <!-- Group 1: Navigation & Filters -->
                 <div class="flex flex-wrap items-center gap-3 flex-1">
                     <div class="max-w-[420px] flex-1 min-w-[240px] relative">
@@ -839,7 +847,7 @@ function renderBacklogView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📚</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Tactical Backlog</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Items waiting to be planned into a sprint</span>
                         <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
                     </div>
                 </div>
@@ -876,8 +884,27 @@ function renderBacklogView() {
                 ${shouldShowManagement() ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
             </div>
             <div class="p-3 space-y-3 bg-white">`;
+        const sprints = (UPDATE_DATA.metadata?.sprints || []);
         backlogSub.items.forEach((item, ii) => {
+            html += `<div class="backlog-item-wrapper">`;
             html += renderItem(item, 'backlog', trackIndex, si, ii, groomingMode);
+            if (shouldShowManagement() && sprints.length > 0) {
+                const assignedSprint = sprints.find(s => s.id === item.sprintId);
+                const sprintOptions = sprints.map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
+                html += `
+                    <div class="backlog-sprint-assign">
+                        ${assignedSprint
+                            ? `<span class="backlog-sprint-badge assigned">🏃 ${assignedSprint.name}</span>`
+                            : `<span class="backlog-sprint-badge unplanned">⚪ Unplanned</span>`
+                        }
+                        <select class="backlog-sprint-select" onchange="quickAssignSprint('${item.id}', this.value)">
+                            <option value="">→ Assign to Sprint…</option>
+                            ${sprintOptions}
+                        </select>
+                    </div>
+                `;
+            }
+            html += `</div>`;
         });
         html += `</div></div>`;
     });
@@ -1239,7 +1266,7 @@ function renderSprintView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🏃</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Sprint Planning</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Work your team has committed to this time window</span>
                     <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
                 </div>
             </div>
@@ -1283,6 +1310,18 @@ function renderSprintView() {
 
         const sprintOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === s.linkedOKR);
 
+        // Compute which release(s) this sprint feeds into, via items' releasedIn field
+        const releases = UPDATE_DATA.metadata?.releases || [];
+        const releaseIdCounts = {};
+        sprintItems.forEach(item => {
+            if (item.releasedIn) releaseIdCounts[item.releasedIn] = (releaseIdCounts[item.releasedIn] || 0) + 1;
+        });
+        const topReleaseId = Object.keys(releaseIdCounts).sort((a, b) => releaseIdCounts[b] - releaseIdCounts[a])[0];
+        const topRelease = topReleaseId ? releases.find(r => r.id === topReleaseId) : null;
+        const releasePill = topRelease
+            ? `<span class="sprint-release-pill" onclick="switchView('releases')" title="View release">📦 → ${topRelease.name}</span>`
+            : '';
+
         // Sprint density: done vs total items
         const doneItems = sprintItems.filter(i => i.status === 'done').length;
         const totalSprintItems = sprintItems.length;
@@ -1303,7 +1342,10 @@ function renderSprintView() {
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
                                 ${cmsActions}
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mt-1">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</div>
+                            <div class="flex items-center gap-3 mt-1 flex-wrap">
+                                <span class="text-sm font-bold text-slate-500">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</span>
+                                ${releasePill}
+                            </div>
                         </div>
                         <div class="text-right">
                              <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Capacity</div>
