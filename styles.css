@@ -1,6 +1,94 @@
+/* =====================================================
+   DESIGN SYSTEM TOKENS — Khyaal Engineering Pulse
+   Lifecycle-aware, glassmorphic, premium aesthetic
+   ===================================================== */
+:root {
+  /* ── Lifecycle Stage Colors (the connecting thread) ── */
+  --stage-discover: #7c3aed;
+  --stage-goals:    #4f46e5;
+  --stage-plan:     #2563eb;
+  --stage-build:    #059669;
+  --stage-ship:     #d97706;
+
+  /* ── Status Semantic Tokens ── */
+  --status-done-bg:      #f0fdf4;
+  --status-done-text:    #15803d;
+  --status-done-border:  #bbf7d0;
+  --status-done-accent:  #22c55e;
+
+  --status-now-bg:       #eff6ff;
+  --status-now-text:     #1d4ed8;
+  --status-now-border:   #bfdbfe;
+  --status-now-accent:   #3b82f6;
+
+  --status-next-bg:      #fff7ed;
+  --status-next-text:    #c2410c;
+  --status-next-border:  #fed7aa;
+  --status-next-accent:  #f97316;
+
+  --status-blocked-bg:    #fef2f2;
+  --status-blocked-text:  #991b1b;
+  --status-blocked-border:#fecaca;
+  --status-blocked-accent:#ef4444;
+
+  --status-later-bg:     #f8fafc;
+  --status-later-text:   #475569;
+  --status-later-border: #e2e8f0;
+  --status-later-accent: #94a3b8;
+
+  --status-qa-bg:        #f5f3ff;
+  --status-qa-text:      #6d28d9;
+  --status-qa-border:    #ddd6fe;
+  --status-qa-accent:    #8b5cf6;
+
+  --status-review-bg:    #fffbeb;
+  --status-review-text:  #92400e;
+  --status-review-border:#fde68a;
+  --status-review-accent:#f59e0b;
+
+  --status-onhold-bg:    #f8fafc;
+  --status-onhold-text:  #64748b;
+  --status-onhold-border:#cbd5e1;
+  --status-onhold-accent:#64748b;
+
+  /* ── Surface Layers ── */
+  --surface-base:       #f8fafc;
+  --surface-card:       rgba(255,255,255,0.88);
+  --surface-card-hover: rgba(255,255,255,0.98);
+  --surface-overlay:    rgba(255,255,255,0.92);
+  --surface-inset:      rgba(248,250,252,0.72);
+
+  /* ── Glass ── */
+  --glass-blur-sm:     blur(8px);
+  --glass-blur-md:     blur(16px);
+  --glass-blur-lg:     blur(24px);
+  --glass-border:      rgba(255,255,255,0.6);
+  --glass-border-subtle: rgba(226,232,240,0.4);
+
+  /* ── Shadow Scale ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 2px 6px -1px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 8px 20px -4px rgba(0,0,0,0.08), 0 2px 6px -2px rgba(0,0,0,0.04);
+  --shadow-lg:  0 20px 40px -8px rgba(0,0,0,0.10), 0 4px 12px -4px rgba(0,0,0,0.06);
+  --shadow-xl:  0 40px 80px -15px rgba(0,0,0,0.14), inset 0 0 0 1px rgba(255,255,255,0.5);
+
+  /* ── Border Radii ── */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  24px;
+  --radius-pill: 9999px;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f8fafc;
+    background-color: var(--surface-base);
 }
 
 /* Smooth transitions */
@@ -59,23 +147,15 @@ body {
     display: block;
 }
 
-/* Status Colors */
-.bucket-done {
-    background: #f0fdf4;
-}
-
-.bucket-now {
-    background: #eff6ff;
-}
-
-
-.bucket-next {
-    background: #fff7ed;
-}
-
-.bucket-later {
-    background: #f3f4f6;
-}
+/* Status Colors — bucket backgrounds use tokens */
+.bucket-done    { background: var(--status-done-bg); }
+.bucket-now     { background: var(--status-now-bg); }
+.bucket-next    { background: var(--status-next-bg); }
+.bucket-later   { background: var(--status-later-bg); }
+.bucket-blocked { background: var(--status-blocked-bg); }
+.bucket-qa      { background: var(--status-qa-bg); }
+.bucket-review  { background: var(--status-review-bg); }
+.bucket-onhold  { background: var(--status-onhold-bg); }
 
 /* Animations */
 @keyframes fadeInDown {
@@ -119,51 +199,22 @@ summary::-webkit-details-marker {
     display: none;
 }
 
-.badge-done {
-    background: #22c55e;
-    color: white;
-}
+/* Badge aliases — map to status-pill tokens for consistency */
+.badge-done   { background: var(--status-done-bg);    color: var(--status-done-text);    border: 1px solid var(--status-done-border); }
+.badge-now    { background: var(--status-now-bg);     color: var(--status-now-text);     border: 1px solid var(--status-now-border); }
+.badge-next   { background: var(--status-next-bg);    color: var(--status-next-text);    border: 1px solid var(--status-next-border); }
+.badge-later  { background: var(--status-later-bg);   color: var(--status-later-text);   border: 1px solid var(--status-later-border); }
+.badge-blocked{ background: var(--status-blocked-bg); color: var(--status-blocked-text); border: 1px solid var(--status-blocked-border); }
 
-.badge-now {
-    background: #3b82f6;
-    color: white;
-}
-
-
-.badge-next {
-    background: #f97316;
-    color: white;
-}
-
-.badge-later {
-    background: #6b7280;
-    color: white;
-}
-
-/* Specific status pill styles for better contrast */
-.status-pill.done {
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-
-.status-pill.now {
-    background: #dbeafe;
-    color: #1e40af;
-    border: 1px solid #bfdbfe;
-}
-
-.status-pill.next {
-    background: #ffedd5;
-    color: #9a3412;
-    border: 1px solid #fed7aa;
-}
-
-.status-pill.later {
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-}
+/* Unified status pill system — single source of truth */
+.status-pill.done    { background: var(--status-done-bg);    color: var(--status-done-text);    border: 1px solid var(--status-done-border); }
+.status-pill.now     { background: var(--status-now-bg);     color: var(--status-now-text);     border: 1px solid var(--status-now-border); }
+.status-pill.next    { background: var(--status-next-bg);    color: var(--status-next-text);    border: 1px solid var(--status-next-border); }
+.status-pill.later   { background: var(--status-later-bg);   color: var(--status-later-text);   border: 1px solid var(--status-later-border); }
+.status-pill.blocked { background: var(--status-blocked-bg); color: var(--status-blocked-text); border: 1px solid var(--status-blocked-border); }
+.status-pill.qa      { background: var(--status-qa-bg);      color: var(--status-qa-text);      border: 1px solid var(--status-qa-border); }
+.status-pill.review  { background: var(--status-review-bg);  color: var(--status-review-text);  border: 1px solid var(--status-review-border); }
+.status-pill.onhold  { background: var(--status-onhold-bg);  color: var(--status-onhold-text);  border: 1px solid var(--status-onhold-border); }
 
 /* Priority Colors */
 .priority-high {
@@ -194,16 +245,16 @@ summary::-webkit-details-marker {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Track Cards */
+/* Track Cards — borderless, shadow-elevated, stage-threaded */
 .track-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    border: 2px solid #e2e8f0;
+    background: var(--surface-inset);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: none;
+    border-left: 4px solid transparent; /* stage color set via data-stage or JS */
     overflow: visible;
-    /* Required for sticky */
     margin-bottom: 1rem;
-    /* Reduced spacing between main tracks for high density */
+    transition: box-shadow var(--transition-base);
 }
 
 /* Fix for rounded corners when using overflow: visible */
@@ -222,7 +273,9 @@ summary::-webkit-details-marker {
 }
 
 .track-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: var(--glass-blur-sm);
+    -webkit-backdrop-filter: var(--glass-blur-sm);
     color: white;
     padding: 0.75rem 1.25rem;
     font-weight: 800;
@@ -230,8 +283,8 @@ summary::-webkit-details-marker {
     letter-spacing: -0.025em;
     position: sticky;
     top: 48px;
-    /* Offset for Command Strip */
     z-index: 20;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .subtrack-section {
@@ -270,14 +323,13 @@ summary::-webkit-details-marker {
 }
 
 .status-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    border: 2px solid #e2e8f0;
+    background: var(--surface-inset);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: none;
     overflow: visible;
-    /* Required for sticky */
     margin-bottom: 1rem;
-    /* Match track-card spacing */
+    transition: box-shadow var(--transition-base);
 }
 
 .status-card>*:first-child {
@@ -309,16 +361,33 @@ summary::-webkit-details-marker {
     display: none;
 }
 
-/* Item Styling */
+/* Item Styling — floating micro-cards with status-accent left rail */
 .item-row {
-    padding: 1rem 1.5rem;
-    border-bottom: 1.5px solid #e2e8f0;
-    /* Clearer separator (slate-200) */
+    padding: 0.75rem 1.25rem;
+    border-bottom: none;
+    margin: 4px 8px;
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    border: 1px solid var(--glass-border-subtle);
+    border-left: 3px solid transparent; /* status accent injected by bucket class */
+    box-shadow: var(--shadow-xs);
     display: flex;
     align-items: flex-start;
-    gap: 1.5rem;
-    transition: background-color 0.2s, transform 0.2s;
+    gap: 1.25rem;
+    transition: box-shadow var(--transition-base), transform var(--transition-base), background var(--transition-base);
+    position: relative;
+    overflow: hidden;
 }
+
+/* Status left-accent thread — connects item visual to its lifecycle status */
+.item-row.bucket-now     { border-left-color: var(--status-now-accent); }
+.item-row.bucket-done    { border-left-color: var(--status-done-accent); }
+.item-row.bucket-next    { border-left-color: var(--status-next-accent); }
+.item-row.bucket-blocked { border-left-color: var(--status-blocked-accent); }
+.item-row.bucket-later   { border-left-color: var(--status-later-accent); }
+.item-row.bucket-qa      { border-left-color: var(--status-qa-accent); }
+.item-row.bucket-review  { border-left-color: var(--status-review-accent); }
+.item-row.bucket-onhold  { border-left-color: var(--status-onhold-accent); }
 
 .item-content {
     display: flex;
@@ -329,11 +398,13 @@ summary::-webkit-details-marker {
 }
 
 .item-row:hover {
-    background-color: #fafafa;
+    background: var(--surface-card-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .item-row:last-child {
-    border-bottom: none;
+    margin-bottom: 8px;
 }
 
 /* Perspective-Based Card Density */
@@ -4237,3 +4308,581 @@ summary::-webkit-details-marker {
 .lgt-cta:hover { background: rgba(255,255,255,0.25); }
 .lgt-x { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; flex-shrink: 0; }
 .lgt-x:hover { color: white; }
+/* =================================================================
+   PREMIUM DESIGN SYSTEM COMPONENTS — Phase 1 Implementation
+   Lifecycle-aware, glassmorphic, interconnected end-to-end
+   ================================================================= */
+
+/* ── Command Strip: Frosted Glass Elevation ── */
+#command-strip {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: var(--glass-blur-md) !important;
+    -webkit-backdrop-filter: var(--glass-blur-md) !important;
+    border-bottom: 1px solid var(--glass-border-subtle) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.7), var(--shadow-sm) !important;
+}
+
+/* ── Lifecycle Breadcrumb / Mini-Pipeline Pills ── */
+.lifecycle-stage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px 3px 7px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.lifecycle-stage-pill.lsp-completed {
+    background: rgba(241, 245, 249, 0.8);
+    color: #64748b;
+    border-color: rgba(226, 232, 240, 0.6);
+}
+
+.lifecycle-stage-pill.lsp-completed:hover {
+    background: white;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.lifecycle-stage-pill.lsp-active {
+    font-weight: 800;
+    color: white;
+}
+
+.lifecycle-stage-pill.lsp-active::before {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.75);
+    flex-shrink: 0;
+    animation: soft-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.lifecycle-stage-pill.lsp-upcoming {
+    background: transparent;
+    color: #94a3b8;
+    border-color: transparent;
+}
+
+.lifecycle-stage-pill.lsp-upcoming:hover {
+    background: rgba(241, 245, 249, 0.5);
+    color: #64748b;
+    border-color: rgba(226, 232, 240, 0.5);
+}
+
+/* Stage color variants for active pills */
+.lsp-discover { background: var(--stage-discover); box-shadow: 0 4px 12px -4px rgba(124, 58, 237, 0.35); }
+.lsp-goals    { background: var(--stage-goals);    box-shadow: 0 4px 12px -4px rgba(79, 70, 229, 0.35); }
+.lsp-plan     { background: var(--stage-plan);     box-shadow: 0 4px 12px -4px rgba(37, 99, 235, 0.35); }
+.lsp-build    { background: var(--stage-build);    box-shadow: 0 4px 12px -4px rgba(5, 150, 105, 0.35); }
+.lsp-ship     { background: var(--stage-ship);     box-shadow: 0 4px 12px -4px rgba(217, 119, 6, 0.35); }
+
+/* Connector between stage pills */
+.stage-connector {
+    width: 10px;
+    height: 1px;
+    background: linear-gradient(to right, rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.15));
+    flex-shrink: 0;
+}
+
+/* ── Quick Action Bar — hover-reveal on item cards ── */
+.quick-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px 7px;
+    border-top: 1px solid var(--glass-border-subtle);
+    background: rgba(248, 250, 252, 0.7);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    opacity: 0;
+    transform: translateY(-3px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    margin: 0 -1px -1px; /* bleed to card edges */
+}
+
+.item-row:hover .quick-action-bar {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.quick-action-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    background: white;
+    color: #475569;
+    box-shadow: var(--shadow-xs);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.quick-action-pill:hover {
+    border-color: #6366f1;
+    color: #4f46e5;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.quick-action-pill.qa-primary {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
+}
+
+.quick-action-pill.qa-primary:hover {
+    background: #4338ca;
+    border-color: #4338ca;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.quick-action-pill.qa-danger {
+    background: white;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.quick-action-pill.qa-danger:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+}
+
+/* Inline dropdown for quick action (sprint/epic/release select) */
+.quick-action-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 700;
+    border: 1px solid rgba(226, 232, 240, 0.7);
+    background: white;
+    color: #475569;
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.quick-action-dropdown:focus,
+.quick-action-dropdown:hover {
+    border-color: #6366f1;
+    color: #4f46e5;
+}
+
+/* ── Handoff Toasts (System H) — premium dark glass ── */
+.handoff-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(10, 18, 36, 0.94);
+    backdrop-filter: var(--glass-blur-md);
+    -webkit-backdrop-filter: var(--glass-blur-md);
+    color: white;
+    padding: 11px 14px 11px 16px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.06);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    z-index: 3000;
+    max-width: 360px;
+    animation: toastSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.handoff-toast[data-stage="discovery"] { border-left-color: var(--stage-discover); }
+.handoff-toast[data-stage="vision"]    { border-left-color: var(--stage-goals); }
+.handoff-toast[data-stage="definition"]{ border-left-color: var(--stage-plan); }
+.handoff-toast[data-stage="delivery"]  { border-left-color: var(--stage-build); }
+.handoff-toast[data-stage="review"]    { border-left-color: var(--stage-ship); }
+
+.handoff-toast-msg { flex: 1; }
+
+.handoff-toast-action {
+    padding: 5px 11px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    white-space: nowrap;
+    transition: background var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.handoff-toast-action:hover { background: rgba(255, 255, 255, 0.2); }
+
+.handoff-toast-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    flex-shrink: 0;
+    transition: color var(--transition-fast);
+}
+.handoff-toast-close:hover { color: rgba(255, 255, 255, 0.8); }
+
+@keyframes toastSlideUp {
+    from { opacity: 0; transform: translateY(14px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Info Context Cards (System D) ── */
+.info-btn-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.08);
+    color: #6366f1;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.info-btn-circle:hover {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+.info-context-card {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 340px;
+    background: var(--surface-overlay);
+    backdrop-filter: var(--glass-blur-lg);
+    -webkit-backdrop-filter: var(--glass-blur-lg);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    animation: slideDownFade 0.2s ease-out;
+    overflow: hidden;
+}
+
+.info-card-header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--glass-border-subtle);
+    border-top: 3px solid var(--stage-plan); /* overridden inline per stage */
+}
+
+.info-card-body {
+    padding: 12px 16px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.info-card-readiness-item { display: flex; gap: 6px; align-items: flex-start; font-size: 11px; padding: 3px 0; }
+.info-card-readiness-item.ok    { color: var(--status-done-text); }
+.info-card-readiness-item.warn  { color: var(--status-review-text); }
+.info-card-readiness-item.error { color: var(--status-blocked-text); }
+
+.info-card-next-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border-top: 1px solid var(--glass-border-subtle);
+    background: rgba(99, 102, 241, 0.04);
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    transition: background var(--transition-fast);
+}
+.info-card-next-btn:hover { background: rgba(99, 102, 241, 0.09); }
+
+/* ── CMS Modal: Stage-Aware Field Highlighting (System C) ── */
+.cms-field-required-now {
+    border: 1.5px solid #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12) !important;
+    background: #fffbeb !important;
+    animation: gentle-pulse-amber 2.5s ease infinite;
+}
+
+.cms-field-done {
+    border-color: var(--status-done-border) !important;
+    background: var(--status-done-bg) !important;
+}
+
+.field-label-required-badge {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #fff3e0;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    vertical-align: middle;
+}
+
+.field-label-done-badge {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--status-done-bg);
+    color: var(--status-done-text);
+    border: 1px solid var(--status-done-border);
+    vertical-align: middle;
+}
+
+@keyframes gentle-pulse-amber {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12); }
+    50%       { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.06); }
+}
+
+/* Stage hint banner inside modal */
+.modal-stage-hint-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px solid var(--glass-border-subtle);
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+}
+
+.modal-stage-hint-bar strong { color: #1e293b; }
+
+.missing-field-count {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 800;
+    color: #b45309;
+    background: #fff3e0;
+    border: 1px solid #fde68a;
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+}
+
+/* ── Kanban Cards: Token-Aligned Elevation ── */
+.kanban-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border-subtle);
+    border-left-width: 4px; /* priority accent preserved */
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+    cursor: grab;
+}
+
+.kanban-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.kanban-card:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ── Kanban Column: Softer Container ── */
+.kanban-column {
+    background: var(--surface-inset);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ── Status Indicator Dots: Token-based ── */
+.status-indicator-dot.done-dot    { background-color: var(--status-done-accent);    box-shadow: 0 0 5px rgba(34, 197, 94, 0.4); }
+.status-indicator-dot.now-dot     { background-color: var(--status-now-accent);     box-shadow: 0 0 5px rgba(59, 130, 246, 0.4); }
+.status-indicator-dot.next-dot    { background-color: var(--status-next-accent);    box-shadow: 0 0 5px rgba(249, 115, 22, 0.4); }
+.status-indicator-dot.later-dot   { background-color: var(--status-later-accent);   box-shadow: 0 0 5px rgba(148, 163, 184, 0.4); }
+.status-indicator-dot.blocked-dot { background-color: var(--status-blocked-accent); box-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
+.status-indicator-dot.qa-dot      { background-color: var(--status-qa-accent);      box-shadow: 0 0 5px rgba(139, 92, 246, 0.4); }
+
+/* ── Track-Stage Color Thread ── */
+/* Applied by JS when rendering track cards: data-stage attribute */
+.track-card[data-stage="discovery"] { border-left-color: var(--stage-discover); }
+.track-card[data-stage="vision"]    { border-left-color: var(--stage-goals); }
+.track-card[data-stage="definition"]{ border-left-color: var(--stage-plan); }
+.track-card[data-stage="delivery"]  { border-left-color: var(--stage-build); }
+.track-card[data-stage="review"]    { border-left-color: var(--stage-ship); }
+
+/* ── Backlog Track Card: Aligned to token system ── */
+#backlog-view .backlog-track-card {
+    background: var(--surface-inset);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: none;
+    border-left: 4px solid var(--stage-plan);
+    margin-bottom: 2rem;
+}
+
+/* ── Release Cards: Softer ── */
+.release-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--stage-ship);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: box-shadow var(--transition-base);
+}
+
+.release-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* ── OKR Cards: Consistent with token system ── */
+.okr-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.okr-card:hover,
+.okr-card-hover:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ── Analytics/KPI Cards ── */
+.analytics-kpi-card {
+    background: var(--surface-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Gateway Readiness Badges (System F) ── */
+.readiness-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.readiness-badge.ready   { background: var(--status-done-bg); color: var(--status-done-text); border: 1px solid var(--status-done-border); }
+.readiness-badge.partial { background: var(--status-review-bg); color: var(--status-review-text); border: 1px solid var(--status-review-border); }
+.readiness-badge.blocked { background: var(--status-blocked-bg); color: var(--status-blocked-text); border: 1px solid var(--status-blocked-border); }
+
+/* ── Smart Empty States (System G) ── */
+.smart-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    text-align: center;
+    gap: 12px;
+}
+
+.smart-empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+.smart-empty-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.smart-empty-desc {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+    max-width: 280px;
+}
+
+.smart-empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 4px;
+}
+
+.smart-empty-cta:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* ── Drag & Drop: Token-aligned states ── */
+.item-row.dragging {
+    opacity: 0.4;
+    border: 2px dashed var(--status-later-accent);
+    background: var(--surface-inset);
+}
+
+.subtrack-section.drag-over {
+    background: rgba(99, 102, 241, 0.04) !important;
+    outline: 2px dashed rgba(99, 102, 241, 0.4);
+    outline-offset: -4px;
+    border-radius: var(--radius-md);
+}
