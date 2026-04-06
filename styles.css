@@ -3814,6 +3814,31 @@ summary::-webkit-details-marker {
     /* slate-400 */
 }
 
+/* ---- Engineering Playbook ---- */
+.playbook-stage-card {
+    transition: box-shadow 0.2s;
+}
+.playbook-stage-card:hover {
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+}
+.playbook-view-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    background: #fff;
+    color: #334155;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.playbook-view-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
 /* ---- Round 3: Flow gap fixes ---- */
 
 /* Blocker resolve button */
@@ -3915,6 +3940,46 @@ summary::-webkit-details-marker {
 }
 .release-epic-pill:hover {
     background: #e0e7ff;
+}
+
+/* Quick-assign bars (inline actions below item rows in Status/Priority/Releases views) */
+.quick-assign-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 16px 8px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+.release-assign-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 16px 8px 16px;
+    background: #f0fdf4;
+    border-bottom: 1px solid #bbf7d0;
+}
+.quick-assign-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+.quick-assign-select {
+    font-size: 11px;
+    font-weight: 600;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.quick-assign-select:hover {
+    border-color: #6366f1;
 }
 
 /* Dev task context clickable link */

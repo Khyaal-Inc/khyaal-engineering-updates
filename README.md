@@ -75,25 +75,26 @@ Switch with `Alt+1` / `Alt+2` / `Alt+3`. Mode persists in localStorage.
 ## Views
 
 ### PM Mode Views
-| View ID | Shortcut | Description |
-|---------|----------|-------------|
-| `okr` | 1 | OKRs with auto-calculated progress from linked items |
-| `roadmap` | 2 | Planning horizons (1M/3M/6M/1Y) |
-| `backlog` | 3 | Grooming hub — story points, epic links, priorities |
-| `sprint` | 4 | 2-week cycles with velocity tracking |
-| `track` | 5 | Work grouped by product area / subtrack |
-| `releases` | 6 | Version milestones with completion tracking |
-| `status` | 7 | Items grouped by delivery status |
-| `priority` | 8 | High/Medium/Low sorting |
-| `contributor` | 9 | Per-person task breakdown |
-| `dependency` | 0 | Mermaid.js dependency graph |
-| `kanban` | — | Drag-and-drop board (8 status columns) |
-| `epics` | — | Strategic goals with health tracking |
-| `analytics` | — | Velocity charts, burndown, KPIs |
-| `capacity` | — | Team workload vs. sprint capacity |
-| `gantt` | — | Timeline visualization |
-| `workflow` | — | PM/Dev playbook |
-| `ideation` | — | Idea capture (#idea, #spike tags) |
+| View ID | Shortcut | Stage | Description |
+|---------|----------|-------|-------------|
+| `ideation` | — | 🔍 Discovery | Idea capture (#idea, #spike tags) |
+| `spikes` | — | 🔍 Discovery | Technical spike validation |
+| `okr` | 1 | 🌟 Vision | OKRs with auto-calculated progress from linked items |
+| `epics` | — | 🌟 Vision | Strategic goals with health tracking |
+| `roadmap` | 2 | 📐 Definition | Planning horizons (1M/3M/6M/1Y) |
+| `backlog` | 3 | 📐 Definition | Grooming hub — story points, epic links, priorities |
+| `sprint` | 4 | 📐 Definition | 2-week cycles with velocity tracking |
+| `track` | 5 | 🚀 Delivery | Work grouped by product area / subtrack |
+| `kanban` | — | 🚀 Delivery | Drag-and-drop board (8 status columns) |
+| `dependency` | 0 | 🚀 Delivery | Mermaid.js dependency graph |
+| `gantt` | — | 🚀 Delivery | Timeline visualization |
+| `status` | 7 | 🚀 Delivery | Items grouped by delivery status |
+| `priority` | 8 | 🚀 Delivery | High/Medium/Low sorting |
+| `contributor` | 9 | 🚀 Delivery | Per-person task breakdown |
+| `releases` | 6 | 🏁 Review/Ship | Version milestones — created in Definition, published after Delivery |
+| `analytics` | — | 🏁 Review/Ship | Velocity charts, burndown, KPIs |
+| `capacity` | — | Planning | Team workload vs. sprint capacity |
+| `workflow` | — | All stages | PM/Dev playbook — 5-stage lifecycle guide |
 
 ### Developer Mode Views
 `my-tasks`, `kanban`, `track`, `dependency`, `sprint`, `workflow`, `ideation`, `spikes`
@@ -235,15 +236,28 @@ Fields readonly in dev mode:
 
 ---
 
+## 5-Stage Lifecycle
+
+```
+Discovery → Vision → Definition → Delivery → Review/Ship → (loops back)
+  Ideas      OKRs    Roadmap       Track       Releases
+  Spikes     Epics   Backlog       Kanban      Analytics
+                     Sprint
+```
+
+See `WORKFLOW_HIERARCHY.md` for full stage-by-stage guide with steps, personas, and navigation flow.
+
 ## Product Hierarchy (OKR → Delivery)
 
 ```
-Vision (metadata.vision)              — Multi-year north star
-  └─ OKRs (metadata.okrs[])          — Quarterly measurable outcomes
-       └─ Epics (metadata.epics[])   — Large strategic initiatives (linkedOKR)
-            └─ Releases (metadata.releases[])  — Shippable increments (linkedEpic)
-                 └─ Backlog items    — Granular tasks (epicId, releasedIn, sprintId)
-                      └─ Sprints (metadata.sprints[])  — 2-week execution cycles
+Vision (metadata.vision)                     — Multi-year north star        [Vision stage]
+  └─ OKRs (metadata.okrs[])                 — Quarterly measurable outcomes [Vision stage]
+       └─ Epics (metadata.epics[])           — Strategic initiatives         [Vision stage]
+            └─ Roadmap Horizons              — 1M/3M/6M planning             [Definition stage]
+                 └─ Backlog items            — Granular tasks                [Definition stage]
+                      └─ Sprints            — 2-week execution cycles       [Definition stage]
+                           └─ Releases      — Created in Definition,        [Review/Ship stage]
+                                              published after Delivery
 ```
 
 ---

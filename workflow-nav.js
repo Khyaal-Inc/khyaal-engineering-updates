@@ -9,29 +9,29 @@ const WORKFLOW_STAGES = {
         name: 'Discovery',
         icon: '🔍',
         label: 'Validation',
-        description: 'Spikes & Ideation: Exploring future features and roadmap horizons',
-        cadence: 'Bi-Weekly',
+        description: 'Spikes & Ideation: Capturing ideas and validating feasibility',
+        cadence: 'Ongoing',
         views: ['ideation', 'spikes'],
         color: '#6366f1', // indigo
         order: 1
     },
     vision: {
         name: 'Vision',
-        icon: '🎯',
+        icon: '🌟',
         label: 'Strategic',
-        description: 'Strategic Alignment: Committing roadmap to OKRs and Epics',
+        description: 'Strategic Alignment: Setting OKRs and defining strategic Epics',
         cadence: 'Quarterly',
-        views: ['okr', 'epics', 'roadmap'],
+        views: ['okr', 'epics'],
         color: '#8b5cf6', // purple
         order: 2
     },
     definition: {
         name: 'Definition',
-        icon: '📂',
+        icon: '📐',
         label: 'Planning',
-        description: 'Technical Definition: Grooming the backlog and planning sprints',
+        description: 'Sprint Planning: Grooming backlog, planning sprints, mapping roadmap horizons',
         cadence: 'Weekly',
-        views: ['backlog', 'sprint', 'gantt', 'releases'],
+        views: ['roadmap', 'backlog', 'sprint', 'gantt'],
         color: '#3b82f6', // blue
         order: 3
     },
@@ -39,7 +39,7 @@ const WORKFLOW_STAGES = {
         name: 'Delivery',
         icon: '⚡',
         label: 'Execution',
-        description: 'High-Velocity Execution: Moving tasks to done and unblocking',
+        description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
         cadence: 'Daily',
         views: ['kanban', 'track', 'dependency'],
         color: '#10b981', // green
@@ -47,11 +47,11 @@ const WORKFLOW_STAGES = {
     },
     review: {
         name: 'Review',
-        icon: '📊',
-        label: 'Analytics',
-        description: 'Pulse & Retro: Measuring velocity and learning from the cycle',
-        cadence: 'Weekly',
-        views: ['dashboard', 'analytics', 'capacity', 'status', 'priority', 'contributor'],
+        icon: '🏁',
+        label: 'Ship & Review',
+        description: 'Ship & Retro: Publish releases, review analytics, update OKR progress',
+        cadence: 'Per Sprint',
+        views: ['releases', 'analytics', 'dashboard', 'capacity', 'status', 'priority', 'contributor'],
         color: '#f59e0b', // amber
         order: 5
     }

@@ -137,9 +137,161 @@ function renderWorkflowView() {
         </div>
     `;
 
-    container.innerHTML = ribbonHtml + `<div id="workflow-content"></div>`;
-    // ... rest of rendering logic
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const activeTab = window.workflowTab || (mode === 'dev' ? 'dev' : 'pm')
+
+    const stages = [
+        {
+            num: 1, icon: '🔍', title: 'Discovery', color: 'border-slate-300 bg-slate-50',
+            badgeColor: 'bg-slate-100 text-slate-700',
+            who: ['PM'], when: 'Pre-quarter / ongoing',
+            views: [{ id: 'ideation', label: 'Ideation' }, { id: 'spikes', label: 'Spikes' }],
+            steps: [
+                'Capture raw ideas and opportunities in Ideation view',
+                'Run technical spikes to validate feasibility',
+                'Tag ideas with #idea or #spike',
+                'Shortlist validated ideas as input for Vision stage'
+            ],
+            output: 'Validated idea list ready for OKR planning',
+            next: { id: 'okr', label: 'Vision →' },
+            devVisible: false
+        },
+        {
+            num: 2, icon: '🌟', title: 'Vision', color: 'border-indigo-200 bg-indigo-50/30',
+            badgeColor: 'bg-indigo-100 text-indigo-700',
+            who: ['PM', 'Exec'], when: 'Quarter start (once per quarter)',
+            views: [{ id: 'okr', label: 'OKRs' }, { id: 'epics', label: 'Epics' }],
+            steps: [
+                'Set quarterly Objectives & Key Results in OKR view',
+                'Create Strategic Epics aligned to each OKR',
+                'Link Key Results to Epics via "Linked Epic" field',
+                'Get Exec sign-off on OKR targets'
+            ],
+            output: 'OKRs with linked Epics and measurable Key Results',
+            next: { id: 'roadmap', label: 'Definition →' },
+            devVisible: false
+        },
+        {
+            num: 3, icon: '📐', title: 'Definition', color: 'border-blue-200 bg-blue-50/30',
+            badgeColor: 'bg-blue-100 text-blue-700',
+            who: ['PM', 'Dev'], when: 'Sprint start (every 1–2 weeks)',
+            views: [{ id: 'roadmap', label: 'Roadmap' }, { id: 'backlog', label: 'Backlog' }, { id: 'sprint', label: 'Sprint' }],
+            steps: [
+                'Map Epics to planning horizons in Roadmap view',
+                'Break Epics into tasks in Backlog — set story points, AC, priority',
+                'Assign tasks to sprint via inline "Assign to Sprint" on backlog items',
+                'Create a Release milestone with target date',
+                'Dev: Review your sprint tasks, ask PM to clarify acceptance criteria'
+            ],
+            output: 'Sprint with committed items, Release milestone created',
+            next: { id: 'kanban', label: 'Delivery →' },
+            devVisible: true,
+            devNote: 'Review your assigned tasks in Sprint view. Clarify acceptance criteria before starting.'
+        },
+        {
+            num: 4, icon: '🚀', title: 'Delivery', color: 'border-emerald-200 bg-emerald-50/30',
+            badgeColor: 'bg-emerald-100 text-emerald-700',
+            who: ['Dev', 'PM'], when: 'During sprint (daily)',
+            views: [{ id: 'my-tasks', label: 'My Tasks' }, { id: 'kanban', label: 'Kanban' }, { id: 'track', label: 'Track' }, { id: 'dependency', label: 'Dependencies' }],
+            steps: [
+                'Dev: Open My Tasks — see your assigned items with Epic + OKR context',
+                'Move cards on Kanban: Later → Next → Now → QA → Review → Done',
+                'Flag a blocker via the item edit modal if you are stuck',
+                'PM: Resolve blockers using the "✅ Resolve" button on the blocker strip',
+                'Mark items Done once code is merged and verified'
+            ],
+            output: 'Done items in Kanban ready to be shipped to a Release',
+            next: { id: 'releases', label: 'Review/Ship →' },
+            devVisible: true,
+            devNote: 'This is your primary stage. Use My Tasks as your daily starting point.'
+        },
+        {
+            num: 5, icon: '🏁', title: 'Review / Ship', color: 'border-purple-200 bg-purple-50/30',
+            badgeColor: 'bg-purple-100 text-purple-700',
+            who: ['PM', 'Exec'], when: 'Sprint end / release day',
+            views: [{ id: 'releases', label: 'Releases' }, { id: 'analytics', label: 'Analytics' }, { id: 'dashboard', label: 'Dashboard' }],
+            steps: [
+                'Click "📦 Promote Done Items →" on sprint card to assign done items to a release',
+                'Open Releases view — verify items, set publish date',
+                'PM: Update OKR Key Result progress based on what shipped',
+                'Exec: Review Dashboard for blockers, OKR health, and at-risk items',
+                'Review Analytics — velocity, burndown, team performance',
+                'Decide what goes into next quarter\'s Discovery → restart cycle'
+            ],
+            output: 'Published release + updated OKR progress → feeds next Discovery',
+            next: { id: 'ideation', label: 'Discovery →' },
+            devVisible: true,
+            devNote: 'Check Releases to confirm your work is correctly attributed. Review Analytics for team velocity.'
+        }
+    ]
+
+    const visibleStages = activeTab === 'dev' ? stages.filter(s => s.devVisible) : stages
+
+    const stageCards = visibleStages.map(s => {
+        const whoHtml = s.who.map(w => {
+            const colors = { PM: 'bg-blue-100 text-blue-800', Dev: 'bg-green-100 text-green-800', Exec: 'bg-purple-100 text-purple-800' }
+            return `<span class="px-2 py-0.5 rounded-full text-[10px] font-black ${colors[w]}">${w}</span>`
+        }).join('')
+        const viewBtns = s.views.map(v =>
+            `<button onclick="switchView('${v.id}')" class="playbook-view-btn">${v.label} →</button>`
+        ).join('')
+        const stepsList = (activeTab === 'dev' && s.devNote ? [s.devNote, ...s.steps.filter((_, i) => i > 0)] : s.steps)
+            .map((step, i) => `<li class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[9px] font-black text-slate-500">${i + 1}</span><span class="text-xs text-slate-700 leading-relaxed">${step}</span></li>`).join('')
+
+        return `
+            <div class="playbook-stage-card rounded-2xl border-2 ${s.color} p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl ${s.badgeColor} flex items-center justify-center text-base font-black">${s.num}</span>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xl">${s.icon}</span>
+                                <h3 class="text-base font-black text-slate-900">${s.title}</h3>
+                            </div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                ${whoHtml}
+                                <span class="text-[10px] text-slate-400 font-bold ml-1">· ${s.when}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-end">${viewBtns}</div>
+                </div>
+                <ul class="space-y-2 mb-4">${stepsList}</ul>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-200/60">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Output</div>
+                    <div class="text-xs font-bold text-slate-600 text-right max-w-xs">${s.output}</div>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <button onclick="switchView('${s.next.id}')" class="cms-btn cms-btn-primary text-xs px-4 py-1.5">${s.next.label}</button>
+                </div>
+            </div>`
+    }).join('')
+
+    container.innerHTML = ribbonHtml + `
+        <div class="space-y-4">
+            <!-- Tabs -->
+            <div class="flex gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm w-fit">
+                <button onclick="window.workflowTab='pm'; renderWorkflowView()" class="px-5 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'pm' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}">👨‍💼 PM Playbook</button>
+                <button onclick="window.workflowTab='dev'; renderWorkflowView()" class="px-5 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'dev' ? 'bg-green-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}">👩‍💻 Developer Guide</button>
+            </div>
+
+            <!-- Lifecycle flow strip -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-2 flex-wrap text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span class="text-slate-300">Flow:</span>
+                <span class="px-2 py-1 bg-slate-100 rounded">🔍 Discovery</span><span class="text-slate-300">→</span>
+                <span class="px-2 py-1 bg-indigo-100 rounded text-indigo-700">🌟 Vision</span><span class="text-slate-300">→</span>
+                <span class="px-2 py-1 bg-blue-100 rounded text-blue-700">📐 Definition</span><span class="text-slate-300">→</span>
+                <span class="px-2 py-1 bg-emerald-100 rounded text-emerald-700">🚀 Delivery</span><span class="text-slate-300">→</span>
+                <span class="px-2 py-1 bg-purple-100 rounded text-purple-700">🏁 Review/Ship</span><span class="text-slate-300">→ loops back</span>
+            </div>
+
+            <!-- Stage cards -->
+            <div class="space-y-4">${stageCards}</div>
+        </div>
+    `
 }
+
+window.workflowTab = null
 
 // ------ Track View ------
 function renderTrackView() {
@@ -689,6 +841,8 @@ function renderStatusView() {
             `;
             items.forEach(item => {
                 const trackColor = themeColors[item.trackTheme] || '#64748b';
+                const allStatuses = ['later', 'next', 'now', 'qa', 'review', 'blocked', 'onhold', 'done'];
+                const statusOpts = allStatuses.map(s => `<option value="${s}" ${s === item.status ? 'selected' : ''}>${s}</option>`).join('');
                 html += `
                     <div class="item-row hover:bg-slate-50 transition-colors">
                         <div class="flex-1">
@@ -697,7 +851,13 @@ function renderStatusView() {
                             </span>
                             ${renderItem(item, 'status', item.trackIndex, item.subtrackIndex, item.itemIndex)}
                         </div>
-                    </div>`;
+                    </div>
+                    ${shouldShowManagement() ? `<div class="quick-assign-bar">
+                        <span class="quick-assign-label">Move to:</span>
+                        <select class="quick-assign-select" onchange="quickChangeStatus('${item.id}', this.value)">
+                            ${statusOpts}
+                        </select>
+                    </div>` : ''}`;
             });
             html += `</div></div>`;
         }
@@ -755,13 +915,20 @@ function renderPriorityView() {
             `;
             items.forEach(item => {
                 const trackColor = themeColors[item.trackTheme] || '#64748b';
+                const priorityOpts = ['high', 'medium', 'low'].map(p => `<option value="${p}" ${p === (item.priority || 'medium') ? 'selected' : ''}>${p}</option>`).join('');
                 html += `
                     <div class="item-row hover:bg-slate-50 transition-colors">
                         <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
                             ${item.track} &rarr; ${item.subtrack}
                         </span>
                         ${renderItem(item, 'priority', item.trackIndex, item.subtrackIndex, item.itemIndex)}
-                    </div>`;
+                    </div>
+                    ${shouldShowManagement() ? `<div class="quick-assign-bar">
+                        <span class="quick-assign-label">Set priority:</span>
+                        <select class="quick-assign-select" onchange="quickChangePriority('${item.id}', this.value)">
+                            ${priorityOpts}
+                        </select>
+                    </div>` : ''}`;
             });
             html += `</div></div>`;
         }
@@ -1429,7 +1596,7 @@ function renderReleasesView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">📦</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition / Release Milestones</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review · Ship completed work to stakeholders</span>
                     <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
                 </div>
             </div>
@@ -1506,7 +1673,7 @@ function renderReleasesView() {
                         </div>` : ''
                 })()}
                 <div class="p-2 space-y-4">
-                    ${renderGroupedItems(releaseItems, 'release')}
+                    ${renderGroupedItemsWithReleaseAssign(releaseItems, releases, r.id)}
                 </div>
             </div>`;
     });
@@ -1554,6 +1721,48 @@ function renderGroupedItems(items, viewPrefix = 'main') {
     }).join('');
 }
 
+// Renders items with an inline "Move to Release ▾" quick-assign bar below each item
+function renderGroupedItemsWithReleaseAssign(items, allReleases, currentReleaseId) {
+    if (items.length === 0) return '<div class="text-center py-8 text-slate-400 italic text-sm">No items in this release yet. Use "📦 Promote Done Items →" on a sprint, or assign items via the backlog.</div>';
+
+    const grouped = {};
+    items.forEach(i => {
+        if (!grouped[i.trackName]) grouped[i.trackName] = { theme: i.trackTheme, items: [] };
+        grouped[i.trackName].items.push(i);
+    });
+
+    const releaseOptions = allReleases.map(rel =>
+        `<option value="${rel.id}" ${rel.id === currentReleaseId ? 'selected' : ''}>${rel.name}</option>`
+    ).join('')
+
+    return Object.keys(grouped).map(trackName => {
+        const group = grouped[trackName];
+        const color = themeColors[group.theme] || '#1e293b';
+        return `
+            <div class="mb-4 last:mb-0">
+                <div class="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white rounded-t-lg" style="background: ${color}">
+                    ${trackName}
+                </div>
+                <div class="border border-t-0 rounded-b-lg overflow-hidden">
+                    ${group.items.map(item => `
+                        <div>
+                            ${renderItem(item, 'release', item.trackIndex, item.subtrackIndex, item.itemIndex)}
+                            ${shouldShowManagement() ? `
+                            <div class="quick-assign-bar release-assign-bar">
+                                <span class="quick-assign-label">📦 Release:</span>
+                                <select class="quick-assign-select" onchange="quickAssignRelease('${item.id}', this.value)">
+                                    <option value="">— Unassigned —</option>
+                                    ${releaseOptions}
+                                </select>
+                            </div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 // ------ Gantt View ------
 function renderGanttView() {
     const container = document.getElementById('gantt-view');
@@ -1577,8 +1786,11 @@ function renderGanttView() {
         `;
         container.innerHTML = ribbonHtml;
     }
-    google.charts.load('current', { 'packages': ['gantt'] });
-    google.charts.setOnLoadCallback(drawGanttChart);
+    // Use setTimeout to ensure container innerHTML is committed to DOM before Google Charts callback fires
+    setTimeout(() => {
+        google.charts.load('current', { 'packages': ['gantt'] });
+        google.charts.setOnLoadCallback(drawGanttChart);
+    }, 0);
 }
 
 function drawGanttChart() {
@@ -1841,17 +2053,17 @@ function renderPrimaryStageAction(currentView) {
         'backlog': { text: 'Scope Sprints 🏃', target: 'sprint' },
         'sprint': { text: 'Execute Tasks ⚡', target: 'track' },
         'track': { text: 'Plan Next Sprint 🏃', target: 'sprint' },
-        'kanban': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'kanban': { text: 'Ship to Release 📦', target: 'releases' },
         'my-tasks': { text: 'Review Pulse 📊', target: 'dashboard' },
         'dashboard': { text: 'Plan Next Quarter 🎯', target: 'okr' },
         'analytics': { text: 'Plan Next Quarter 🎯', target: 'okr' },
         'capacity': { text: 'Scope Sprints 🏃', target: 'sprint' },
-        'status': { text: 'Review Pulse 📊', target: 'dashboard' },
-        'priority': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'status': { text: 'Ship to Release 📦', target: 'releases' },
+        'priority': { text: 'Ship to Release 📦', target: 'releases' },
         'contributor': { text: 'Review Pulse 📊', target: 'dashboard' },
         'dependency': { text: 'Review Pulse 📊', target: 'dashboard' },
         'gantt': { text: 'Review Pulse 📊', target: 'dashboard' },
-        'releases': { text: 'Plan Next Quarter 🎯', target: 'okr' },
+        'releases': { text: 'Review Analytics 📊', target: 'analytics' },
         'workflow': { text: 'Start with OKRs 🎯', target: 'okr' },
         'discovery': { text: 'Explore Spikes 🧪', target: 'spikes' },
         'ideation': { text: 'Explore Spikes 🧪', target: 'spikes' },

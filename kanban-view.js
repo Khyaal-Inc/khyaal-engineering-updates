@@ -32,9 +32,11 @@ function renderKanbanView() {
     // Filter by mode — in dev mode, optionally filter to current user only
     const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null;
     const myItemsActive = mode === 'dev' && window.kanbanMyItemsOnly
-    const filteredItems = myItemsActive
-        ? (modeFilter ? items.filter(modeFilter) : items)
-        : (modeFilter ? items.filter(modeFilter) : items)
+    // When myItemsActive: always apply modeFilter (user's items only)
+    // When not active in dev mode: no automatic filter (show all items on kanban)
+    const filteredItems = myItemsActive && modeFilter
+        ? items.filter(modeFilter)
+        : items
 
     // Status columns definition: Full Engineering & Product Lifecycle
     const statusCols = [

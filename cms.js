@@ -160,7 +160,14 @@ const LIFECYCLE_FIELD_MAP = {
     // Release notes: need epic link, business rationale, and contributor credit
     releases: ['text', 'releasedIn', 'publishedDate', 'status', 'mediaUrl', 'tags', 'note', 'epicId', 'usecase', 'contributors'],
     // Kanban board: cards need due date for urgency and AC for definition-of-done
-    kanban: ['text', 'sprintId', 'status', 'contributors', 'priority', 'storyPoints', 'blockerNote', 'due', 'acceptanceCriteria']
+    kanban: ['text', 'sprintId', 'status', 'contributors', 'priority', 'storyPoints', 'blockerNote', 'due', 'acceptanceCriteria'],
+    // Aggregation views: show full delivery context — same as track
+    status: ['text', 'status', 'contributors', 'priority', 'storyPoints', 'due', 'blockerNote', 'sprintId', 'epicId', 'note'],
+    priority: ['text', 'priority', 'status', 'storyPoints', 'contributors', 'due', 'epicId', 'impactLevel', 'effortLevel', 'note'],
+    contributor: ['text', 'contributors', 'status', 'priority', 'storyPoints', 'due', 'sprintId', 'epicId', 'blockerNote', 'note'],
+    // Analytics/Dashboard: read context, minimal edit scope
+    analytics: ['text', 'status', 'storyPoints', 'priority', 'contributors', 'sprintId', 'epicId', 'note'],
+    dashboard: ['text', 'status', 'priority', 'contributors', 'blockerNote', 'note', 'epicId']
 };
 
 /**
@@ -1134,6 +1141,36 @@ function quickAssignSprint(itemId, sprintId) {
     renderBacklogView();
 }
 window.quickAssignSprint = quickAssignSprint;
+
+function quickAssignRelease(itemId, releaseId) {
+    const found = findItemById(itemId)
+    if (!found) return
+    found.item.releasedIn = releaseId || ''
+    logChange('release-assign', found.item.text)
+    saveToLocalStorage()
+    renderDashboard()
+}
+window.quickAssignRelease = quickAssignRelease
+
+function quickChangeStatus(itemId, newStatus) {
+    const found = findItemById(itemId)
+    if (!found) return
+    found.item.status = newStatus
+    logChange('status-change', found.item.text)
+    saveToLocalStorage()
+    renderDashboard()
+}
+window.quickChangeStatus = quickChangeStatus
+
+function quickChangePriority(itemId, newPriority) {
+    const found = findItemById(itemId)
+    if (!found) return
+    found.item.priority = newPriority
+    logChange('priority-change', found.item.text)
+    saveToLocalStorage()
+    renderDashboard()
+}
+window.quickChangePriority = quickChangePriority
 
 function resolveBlocker(itemId) {
     const found = findItemById(itemId)
