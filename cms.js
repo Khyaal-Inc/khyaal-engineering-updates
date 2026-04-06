@@ -1221,72 +1221,285 @@ function resolveBlocker(itemId) {
 }
 window.resolveBlocker = resolveBlocker
 
-function promoteSprintToRelease(sprintId) {
-    const releases = UPDATE_DATA.metadata?.releases || []
-    if (releases.length === 0) {
-        alert('No releases defined. Create a release first via the Releases view.')
-        return
-    }
-
-    // Collect done items in this sprint without a releasedIn
+// ============================================================
+// SYSTEM M — Release Builder (3-step batch ship wizard)
+// ============================================================
+function openReleaseBuilder(sprintId) {
+    // Collect candidates: ALL done items in sprint (including already-shipped — user can re-ship)
     const candidates = []
+    const alreadyShipped = []  // done items that already have a release (shown as info, still selectable)
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
-                if (item.sprintId === sprintId && item.status === 'done' && !item.releasedIn) {
-                    candidates.push(item)
+                const matchesSprint = sprintId ? item.sprintId === sprintId : true
+                if (matchesSprint && item.status === 'done') {
+                    if (item.releasedIn) alreadyShipped.push(item)
+                    else candidates.push(item)
                 }
             })
         })
     })
 
-    if (candidates.length === 0) {
-        alert('No done items without a release assignment found in this sprint.')
-        return
+    // If no done items at all, fall back to showing all items in the sprint
+    const allSprintItems = []
+    if (candidates.length === 0 && alreadyShipped.length === 0) {
+        UPDATE_DATA.tracks.forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if (sprintId ? item.sprintId === sprintId : true) {
+                        allSprintItems.push(item)
+                    }
+                })
+            })
+        })
     }
 
-    const releaseOptions = releases.map(r => `<option value="${r.id}">${r.name}</option>`).join('')
-    const modal = document.createElement('div')
-    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50'
-    modal.innerHTML = `
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-            <h2 class="text-xl font-black text-slate-900 mb-2">Promote Done Items to Release</h2>
-            <p class="text-sm text-slate-500 mb-4">${candidates.length} done item${candidates.length > 1 ? 's' : ''} will be assigned to the selected release.</p>
-            <select id="promote-release-select" class="cms-input mb-6">
-                <option value="">Select a release…</option>
-                ${releaseOptions}
-            </select>
-            <div class="flex gap-3 justify-end">
-                <button onclick="this.closest('.fixed').remove()" class="cms-btn cms-btn-secondary">Cancel</button>
-                <button onclick="
-                    const sel = document.getElementById('promote-release-select').value;
-                    if (!sel) { alert('Please select a release.'); return; }
-                    window._confirmPromoteToRelease('${sprintId}', sel);
-                    this.closest('.fixed').remove();
-                " class="cms-btn cms-btn-primary">📦 Promote ${candidates.length} Items</button>
-            </div>
-        </div>
-    `
-    document.body.appendChild(modal)
-}
+    const sprint = sprintId ? (UPDATE_DATA.metadata?.sprints || []).find(s => s.id === sprintId) : null
+    const sprintLabel = sprint ? sprint.name : 'All Sprints'
+    const releases = UPDATE_DATA.metadata?.releases || []
 
-window._confirmPromoteToRelease = function(sprintId, releaseId) {
-    let count = 0
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                if (item.sprintId === sprintId && item.status === 'done' && !item.releasedIn) {
-                    item.releasedIn = releaseId
-                    count++
-                }
+    // -- Wizard state — pre-select unshipped done items only --
+    let step = 1
+    let selectedIds = new Set(candidates.map(i => i.id))
+    let targetReleaseId = releases.length > 0 ? releases[0].id : ''
+    let createNewName = ''
+    let shouldPublish = false
+
+    // -- Create overlay --
+    const overlay = document.createElement('div')
+    overlay.id = 'release-builder-overlay'
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(6px);z-index:4000;display:flex;align-items:center;justify-content:center;'
+    document.body.appendChild(overlay)
+
+    // All selectable items = unshipped done + already shipped (can re-assign) + fallback all
+    const allCandidates = [...candidates, ...alreadyShipped]
+
+    function renderWizard() {
+        const renderList = allCandidates.length > 0 ? allCandidates : allSprintItems
+        const totalPts = renderList.filter(i => selectedIds.has(i.id)).reduce((s, i) => s + (i.storyPoints || 0), 0)
+
+        const stepIndicator = [1, 2, 3].map(n => `
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:${n <= step ? '#4f46e5' : '#e2e8f0'};color:${n <= step ? 'white' : '#94a3b8'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;">${n < step ? '✓' : n}</div>
+                <span style="font-size:10px;font-weight:700;color:${n === step ? '#1e293b' : '#94a3b8'};white-space:nowrap;">${['Select Items','Pick Release','Confirm'][n-1]}</span>
+                ${n < 3 ? '<div style="width:24px;height:1px;background:#e2e8f0;"></div>' : ''}
+            </div>`).join('')
+
+        let bodyHTML = ''
+
+        if (step === 1) {
+            if (renderList.length === 0) {
+                bodyHTML = `
+                    <div style="text-align:center;padding:32px 0;color:#64748b;">
+                        <div style="font-size:36px;margin-bottom:12px;">📭</div>
+                        <div style="font-weight:700;margin-bottom:6px;">No items in this sprint</div>
+                        <div style="font-size:12px;">There are no items attached to <strong>${sprintLabel}</strong>.</div>
+                    </div>`
+            } else if (allCandidates.length === 0) {
+                // No done items, but other items exist
+                const rows = renderList.map(item => `
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;margin-bottom:6px;opacity:0.7;">
+                        <span style="font-size:12px;width:14px;display:inline-block;text-align:center;">⌛</span>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:12px;font-weight:600;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:line-through;">${item.text}</div>
+                            <div style="font-size:9px;color:#94a3b8;margin-top:2px;text-transform:uppercase;font-weight:800;">Status: ${item.status} — must be Done</div>
+                        </div>
+                    </div>
+                `).join('')
+                bodyHTML = `
+                    <div style="text-align:center;padding:12px 0 20px;color:#64748b;">
+                        <div style="font-size:32px;margin-bottom:8px;">🚧</div>
+                        <div style="font-weight:700;margin-bottom:4px;color:#1e293b;">No done items yet</div>
+                        <div style="font-size:11px;">Complete items in <strong>${sprintLabel}</strong> before shipping them to a release.</div>
+                    </div>
+                    <div style="max-height:240px;overflow-y:auto;padding-right:4px;">${rows}</div>`
+            } else {
+                const rows = renderList.map(item => {
+                    const checked = selectedIds.has(item.id)
+                    const rel = item.releasedIn ? (releases.find(r => r.id === item.releasedIn)?.name || 'a release') : null
+                    const releasedBadge = rel ? `<span style="font-size:9px;padding:2px 6px;background:#fef2f2;border-radius:4px;font-weight:700;color:#991b1b;flex-shrink:0;">Shipped in ${rel}</span>` : ''
+                    const pts = item.storyPoints ? `<span style="font-size:9px;padding:2px 6px;background:#f1f5f9;border-radius:4px;font-weight:700;color:#64748b;">${item.storyPoints}SP</span>` : ''
+                    const epic = (UPDATE_DATA.metadata?.epics || []).find(e => e.id === item.epicId)
+                    const epicTag = epic ? `<span style="font-size:9px;padding:1px 6px;background:#ede9fe;border-radius:4px;font-weight:700;color:#6d28d9;">${epic.name.substring(0,20)}</span>` : ''
+                    return `
+                        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid ${checked ? '#c7d2fe' : '#e2e8f0'};background:${checked ? '#eef2ff' : 'white'};cursor:pointer;transition:all 0.15s;margin-bottom:6px;">
+                            <input type="checkbox" data-item-id="${item.id}" ${checked ? 'checked' : ''} style="accent-color:#4f46e5;width:14px;height:14px;flex-shrink:0;" onchange="window._rbToggleItem('${item.id}', this.checked)">
+                            <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:12px;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.text}</div>
+                                    <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;">${pts}${epicTag}</div>
+                                </div>
+                                ${releasedBadge}
+                            </div>
+                        </label>`
+                }).join('')
+
+                bodyHTML = `
+                    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+                        <span style="font-size:11px;color:#64748b;font-weight:600;">${selectedIds.size} of ${renderList.length} items selected · ${totalPts} story points</span>
+                        <div style="display:flex;gap:8px;">
+                            <button onclick="window._rbSelectAll(true)" style="font-size:10px;font-weight:700;color:#4f46e5;background:none;border:none;cursor:pointer;padding:2px;">Select all</button>
+                            <button onclick="window._rbSelectAll(false)" style="font-size:10px;font-weight:700;color:#64748b;background:none;border:none;cursor:pointer;padding:2px;">Deselect all</button>
+                        </div>
+                    </div>
+                    <div style="max-height:280px;overflow-y:auto;padding-right:4px;">${rows}</div>`
+            }
+        }
+
+        if (step === 2) {
+            const existingReleaseOpts = releases.map(r => {
+                const itemCount = 0  // simplified
+                return `
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid ${targetReleaseId === r.id ? '#c7d2fe' : '#e2e8f0'};background:${targetReleaseId === r.id ? '#eef2ff' : 'white'};cursor:pointer;margin-bottom:6px;">
+                        <input type="radio" name="rb-release" value="${r.id}" ${targetReleaseId === r.id ? 'checked' : ''} style="accent-color:#4f46e5;flex-shrink:0;" onchange="window._rbSetRelease('${r.id}')">
+                        <div style="flex:1;">
+                            <div style="font-size:12px;font-weight:700;color:#1e293b;">${r.name}</div>
+                            ${r.targetDate ? `<div style="font-size:10px;color:#64748b;">Target: ${r.targetDate}</div>` : ''}
+                        </div>
+                    </label>`
+            }).join('')
+
+            const newReleaseSection = `
+                <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid ${targetReleaseId === '__new__' ? '#c7d2fe' : '#e2e8f0'};background:${targetReleaseId === '__new__' ? '#eef2ff' : 'white'};cursor:pointer;margin-bottom:6px;">
+                    <input type="radio" name="rb-release" value="__new__" ${targetReleaseId === '__new__' ? 'checked' : ''} style="accent-color:#4f46e5;flex-shrink:0;" onchange="window._rbSetRelease('__new__')">
+                    <div style="flex:1;">
+                        <div style="font-size:12px;font-weight:700;color:#4f46e5;">+ Create new release</div>
+                        ${targetReleaseId === '__new__' ? `
+                        <input type="text" id="rb-new-release-name" value="${createNewName}" placeholder="e.g. v2.4 — May Release" 
+                            style="margin-top:6px;width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:6px;font-size:12px;font-weight:600;outline:none;"
+                            oninput="window._rbSetNewReleaseName(this.value)">` : ''}
+                    </div>
+                </label>`
+
+            bodyHTML = `
+                <div style="margin-bottom:12px;font-size:11px;color:#64748b;font-weight:600;">Ship <strong>${selectedIds.size} items</strong> to which release?</div>
+                ${existingReleaseOpts}
+                ${newReleaseSection}`
+        }
+
+        if (step === 3) {
+            const selectedList = allCandidates.filter(i => selectedIds.has(i.id))
+            const releaseName = targetReleaseId === '__new__'
+                ? (createNewName || 'New Release')
+                : (releases.find(r => r.id === targetReleaseId)?.name || 'Unknown')
+            const totalPts = selectedList.reduce((s, i) => s + (i.storyPoints || 0), 0)
+
+            bodyHTML = `
+                <div style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:16px;">
+                    <div style="font-size:28px;margin-bottom:10px;">📦</div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:4px;">${selectedIds.size} items → ${releaseName}</div>
+                    <div style="font-size:12px;color:#64748b;">${totalPts} story points · from ${sprintLabel}</div>
+                </div>
+                <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid ${shouldPublish ? '#bbf7d0' : '#e2e8f0'};background:${shouldPublish ? '#f0fdf4' : 'white'};cursor:pointer;margin-bottom:8px;">
+                    <input type="checkbox" ${shouldPublish ? 'checked' : ''} style="accent-color:#059669;width:14px;height:14px;flex-shrink:0;" onchange="window._rbSetPublish(this.checked)">
+                    <div>
+                        <div style="font-size:12px;font-weight:700;color:#1e293b;">Publish release now</div>
+                        <div style="font-size:10px;color:#64748b;">Sets <code>publishedAt</code> to today and marks release as shipped</div>
+                    </div>
+                </label>
+                <div style="font-size:10px;color:#94a3b8;padding:0 2px;">After shipping, you'll be prompted to update OKR progress.</div>`
+        }
+
+        const canProceedStep1 = allCandidates.length === 0 || selectedIds.size > 0
+        const canProceedStep2 = targetReleaseId && (targetReleaseId !== '__new__' || createNewName.trim().length > 0)
+
+        overlay.innerHTML = `
+            <div style="background:white;border-radius:20px;box-shadow:0 40px 80px -15px rgba(0,0,0,0.2),inset 0 0 0 1px rgba(0,0,0,0.06);width:100%;max-width:520px;margin:0 16px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+                <!-- Header -->
+                <div style="padding:20px 24px 16px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div>
+                            <div style="font-size:14px;font-weight:800;color:#1e293b;letter-spacing:-0.02em;">🚀 Release Builder</div>
+                            <div style="font-size:10px;color:#94a3b8;margin-top:2px;">Ship done items from ${sprintLabel}</div>
+                        </div>
+                        <button onclick="window._rbClose()" style="background:#f1f5f9;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:14px;color:#64748b;">✕</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:4px;">${stepIndicator}</div>
+                </div>
+                <!-- Body -->
+                <div style="padding:20px 24px;flex:1;overflow-y:auto;">${bodyHTML}</div>
+                <!-- Footer -->
+                <div style="padding:16px 24px;border-top:1px solid #f1f5f9;display:flex;gap:8px;flex-shrink:0;">
+                    ${step > 1 ? `<button onclick="window._rbStep(${step - 1})" style="padding:9px 16px;border-radius:8px;background:#f1f5f9;border:none;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;">← Back</button>` : ''}
+                    <div style="flex:1;"></div>
+                    <button onclick="window._rbClose()" style="padding:9px 16px;border-radius:8px;background:white;border:1px solid #e2e8f0;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;">Cancel</button>
+                    ${step < 3
+                        ? `<button onclick="window._rbStep(${step + 1})" ${(!canProceedStep1 && step === 1) || (!canProceedStep2 && step === 2) ? 'disabled' : ''} style="padding:9px 20px;border-radius:8px;background:#4f46e5;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;opacity:${(step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2) ? 0.4 : 1};">Next →</button>`
+                        : `<button onclick="window._rbConfirm()" style="padding:9px 20px;border-radius:8px;background:#059669;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;">📦 Ship ${selectedIds.size} Items</button>`
+                    }
+                </div>
+            </div>`
+    }
+
+    // -- Event handlers --
+    window._rbClose = () => { overlay.remove(); delete window._rbClose; }
+    window._rbStep = (n) => { step = n; renderWizard(); }
+    window._rbToggleItem = (id, checked) => { checked ? selectedIds.add(id) : selectedIds.delete(id); renderWizard(); }
+    window._rbSelectAll = (v) => { v ? allCandidates.forEach(i => selectedIds.add(i.id)) : selectedIds.clear(); renderWizard(); }
+    window._rbSetRelease = (id) => { targetReleaseId = id; renderWizard(); }
+    window._rbSetNewReleaseName = (v) => { createNewName = v; }
+    window._rbSetPublish = (v) => { shouldPublish = v; renderWizard(); }
+
+    window._rbConfirm = () => {
+        // 1. Create new release if requested
+        let finalReleaseId = targetReleaseId
+        if (targetReleaseId === '__new__') {
+            const newRelease = {
+                id: `release-${Date.now()}`,
+                name: createNewName.trim() || 'New Release',
+                targetDate: '',
+                publishedAt: shouldPublish ? new Date().toISOString() : null,
+            }
+            if (!UPDATE_DATA.metadata.releases) UPDATE_DATA.metadata.releases = []
+            UPDATE_DATA.metadata.releases.push(newRelease)
+            finalReleaseId = newRelease.id
+        } else if (shouldPublish) {
+            const r = (UPDATE_DATA.metadata.releases || []).find(r => r.id === finalReleaseId)
+            if (r) r.publishedAt = new Date().toISOString()
+        }
+
+        // 2. Assign selected items to release
+        let count = 0
+        UPDATE_DATA.tracks.forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if (selectedIds.has(item.id)) {
+                        item.releasedIn = finalReleaseId
+                        count++
+                    }
+                })
             })
         })
-    })
-    logChange('Sprint Promoted to Release', `${count} items → release ${releaseId}`)
-    saveToLocalStorage()
-    renderDashboard()
+
+        // 3. Save + close
+        if (typeof logChange === 'function') logChange('Release Builder', `${count} items → release ${finalReleaseId}`)
+        if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
+        if (typeof renderDashboard === 'function') renderDashboard()
+        overlay.remove()
+
+        // 4. Handoff toast
+        const relName = (UPDATE_DATA.metadata.releases || []).find(r => r.id === finalReleaseId)?.name || 'release'
+        if (typeof showHandoffToast === 'function') {
+            showHandoffToast(
+                `📦 ${count} items shipped to ${relName} ✓`,
+                'Update OKRs →',
+                () => switchView('okr'),
+                6000
+            )
+        }
+    }
+
+    renderWizard()
 }
+
+// Keep backward compat — old button calls still work
+function promoteSprintToRelease(sprintId) {
+    openReleaseBuilder(sprintId)
+}
+
+window.openReleaseBuilder     = openReleaseBuilder
 window.promoteSprintToRelease = promoteSprintToRelease
+
 
 function closeCmsModal() {
     if (window.uiState.isDirty) {
