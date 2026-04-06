@@ -60,6 +60,7 @@ function renderBlockerStrip() {
             subtrack.items.forEach(item => {
                 if (item.blocker) {
                     blockers.push({
+                        id: item.id,
                         text: item.text,
                         note: item.blockerNote,
                         track: track.name,
@@ -113,10 +114,13 @@ function renderBlockerStrip() {
     blockers.forEach(b => {
         html += `
             <div class="blocker-alert-item border-l-4 border-red-500 bg-white/50 p-3 rounded-r-xl shadow-sm">
-                <div class="flex-1">
-                    <div class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">${b.track} / ${b.subtrack}</div>
-                    <div class="text-sm font-black text-red-900">${b.text}</div>
-                    ${b.note ? `<div class="text-xs text-red-700 italic mt-1 bg-red-100/50 p-1.5 rounded-lg border border-red-100">• ${b.note}</div>` : ''}
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1">
+                        <div class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">${b.track} / ${b.subtrack}</div>
+                        <div class="text-sm font-black text-red-900">${b.text}</div>
+                        ${b.note ? `<div class="text-xs text-red-700 italic mt-1 bg-red-100/50 p-1.5 rounded-lg border border-red-100">• ${b.note}</div>` : ''}
+                    </div>
+                    ${b.id ? `<button onclick="resolveBlocker('${b.id}')" class="blocker-resolve-btn shrink-0">✅ Resolve</button>` : ''}
                 </div>
             </div>
         `;

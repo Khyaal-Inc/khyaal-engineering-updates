@@ -1135,6 +1135,84 @@ function quickAssignSprint(itemId, sprintId) {
 }
 window.quickAssignSprint = quickAssignSprint;
 
+function resolveBlocker(itemId) {
+    const found = findItemById(itemId)
+    if (!found) return
+    found.item.blocker = false
+    found.item.blockerNote = ''
+    logChange('Blocker Resolved', found.item.text)
+    saveToLocalStorage()
+    renderDashboard()
+}
+window.resolveBlocker = resolveBlocker
+
+function promoteSprintToRelease(sprintId) {
+    const releases = UPDATE_DATA.metadata?.releases || []
+    if (releases.length === 0) {
+        alert('No releases defined. Create a release first via the Releases view.')
+        return
+    }
+
+    // Collect done items in this sprint without a releasedIn
+    const candidates = []
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.sprintId === sprintId && item.status === 'done' && !item.releasedIn) {
+                    candidates.push(item)
+                }
+            })
+        })
+    })
+
+    if (candidates.length === 0) {
+        alert('No done items without a release assignment found in this sprint.')
+        return
+    }
+
+    const releaseOptions = releases.map(r => `<option value="${r.id}">${r.name}</option>`).join('')
+    const modal = document.createElement('div')
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50'
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-xl font-black text-slate-900 mb-2">Promote Done Items to Release</h2>
+            <p class="text-sm text-slate-500 mb-4">${candidates.length} done item${candidates.length > 1 ? 's' : ''} will be assigned to the selected release.</p>
+            <select id="promote-release-select" class="cms-input mb-6">
+                <option value="">Select a release…</option>
+                ${releaseOptions}
+            </select>
+            <div class="flex gap-3 justify-end">
+                <button onclick="this.closest('.fixed').remove()" class="cms-btn cms-btn-secondary">Cancel</button>
+                <button onclick="
+                    const sel = document.getElementById('promote-release-select').value;
+                    if (!sel) { alert('Please select a release.'); return; }
+                    window._confirmPromoteToRelease('${sprintId}', sel);
+                    this.closest('.fixed').remove();
+                " class="cms-btn cms-btn-primary">📦 Promote ${candidates.length} Items</button>
+            </div>
+        </div>
+    `
+    document.body.appendChild(modal)
+}
+
+window._confirmPromoteToRelease = function(sprintId, releaseId) {
+    let count = 0
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.sprintId === sprintId && item.status === 'done' && !item.releasedIn) {
+                    item.releasedIn = releaseId
+                    count++
+                }
+            })
+        })
+    })
+    logChange('Sprint Promoted to Release', `${count} items → release ${releaseId}`)
+    saveToLocalStorage()
+    renderDashboard()
+}
+window.promoteSprintToRelease = promoteSprintToRelease
+
 function closeCmsModal() {
     if (window.uiState.isDirty) {
         const confirmed = confirm('You have unsaved changes. Discard them?');

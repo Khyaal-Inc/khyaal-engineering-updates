@@ -195,7 +195,7 @@ function renderDevTaskCard(task) {
     const okr = epic?.linkedOKR ? okrs.find(o => o.id === epic.linkedOKR) : null;
     const contextRow = epic ? `
         <div class="dev-task-context-row">
-            <span class="dev-task-context-epic">📍 ${epic.name}</span>
+            <button onclick="switchView('epics')" class="dev-task-context-epic dev-task-context-link">📍 ${epic.name}</button>
             ${okr ? `<span class="dev-task-context-sep">→</span><span class="dev-task-context-okr">🎯 ${okr.objective.length > 60 ? okr.objective.substring(0, 60) + '…' : okr.objective}</span>` : ''}
         </div>
     ` : '';

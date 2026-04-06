@@ -711,7 +711,22 @@ function renderPriorityView() {
     const priorities = ['high', 'medium', 'low'];
     const priorityTitles = { high: 'High Priority', medium: 'Medium Priority', low: 'Low Priority' };
 
-    let html = '';
+    let html = `
+        <div id="priority-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">⚡</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Items ranked by business priority</span>
+                    <h2 class="text-sm font-black text-slate-800">Priority Matrix</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="priority-next-action-mount">
+                    ${renderPrimaryStageAction('priority')}
+                </div>
+            </div>
+        </div>
+    `;
     const activeTeam = getActiveTeam();
 
     priorities.forEach(priority => {
@@ -760,6 +775,23 @@ function renderContributorView() {
     const contributors = {};
     const activeTeam = getActiveTeam();
 
+    let ribbonHtml = `
+        <div id="contributor-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">👥</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Work distribution across team members</span>
+                    <h2 class="text-sm font-black text-slate-800">Contributor Workload</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="contributor-next-action-mount">
+                    ${renderPrimaryStageAction('contributor')}
+                </div>
+            </div>
+        </div>
+    `;
+
     UPDATE_DATA.tracks.forEach((track, ti) => {
         if (activeTeam && activeTeam !== track.name) return;
         track.subtracks.forEach((subtrack, si) => {
@@ -774,10 +806,10 @@ function renderContributorView() {
     });
 
     const sortedNames = Object.keys(contributors).sort((a, b) => contributors[b].length - contributors[a].length);
-    let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">';
+    let html = ribbonHtml + '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">';
 
     if (sortedNames.length === 0) {
-        container.innerHTML = '<div class="text-center py-20 text-slate-400">No contributors found for current filters.</div>';
+        container.innerHTML = ribbonHtml + '<div class="text-center py-20 text-slate-400">No contributors found for current filters.</div>';
         return;
     }
 
@@ -908,7 +940,21 @@ function renderBacklogView() {
         });
         html += `</div></div>`;
     });
-    container.innerHTML = totalItems ? html : '<div class="text-center py-20 text-slate-400">Backlog is empty</div>';
+    if (!totalItems) {
+        const showMgmt = shouldShowManagement()
+        container.innerHTML = (html || '') + `
+            <div class="bg-white p-12 rounded-xl border border-dashed border-slate-300 text-center mt-4">
+                <div class="text-6xl mb-4">📋</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">No backlog items yet</h3>
+                <p class="text-slate-500 text-sm mb-6">Start by capturing ideas in Ideation or breaking down your Epics into actionable tasks.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="switchView('ideation')" class="cms-btn cms-btn-secondary">Browse Ideation →</button>
+                    ${showMgmt ? `<button onclick="addItem(0,0)" class="cms-btn cms-btn-primary">+ Add First Item</button>` : ''}
+                </div>
+            </div>`;
+        return
+    }
+    container.innerHTML = html;
 }
 
 // ------ Epics View ------
@@ -1028,7 +1074,7 @@ function renderEpicsView() {
                                 <div class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Objective</div>
                                 ${e.strategicWeight ? `<div class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1 rounded">${e.strategicWeight}% Weight</div>` : ''}
                             </div>
-                            <div class="text-[10px] font-black text-slate-800 leading-tight truncate" title="${epicOKR.objective}">🎯 ${epicOKR.objective}</div>
+                            <button onclick="switchView('okr')" class="epic-okr-link" title="View OKR">🎯 ${epicOKR.objective}</button>
                         </div>
                     ` : ''}
                     ${epicHorizon ? `
@@ -1345,6 +1391,7 @@ function renderSprintView() {
                             <div class="flex items-center gap-3 mt-1 flex-wrap">
                                 <span class="text-sm font-bold text-slate-500">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</span>
                                 ${releasePill}
+                                ${shouldShowManagement() ? `<button onclick="promoteSprintToRelease('${s.id}')" class="sprint-promote-btn">📦 Promote Done Items →</button>` : ''}
                             </div>
                         </div>
                         <div class="text-right">
@@ -1443,6 +1490,21 @@ function renderReleasesView() {
                         </div>
                     </div>
                 </div>
+                ${(() => {
+                    const epicsInRelease = [...new Map(
+                        releaseItems.filter(i => i.epicId)
+                            .map(i => {
+                                const ep = (UPDATE_DATA.metadata?.epics || []).find(e => e.id === i.epicId)
+                                return ep ? [ep.id, ep] : null
+                            })
+                            .filter(Boolean)
+                    ).values()]
+                    return epicsInRelease.length ? `
+                        <div class="px-6 pb-3 flex flex-wrap gap-2 items-center">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Epics:</span>
+                            ${epicsInRelease.map(ep => `<button onclick="switchView('epics')" class="release-epic-pill">📍 ${ep.name}</button>`).join('')}
+                        </div>` : ''
+                })()}
                 <div class="p-2 space-y-4">
                     ${renderGroupedItems(releaseItems, 'release')}
                 </div>
@@ -1494,6 +1556,27 @@ function renderGroupedItems(items, viewPrefix = 'main') {
 
 // ------ Gantt View ------
 function renderGanttView() {
+    const container = document.getElementById('gantt-view');
+    if (container) {
+        const ribbonHtml = `
+            <div id="gantt-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📅</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Timeline of epics and milestones</span>
+                        <h2 class="text-sm font-black text-slate-800">Gantt Timeline</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div id="gantt-next-action-mount">
+                        ${renderPrimaryStageAction('gantt')}
+                    </div>
+                </div>
+            </div>
+            <div id="gantt-chart-container"></div>
+        `;
+        container.innerHTML = ribbonHtml;
+    }
     google.charts.load('current', { 'packages': ['gantt'] });
     google.charts.setOnLoadCallback(drawGanttChart);
 }
@@ -1757,14 +1840,19 @@ function renderPrimaryStageAction(currentView) {
         'roadmap': { text: 'Groom Backlog 📚', target: 'backlog' },
         'backlog': { text: 'Scope Sprints 🏃', target: 'sprint' },
         'sprint': { text: 'Execute Tasks ⚡', target: 'track' },
-        'track': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'track': { text: 'Plan Next Sprint 🏃', target: 'sprint' },
         'kanban': { text: 'Review Pulse 📊', target: 'dashboard' },
         'my-tasks': { text: 'Review Pulse 📊', target: 'dashboard' },
-        'dashboard': { text: 'Discover Ideas 🔍', target: 'roadmap' },
-        'analytics': { text: 'Discover Ideas 🔍', target: 'roadmap' },
+        'dashboard': { text: 'Plan Next Quarter 🎯', target: 'okr' },
+        'analytics': { text: 'Plan Next Quarter 🎯', target: 'okr' },
         'capacity': { text: 'Scope Sprints 🏃', target: 'sprint' },
         'status': { text: 'Review Pulse 📊', target: 'dashboard' },
-        'workflow': { text: 'Discover Ideas 🔍', target: 'roadmap' },
+        'priority': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'contributor': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'dependency': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'gantt': { text: 'Review Pulse 📊', target: 'dashboard' },
+        'releases': { text: 'Plan Next Quarter 🎯', target: 'okr' },
+        'workflow': { text: 'Start with OKRs 🎯', target: 'okr' },
         'discovery': { text: 'Explore Spikes 🧪', target: 'spikes' },
         'ideation': { text: 'Explore Spikes 🧪', target: 'spikes' },
         'spikes': { text: 'Set Vision 🎯', target: 'okr' }

@@ -3813,3 +3813,119 @@ summary::-webkit-details-marker {
     border-color: #94a3b8;
     /* slate-400 */
 }
+
+/* ---- Round 3: Flow gap fixes ---- */
+
+/* Blocker resolve button */
+.blocker-resolve-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    border-radius: 9999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.blocker-resolve-btn:hover {
+    background: #bbf7d0;
+}
+
+/* Sprint promote button */
+.sprint-promote-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 9999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.sprint-promote-btn:hover {
+    background: #dbeafe;
+}
+
+/* Epic → OKR link in epics view */
+.epic-okr-link {
+    display: inline;
+    font-size: 10px;
+    font-weight: 800;
+    color: #4338ca;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    line-height: inherit;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+}
+.epic-okr-link:hover {
+    text-decoration: underline;
+    color: #3730a3;
+}
+
+/* Kanban My Items toggle */
+.kanban-my-items-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.kanban-my-items-toggle:hover {
+    background: #e2e8f0;
+}
+.kanban-my-items-toggle.active {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+/* Release epic pills */
+.release-epic-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 10px;
+    font-weight: 800;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.release-epic-pill:hover {
+    background: #e0e7ff;
+}
+
+/* Dev task context clickable link */
+.dev-task-context-link {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+}
+.dev-task-context-link:hover {
+    text-decoration: underline;
+}

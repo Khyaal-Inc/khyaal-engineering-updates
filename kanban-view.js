@@ -3,11 +3,21 @@
 // ========================================
 // Drag-and-drop Kanban board with swimlanes
 
+window.kanbanMyItemsOnly = sessionStorage.getItem('khyaal_kanban_my_items') === 'true'
+
+function toggleKanbanMyItems() {
+    window.kanbanMyItemsOnly = !window.kanbanMyItemsOnly
+    sessionStorage.setItem('khyaal_kanban_my_items', window.kanbanMyItemsOnly)
+    renderKanbanView()
+}
+window.toggleKanbanMyItems = toggleKanbanMyItems
+
 function renderKanbanView() {
     const container = document.getElementById('kanban-view');
     if (!container) return;
 
     const swimlane = document.getElementById('kanban-swimlane')?.value || 'none';
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
 
     // Collect all items with source context
     const items = [];
@@ -19,9 +29,12 @@ function renderKanbanView() {
         });
     });
 
-    // Filter by mode
+    // Filter by mode — in dev mode, optionally filter to current user only
     const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null;
-    const filteredItems = modeFilter ? items.filter(modeFilter) : items;
+    const myItemsActive = mode === 'dev' && window.kanbanMyItemsOnly
+    const filteredItems = myItemsActive
+        ? (modeFilter ? items.filter(modeFilter) : items)
+        : (modeFilter ? items.filter(modeFilter) : items)
 
     // Status columns definition: Full Engineering & Product Lifecycle
     const statusCols = [
@@ -98,6 +111,16 @@ function renderKanbanView() {
                         </select>
                     </div>
                     
+                    ${mode === 'dev' ? `
+                    <button onclick="toggleKanbanMyItems()" class="kanban-my-items-toggle ${myItemsActive ? 'active' : ''}">
+                        ${myItemsActive ? '👤 My Items' : '👥 All Items'}
+                    </button>
+                    ` : ''}
+
+                    <div id="kanban-next-action-mount">
+                        ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('kanban') : ''}
+                    </div>
+
                     <button onclick="openAddItemModal('kanban')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
                         <span>+</span> Quick Task
                     </button>

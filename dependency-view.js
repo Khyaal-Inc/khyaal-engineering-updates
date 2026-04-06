@@ -94,11 +94,24 @@ function renderDependencyView() {
     `;
 
     container.innerHTML = `
+        <div id="dependency-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🕸️</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Visualize task blockers and inter-item dependencies</span>
+                    <h2 class="text-sm font-black text-slate-800">Dependency Graph</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="dependency-next-action-mount">
+                    ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('dependency') : ''}
+                </div>
+            </div>
+        </div>
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Dependency Graph</h2>
-                    <p class="text-slate-600 mt-1">Visualizing ${connectedItems.length} connected items with ${edges.length} dependencies</p>
+                    <p class="text-slate-600">Visualizing ${connectedItems.length} connected items with ${edges.length} dependencies</p>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="exportDependencyGraph()" class="cms-btn cms-btn-secondary text-xs">
