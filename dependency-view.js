@@ -67,8 +67,8 @@ function renderDependencyView() {
     // Add nodes with styling
     connectedItems.forEach(item => {
         const safeId = 'node_' + item.id.replace(/[^a-zA-Z0-9]/g, '_');
-        // Sanitize label to prevent syntax errors (remove quotes and brackets)
-        const label = item.text.substring(0, 30).replace(/["\\[\\]{}()]/g, '');
+        // Sanitize label to prevent syntax errors (remove quotes, brackets, newlines, carets)
+        const label = item.text.substring(0, 30).replace(/["\\[\\]{}()<>\\r\\n]/g, ' ').trim();
         const statusColor = getStatusColor(item.status);
 
         mermaidCode += `    ${safeId}["${label}"]:::${item.status}\n`;
@@ -151,7 +151,7 @@ function renderDependencyView() {
             </div>
 
             <!-- Mermaid Diagram -->
-            <div class="mermaid-container overflow-x-auto" style="min-height: 400px;">
+            <div class="mermaid-container overflow-x-auto bg-slate-50 relative border border-slate-200 rounded-lg" style="min-height: 400px; display:flex; align-items:center; justify-content:center; padding: 2rem;">
                 <pre class="mermaid">${mermaidCode}</pre>
             </div>
 
@@ -166,11 +166,22 @@ function renderDependencyView() {
         </div>
     `;
 
-    // Initialize Mermaid
+    // Initialize Mermaid only when the view becomes visible to prevent layout collapse
     if (window.mermaid) {
-        setTimeout(() => {
-            mermaid.init(undefined, container.querySelectorAll('.mermaid'));
-        }, 100);
+        const targetNode = container.querySelector('.mermaid');
+        if (!targetNode) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                observer.disconnect(); // Only run once
+                mermaid.run({ nodes: container.querySelectorAll('.mermaid') }).catch(err => {
+                    console.error("Mermaid drawing failed:", err);
+                });
+            }
+        }, { threshold: 0.01 });
+        
+        // Start observing
+        observer.observe(container);
     }
 }
 

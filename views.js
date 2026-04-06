@@ -1801,7 +1801,9 @@ function renderGanttView() {
                 </div>
                 ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('gantt') : ''}
             </div>
-            <div id="gantt-chart-container" style="min-height:400px;width:100%;"></div>
+            <div class="overflow-x-auto w-full bg-white rounded-xl border border-slate-200">
+                <div id="gantt-chart-container" style="min-height:400px; min-width: 1200px;"></div>
+            </div>
         `;
         container.innerHTML = ribbonHtml;
     }
