@@ -330,6 +330,31 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
         </div>
     `;
 
+    // ---- SYSTEM C: Stage-Aware Hint Banner ----
+    if (typeof getModalStageFromView === 'function' && typeof STAGE_REQUIRED_FIELDS !== 'undefined') {
+        const modalStage = getModalStageFromView(context.view);
+        const stageInfo = window.STAGE_REQUIRED_FIELDS?.[modalStage];
+        if (stageInfo) {
+            // Count required-but-empty fields
+            const required = stageInfo.fields || [];
+            const missing = required.filter(f => {
+                const v = item[f];
+                return !v || (Array.isArray(v) && !v.length);
+            });
+            const stageColors = { ideation:'#7c3aed', spikes:'#7c3aed', vision:'#4f46e5', epics:'#4f46e5',
+                                  roadmap:'#2563eb', backlog:'#2563eb', sprint:'#2563eb',
+                                  delivery:'#059669', review:'#d97706' };
+            const color = stageColors[modalStage] || '#4f46e5';
+            html += `<div class="modal-stage-hint" style="border-left:4px solid ${color}">
+                <span class="msh-icon" style="color:${color}">📍</span>
+                <div class="msh-body">
+                    <div class="msh-hint">${stageInfo.hint}</div>
+                    ${missing.length > 0 ? `<div class="msh-missing">${missing.length} field${missing.length>1?'s':''} need attention below ↓</div>` : '<div class="msh-ok">✅ All key fields filled for this stage</div>'}
+                </div>
+            </div>`;
+        }
+    }
+
     // Dev mode: show protected-fields notice banner
     if (persona === 'dev') {
         const protectedInView = visiblePillars.flatMap(pk => FIELD_GROUPS[pk]?.fields || [])
@@ -372,23 +397,23 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
 }
 
 /**
- * Build a Pillar Section (WHAT, WHEN, WHERE, HOW)
+ * Build a Pillar Section (WHAT, WHEN, WHERE, HOW) with required-field highlighting
  */
 function buildPillar(pillarKey, item, context) {
     const pillar = FIELD_GROUPS[pillarKey];
     if (!pillar) return '';
 
     // Phase 43: Lifecycle-Aware Filtering
-    // If NOT showing all, filter fields to only those native to the current stage
     let fields = [...pillar.fields];
-    
     if (!context.showAll) {
         const nativeFieldsForView = LIFECYCLE_FIELD_MAP[context.view] || [];
         fields = fields.filter(f => nativeFieldsForView.includes(f));
     }
-
-    // Defensive check: If a pillar becomes empty in a specific view, we might still want to show Title
     if (fields.length === 0) return '';
+
+    // SYSTEM C: Get required fields for this stage
+    const modalStage = typeof getModalStageFromView === 'function' ? getModalStageFromView(context.view) : null;
+    const stageRequired = (modalStage && window.STAGE_REQUIRED_FIELDS?.[modalStage]?.fields) || [];
 
     let html = `
         <div class="cms-pillar pillar-${pillarKey}">
@@ -403,14 +428,25 @@ function buildPillar(pillarKey, item, context) {
     `;
 
     fields.forEach(fieldName => {
-        html += renderField(fieldName, item);
+        const isRequired = stageRequired.includes(fieldName);
+        const val = item[fieldName];
+        const isEmpty = !val || (Array.isArray(val) && !val.length);
+        const needsAttention = isRequired && isEmpty;
+        const alreadyDone   = isRequired && !isEmpty;
+
+        if (needsAttention) {
+            html += `<div class="field-stage-required">${renderField(fieldName, item)}<span class="field-required-badge">⚠️ Needed for this stage</span></div>`;
+        } else if (alreadyDone) {
+            html += `<div class="field-stage-done">${renderField(fieldName, item)}<span class="field-done-check">✓</span></div>`;
+        } else {
+            html += renderField(fieldName, item);
+        }
     });
 
     html += `
             </div>
         </div>
     `;
-
     return html;
 }
 

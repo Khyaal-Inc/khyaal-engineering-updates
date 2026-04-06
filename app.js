@@ -132,6 +132,13 @@ function initDashboard() {
     switchView(defaultView);
     renderDashboard();
 
+    // Lifecycle Guide: init breadcrumb + current view tracking
+    window.currentActiveView = defaultView;
+    if (typeof renderLifecycleBreadcrumb === 'function') {
+        setTimeout(() => renderLifecycleBreadcrumb(defaultView), 150);
+    }
+
+
     console.log('✅ Dashboard initialization complete');
 }
 

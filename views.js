@@ -782,6 +782,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                         </div>
                     </div>
                 </div>
+                ${typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''}
             </div>
         </div>
     `;
@@ -1046,10 +1047,12 @@ function renderBacklogView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📚</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Items waiting to be planned into a sprint</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Items waiting to be planned into a sprint</span>
                         <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
                     </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('backlog') : ''}
                 </div>
+                ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('backlog') : ''}
 
                 <!-- Group 2: Actions -->
                 <div class="flex items-center gap-2">
@@ -1479,10 +1482,12 @@ function renderSprintView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🏃</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Work your team has committed to this time window</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Work your team has committed to this time window</span>
                     <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('sprint') : ''}
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('sprint') : ''}
 
             <!-- Group 2: Actions -->
             <div class="flex items-center gap-2">
@@ -1596,10 +1601,12 @@ function renderReleasesView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">📦</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review · Ship completed work to stakeholders</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 5 · Ship — Publish completed work to stakeholders</span>
                     <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('releases') : ''}
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('releases') : ''}
 
             <!-- Group 2: Actions -->
             <div class="flex items-center gap-2">
@@ -1623,7 +1630,7 @@ function renderReleasesView() {
     let html = ribbonHtml + renderExecFilterBanner(_filteredReleaseItems.length, _allReleaseItems.length, 'releases');
 
     if (releases.length === 0) {
-        container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No releases defined</div>';
+        container.innerHTML = html + (typeof renderSmartEmptyState === 'function' ? renderSmartEmptyState('releases') : '<div class="text-center py-20 text-slate-400">No releases defined</div>');
         return;
     }
 
