@@ -773,16 +773,18 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             ${roiScoreHTML}
                             ${item.mediaUrl ? `
                                 <div class="group relative inline-block">
-                                    <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">
-                                        <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded border border-slate-200 shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
-                                             onerror="this.style.display='none'">
+                                    <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()" class="flex items-center justify-center h-8 px-3 rounded bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm text-xs font-bold text-slate-600 truncate max-w-[120px]">
+                                        ${item.mediaUrl.match(/\\.(jpeg|jpg|gif|png|webp)$/i) ? `
+                                        <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
+                                             onerror="this.style.display='none'; this.parentElement.innerHTML='🔗 Link'; this.parentElement.className='flex items-center justify-center h-8 px-3 rounded bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm text-xs font-bold text-slate-600 truncate max-w-[120px]';">
+                                        ` : `🔗 Link`}
                                     </a>
                                 </div>
                             ` : ''}
                         </div>
                     </div>
                 </div>
-                ${typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''}
+                ${(() => { try { return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''; } catch(e) { return ''; } })()}
             </div>
         </div>
     `;
@@ -1042,30 +1044,32 @@ function renderBacklogView() {
     let html = '';
     if (shouldShowManagement()) {
         const ribbonHtml = `
-            <div id="backlog-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-                <!-- Group 1: Navigation/Breadcrumb -->
-                <div class="flex items-center gap-3 px-2">
-                    <span class="text-xl">📚</span>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Items waiting to be planned into a sprint</span>
-                        <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
+            <div style="position:relative;margin-bottom:24px;">
+                <div id="backlog-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                    <!-- Group 1: Navigation/Breadcrumb -->
+                    <div class="flex items-center gap-3 px-2">
+                        <span class="text-xl">📚</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Items waiting to be planned into a sprint</span>
+                            <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
+                        </div>
+                        ${typeof renderInfoButton === 'function' ? renderInfoButton('backlog') : ''}
                     </div>
-                    ${typeof renderInfoButton === 'function' ? renderInfoButton('backlog') : ''}
+
+                    <!-- Group 2: Actions -->
+                    <div class="flex items-center gap-2">
+                        <div id="backlog-next-action-mount">
+                            ${renderPrimaryStageAction('backlog')}
+                        </div>
+                        
+                        <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                        <button onclick="toggleGroomingMode()" 
+                            class="px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg flex items-center gap-2 active:scale-95 ${groomingMode ? 'bg-emerald-600 text-white hover:bg-emerald-700 ring-4 ring-emerald-500/10' : 'bg-slate-900 text-white hover:bg-slate-800'}">
+                            ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
+                        </button>
+                    </div>
                 </div>
                 ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('backlog') : ''}
-
-                <!-- Group 2: Actions -->
-                <div class="flex items-center gap-2">
-                    <div id="backlog-next-action-mount">
-                        ${renderPrimaryStageAction('backlog')}
-                    </div>
-                    
-                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                    <button onclick="toggleGroomingMode()" 
-                        class="px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg flex items-center gap-2 active:scale-95 ${groomingMode ? 'bg-emerald-600 text-white hover:bg-emerald-700 ring-4 ring-emerald-500/10' : 'bg-slate-900 text-white hover:bg-slate-800'}">
-                        ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
-                    </button>
-                </div>
             </div>
         `;
         html += ribbonHtml;
@@ -1477,32 +1481,34 @@ function renderSprintView() {
     const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
 
     let ribbonHtml = `
-        <div id="sprint-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <!-- Group 1: Navigation/Breadcrumb -->
-            <div class="flex items-center gap-3 px-2">
-                <span class="text-xl">🏃</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Work your team has committed to this time window</span>
-                    <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
+        <div style="position:relative;margin-bottom:24px;">
+            <div id="sprint-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 1: Navigation/Breadcrumb -->
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">🏃</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Work your team has committed to this time window</span>
+                        <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
+                    </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('sprint') : ''}
                 </div>
-                ${typeof renderInfoButton === 'function' ? renderInfoButton('sprint') : ''}
+
+                <!-- Group 2: Actions -->
+                <div class="flex items-center gap-2">
+                    <div id="sprint-next-action-mount">
+                        ${renderPrimaryStageAction('sprint')}
+                    </div>
+                    
+                    ${shouldShowManagement() ? `
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <button onclick="openSprintEdit()" 
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                        <span class="text-lg">➕</span> Add New Sprint
+                    </button>
+                    ` : ''}
+                </div>
             </div>
             ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('sprint') : ''}
-
-            <!-- Group 2: Actions -->
-            <div class="flex items-center gap-2">
-                <div id="sprint-next-action-mount">
-                    ${renderPrimaryStageAction('sprint')}
-                </div>
-                
-                ${shouldShowManagement() ? `
-                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                <button onclick="openSprintEdit()" 
-                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
-                    <span class="text-lg">➕</span> Add New Sprint
-                </button>
-                ` : ''}
-            </div>
         </div>
     `;
 
@@ -1596,32 +1602,34 @@ function renderReleasesView() {
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
 
     let ribbonHtml = `
-        <div id="releases-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <!-- Group 1: Navigation/Breadcrumb -->
-            <div class="flex items-center gap-3 px-2">
-                <span class="text-xl">📦</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 5 · Ship — Publish completed work to stakeholders</span>
-                    <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
+        <div style="position:relative;margin-bottom:24px;">
+            <div id="releases-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <!-- Group 1: Navigation/Breadcrumb -->
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📦</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 5 · Ship — Publish completed work to stakeholders</span>
+                        <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
+                    </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('releases') : ''}
                 </div>
-                ${typeof renderInfoButton === 'function' ? renderInfoButton('releases') : ''}
+
+                <!-- Group 2: Actions -->
+                <div class="flex items-center gap-2">
+                    <div id="releases-next-action-mount">
+                        ${renderPrimaryStageAction('releases')}
+                    </div>
+                    
+                    ${shouldShowManagement() ? `
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <button onclick="openReleaseEdit()" 
+                        class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
+                        <span class="text-lg">➕</span> Add New Release
+                    </button>
+                    ` : ''}
+                </div>
             </div>
             ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('releases') : ''}
-
-            <!-- Group 2: Actions -->
-            <div class="flex items-center gap-2">
-                <div id="releases-next-action-mount">
-                    ${renderPrimaryStageAction('releases')}
-                </div>
-                
-                ${shouldShowManagement() ? `
-                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                <button onclick="openReleaseEdit()" 
-                    class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
-                    <span class="text-lg">➕</span> Add New Release
-                </button>
-                ` : ''}
-            </div>
         </div>
     `;
 
@@ -1775,21 +1783,25 @@ function renderGanttView() {
     const container = document.getElementById('gantt-view');
     if (container) {
         const ribbonHtml = `
-            <div id="gantt-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-3 px-2">
-                    <span class="text-xl">📅</span>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Timeline of epics and milestones</span>
-                        <h2 class="text-sm font-black text-slate-800">Gantt Timeline</h2>
+            <div style="position:relative;margin-bottom:24px;">
+                <div id="gantt-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 px-2">
+                        <span class="text-xl">📅</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Timeline of epics and milestones</span>
+                            <h2 class="text-sm font-black text-slate-800">Gantt Timeline</h2>
+                        </div>
+                        ${typeof renderInfoButton === 'function' ? renderInfoButton('gantt') : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="gantt-next-action-mount">
+                            ${renderPrimaryStageAction('gantt')}
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div id="gantt-next-action-mount">
-                        ${renderPrimaryStageAction('gantt')}
-                    </div>
-                </div>
+                ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('gantt') : ''}
             </div>
-            <div id="gantt-chart-container"></div>
+            <div id="gantt-chart-container" style="min-height:400px;width:100%;"></div>
         `;
         container.innerHTML = ribbonHtml;
     }

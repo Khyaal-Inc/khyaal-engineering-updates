@@ -90,15 +90,17 @@ function renderKanbanView() {
     // Render Kanban board
     container.innerHTML = `
         <div class="bg-white p-3 rounded-3xl border border-slate-200 shadow-xl">
-            <div id="kanban-ribbon" class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 mb-4 flex flex-wrap items-center justify-between gap-6">
+        <div style="position:relative;margin-bottom:24px;">
+            <div id="kanban-ribbon" class="bg-slate-50/50 p-2 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-6">
                 <div class="flex items-center gap-2 px-2">
                     <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
                         <span class="text-white text-xl">📋</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Delivery · Drag cards to update live status — your team's work in motion</span>
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Stage 4 · Build — Drag cards to update live status</span>
                         <h2 class="text-base font-black text-slate-800">Unified Kanban</h2>
                     </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('kanban') : ''}
                 </div>
 
                 <div class="flex items-center gap-4">
@@ -128,7 +130,9 @@ function renderKanbanView() {
                     </button>
                 </div>
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('kanban') : ''}
 
+            ${filteredItems.length === 0 ? (typeof renderSmartEmptyState === 'function' ? renderSmartEmptyState('kanban') : '<div class="text-center py-20 text-slate-400">No items available</div>') : `
             <div class="kanban-board flex flex-col gap-12 overflow-x-auto pb-4 custom-scrollbar px-2">
                 ${swimlaneGroups.map((group, groupIdx) => `
                     <div class="kanban-row ${groupIdx > 0 ? 'pt-2' : ''}">
@@ -168,6 +172,7 @@ function renderKanbanView() {
                     </div>
                 `).join('')}
             </div>
+            `}
         </div>
     `;
 }
@@ -202,9 +207,15 @@ function renderKanbanCard(item) {
 
             <h4 class="text-[12px] font-black text-slate-900 leading-tight mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
 
-            ${item.acceptanceCriteria ? `<div class="kanban-card-ac">${item.acceptanceCriteria.split('\n')[0].substring(0, 80)}${item.acceptanceCriteria.length > 80 ? '…' : ''}</div>` : ''}
+            ${item.acceptanceCriteria ? `<div class="kanban-card-ac">${(Array.isArray(item.acceptanceCriteria) ? item.acceptanceCriteria[0] : String(item.acceptanceCriteria).split('\\n')[0]).substring(0, 80)}${String(item.acceptanceCriteria).length > 80 ? '…' : ''}</div>` : ''}
 
             ${epicBadge}
+
+            ${item.mediaUrl ? `
+                <div class="mt-2 text-[10px] font-black text-indigo-500 hover:text-indigo-700">
+                    <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">🔗 ${item.mediaUrl.match(/\\.(jpeg|jpg|gif|png|webp)$/i) ? 'View Media' : 'View Link'}</a>
+                </div>
+            ` : ''}
 
             <div class="flex justify-between items-center text-[9px] text-slate-800 mt-2 pt-1.5 border-t border-slate-100">
                 <div class="flex items-center gap-1 font-black">
@@ -219,9 +230,11 @@ function renderKanbanCard(item) {
                 </div>
             </div>
             
-            <!-- Main Content Area (Extreme Density Padding + Widescreen Support) -->
-        <div id="main-content" class="max-w-[1720px] mx-auto pt-2 pb-32">
- left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
+            <!-- Quick Actions -->
+            <div class="mt-2 pt-2 border-t border-slate-50/50">
+                ${(() => { try { return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, 'kanban', item.trackIndex, item.subtrackIndex, item.itemIndex) : ''; } catch(e) { return ''; } })()}
+            </div>
+            <div class="drop-indicator absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
         </div>
     `;
 }

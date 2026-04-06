@@ -537,7 +537,7 @@ function getQuickActions(item, viewId) {
     const s = item.status || 'later';
     let acts = [];
     if (viewId === 'backlog' || viewId === 'roadmap') {
-        if (!item.epicId) acts.push('link-epic');
+        acts.push('link-epic');
         acts.push('add-to-sprint');
     } else if (viewId === 'sprint') {
         if (s !== 'done') acts.push('mark-done');
