@@ -157,6 +157,8 @@ const LIFECYCLE_FIELD_MAP = {
     // Delivery: Sprint needs dependencies visible so devs can see what blocks them
     sprint: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'sprintId', 'startDate', 'due', 'status', 'contributors', 'storyPoints', 'priority', 'blockerNote', 'note', 'dependencies'],
     track: ['text', 'usecase', 'persona', 'acceptanceCriteria', 'due', 'sprintId', 'status', 'contributors', 'storyPoints', 'priority', 'dependencies', 'blockerNote', 'note'],
+    gantt: ['text', 'epicId', 'startDate', 'due', 'status', 'planningHorizon', 'dependencies', 'blockerNote', 'note', 'storyPoints', 'contributors'],
+    dependency: ['text', 'status', 'blockerNote', 'dependencies', 'due', 'sprintId', 'epicId', 'note', 'contributors'],
     // Release notes: need epic link, business rationale, and contributor credit
     releases: ['text', 'releasedIn', 'publishedDate', 'status', 'mediaUrl', 'tags', 'note', 'epicId', 'usecase', 'contributors'],
     // Kanban board: cards need due date for urgency and AC for definition-of-done
