@@ -1977,8 +1977,25 @@ function drawGanttChart() {
         const selection = chart.getSelection();
         if (selection.length > 0) {
             const row = selection[0].row;
-            const epicId = data.getValue(row, 0);
-            if (typeof openEpicEdit === 'function') openEpicEdit(epicId);
+            const rowId = data.getValue(row, 0);
+            
+            // Check if clicked row is an Epic
+            const epics = UPDATE_DATA.metadata?.epics || [];
+            const epicIndex = epics.findIndex(e => e.id === rowId);
+            
+            if (epicIndex !== -1) {
+                if (typeof openEpicEdit === 'function') openEpicEdit(epicIndex);
+            } else {
+                // Otherwise it's a task/item
+                UPDATE_DATA.tracks.forEach((track, tIdx) => {
+                    track.subtracks.forEach((subtrack, sIdx) => {
+                        const itemIndex = subtrack.items.findIndex(i => i.id === rowId);
+                        if (itemIndex !== -1 && typeof openItemEdit === 'function') {
+                            openItemEdit(tIdx, sIdx, itemIndex);
+                        }
+                    });
+                });
+            }
         }
     });
 
