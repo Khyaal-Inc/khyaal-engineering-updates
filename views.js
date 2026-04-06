@@ -704,7 +704,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             <div class="info-wrapper mb-1">
                                 <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
                                 <button class="info-btn" aria-label="More information" onclick="event.stopPropagation(); document.getElementById('${viewPrefix}-tooltip-${item.id}').classList.toggle('visible')">i</button>
-                                <span id="${viewPrefix}-tooltip-${item.id}" class="tooltip">${item.description || 'No detailed description available.'}</span>
+                                ${tooltipHTML.replace('class="tooltip-content"', `id="${viewPrefix}-tooltip-${item.id}" class="tooltip-content"`)}
                             </div>
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 ${strategicContext}

@@ -379,7 +379,6 @@ summary::-webkit-details-marker {
     gap: 1.25rem;
     transition: box-shadow var(--transition-base), transform var(--transition-base), background var(--transition-base);
     position: relative;
-    overflow: hidden;
 }
 
 /* Status left-accent thread — connects item visual to its lifecycle status */
@@ -524,20 +523,19 @@ summary::-webkit-details-marker {
 
 .tooltip-content {
     visibility: hidden;
-    width: 300px;
+    width: 320px;
     background-color: #ffffff;
     color: #1e293b;
     text-align: left;
     border-radius: 12px;
     padding: 16px;
     position: absolute;
-    z-index: 1000;
-    bottom: 155%;
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 1001; /* Above almost everything else */
+    top: calc(100% + 12px); /* Position BELOW the item */
+    left: 0;
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-xl);
     border: 1px solid #e2e8f0;
     font-size: 0.8rem;
     font-weight: 500;
@@ -548,18 +546,20 @@ summary::-webkit-details-marker {
 .tooltip-content::after {
     content: "";
     position: absolute;
-    top: 100%;
-    left: 50%;
+    bottom: 100%; /* Point UP */
+    left: 20px;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #ffffff transparent transparent transparent;
+    border-color: transparent transparent #ffffff transparent;
 }
 
 .info-wrapper:hover .tooltip-content,
-.info-btn:focus+.tooltip-content {
+.info-btn:focus+.tooltip-content,
+.tooltip-content.visible {
     visibility: visible;
     opacity: 1;
+    transform: translateY(0);
 }
 
 @media (max-width: 640px) {

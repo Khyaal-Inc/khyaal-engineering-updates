@@ -1172,3 +1172,12 @@ window.renderSmartEmptyState     = renderSmartEmptyState;
 window.STAGE_REQUIRED_FIELDS     = STAGE_REQUIRED_FIELDS;
 window.getModalStageFromView     = getModalStageFromView;
 console.log('✅ lifecycle-guide.js — 8 systems active');
+
+// Close info cards when clicking outside
+document.addEventListener('click', (e) => {
+    const isClickInsideCard = e.target.closest('.lgi-card-wrap');
+    const isClickOnBtn = e.target.closest('.lgi-btn');
+    if (!isClickInsideCard && !isClickOnBtn) {
+        document.querySelectorAll('.lgi-visible').forEach(el => el.classList.remove('lgi-visible'));
+    }
+});

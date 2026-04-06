@@ -333,7 +333,7 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
     `;
 
     // ---- SYSTEM C: Stage-Aware Hint Banner ----
-    if (typeof getModalStageFromView === 'function' && typeof STAGE_REQUIRED_FIELDS !== 'undefined') {
+    if (typeof getModalStageFromView === 'function' && typeof window.STAGE_REQUIRED_FIELDS !== 'undefined') {
         const modalStage = getModalStageFromView(context.view);
         const stageInfo = window.STAGE_REQUIRED_FIELDS?.[modalStage];
         if (stageInfo) {
