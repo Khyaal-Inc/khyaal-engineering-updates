@@ -31,6 +31,7 @@ function renderAnalyticsView() {
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Engineering Analytics</span>
                         <h2 class="text-sm font-black text-slate-800">Velocity & Retrospective</h2>
                     </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('analytics') : ''}
                 </div>
 
                 <!-- Group 2: Actions -->
@@ -40,6 +41,7 @@ function renderAnalyticsView() {
                     </div>
                 </div>
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('analytics') : ''}
 
             <!-- Strategic Pulse Banner -->
             ${renderStrategicAnalyticsBanner()}

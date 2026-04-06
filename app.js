@@ -46,6 +46,14 @@ function normalizeData() {
             });
         });
     });
+
+    // 4. Ensure sprint metadata has required coaching fields (System N / E dependencies)
+    if (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) {
+        UPDATE_DATA.metadata.sprints.forEach(sprint => {
+            if (!sprint.sprintHistory) sprint.sprintHistory = [];
+            if (sprint.goal === undefined) sprint.goal = '';
+        });
+    }
 }
 
 /**

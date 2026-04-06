@@ -106,6 +106,7 @@ const VIEW_INFO_CARDS = {
             'Set time horizon: Now (1M) · Next (3M) · Later (6M)',
             'Check team capacity before deciding what goes in next sprint',
         ],
+        prevView: 'roadmap', prevLabel: '← Roadmap',
         nextView: 'sprint', nextLabel: 'Assign to a sprint →',
         readiness: () => {
             const items = _getAllItemsFlat().filter(i => i.status !== 'done');
@@ -135,6 +136,7 @@ const VIEW_INFO_CARDS = {
             'PM: check the Blocked column → resolve what you can',
             'Done items → assign to a release so they get counted in OKR progress',
         ],
+        prevView: 'sprint', prevLabel: '← Sprint Plan',
         nextView: 'releases', nextLabel: 'Ship done work →',
         readiness: () => {
             const items = _getAllItemsFlat();
@@ -162,6 +164,7 @@ const VIEW_INFO_CARDS = {
             'Confirm total story points ≤ team capacity',
             'Dev team review each task and ask questions before locking',
         ],
+        prevView: 'backlog', prevLabel: '← Backlog',
         nextView: 'kanban', nextLabel: 'Start building →',
         readiness: () => {
             const sprints = window.UPDATE_DATA?.metadata?.sprints || [];
@@ -189,6 +192,7 @@ const VIEW_INFO_CARDS = {
             'Resolve blockers using the ✅ Resolve button',
             'Look for tasks overdue or approaching deadline',
         ],
+        prevView: 'kanban', prevLabel: '← Daily Board',
         nextView: 'kanban', nextLabel: 'Open daily board →',
         readiness: () => {
             const blocked = _getAllItemsFlat().filter(i => i.status === 'blocked' || i.blocker).length;
@@ -211,6 +215,7 @@ const VIEW_INFO_CARDS = {
             'After every release, update how much progress was made',
             'Score at quarter end: 0–100%',
         ],
+        prevView: 'analytics', prevLabel: '← Analytics',
         nextView: 'epics', nextLabel: 'Create Epics for each goal →',
         readiness: () => {
             const okrs  = window.UPDATE_DATA?.metadata?.okrs || [];
@@ -239,6 +244,7 @@ const VIEW_INFO_CARDS = {
             'Set risk type if applicable',
             'Monthly: update health status based on actual progress',
         ],
+        prevView: 'okr', prevLabel: '← OKRs',
         nextView: 'roadmap', nextLabel: 'Place on roadmap →',
         readiness: () => {
             const epics = window.UPDATE_DATA?.metadata?.epics || [];
@@ -267,6 +273,7 @@ const VIEW_INFO_CARDS = {
             'Check Gantt for timeline conflicts between Epics',
             'Update release target dates if slipped',
         ],
+        prevView: 'epics', prevLabel: '← Epics',
         nextView: 'backlog', nextLabel: 'Break into tasks →',
         readiness: () => {
             const noHorizon = _getAllItemsFlat().filter(i => !i.planningHorizon && i.status !== 'done').length;
@@ -289,6 +296,7 @@ const VIEW_INFO_CARDS = {
             'Set/confirm the publish date',
             'Archive old releases at quarter end',
         ],
+        prevView: 'kanban', prevLabel: '← Sprint Board',
         nextView: 'analytics', nextLabel: 'Review velocity →',
         readiness: () => {
             const releases = window.UPDATE_DATA?.metadata?.releases || [];
@@ -317,6 +325,7 @@ const VIEW_INFO_CARDS = {
             'Update quarterly goal (OKR) progress based on what shipped',
             'Note patterns for retrospective',
         ],
+        prevView: 'releases', prevLabel: '← Releases',
         nextView: 'okr', nextLabel: 'Update quarterly goals →',
         readiness: () => {
             const noPoints = _getAllItemsFlat().filter(i => i.status === 'done' && !i.storyPoints).length;
@@ -339,6 +348,7 @@ const VIEW_INFO_CARDS = {
             'Worth validating technically? Add #spike tag → move to Spikes',
             'Archive ideas no longer relevant',
         ],
+        prevView: null, prevLabel: '',
         nextView: 'spikes', nextLabel: 'Validate ideas as spikes →',
         readiness: () => {
             const ideas  = _getAllItemsFlat().filter(i => (i.tags||[]).some(t => t.toLowerCase()==='idea'));
@@ -361,6 +371,7 @@ const VIEW_INFO_CARDS = {
             'Document findings in the notes field',
             'Outcome: feasible? → promote to an Epic',
         ],
+        prevView: 'ideation', prevLabel: '← Raw Ideas',
         nextView: 'okr', nextLabel: 'Set quarterly goals →',
         readiness: () => {
             const spikes = _getAllItemsFlat().filter(i => (i.tags||[]).some(t => t.toLowerCase()==='spike'));
@@ -384,6 +395,7 @@ const VIEW_INFO_CARDS = {
             'Review upcoming release date — will it ship on time?',
             'Decide if any re-prioritization is needed',
         ],
+        prevView: 'releases', prevLabel: '← Releases',
         nextView: 'okr', nextLabel: 'Update quarterly goals →',
         readiness: () => {
             const blocked = _getAllItemsFlat().filter(i => i.status === 'blocked' || i.blocker).length;
@@ -405,6 +417,7 @@ const VIEW_INFO_CARDS = {
             'Keep sprint total ≤ 80% of team capacity',
             'Identify if anyone is over or under loaded',
         ],
+        prevView: 'backlog', prevLabel: '← Task Backlog',
         nextView: 'sprint', nextLabel: 'Plan the sprint →',
         readiness: () => []
     }
@@ -447,10 +460,10 @@ function renderInfoCardHTML(viewId) {
             <div class="lgi-section-title">📋 Current Status</div>
             ${readinessHTML}
         </div>
-        ${info.nextView ? `
-        <button onclick="switchView('${info.nextView}');toggleInfoCard('${viewId}')" class="lgi-next-btn">
-            ${info.nextLabel}
-        </button>` : ''}
+        <div style="display:flex;gap:8px;margin-top:16px;">
+            ${info.prevView ? `<button onclick="switchView('${info.prevView}');toggleInfoCard('${viewId}')" class="lgi-next-btn" style="flex:1;background:#f1f5f9;color:#64748b;border-color:#e2e8f0;font-size:11px;">${info.prevLabel}</button>` : ''}
+            ${info.nextView ? `<button onclick="switchView('${info.nextView}');toggleInfoCard('${viewId}')" class="lgi-next-btn" style="flex:2;">${info.nextLabel}</button>` : ''}
+        </div>
     </div>`;
 }
 
@@ -873,6 +886,7 @@ Object.assign(VIEW_INFO_CARDS, {
             'Assign a risk type: execution / market / technical',
             'Break the Epic into tasks in the Backlog',
         ],
+        prevView: 'epics', prevLabel: '← Epics',
         nextView: 'backlog', nextLabel: 'Break into tasks →',
         readiness: () => {
             const epics = window.UPDATE_DATA?.metadata?.epics || []

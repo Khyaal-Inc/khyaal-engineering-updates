@@ -640,12 +640,22 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
 
     let cmsControls = '';
     if (shouldShowManagement()) {
+        const linkedEpic = item.epicId ? (UPDATE_DATA.metadata?.epics || []).find(e => e.id === item.epicId) : null;
+        let okrAction = '';
+        if (linkedEpic && linkedEpic.linkedOKR) {
+            const okrIndex = (UPDATE_DATA.metadata?.okrs || []).findIndex(o => o.id === linkedEpic.linkedOKR);
+            if (okrIndex >= 0) {
+                okrAction = `<button onclick="event.stopPropagation(); if(typeof openOKREdit==='function') openOKREdit(${okrIndex})" class="send-to-backlog-btn" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0;">🎯 Update OKR</button>`;
+            }
+        }
+
         cmsControls = `
             <div class="flex items-center gap-3 mt-1.5 flex-wrap ${isRoadmap ? 'opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-300' : ''}">
                 <span onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
                 <span onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
                 <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn">→ Backlog</button>
                 <button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn ${item.blocker ? 'text-red-600 border-red-200 bg-red-50' : ''}">${item.blocker ? '&#128275; Unblock' : '&#128274; Flag Blocker'}</button>
+                ${okrAction}
             </div>
         `;
     }
@@ -1192,6 +1202,7 @@ function renderEpicsView() {
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Vision / Strategic Epics</span>
                     <h2 class="text-sm font-black text-slate-800">Engineering Epics</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('epics') : ''}
             </div>
 
             <!-- Group 2: Actions -->
@@ -1211,7 +1222,7 @@ function renderEpicsView() {
         </div>
     `;
 
-    let html = ribbonHtml;
+    let html = ribbonHtml + (typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('epics') : '');
 
     if (epics.length === 0) {
         container.innerHTML = html + `<div class="text-center py-20 text-slate-400">
@@ -1364,6 +1375,7 @@ function renderRoadmapView() {
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Future Product Horizons</span>
                     <h2 class="text-sm font-black text-slate-800">Strategic Roadmap</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('roadmap') : ''}
             </div>
 
             <!-- Group 2: Actions -->
@@ -1382,6 +1394,7 @@ function renderRoadmapView() {
             </div>
         </div>
     `;
+    ribbonHtml += typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('roadmap') : '';
 
     if (horizons.length === 0) {
         container.innerHTML = ribbonHtml + `
@@ -2214,6 +2227,7 @@ function renderDiscoveryView() {
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Discovery / Exploration & Ideation</span>
                     <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">${title}</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton(currentView) : ''}
             </div>
             
             <div class="flex items-center gap-3">
@@ -2228,6 +2242,7 @@ function renderDiscoveryView() {
             </div>
         </div>
     `;
+    ribbonHtml += typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer(currentView) : '';
 
     // Filter for ideas and spikes across all tracks
     let allItems = [];

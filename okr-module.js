@@ -161,6 +161,7 @@ function renderOkrView() {
                     <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Quarterly Strategic Alignment</span>
                     <h2 class="text-sm font-black text-slate-800">Objectives & Key Results</h2>
                 </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('okr') : ''}
             </div>
 
             <!-- Group 2: Actions -->
@@ -179,9 +180,10 @@ function renderOkrView() {
             </div>
         </div>
     `;
+    ribbonHtml += typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('okr') : '';
 
     if (okrs.length === 0) {
-        container.innerHTML = visionHtml + headerHtml + `
+        container.innerHTML = visionHtml + ribbonHtml + `
             <div class="bg-white p-12 rounded-xl border border-slate-200 shadow-sm text-center">
                 <div class="text-6xl mb-4">🎯</div>
                 <h3 class="text-xl font-bold text-slate-900 mb-2">No OKRs Defined</h3>

@@ -26,6 +26,7 @@ function renderExecutiveDashboard() {
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Executive Pulse</span>
                         <h2 class="text-sm font-black text-slate-800">Executive Health Dashboard</h2>
                     </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('dashboard') : ''}
                 </div>
 
                 <!-- Group 2: Actions -->
@@ -35,6 +36,7 @@ function renderExecutiveDashboard() {
                     </div>
                 </div>
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('dashboard') : ''}
 
             <!-- Executive Summary -->
             ${renderExecutiveSummary()}
