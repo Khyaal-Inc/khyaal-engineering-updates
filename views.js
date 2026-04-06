@@ -670,9 +670,15 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
         </div>
     ` : '';
 
+    // --- LIFECYCLE COACHING SYSTEMS (I, J, K) ---
+    const lifecycleRailHTML = (() => { try { return typeof renderLifecycleRail === 'function' ? renderLifecycleRail(item) : ''; } catch(e) { return ''; } })();
+    const readinessBadgeHTML = (() => { try { return typeof getReadinessBadge === 'function' ? getReadinessBadge(item) : ''; } catch(e) { return ''; } })();
+    const jumpLinksHTML = (() => { try { return typeof renderJumpLinks === 'function' ? renderJumpLinks(item, viewPrefix) : ''; } catch(e) { return ''; } })();
+
     return `
         ${blockerStrip}
         <div class="item-row ${status.bucket} ${mode}-perspective"
+            data-item-id="${item.id}"
             draggable="${shouldShowManagement() ? 'true' : 'false'}"
             ondragstart="if(${shouldShowManagement()}){dragSource={trackIndex:${trackIndex},subtrackIndex:${subtrackIndex},itemIndex:${itemIndex}};this.classList.add('dragging');}"
             ondragend="this.classList.remove('dragging')">
@@ -704,6 +710,12 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                 ${effortImpactHTML}
                                 ${acHTML}
                             ` : ''}
+                            ${lifecycleRailHTML || readinessBadgeHTML || jumpLinksHTML ? `
+                            <div class="item-meta-row">
+                                ${lifecycleRailHTML}
+                                ${readinessBadgeHTML}
+                                ${jumpLinksHTML}
+                            </div>` : ''}
                             <div class="flex flex-wrap items-center gap-2 mt-2">
                                 <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-bold px-2 py-1 ${isRoadmap ? 'bg-slate-50 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} rounded transition-all">💬 ${(item.comments || []).length} Comments</button>
                                 ${cmsControls ? `<div>${cmsControls}</div>` : ''}

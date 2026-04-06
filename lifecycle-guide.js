@@ -647,6 +647,432 @@ function renderSmartEmptyState(viewId) {
 }
 
 // ============================================================
+// SYSTEM I — Lifecycle Rail (7-phase dot indicator per item)
+// ============================================================
+function detectItemPhase(item) {
+    if (!item) return 0
+    if (item.status === 'done' && item.releasedIn) return 7       // Shipped
+    if (item.status === 'done') return 6                           // Done, unshipped
+    if (['now','qa','review'].includes(item.status)) return 5      // Execution
+    if (item.sprintId && item.contributors?.length) return 4       // Sprint committed
+    if (item.sprintId || (item.storyPoints && item.acceptanceCriteria?.length)) return 3  // Groomed
+    if (item.epicId || item.planningHorizon) return 2              // Planned
+    if (item.text) return 1                                        // Captured
+    return 0
+}
+
+function renderLifecycleRail(item) {
+    const phase = detectItemPhase(item)
+    const phases = ['💡','🎯','📐','📋','🚀','✅','📦']
+    const labels = ['Idea','Plan','Groom','Sprint','Build','Done','Ship']
+    return `<div class="lrail" title="Phase ${phase}/7: ${labels[Math.max(0,phase-1)] || 'Idea'}">
+        ${phases.map((dot, i) => `<span class="lrail-dot ${i < phase ? 'lrail-done' : ''} ${i === phase-1 ? 'lrail-active' : ''}"></span>`).join('')}
+    </div>`
+}
+window.renderLifecycleRail = renderLifecycleRail
+window.detectItemPhase = detectItemPhase
+
+// ============================================================
+// SYSTEM J — Enrichment / Readiness Score (per item badge)
+// ============================================================
+function getItemScore(item) {
+    const checks = [
+        !!item.text,
+        !!item.usecase,
+        !!item.epicId,
+        !!item.storyPoints,
+        !!(item.acceptanceCriteria?.length),
+        !!(item.contributors?.length),
+        !!item.sprintId,
+        !!item.due,
+    ]
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100)
+}
+
+function getReadinessBadge(item) {
+    const score = getItemScore(item)
+    const cls = score >= 80 ? 'ready' : score >= 50 ? 'partial' : 'low'
+    const label = score >= 80 ? '✓ Ready' : score >= 50 ? `${score}%` : `${score}%`
+    return `<span class="rbadge rbadge-${cls}" title="Item completeness: ${score}%">${label}</span>`
+}
+window.getItemScore = getItemScore
+window.getReadinessBadge = getReadinessBadge
+
+// ============================================================
+// SYSTEM F — Gateway Checks (validate before quick actions)
+// ============================================================
+function runGatewayCheck(actionId, item) {
+    if (actionId === 'add-to-sprint') {
+        if (!item.storyPoints) return { blocked: true, msg: 'Add a story point estimate before assigning to sprint — helps the team know how much work this is.' }
+        if (!item.epicId) return { blocked: false, warn: 'This task has no linked Goal (Epic). Consider linking it so it counts toward OKR progress.' }
+    }
+    if (actionId === 'mark-done') {
+        if (!item.acceptanceCriteria?.length) return { blocked: false, warn: '"Done" means the acceptance criteria pass. None are written — are you sure?' }
+    }
+    if (actionId === 'ship-to-release') {
+        if (item.status !== 'done') return { blocked: true, msg: 'Mark this task as Done before shipping it to a release.' }
+    }
+    return { blocked: false }
+}
+window.runGatewayCheck = runGatewayCheck
+
+// ============================================================
+// SYSTEM K — Cross-View Jump Links (view-in hover links)
+// ============================================================
+window._pendingHighlightItemId = null
+
+function renderJumpLinks(item, currentViewId) {
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const views = []
+    if (currentViewId !== 'kanban' && item.sprintId) views.push({ v: 'kanban', label: 'Kanban' })
+    if (currentViewId !== 'sprint' && item.sprintId) views.push({ v: 'sprint', label: 'Sprint' })
+    if (currentViewId !== 'track') views.push({ v: 'track', label: 'Track' })
+    if (currentViewId !== 'backlog' && mode === 'pm') views.push({ v: 'backlog', label: 'Backlog' })
+    if (!views.length) return ''
+    return `<div class="jump-links">${views.slice(0,2).map(j =>
+        `<button class="jump-link" onclick="event.stopPropagation();window._pendingHighlightItemId='${item.id}';switchView('${j.v}')" title="View in ${j.label}">↗ ${j.label}</button>`
+    ).join('')}</div>`
+}
+window.renderJumpLinks = renderJumpLinks
+
+// Wire highlight after switchView re-renders
+const _origSwitchForHighlight = window.switchView
+if (typeof _origSwitchForHighlight === 'function') {
+    window.switchView = function(viewId) {
+        _origSwitchForHighlight(viewId)
+        if (window._pendingHighlightItemId) {
+            setTimeout(() => {
+                const id = window._pendingHighlightItemId
+                window._pendingHighlightItemId = null
+                const els = document.querySelectorAll(`[data-item-id="${id}"]`)
+                els.forEach(el => {
+                    el.classList.add('item-highlight-pulse')
+                    setTimeout(() => el.classList.remove('item-highlight-pulse'), 2200)
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                })
+            }, 300)
+        }
+    }
+}
+
+// ============================================================
+// SYSTEM L — Cadence Nudge Banner
+// ============================================================
+const CADENCE_SCHEDULE = [
+    { day: 1, type: 'standup',  label: 'Monday Standup', view: 'track',   icon: '☀️', msg: 'Start the week — check blockers, confirm sprint scope is on track.' },
+    { day: 1, type: 'weekly',   label: 'Weekly Review',  view: 'sprint',  icon: '📋', msg: 'Review sprint progress and update item statuses.' },
+    { day: 3, type: 'standup',  label: 'Mid-Week Standup', view: 'kanban', icon: '🔄', msg: 'Mid-week check — move blocked items, re-prioritize if needed.' },
+    { day: 3, type: 'grooming', label: 'Backlog Grooming', view: 'backlog', icon: '✂️', msg: "Groom next sprint's tasks — estimate, link epics, write done criteria." },
+    { day: 5, type: 'standup',  label: 'Friday Standup',  view: 'track',  icon: '🏁', msg: 'End-of-week — ship done items to releases, clear blockers.' },
+    { day: 5, type: 'release',  label: 'Release Day',     view: 'releases', icon: '📦', msg: 'Ship done items to the release, update OKR progress.' },
+]
+
+function getCadenceNudge() {
+    const day = new Date().getDay() // 0=Sun, 1=Mon...5=Fri, 6=Sat
+    const nudges = CADENCE_SCHEDULE.filter(n => n.day === day)
+    if (!nudges.length) return null
+    return nudges[0]
+}
+
+function renderCadenceNudgeBanner() {
+    const bar = document.getElementById('cadence-nudge-bar')
+    if (!bar) return
+    const nudge = getCadenceNudge()
+    if (!nudge) { bar.style.display = 'none'; return }
+    const dismissed = sessionStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
+    if (dismissed) { bar.style.display = 'none'; return }
+    bar.style.display = 'flex'
+    bar.innerHTML = `
+        <span class="cnb-icon">${nudge.icon}</span>
+        <div class="cnb-body">
+            <span class="cnb-label">${nudge.label}</span>
+            <span class="cnb-msg">${nudge.msg}</span>
+        </div>
+        <button class="cnb-cta" onclick="switchView('${nudge.view}');document.getElementById('cadence-nudge-bar').style.display='none'">${nudge.label.split(' ')[0]} View →</button>
+        <button class="cnb-dismiss" onclick="sessionStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');document.getElementById('cadence-nudge-bar').style.display='none'">✕</button>
+    `
+}
+window.renderCadenceNudgeBanner = renderCadenceNudgeBanner
+
+// ============================================================
+// SYSTEM N — Sprint Health HUD (command strip mini pill)
+// ============================================================
+function renderSprintHUD() {
+    const slot = document.getElementById('sprint-hud-mount')
+    if (!slot) return
+    const sprints = window.UPDATE_DATA?.metadata?.sprints || []
+    const active = sprints.find(s => s.status === 'active') || sprints[sprints.length - 1]
+    if (!active) { slot.innerHTML = ''; return }
+
+    const items = _getAllItemsFlat().filter(i => i.sprintId === active.id)
+    if (!items.length) { slot.innerHTML = ''; return }
+
+    const done    = items.filter(i => i.status === 'done').length
+    const blocked = items.filter(i => i.status === 'blocked' || i.blocker).length
+    const total   = items.length
+    const pct     = Math.round((done / total) * 100)
+    const healthCls = blocked > 0 ? 'hud-warn' : pct >= 70 ? 'hud-ok' : 'hud-neutral'
+
+    slot.innerHTML = `
+        <button class="sprint-hud ${healthCls}" onclick="switchView('sprint')" title="Sprint: ${active.name} — ${pct}% done${blocked ? ', ' + blocked + ' blocked' : ''}">
+            <span class="hud-name">${active.name}</span>
+            <div class="hud-bar"><div class="hud-fill" style="width:${pct}%"></div></div>
+            <span class="hud-pct">${pct}%</span>
+            ${blocked ? `<span class="hud-block">🛑${blocked}</span>` : ''}
+        </button>
+    `
+}
+window.renderSprintHUD = renderSprintHUD
+
+// ============================================================
+// Extended INFO CARDS — OKR, Epics, Roadmap, My Tasks, etc.
+// ============================================================
+Object.assign(VIEW_INFO_CARDS, {
+    okr: {
+        title: 'OKRs — Quarterly Goals',
+        stage: 'Stage 2 · Set Goals', stageColor: '#4f46e5',
+        whatItIs: 'OKRs are your team\'s quarterly promises. One Objective (a bold direction) with 2–4 Key Results (measurable milestones). Everything you build should trace back to a Key Result.',
+        cadence: 'Quarterly · Q-planning meeting', duration: '3 hours',
+        who: [
+            { role: 'Leadership', resp: 'Sets the Objective — the direction' },
+            { role: 'PM', resp: 'Drafts Key Results with measurable targets' },
+            { role: 'Tech Lead', resp: 'Sanity-checks feasibility of KR targets' },
+        ],
+        agenda: [
+            'Review last quarter\'s OKRs — what was achieved?',
+            'Set 1 bold Objective for this quarter',
+            'Write 2–4 Key Results — each must be a number you can measure',
+            'Link existing Epics to Key Results',
+            'Create Epics for Key Results that have no work yet',
+        ],
+        nextView: 'epics', nextLabel: 'Create Epics for each KR →',
+        readiness: () => {
+            const okrs = window.UPDATE_DATA?.metadata?.okrs || []
+            const r = []
+            if (!okrs.length) r.push({ t: 'error', m: 'No OKRs defined — set your quarterly direction first' })
+            else {
+                const noKR = okrs.filter(o => !o.keyResults?.length).length
+                if (noKR) r.push({ t: 'warn', m: `${noKR} OKRs have no Key Results written` })
+            }
+            return r
+        }
+    },
+    epics: {
+        title: 'Epics — Major Initiatives',
+        stage: 'Stage 2 · Set Goals', stageColor: '#4f46e5',
+        whatItIs: 'An Epic is a major chunk of work — big enough to span multiple sprints, small enough that you can describe it in one sentence. Each Epic should deliver one meaningful outcome for your users.',
+        cadence: 'Monthly · Quarterly planning + monthly review', duration: '90 min',
+        who: [
+            { role: 'PM', resp: 'Owns each Epic — defines scope and success metric' },
+            { role: 'Tech Lead', resp: 'Estimates effort, flags technical risks' },
+        ],
+        agenda: [
+            'Create one Epic per OKR Key Result',
+            'Write a one-line impact statement: what user problem does this solve?',
+            'Set a quantitative success metric (a number)',
+            'Assign a risk type: execution / market / technical',
+            'Break the Epic into tasks in the Backlog',
+        ],
+        nextView: 'backlog', nextLabel: 'Break into tasks →',
+        readiness: () => {
+            const epics = window.UPDATE_DATA?.metadata?.epics || []
+            const r = []
+            if (!epics.length) r.push({ t: 'error', m: 'No Epics defined — create one per OKR Key Result' })
+            else {
+                const noMetric = epics.filter(e => !e.successMetric).length
+                if (noMetric) r.push({ t: 'warn', m: `${noMetric} Epics missing a measurable success metric` })
+            }
+            return r
+        }
+    },
+    roadmap: {
+        title: 'Roadmap — Strategic Timeline',
+        stage: 'Stage 3 · Plan', stageColor: '#2563eb',
+        whatItIs: 'The roadmap is your promise to stakeholders about what ships when. It translates Epics into time-horizon buckets: Now (1M), Next (3M), Later (6M). Don\'t fill it with tasks — only Epics and major milestones.',
+        cadence: 'Monthly · Roadmap review', duration: '60 min',
+        who: [
+            { role: 'PM', resp: 'Owns the roadmap — decides horizon assignment' },
+            { role: 'Leadership', resp: 'Challenges trade-offs, approves shifts' },
+        ],
+        agenda: [
+            'Review what\'s in Now — is it still the right priority?',
+            'Move completed Epics to the archive',
+            'Promote items from Next → Now if capacity allows',
+            'Add new Epics from OKR planning',
+            'Flag any items at risk of slipping horizon',
+        ],
+        nextView: 'backlog', nextLabel: 'Plan sprints →',
+        readiness: () => []
+    },
+    ideation: {
+        title: 'Ideation — Capture Ideas',
+        stage: 'Stage 1 · Discover', stageColor: '#7c3aed',
+        whatItIs: 'Ideas before they\'re commitments. Park anything worth exploring here — user feedback, market signals, internal requests, or intuitions. Don\'t filter too early; capture first, evaluate later.',
+        cadence: 'Ongoing · Weekly ideation session (optional)', duration: '30 min',
+        who: [
+            { role: 'Anyone', resp: 'Can submit ideas' },
+            { role: 'PM', resp: 'Evaluates, tags, and promotes ideas to Epics or Spikes' },
+        ],
+        agenda: [
+            'Tag all ideas: #idea, #user-feedback, #tech-debt, #spike, etc.',
+            'Write one sentence on why this idea matters (Impact field)',
+            'Review ideas older than 30 days — promote or archive',
+            'Promote validated ideas to Epics in Goals view',
+        ],
+        nextView: 'okr', nextLabel: 'Set goals →',
+        readiness: () => []
+    },
+    'my-tasks': {
+        title: 'My Tasks — Daily Focus',
+        stage: 'Stage 4 · Build', stageColor: '#059669',
+        whatItIs: 'Your personal work queue — filtered to only your assigned items. Start here every morning. Clear your blockers first, then focus on Now items. Done at EOD → ship to release.',
+        cadence: 'Daily · Morning planning', duration: '5 min',
+        who: [{ role: 'You', resp: 'Own and update your tasks daily' }],
+        agenda: [
+            'Fix any Blocked items first — paste the blocker note, ping the PM',
+            'Focus on Now items — these are the sprint commitment',
+            'Update status on anything you finished yesterday',
+            'If a task will slip — flag it now, not on demo day',
+        ],
+        nextView: 'kanban', nextLabel: 'See team board →',
+        readiness: () => {
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null
+            if (!user) return []
+            const myItems = _getAllItemsFlat().filter(i => (i.contributors||[]).includes(user))
+            const blocked = myItems.filter(i => i.status === 'blocked' || i.blocker).length
+            return blocked ? [{ t: 'error', m: `${blocked} of your tasks are blocked — resolve before standup` }] : []
+        }
+    },
+    analytics: {
+        title: 'Analytics — Velocity & Health',
+        stage: 'Stage 5 · Ship', stageColor: '#d97706',
+        whatItIs: 'Sprint velocity, burndown, and team health metrics. Use this in retrospectives to understand if the team is sustainable and improving over time.',
+        cadence: 'Bi-weekly · Retrospective', duration: '60 min',
+        who: [
+            { role: 'PM', resp: 'Presents velocity trend, identifies patterns' },
+            { role: 'Team', resp: 'Reflects on what slowed them down' },
+        ],
+        agenda: [
+            'Review velocity: are points delivered per sprint increasing?',
+            'Check blockers trend — did we resolve faster this sprint?',
+            'Identify top 1 process improvement for next sprint',
+            'Celebrate Done items shipped to releases',
+        ],
+        nextView: 'releases', nextLabel: 'Review releases →',
+        readiness: () => []
+    },
+    dashboard: {
+        title: 'Executive Dashboard — KPI Summary',
+        stage: 'Stage 5 · Ship', stageColor: '#d97706',
+        whatItIs: 'High-level health summary for leadership. OKR progress, Epic completion, sprint status, and top risks — in one view. No task-level detail.',
+        cadence: 'Monthly · Leadership review', duration: '30 min',
+        who: [
+            { role: 'PM', resp: 'Prepares summary, highlights risks' },
+            { role: 'Leadership', resp: 'Reviews progress, makes priority calls' },
+        ],
+        agenda: [
+            'Review OKR progress: on track, at risk, or behind?',
+            'Epic completion rate vs. roadmap target',
+            'Any blockers that need leadership intervention?',
+            'Confirm next quarter planning is scheduled',
+        ],
+        nextView: 'okr', nextLabel: 'Review OKRs →',
+        readiness: () => []
+    },
+})
+
+// Extended EMPTY_STATES
+Object.assign(EMPTY_STATES, {
+    okr:      { icon:'🎯', h:'No quarterly goals yet', b:'Define 2–4 OKRs: one bold Objective + measurable Key Results. Everything the team builds should trace back to these.', a:'Create first OKR →', fn:"typeof openOKREdit==='function'?openOKREdit():null" },
+    'my-tasks':{ icon:'👤', h:'No tasks assigned to you', b:'Tasks assigned to you in any sprint will appear here. Ask your PM to assign items, or check the Kanban board.', a:'View Kanban →', fn:"switchView('kanban')" },
+    epics:    { icon:'🚀', h:'No Epics defined', b:'Create one Epic per OKR Key Result. An Epic is a major initiative that spans multiple sprints.', a:'Create first Epic →', fn:"typeof openEpicEdit==='function'?openEpicEdit():null" },
+    roadmap:  { icon:'🗺️', h:'No roadmap items', b:'Add Epics to time-horizon buckets: Now (1M) / Next (3M) / Later (6M). This is your strategic promise to stakeholders.', a:'Go to Epics →', fn:"switchView('epics')" },
+    ideation: { icon:'💡', h:'No ideas captured yet', b:'This is where you park ideas before committing to build. Tag them #idea or #spike and explain why they matter.', a:'Capture first idea', fn:"typeof addItem==='function'?addItem(0,0,{tags:['idea']}):null" },
+})
+
+// ============================================================
+// Extended Quick Actions (Appendix C additions)
+// ============================================================
+Object.assign(QA_DEFS, {
+    'clone-item': {
+        label: '📋 Clone to Next Sprint', type: 'action',
+        exec: (item) => {
+            const sprints = window.UPDATE_DATA?.metadata?.sprints || []
+            const nextSprint = sprints.find(s => s.status !== 'completed' && s.id !== item.sprintId)
+            if (!nextSprint) { showHandoffToast('No other sprint found — create one first', 'Add Sprint →', ()=>switchView('sprint')); return }
+            const clone = { ...item, id: `task-${Date.now()}`, status: 'next', sprintId: nextSprint.id, updatedAt: new Date().toISOString() }
+            // Find original item location and push clone
+            let placed = false
+            ;(window.UPDATE_DATA?.tracks||[]).forEach(t => t.subtracks.forEach(s => {
+                if (!placed && s.items.some(i => i.id === item.id)) { s.items.push(clone); placed = true }
+            }))
+            if (placed) { _qaSave(); showHandoffToast(`Cloned to ${nextSprint.name} ✓`, 'View Sprint →', ()=>switchView('sprint')) }
+        }
+    },
+    'set-due-date': {
+        label: '📅 Set Due Date', type: 'inline-text', placeholder: 'YYYY-MM-DD (e.g. 2025-06-30)',
+        exec: (item, val) => {
+            if (!val.match(/^\d{4}-\d{2}-\d{2}$/)) { showHandoffToast('Use format YYYY-MM-DD', null, null, 2500); return }
+            item.due = val; item.updatedAt = new Date().toISOString()
+            _qaSave(); showHandoffToast(`Due date set: ${val} ✓`, null, null, 2500)
+        }
+    },
+    'create-spike': {
+        label: '🧪 Create Spike', type: 'inline-text', placeholder: 'What do you need to research?',
+        exec: (item, question) => {
+            if (!question?.trim()) return
+            const spike = { id: `task-${Date.now()}`, text: `[Spike] ${question}`, tags: ['spike'], status: 'next',
+                            note: `Linked from: ${item.text}`, spikeLinkedFrom: item.id, updatedAt: new Date().toISOString() }
+            let placed = false
+            ;(window.UPDATE_DATA?.tracks||[]).forEach(t => t.subtracks.forEach(s => {
+                if (!placed && s.items.some(i => i.id === item.id)) { s.items.push(spike); placed = true }
+            }))
+            if (placed) { _qaSave(); showHandoffToast('Spike created ✓', 'View Ideation →', ()=>switchView('spikes')) }
+        }
+    },
+    'promote-to-roadmap': {
+        label: '🗺️ Add to Roadmap', type: 'dropdown',
+        opts: () => [{ id:'1M', name:'Now (1 Month)' }, { id:'3M', name:'Next (3 Months)' }, { id:'6M', name:'Later (6 Months)' }],
+        optLabel: h => h.name,
+        exec: (item, val) => {
+            item.planningHorizon = val; item.updatedAt = new Date().toISOString()
+            _qaSave(); showHandoffToast('Added to roadmap ✓', 'View Roadmap →', ()=>switchView('roadmap'))
+        }
+    },
+})
+
+// Wire gateway checks into _qaExec
+const _origQaExec = window._qaExec
+window._qaExec = function(id, itemId, val, ti, si, ii) {
+    if (!val && QA_DEFS[id]?.type === 'dropdown') return
+    let item = window.UPDATE_DATA?.tracks?.[ti]?.subtracks?.[si]?.items?.[ii]
+    if (!item || item.id !== itemId) item = _getAllItemsFlat().find(x => x.id === itemId)
+    if (!item) return
+    const check = runGatewayCheck(id, item)
+    if (check.blocked) { showHandoffToast(`⚠️ ${check.msg}`, null, null, 5000); return }
+    if (check.warn) {
+        if (!confirm(check.warn + '\n\nContinue anyway?')) return
+    }
+    QA_DEFS[id]?.exec(item, val)
+}
+
+// Extend getQuickActions with new actions
+const _origGetQA = getQuickActions
+window._getQuickActionsExtended = function(item, viewId) {
+    const acts = _origGetQA(item, viewId)
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const s = item.status || 'later'
+    // Cross-view actions (PM only)
+    if (mode === 'pm' && typeof shouldShowManagement === 'function' && shouldShowManagement()) {
+        if (!item.planningHorizon && (viewId === 'backlog' || viewId === 'ideation')) acts.push('promote-to-roadmap')
+        if (!item.due) acts.push('set-due-date')
+        if (viewId === 'sprint' && s !== 'done') acts.push('clone-item')
+        if (viewId === 'ideation' || viewId === 'spikes') acts.push('create-spike')
+    }
+    return acts
+}
+
+// ============================================================
 // SYSTEM C — Stage-Aware Modal Field Hints
 // ============================================================
 const STAGE_REQUIRED_FIELDS = {
@@ -678,10 +1104,22 @@ function getModalStageFromView(viewId) {
         window.switchView = function(viewId) {
             _orig(viewId);
             window.currentActiveView = viewId;
-            setTimeout(() => renderLifecycleBreadcrumb(viewId), 60);
+            setTimeout(() => {
+                renderLifecycleBreadcrumb(viewId);
+                // System N — refresh Sprint HUD on every view switch
+                if (typeof renderSprintHUD  === 'function') renderSprintHUD();
+                // System L — show cadence nudge if relevant day
+                if (typeof renderCadenceNudgeBanner === 'function') renderCadenceNudgeBanner();
+            }, 60);
         };
     }
+    // Also fire on initial load (after data is available)
+    setTimeout(() => {
+        if (typeof renderSprintHUD === 'function') renderSprintHUD();
+        if (typeof renderCadenceNudgeBanner === 'function') renderCadenceNudgeBanner();
+    }, 800);
 })();
+
 
 window.renderCurrentView = function() {
     const v = window.currentActiveView || 'track';

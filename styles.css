@@ -4889,3 +4889,537 @@ summary::-webkit-details-marker {
     outline-offset: -4px;
     border-radius: var(--radius-md);
 }
+
+/* ============================================================
+   SYSTEM I — Lifecycle Rail (7-dot phase indicator on item cards)
+   ============================================================ */
+.lrail {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 3px 6px 3px 0;
+    border-radius: var(--radius-pill);
+    transition: opacity var(--transition-fast);
+    width: fit-content;
+}
+.lrail:hover { opacity: 0.8; }
+
+.lrail-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    flex-shrink: 0;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.lrail-done {
+    background: #6366f1;
+    border-color: #4f46e5;
+}
+.lrail-active {
+    background: #4f46e5;
+    border-color: #3730a3;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    transform: scale(1.25);
+}
+
+/* ============================================================
+   SYSTEM J — Readiness Badge (item completeness score)
+   ============================================================ */
+.rbadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    cursor: default;
+}
+.rbadge-ready {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #bbf7d0;
+}
+.rbadge-partial {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+.rbadge-low {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+/* ============================================================
+   SYSTEM K — Cross-View Jump Links
+   ============================================================ */
+.jump-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.jump-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 700;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transform: translateY(2px);
+}
+.item-row:hover .jump-link {
+    opacity: 1;
+    transform: translateY(0);
+}
+.jump-link:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+
+/* Item highlight pulse — after jump link navigation */
+@keyframes itemHighlightPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0.5), var(--shadow-xs); background: rgba(99,102,241,0.06); }
+    50%  { box-shadow: 0 0 0 8px rgba(99,102,241,0), var(--shadow-md); background: rgba(99,102,241,0.10); }
+    100% { box-shadow: var(--shadow-xs); background: var(--surface-card); }
+}
+.item-highlight-pulse {
+    animation: itemHighlightPulse 2.2s ease-out;
+}
+
+/* ============================================================
+   SYSTEM L — Cadence Nudge Banner
+   ============================================================ */
+#cadence-nudge-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    font-size: 12px;
+    position: sticky;
+    top: 48px;
+    z-index: 80;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 2px 8px rgba(79,70,229,0.2);
+}
+.cnb-icon { font-size: 16px; flex-shrink: 0; }
+.cnb-body { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cnb-label {
+    font-weight: 800;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.cnb-msg {
+    opacity: 0.85;
+    font-size: 11px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cnb-cta {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-pill);
+    padding: 3px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+}
+.cnb-cta:hover { background: rgba(255,255,255,0.35); }
+.cnb-dismiss {
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color var(--transition-fast);
+}
+.cnb-dismiss:hover { color: white; }
+
+/* ============================================================
+   SYSTEM N — Sprint Health HUD (command strip pill)
+   ============================================================ */
+#sprint-hud-mount { display: flex; align-items: center; }
+
+.sprint-hud {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    transition: all var(--transition-fast);
+    max-width: 180px;
+    box-shadow: var(--shadow-xs);
+}
+.sprint-hud:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+.hud-ok    { border-color: #bbf7d0; color: #15803d; }
+.hud-warn  { border-color: #fecaca; color: #991b1b; background: #fef2f2; }
+.hud-neutral { border-color: #bfdbfe; color: #1d4ed8; }
+
+.hud-name {
+    font-weight: 800;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+}
+.hud-bar {
+    width: 40px;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.hud-fill {
+    height: 100%;
+    background: currentColor;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    opacity: 0.6;
+}
+.hud-pct {
+    font-size: 9px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+.hud-block {
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   SYSTEM E — Meeting Guide Co-Pilot Panel
+   ============================================================ */
+#guide-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.97);
+    backdrop-filter: var(--glass-blur-md);
+    -webkit-backdrop-filter: var(--glass-blur-md);
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.3);
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
+}
+#guide-panel.guide-open { right: 0; }
+
+#guide-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(2px);
+    z-index: 2999;
+    display: none;
+    transition: opacity 0.3s;
+}
+#guide-backdrop.guide-open { display: block; }
+
+.guide-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.guide-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: white;
+}
+.guide-subtitle {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+    margin-top: 1px;
+}
+.guide-close {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+.guide-close:hover { background: rgba(255,255,255,0.15); color: white; }
+
+.guide-scenarios {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.guide-scenario-btn {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.02em;
+}
+.guide-scenario-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+.guide-scenario-btn.active {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: white;
+}
+
+.guide-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+}
+.guide-body::-webkit-scrollbar { width: 4px; }
+.guide-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+.guide-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+.guide-scenario-header {
+    margin-bottom: 16px;
+}
+.guide-scenario-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+.guide-scenario-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: white;
+    line-height: 1.2;
+}
+.guide-scenario-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+.guide-meta-pill {
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 9px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.guide-steps { display: flex; flex-direction: column; gap: 10px; }
+.guide-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+.guide-step:hover { background: rgba(255,255,255,0.08); }
+.guide-step.step-done {
+    background: rgba(34,197,94,0.08);
+    border-color: rgba(34,197,94,0.2);
+    opacity: 0.6;
+}
+.guide-step.step-active {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.3);
+}
+.guide-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.6);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.guide-step.step-done .guide-step-num {
+    background: rgba(34,197,94,0.2);
+    border-color: rgba(34,197,94,0.4);
+    color: #86efac;
+}
+.guide-step.step-active .guide-step-num {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: white;
+}
+.guide-step-text {
+    flex: 1;
+    min-width: 0;
+}
+.guide-step-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.3;
+    margin-bottom: 3px;
+}
+.guide-step.step-done .guide-step-label { color: rgba(255,255,255,0.45); text-decoration: line-through; }
+.guide-step.step-active .guide-step-label { color: white; }
+.guide-step-detail {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.5;
+    font-weight: 500;
+}
+.guide-step.step-active .guide-step-detail { color: rgba(255,255,255,0.65); }
+
+.guide-step-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(99,102,241,0.2);
+    color: #a5b4fc;
+    border: 1px solid rgba(99,102,241,0.3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.guide-step-action:hover { background: rgba(99,102,241,0.35); color: white; }
+
+.guide-footer {
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.guide-btn-primary {
+    flex: 1;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    background: #4f46e5;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.guide-btn-primary:hover { background: #4338ca; }
+.guide-btn-secondary {
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+.guide-btn-secondary:hover { background: rgba(255,255,255,0.12); color: white; }
+
+/* Guide trigger fab button */
+#guide-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 24px;
+    z-index: 500;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 8px 16px 8px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 20px rgba(79,70,229,0.4), 0 2px 8px rgba(0,0,0,0.15);
+    transition: all var(--transition-base);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+#guide-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(79,70,229,0.5), 0 4px 12px rgba(0,0,0,0.2);
+}
+#guide-fab:active { transform: translateY(0); }
+
+/* Lifecycle rail + readiness badge inline row */
+.item-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+

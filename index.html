@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=04071">
+    <link rel="stylesheet" href="styles.css?v=04072">
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
@@ -95,7 +95,7 @@
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
         <!-- CORE SCRIPTS -->
         <script src="core.js?v=04071"></script>
-        <script src="views.js?v=04071"></script>
+        <script src="views.js?v=04072"></script>
         <script src="cms.js?v=04071"></script>
         <script src="app.js?v=04071"></script>
         <script>
@@ -123,7 +123,17 @@
         <script src="capacity-planning.js?v=04071"></script>
         <script src="dev-focus.js?v=04071"></script>
         <script src="executive-dashboard.js?v=04071"></script>
-        <script src="lifecycle-guide.js?v=04071"></script>
+        <script src="lifecycle-guide.js?v=04072"></script>
+        <script src="meeting-guide.js?v=04072"></script>
+
+        <!-- Meeting Co-Pilot Panel (System E) -->
+        <div id="guide-backdrop" onclick="typeof closeMeetingGuide==='function'&&closeMeetingGuide()"></div>
+        <div id="guide-panel">
+            <!-- Populated by meeting-guide.js -->
+        </div>
+        <button id="guide-fab" onclick="typeof openMeetingGuide==='function'&&openMeetingGuide()" title="Meeting Co-Pilot — step-by-step guide for any meeting">
+            <span style="font-size:16px">🧭</span> Guide Me
+        </button>
 
         <!-- CMS Modal -->
         <!-- CMS Modal -->
@@ -169,6 +179,9 @@
                 <div class="flex items-center gap-3">
                     <!-- Blocker Badge (Injected by core.js) -->
                     <div id="header-blocker-badge"></div>
+
+                    <!-- Sprint Health HUD -->
+                    <div id="sprint-hud-mount"></div>
 
                     <!-- Mode Pill (Small) -->
                     <div id="header-mode-switcher"></div>
@@ -224,6 +237,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Cadence Nudge Banner (System L) -->
+        <div id="cadence-nudge-bar"></div>
 
         <!-- Main Content Area (Extreme Density Padding + Widescreen Support) -->
         <div id="main-content" class="max-w-[1720px] mx-auto pt-2 pb-32">
