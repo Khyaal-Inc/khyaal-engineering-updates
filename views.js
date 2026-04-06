@@ -312,6 +312,7 @@ function renderTrackView() {
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · All work organized by engineering team — see who owns what</span>
                         <h2 class="text-sm font-black text-slate-800">Engineering Tracks</h2>
                     </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('track') : ''}
                 </div>
                 <!-- Group 1: Navigation & Filters -->
                 <div class="flex flex-wrap items-center gap-3 flex-1">
@@ -374,6 +375,7 @@ function renderTrackView() {
                     ` : ''}
                 </div>
             </div>
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('track') : ''}
             <div id="track-content"></div>
         `;
     }
@@ -517,7 +519,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     const isRoadmap = viewPrefix === 'roadmap';
     const isEpicView = viewPrefix === 'epic';
     const mode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
-    const status = statusConfig[item.status];
+    const status = statusConfig[item.status] || { label: item.status || 'Unknown', class: 'badge-later', bucket: 'bucket-later' };
     const priority = item.priority || 'medium';
     const priorityInfo = priorityConfig[priority];
     const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);

@@ -2671,7 +2671,44 @@ async function loadArchive(fileName) {
 // ------ CMS ROUTING ------
 function saveCms() {
     if (!editContext) return;
-    saveCmsChanges();
+
+    // Capture pre-save state for handoff toast
+    let prevStatus = null
+    let newStatus = null
+    if (editContext.type === 'item') {
+        const oldItem = UPDATE_DATA.tracks[editContext.trackIndex]?.subtracks[editContext.subtrackIndex]?.items[editContext.itemIndex]
+        prevStatus = oldItem?.status || null
+    }
+    // Read new status & sprintId before modal closes
+    newStatus = document.getElementById('edit-status')?.value || null
+    const newSprintId = document.getElementById('edit-sprintId')?.value || null
+    const isNew = editContext.type === 'item-new'
+    const ctxType = editContext.type
+
+    saveCmsChanges()
+
+    // Handoff toasts — guide the user on what to do next
+    if (typeof showHandoffToast === 'function') {
+        if (ctxType === 'item' && newStatus === 'done' && prevStatus !== 'done') {
+            showHandoffToast('Marked Done ✓ — ship it to a release so it counts in your metrics', 'Ship to Release →', () => switchView('releases'))
+        } else if (ctxType === 'item' && newStatus === 'blocked' && prevStatus !== 'blocked') {
+            showHandoffToast('Blocker flagged 🛑 — PM should resolve before next standup', 'View Track →', () => switchView('track'))
+        } else if (isNew) {
+            if (newSprintId) {
+                showHandoffToast('Task created & added to sprint ✓', 'View Sprint →', () => switchView('sprint'))
+            } else {
+                showHandoffToast('Task created ✓ — groom it in the backlog before sprint planning', 'Go to Backlog →', () => switchView('backlog'))
+            }
+        } else if (ctxType === 'sprint') {
+            showHandoffToast('Sprint saved ✓ — pull tasks from Backlog to commit the scope', 'Go to Backlog →', () => switchView('backlog'))
+        } else if (ctxType === 'release') {
+            showHandoffToast('Release saved ✓ — ship done tasks into it', 'View Releases →', () => switchView('releases'))
+        } else if (ctxType === 'okr') {
+            showHandoffToast('OKR saved ✓ — create Epics to deliver each Key Result', 'Go to Epics →', () => switchView('epics'))
+        } else if (ctxType === 'epic') {
+            showHandoffToast('Epic saved ✓ — break it into tasks in the Backlog', 'Go to Backlog →', () => switchView('backlog'))
+        }
+    }
 }
 
 function deleteEpic(idx) {

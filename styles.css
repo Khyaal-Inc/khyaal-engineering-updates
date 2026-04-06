@@ -205,6 +205,9 @@ summary::-webkit-details-marker {
 .badge-next   { background: var(--status-next-bg);    color: var(--status-next-text);    border: 1px solid var(--status-next-border); }
 .badge-later  { background: var(--status-later-bg);   color: var(--status-later-text);   border: 1px solid var(--status-later-border); }
 .badge-blocked{ background: var(--status-blocked-bg); color: var(--status-blocked-text); border: 1px solid var(--status-blocked-border); }
+.badge-onhold { background: var(--status-onhold-bg);  color: var(--status-onhold-text);  border: 1px solid var(--status-onhold-border); }
+.badge-qa     { background: var(--status-qa-bg);      color: var(--status-qa-text);      border: 1px solid var(--status-qa-border); }
+.badge-review { background: var(--status-review-bg);  color: var(--status-review-text);  border: 1px solid var(--status-review-border); }
 
 /* Unified status pill system — single source of truth */
 .status-pill.done    { background: var(--status-done-bg);    color: var(--status-done-text);    border: 1px solid var(--status-done-border); }

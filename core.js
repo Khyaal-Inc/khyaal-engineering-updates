@@ -23,10 +23,14 @@ const themeColors = {
 };
 
 const statusConfig = {
-    done: { label: 'Done', class: 'badge-done', bucket: 'bucket-done' },
-    now: { label: 'Now', class: 'badge-now', bucket: 'bucket-now' },
-    next: { label: 'Next', class: 'badge-next', bucket: 'bucket-next' },
-    later: { label: 'Later', class: 'badge-later', bucket: 'bucket-later' }
+    done:    { label: 'Done',    class: 'badge-done',    bucket: 'bucket-done' },
+    now:     { label: 'Now',     class: 'badge-now',     bucket: 'bucket-now' },
+    next:    { label: 'Next',    class: 'badge-next',    bucket: 'bucket-next' },
+    later:   { label: 'Later',   class: 'badge-later',   bucket: 'bucket-later' },
+    blocked: { label: 'Blocked', class: 'badge-blocked', bucket: 'bucket-blocked' },
+    onhold:  { label: 'On Hold', class: 'badge-onhold',  bucket: 'bucket-onhold' },
+    qa:      { label: 'QA',      class: 'badge-qa',      bucket: 'bucket-qa' },
+    review:  { label: 'Review',  class: 'badge-review',  bucket: 'bucket-review' }
 };
 
 const priorityConfig = {
