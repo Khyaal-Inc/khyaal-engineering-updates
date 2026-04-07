@@ -2821,7 +2821,25 @@ function filterByDate(dateRange) {
 }
 
 async function archiveAndClear() {
-    if (!confirm('ARCHIVE & CLEAR DASHBOARD? This will save all current data to a timestamped JSON file in /archive and clear the main view.')) return;
+    // Count in-progress items that are NOT done and NOT already in next/later
+    let inProgressItems = []
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(sub => {
+            sub.items.forEach(item => {
+                if (['now', 'qa', 'review'].includes(item.status)) {
+                    inProgressItems.push({ item, sub })
+                }
+            })
+        })
+    })
+
+    let rollbackInProgress = false
+    if (inProgressItems.length > 0) {
+        const msg = `ARCHIVE & CLEAR DASHBOARD?\n\n⚠️ ${inProgressItems.length} item(s) are still in progress (now/qa/review) and will NOT be cleared.\n\nThey will remain in the data as-is. Optionally, roll them back to "next" so they show up in the next sprint.\n\nOptions:\n• OK = Archive & keep in-progress items as-is\n• Cancel = Stop and manually handle these items first\n\nPress OK to continue (or Cancel to abort).`
+        if (!confirm(msg)) return
+    } else {
+        if (!confirm('ARCHIVE & CLEAR DASHBOARD? This will save all current data to a timestamped JSON file in /archive and clear all done items.')) return
+    }
 
     const btn = document.getElementById('archive-btn');
     const token = localStorage.getItem('gh_pat');
@@ -2843,7 +2861,7 @@ async function archiveAndClear() {
             })
         });
 
-        // 3. Clear data (keep 'later' and 'ongoing' maybe? or just clear all 'done')
+        // 3. Clear done items; keep everything else (now/qa/review/next/later/blocked/onhold)
         UPDATE_DATA.tracks.forEach(track => {
             track.subtracks.forEach(sub => {
                 sub.items = sub.items.filter(item => item.status !== 'done');

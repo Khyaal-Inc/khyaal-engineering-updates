@@ -49,6 +49,9 @@ function renderAnalyticsView() {
             <!-- KPI Cards (Outcome Focused) -->
             ${renderKPICards()}
 
+            <!-- Sprint Progress (real data) -->
+            ${renderSprintProgress()}
+
             <!-- Velocity Chart -->
             ${renderVelocityChart(velocityData)}
 
@@ -67,57 +70,99 @@ function renderAnalyticsView() {
     }
 }
 
+function calculateCurrentSprintVelocity() {
+    // Find the active sprint
+    const sprints = UPDATE_DATA.metadata?.sprints || []
+    const activeSprint = sprints.find(s => s.status === 'active')
+    if (!activeSprint) return null
+
+    let planned = 0, completed = 0, inReview = 0, inProgress = 0
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(sub => {
+            sub.items.forEach(item => {
+                if (item.sprintId !== activeSprint.id) return
+                const pts = parseInt(item.storyPoints) || 0
+                planned += pts
+                if (item.status === 'done') completed += pts
+                else if (item.status === 'qa' || item.status === 'review') inReview += pts
+                else if (item.status === 'now') inProgress += pts
+            })
+        })
+    })
+    return { sprintId: activeSprint.id, name: activeSprint.name, planned, completed, inReview, inProgress }
+}
+
 function renderKPICards() {
-    // Calculate KPIs
-    const velocityData = UPDATE_DATA.metadata?.velocityHistory || [];
-    const completed = velocityData.filter(v => v.completed !== null);
+    // Calculate KPIs from velocity history
+    const velocityData = UPDATE_DATA.metadata?.velocityHistory || []
+    const historicalCompleted = velocityData.filter(v => v.completed !== null)
 
-    const avgVelocity = completed.length > 0
-        ? Math.round(completed.reduce((sum, v) => sum + v.completed, 0) / completed.length)
-        : 0;
+    const avgVelocity = historicalCompleted.length > 0
+        ? Math.round(historicalCompleted.reduce((sum, v) => sum + v.completed, 0) / historicalCompleted.length)
+        : 0
 
-    const lastSprint = completed[completed.length - 1];
-    const lastVelocity = lastSprint ? Math.round((lastSprint.completed / lastSprint.planned) * 100) : 0;
+    const lastSprint = historicalCompleted[historicalCompleted.length - 1]
+    const lastVelocity = lastSprint ? Math.round((lastSprint.completed / lastSprint.planned) * 100) : 0
 
-    // Count active items
-    let activeItems = 0;
-    let completedItems = 0;
+    // Count items by status bucket across all tracks
+    let activeItems = 0, completedItems = 0, inReviewItems = 0, blockedItems = 0
+    let completedPoints = 0, inReviewPoints = 0
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
-                if (item.status === 'done') completedItems++;
-                else if (item.status === 'now') activeItems++;
-            });
-        });
-    });
+                const pts = parseInt(item.storyPoints) || 0
+                if (item.status === 'done') { completedItems++; completedPoints += pts }
+                else if (item.status === 'qa' || item.status === 'review') { inReviewItems++; inReviewPoints += pts }
+                else if (item.status === 'now') activeItems++
+                else if (item.status === 'blocked') blockedItems++
+            })
+        })
+    })
+
+    // Auto-calculated current sprint progress (overlays velocity history)
+    const currentSprint = calculateCurrentSprintVelocity()
+    const currentPct = currentSprint && currentSprint.planned > 0
+        ? Math.round((currentSprint.completed / currentSprint.planned) * 100)
+        : null
+
+    const commitmentDisplay = currentPct !== null
+        ? currentPct
+        : lastVelocity
+    const commitmentLabel = currentPct !== null
+        ? `${currentSprint.name} in progress`
+        : 'last sprint delivery'
+    const commitmentColor = commitmentDisplay >= 90 ? 'text-emerald-600' : commitmentDisplay >= 70 ? 'text-amber-600' : 'text-red-500'
 
     return `
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg Strategic Velocity</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Avg Velocity</div>
                 <div class="text-3xl font-black text-slate-900">${avgVelocity}</div>
                 <div class="text-[10px] font-bold text-slate-500 mt-1 italic">story points / sprint</div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Commitment Accuracy</div>
-                <div class="text-3xl font-black ${lastVelocity >= 90 ? 'text-emerald-600' : 'text-amber-600'}">${lastVelocity}%</div>
-                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">last sprint delivery</div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Commitment</div>
+                <div class="text-3xl font-black ${commitmentColor}">${commitmentDisplay}%</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">${commitmentLabel}</div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Outcome Pulse</div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">In Review / QA</div>
+                <div class="text-3xl font-black text-violet-600">${inReviewItems}</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">${inReviewPoints} pts · needs sign-off</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Now</div>
+                    ${blockedItems > 0 ? `<span class="text-[9px] font-black text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-200">${blockedItems} blocked</span>` : ''}
+                </div>
                 <div class="text-3xl font-black text-indigo-600">${activeItems}</div>
-                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">active strategic items</div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Portfolio Completion</div>
-                <div class="text-3xl font-black text-emerald-600">${completedItems}</div>
-                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">total items delivered</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">${completedItems} total delivered · ${completedPoints} pts</div>
             </div>
         </div>
-    `;
+    `
 }
 
 function renderStrategicAnalyticsBanner() {
@@ -177,29 +222,70 @@ function renderVelocityChart(data) {
             <h2 class="text-2xl font-bold text-slate-900 mb-4">Velocity Trend</h2>
             <div id="velocity-chart" style="height: 400px;"></div>
         </div>
-    `;
+    `
 }
 
-function renderBurndownChart(sprints) {
-    const activeSprint = sprints.find(s => s.status === 'active');
+function renderSprintProgress() {
+    const currentSprint = calculateCurrentSprintVelocity()
+    const sprints = UPDATE_DATA.metadata?.sprints || []
+    const activeSprint = sprints.find(s => s.status === 'active')
 
-    if (!activeSprint) {
+    if (!currentSprint || currentSprint.planned === 0) {
         return `
-            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-center">
-                <p class="text-slate-600">No active sprint for burndown chart</p>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm text-center text-slate-500 text-sm">
+                No active sprint — assign items to a sprint to see progress here.
             </div>
-        `;
+        `
+    }
+
+    const { name, planned, completed, inReview, inProgress } = currentSprint
+    const remaining = planned - completed
+    const donePct = Math.round((completed / planned) * 100)
+    const reviewPct = Math.round((inReview / planned) * 100)
+    const activePct = Math.round((inProgress / planned) * 100)
+    const remainderPct = 100 - donePct - reviewPct - activePct
+
+    // Sprint date context
+    let dateLabel = ''
+    if (activeSprint?.endDate) {
+        const end = new Date(activeSprint.endDate)
+        const now = new Date()
+        const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
+        dateLabel = daysLeft > 0 ? `${daysLeft}d remaining` : 'Overdue'
     }
 
     return `
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Sprint Burndown - ${activeSprint.name}</h2>
-            <div id="burndown-chart" style="height: 400px;"></div>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-slate-900">Sprint Progress — ${name}</h2>
+                ${dateLabel ? `<span class="text-xs font-bold px-2 py-1 rounded-full bg-slate-100 text-slate-600">${dateLabel}</span>` : ''}
+            </div>
+
+            <!-- Segmented progress bar -->
+            <div class="w-full h-4 rounded-full bg-slate-100 overflow-hidden flex mb-3">
+                <div class="h-full bg-emerald-500 transition-all" style="width:${donePct}%" title="Done: ${completed} pts"></div>
+                <div class="h-full bg-violet-400 transition-all" style="width:${reviewPct}%" title="In Review/QA: ${inReview} pts"></div>
+                <div class="h-full bg-blue-400 transition-all" style="width:${activePct}%" title="In Progress: ${inProgress} pts"></div>
+                <div class="h-full bg-slate-200 transition-all" style="width:${Math.max(0, remainderPct)}%" title="Not started: ${remaining - inReview - inProgress} pts"></div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-4 text-xs font-semibold text-slate-600 mb-4">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>Done ${donePct}% (${completed} pts)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-violet-400 inline-block"></span>Review/QA ${reviewPct}% (${inReview} pts)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block"></span>In Progress ${activePct}% (${inProgress} pts)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block"></span>Remaining ${Math.max(0, remainderPct)}% (${Math.max(0, remaining - inReview - inProgress)} pts)</span>
+            </div>
+
+            <!-- Sprint item breakdown chart placeholder -->
+            <div id="burndown-chart" style="height: 300px;"></div>
         </div>
-    `;
+    `
 }
 
 function renderMetricsTable(data) {
+    const liveSprint = calculateCurrentSprintVelocity()
+
     return `
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h2 class="text-2xl font-bold text-slate-900 mb-4">Sprint History</h2>
@@ -209,56 +295,74 @@ function renderMetricsTable(data) {
                         <tr class="border-b border-slate-200">
                             <th class="text-left p-3 font-bold text-slate-900">Sprint</th>
                             <th class="text-right p-3 font-bold text-slate-900">Planned</th>
-                            <th class="text-right p-3 font-bold text-slate-900">Completed</th>
+                            <th class="text-right p-3 font-bold text-slate-900">Done pts</th>
+                            <th class="text-right p-3 font-bold text-slate-900">In Review</th>
                             <th class="text-right p-3 font-bold text-slate-900">Velocity %</th>
                             <th class="text-right p-3 font-bold text-slate-900">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${data.map(sprint => {
-                            const velocity = sprint.completed !== null
-                                ? Math.round((sprint.completed / sprint.planned) * 100)
-                                : null;
+                            const isActive = liveSprint && sprint.sprintId === liveSprint.sprintId
+                            const completedVal = (isActive && (sprint.completed === null || sprint.completed === undefined))
+                                ? liveSprint.completed
+                                : sprint.completed
+                            const inReviewVal = isActive ? liveSprint.inReview : null
 
-                            const statusBadge = sprint.completed === null
-                                ? '<span class="text-blue-600 font-bold">Active</span>'
+                            const velocity = completedVal !== null
+                                ? Math.round((completedVal / sprint.planned) * 100)
+                                : null
+
+                            const statusBadge = isActive
+                                ? `<span class="text-blue-600 font-bold">Active</span>`
+                                : sprint.completed === null
+                                ? '<span class="text-slate-400 font-bold">Pending</span>'
                                 : velocity >= 90
                                 ? '<span class="text-green-600 font-bold">✓ Great</span>'
                                 : velocity >= 70
                                 ? '<span class="text-amber-600 font-bold">○ Good</span>'
-                                : '<span class="text-red-600 font-bold">✗ Below</span>';
+                                : '<span class="text-red-600 font-bold">✗ Below</span>'
 
                             return `
-                                <tr class="border-b border-slate-100 hover:bg-slate-50">
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 ${isActive ? 'bg-blue-50/40' : ''}">
                                     <td class="p-3">
                                         <div class="font-semibold text-slate-900">${sprint.sprintId}</div>
-                                        <div class="text-xs text-slate-500">${sprint.dates}</div>
+                                        <div class="text-xs text-slate-500">${sprint.dates || ''}</div>
                                     </td>
                                     <td class="text-right p-3 font-semibold">${sprint.planned}</td>
-                                    <td class="text-right p-3 font-semibold">${sprint.completed !== null ? sprint.completed : '-'}</td>
+                                    <td class="text-right p-3 font-semibold text-emerald-700">${completedVal !== null ? completedVal : '-'}</td>
+                                    <td class="text-right p-3 font-semibold text-violet-600">${inReviewVal !== null ? inReviewVal : '-'}</td>
                                     <td class="text-right p-3 font-bold">${velocity !== null ? velocity + '%' : '-'}</td>
                                     <td class="text-right p-3">${statusBadge}</td>
                                 </tr>
-                            `;
+                            `
                         }).join('')}
                     </tbody>
                 </table>
             </div>
         </div>
-    `;
+    `
 }
 
 function drawVelocityChart(data) {
-    const chartData = [['Sprint', 'Planned', 'Completed', 'Forecast']];
+    const chartData = [['Sprint', 'Planned', 'Completed', 'Forecast']]
+
+    // Auto-calculate current sprint velocity from live item data
+    const currentSprint = calculateCurrentSprintVelocity()
 
     data.forEach(sprint => {
+        // If this sprint entry matches the active sprint and has no completed value yet, use live calc
+        const isActiveSprint = currentSprint && sprint.sprintId === currentSprint.sprintId
+        const completedVal = (isActiveSprint && (sprint.completed === null || sprint.completed === undefined))
+            ? currentSprint.completed
+            : sprint.completed
         chartData.push([
             sprint.sprintId,
             sprint.planned,
-            sprint.completed,
+            completedVal,
             sprint.forecast || null
-        ]);
-    });
+        ])
+    })
 
     const dataTable = google.visualization.arrayToDataTable(chartData);
 
@@ -282,36 +386,35 @@ function drawVelocityChart(data) {
 }
 
 function drawBurndownChart() {
-    // Sample burndown data (you can calculate this from actual sprint items)
-    const burndownData = [
-        ['Day', 'Ideal', 'Actual'],
-        ['Day 1', 55, 55],
-        ['Day 3', 45, 50],
-        ['Day 5', 35, 42],
-        ['Day 7', 25, 35],
-        ['Day 9', 15, 22],
-        ['Day 11', 5, 12],
-        ['Day 14', 0, 0]
-    ];
+    const chartContainer = document.getElementById('burndown-chart')
+    if (!chartContainer) return
 
-    const dataTable = google.visualization.arrayToDataTable(burndownData);
+    const currentSprint = calculateCurrentSprintVelocity()
+    if (!currentSprint || currentSprint.planned === 0) return
+
+    const { planned, completed, inReview, inProgress } = currentSprint
+    const notStarted = Math.max(0, planned - completed - inReview - inProgress)
+
+    // Pie chart showing current sprint status distribution by story points
+    const chartData = google.visualization.arrayToDataTable([
+        ['Status', 'Story Points'],
+        ['Done', completed],
+        ['In Review / QA', inReview],
+        ['In Progress', inProgress],
+        ['Not Started', notStarted]
+    ])
 
     const options = {
-        title: '',
-        hAxis: { title: 'Sprint Days' },
-        vAxis: { title: 'Remaining Points', minValue: 0 },
-        series: {
-            0: { color: '#94a3b8', lineWidth: 2, lineDashStyle: [4, 4] },
-            1: { color: '#3b82f6', lineWidth: 3 }
-        },
-        legend: { position: 'bottom' },
-        chartArea: { width: '80%', height: '70%' }
-    };
+        title: 'Sprint Story Points by Status',
+        colors: ['#10b981', '#a78bfa', '#60a5fa', '#e2e8f0'],
+        legend: { position: 'right' },
+        chartArea: { width: '60%', height: '80%' },
+        pieHole: 0.4,
+        tooltip: { text: 'value' }
+    }
 
-    const chartContainer = document.getElementById('burndown-chart');
-    if (!chartContainer) return;
-    const chart = new google.visualization.LineChart(chartContainer);
-    chart.draw(dataTable, options);
+    const chart = new google.visualization.PieChart(chartContainer)
+    chart.draw(chartData, options)
 }
 
 // Export
