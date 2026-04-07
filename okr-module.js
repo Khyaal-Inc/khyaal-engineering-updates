@@ -82,7 +82,6 @@
 // - Sprint velocity tracked via completed story points
 //
 // ==========================================
-
 // STATE
 let showExecExecutionDetails = false;
 
@@ -207,19 +206,23 @@ function renderOkrCard(okr, idx) {
     const showManagement = (typeof shouldShowManagement === 'function') ? shouldShowManagement() : false;
     const mode = (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
     const stage = getOkrLifecycleStage(progress);
+    
+    // Check if OKR is closed
+    const isClosed = ['achieved', 'missed', 'cancelled'].includes(okr.status);
 
     // Management Actions
     const cmsActions = showManagement ? `
         <div class="flex gap-1.5">
             <button onclick="openOKREdit(${idx})" class="item-action-btn edit">Edit</button>
             <button onclick="deleteOKR(${idx})" class="item-action-btn delete">Delete</button>
+            ${!isClosed ? `<button onclick="closeOKR(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close OKR</button>` : ''}
         </div>
     ` : '';
 
     const isExec = mode === 'exec';
 
     return `
-        <div class="bg-white rounded-2xl border border-slate-300 shadow-md hover:shadow-xl transition-all mb-6 overflow-hidden okr-card-hover">
+        <div class="bg-white rounded-2xl border border-slate-300 shadow-md hover:shadow-xl transition-all mb-6 overflow-hidden okr-card-hover ${isClosed ? 'lifecycle-closed' : ''}">
             <!-- Top Status Bar -->
             <div class="h-1 w-full ${progressColor} opacity-80"></div>
             
@@ -232,8 +235,10 @@ function renderOkrCard(okr, idx) {
                                 <span>${stage.icon}</span> ${stage.label} Stage
                             </div>
                             <span class="text-[10px] font-medium text-slate-500">${okr.quarter}</span>
+                            ${isClosed ? `<span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest">${okr.status}</span>` : ''}
                         </div>
                         <h2 class="text-xl font-bold text-slate-900 tracking-tight leading-tight mt-1">${okr.objective}</h2>
+                        ${okr.result ? `<div class="mt-2 p-3 bg-slate-50 border-l-4 border-slate-900 text-xs text-slate-700 italic font-medium"><span class="font-black not-italic text-slate-900">Result:</span> ${okr.result}</div>` : ''}
                         <div class="flex items-center gap-2 mt-1">
                             <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
                             <span class="text-xs font-bold text-slate-600">${okr.owner}</span>

@@ -219,6 +219,46 @@ summary::-webkit-details-marker {
 .status-pill.review  { background: var(--status-review-bg);  color: var(--status-review-text);  border: 1px solid var(--status-review-border); }
 .status-pill.onhold  { background: var(--status-onhold-bg);  color: var(--status-onhold-text);  border: 1px solid var(--status-onhold-border); }
 
+/* Lifecycle Ceremony Styling */
+.lifecycle-closed {
+    filter: grayscale(0.8);
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.lifecycle-closed select, 
+.lifecycle-closed button:not(.no-disable) {
+    display: none !important;
+}
+
+.btn-lifecycle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #0f172a;
+    color: white;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.btn-lifecycle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+    background: #1e293b;
+}
+
+.btn-lifecycle-secondary {
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+}
+
 /* Priority Colors */
 .priority-high {
     background: #fee2e2;

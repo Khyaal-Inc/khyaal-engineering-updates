@@ -1256,6 +1256,7 @@ function renderEpicsView() {
     }
 
     epics.forEach((e, idx) => {
+        const isClosed = e.status === 'completed';
         const epicItems = findItemsByMetadataId('epicId', e.id);
         const doneCount = epicItems.filter(i => i.status === 'done').length;
         const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
@@ -1267,6 +1268,7 @@ function renderEpicsView() {
             <div class="flex flex-wrap gap-1.5 ml-auto">
                 <button onclick="openEpicEdit(${idx})" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteEpic(${idx})" class="item-action-btn delete">Delete</button>
+                ${!isClosed ? `<button onclick="closeEpic(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close Epic</button>` : ''}
                 <button onclick="groomEpicTasks('${e.id}')" class="item-action-btn neutral">Groom 📚</button>
                 <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
@@ -1339,7 +1341,7 @@ function renderEpicsView() {
         const epicItemsHtml = epicItemsForCard.map(item => renderItem(item, 'epic', item.trackIndex, item.subtrackIndex, item.itemIndex)).join('');
 
         html += `
-            <div class="sprint-card epic-card p-0 mb-8 overflow-hidden rounded-3xl" id="epic-${e.id}">
+            <div class="sprint-card epic-card p-0 mb-8 overflow-hidden rounded-3xl ${isClosed ? 'lifecycle-closed' : ''}" id="epic-${e.id}">
                 <div class="epic-section-header">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-md ring-2 ring-slate-100">
@@ -1406,12 +1408,18 @@ function renderRoadmapView() {
                 <div id="roadmap-next-action-mount">
                     ${renderPrimaryStageAction('roadmap')}
                 </div>
+                ${showManagement ? `
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                    <button onclick="advanceRoadmapHorizons()" class="btn-lifecycle btn-lifecycle-secondary no-disable">
+                        <span>⏩</span> Advance Horizons
+                    </button>
+                ` : ''}
                 
                 ${showManagement ? `
                 <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
                 <button onclick="openRoadmapEdit()" 
                     class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
-                    <span class="text-lg">🛤️</span> Add Roadmap Item
+                    <span class="text-lg">Track Edit</span> Add Roadmap Item
                 </button>
                 ` : ''}
             </div>
@@ -1573,11 +1581,13 @@ function renderSprintView() {
     }
 
     sprints.forEach((s, idx) => {
+        const isClosed = s.status === 'completed';
         const sprintItems = applyExecFilter(findItemsByMetadataId('sprintId', s.id), 'sprint');
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openSprintEdit('${s.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteSprint('${s.id}')" class="item-action-btn delete">Delete</button>
+                ${!isClosed ? `<button onclick="renderSprintCloseModal('${s.id}')" class="item-action-btn lifecycle no-disable">🏁 Close Sprint</button>` : ''}
                 <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
@@ -1607,7 +1617,7 @@ function renderSprintView() {
             : '';
 
         html += `
-            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
+            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm ${isClosed ? 'lifecycle-closed' : ''}">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
@@ -1693,11 +1703,13 @@ function renderReleasesView() {
     }
 
     releases.forEach((r, idx) => {
+        const isClosed = r.status === 'completed';
         const releaseItems = applyExecFilter(findItemsByMetadataId('releasedIn', r.id), 'releases');
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openReleaseEdit('${r.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteRelease('${r.id}')" class="item-action-btn delete">Delete</button>
+                ${!isClosed ? `<button onclick="shipRelease('${r.id}')" class="item-action-btn lifecycle no-disable">🚢 Ship Release</button>` : ''}
                 <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
@@ -1705,7 +1717,7 @@ function renderReleasesView() {
         const releaseOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === r.linkedOKR);
 
         html += `
-            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm">
+            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm ${isClosed ? 'lifecycle-closed' : ''}">
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>

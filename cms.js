@@ -1724,6 +1724,268 @@ function openSprintEdit(sprintId) {
     document.body.style.overflow = 'hidden';
 }
 
+/**
+ * Lifecycle Ceremony: Sprint Close
+ * Handles rollover and velocity recording
+ */
+function renderSprintCloseModal(sprintId) {
+    const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId);
+    if (!sprint) return;
+
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : [];
+    const doneItems = items.filter(i => i.status === 'done');
+    const pendingItems = items.filter(i => i.status !== 'done');
+
+    const plannedPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+    const completedPoints = doneItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🏁</span>
+            <span class="font-black tracking-tight">Close Sprint: ${sprint.name}</span>
+        </div>
+    `;
+
+    let pendingHtml = '';
+    if (pendingItems.length > 0) {
+        pendingHtml = `
+            <div class="mt-6">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Rollover Decisions (${pendingItems.length} items)</h4>
+                <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    ${pendingItems.map(item => `
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">#${item.id} · ${item.status}</div>
+                                <div class="text-xs font-bold text-slate-700 truncate">${item.text}</div>
+                            </div>
+                            <select class="cms-input !w-auto !mb-0 text-[10px] font-black" data-item-id="${item.id}" id="rollover-${item.id}">
+                                <option value="next">Move to Next Sprint</option>
+                                <option value="backlog">Move to Backlog</option>
+                                <option value="drop">Drop from Sprint</option>
+                            </select>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        pendingHtml = `
+            <div class="mt-6 p-10 bg-emerald-50 border border-dashed border-emerald-200 rounded-3xl text-center">
+                <div class="text-3xl mb-2">🎉</div>
+                <h4 class="text-emerald-900 font-bold">Perfect Closure!</h4>
+                <p class="text-emerald-700 text-xs">All items in this sprint were completed.</p>
+            </div>
+        `;
+    }
+
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Ceremony: Sprint Review</div>
+            <div class="stage-desc">Formalize the end of the cycle. Record performance and clear the path for the next sprint.</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-slate-900 rounded-2xl text-white">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Actual Velocity</div>
+                <div class="text-2xl font-black">${completedPoints} <span class="text-xs text-slate-500 font-bold">/ ${plannedPoints} pts</span></div>
+                <div class="text-[10px] font-bold text-indigo-400 mt-1">${Math.round((completedPoints / (plannedPoints || 1)) * 100)}% Commitment Met</div>
+            </div>
+            <div class="p-4 bg-white border border-slate-200 rounded-2xl">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sprint Status</div>
+                <div class="text-lg font-black text-slate-800">Finalizing...</div>
+                <div class="text-[10px] font-bold text-slate-500 mt-1 italic">Rollover logic applied on save</div>
+            </div>
+        </div>
+
+        ${pendingHtml}
+    `;
+
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="saveSprintClose('${sprintId}')" class="cms-btn cms-btn-primary">🏁 Finish & Close Sprint</button>
+    `;
+
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+async function saveSprintClose(sprintId) {
+    const sprintIndex = UPDATE_DATA.metadata.sprints.findIndex(s => s.id === sprintId);
+    if (sprintIndex === -1) return;
+
+    const sprint = UPDATE_DATA.metadata.sprints[sprintIndex];
+    const nextSprint = UPDATE_DATA.metadata.sprints[sprintIndex + 1];
+
+    // 1. Calculate final points
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : [];
+    const doneItems = items.filter(i => i.status === 'done');
+    const plannedPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+    const completedPoints = doneItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+
+    // 2. Apply rollover resolutions
+    const resolutionSelects = document.querySelectorAll('[id^="rollover-"]');
+    resolutionSelects.forEach(select => {
+        const itemId = select.getAttribute('data-item-id');
+        const resolution = select.value;
+        const item = items.find(i => i.id === itemId);
+
+        if (item) {
+            // Update the real item in UPDATE_DATA
+            const track = UPDATE_DATA.tracks[item.trackIndex];
+            const subtrack = track.subtracks[item.subtrackIndex];
+            const realItem = subtrack.items[item.itemIndex];
+
+            if (resolution === 'next' && nextSprint) {
+                realItem.sprintId = nextSprint.id;
+            } else if (resolution === 'backlog') {
+                realItem.sprintId = '';
+                realItem.status = 'later';
+            } else if (resolution === 'drop') {
+                realItem.sprintId = '';
+            }
+        }
+    });
+
+    // 3. Record Velocity History
+    if (!UPDATE_DATA.metadata.velocityHistory) UPDATE_DATA.metadata.velocityHistory = [];
+    
+    // Check if record already exists, if so update it, else push
+    const existingHistoryIdx = UPDATE_DATA.metadata.velocityHistory.findIndex(h => h.sprintId === sprintId);
+    const historyRecord = {
+        sprintId: sprintId,
+        planned: plannedPoints,
+        completed: completedPoints,
+        velocity: Math.round((completedPoints / (plannedPoints || 1)) * 100),
+        dates: `${sprint.startDate} - ${sprint.endDate}`
+    };
+
+    if (existingHistoryIdx !== -1) {
+        UPDATE_DATA.metadata.velocityHistory[existingHistoryIdx] = historyRecord;
+    } else {
+        UPDATE_DATA.metadata.velocityHistory.push(historyRecord);
+    }
+
+    // 4. Update Sprint Status
+    UPDATE_DATA.metadata.sprints[sprintIndex].status = 'completed';
+    UPDATE_DATA.metadata.sprints[sprintIndex].completedPoints = completedPoints;
+
+    // 5. Notify and Save
+    if (typeof showToast === 'function') showToast(`Sprint ${sprint.name} closed successfully.`);
+    else alert(`Sprint ${sprint.name} closed successfully.`);
+
+    closeCmsModal();
+    if (typeof renderSprintView === 'function') renderSprintView();
+    if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
+}
+
+/**
+ * Lifecycle Ceremony: OKR Close
+ * Formalizes the end of a quarterly strategic cycle
+ */
+function closeOKR(idx) {
+    const okr = UPDATE_DATA.metadata.okrs[idx];
+    if (!okr) return;
+
+    const result = prompt(`Close OKR: "${okr.objective}"\n\nEnter Result (achieved / missed / cancelled):`, 'achieved');
+    if (!result) return;
+
+    UPDATE_DATA.metadata.okrs[idx].status = 'closed';
+    UPDATE_DATA.metadata.okrs[idx].result = result.toLowerCase();
+
+    if (typeof showToast === 'function') showToast(`OKR marked as ${result}`);
+    if (typeof renderOkrView === 'function') renderOkrView();
+}
+
+/**
+ * Lifecycle Ceremony: Epic Close
+ * Cleans up tactical debt and completes a strategic initiative
+ */
+function closeEpic(idx) {
+    const epic = UPDATE_DATA.metadata.epics[idx];
+    if (!epic) return;
+
+    if (!confirm(`Are you sure you want to close Epic: "${epic.name}"?\n\nAny incomplete tasks will be moved to the Backlog.`)) return;
+
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
+    const pendingItems = items.filter(i => i.status !== 'done');
+
+    // Move pending to backlog
+    pendingItems.forEach(item => {
+        const track = UPDATE_DATA.tracks[item.trackIndex];
+        const subtrack = track.subtracks[item.subtrackIndex];
+        const realItem = subtrack.items[item.itemIndex];
+        
+        realItem.epicId = '';
+        realItem.status = 'later';
+    });
+
+    UPDATE_DATA.metadata.epics[idx].status = 'completed';
+
+    if (typeof showToast === 'function') showToast(`Epic ${epic.name} closed. ${pendingItems.length} items moved to backlog.`);
+    if (typeof renderEpicsView === 'function') renderEpicsView();
+}
+
+/**
+ * Lifecycle Ceremony: Ship Release
+ * Marks a release as completed and rolls over missed items
+ */
+function shipRelease(releaseId) {
+    const releaseIdx = UPDATE_DATA.metadata.releases.findIndex(r => r.id === releaseId);
+    if (releaseIdx === -1) return;
+
+    const release = UPDATE_DATA.metadata.releases[releaseIdx];
+    const nextRelease = UPDATE_DATA.metadata.releases.find((r, i) => i > releaseIdx && r.status !== 'completed');
+
+    if (!confirm(`🚀 Ship Release: "${release.name}"?\n\nIncomplete items will be rolled over.`)) return;
+
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('releasedIn', releaseId) : [];
+    const pendingItems = items.filter(i => i.status !== 'done');
+
+    // Move pending to next release
+    pendingItems.forEach(item => {
+        const track = UPDATE_DATA.tracks[item.trackIndex];
+        const subtrack = track.subtracks[item.subtrackIndex];
+        const realItem = subtrack.items[item.itemIndex];
+        
+        if (nextRelease) {
+            realItem.releasedIn = nextRelease.id;
+        } else {
+            realItem.releasedIn = ''; // Back to unassigned if no next release
+        }
+    });
+
+    UPDATE_DATA.metadata.releases[releaseIdx].status = 'completed';
+
+    if (typeof showToast === 'function') showToast(`Release ${release.name} Shipped! 📦`);
+    if (typeof renderReleasesView === 'function') renderReleasesView();
+}
+
+/**
+ * Lifecycle Ceremony: Advance Roadmap Horizons
+ * Bulk nudge of strategic initiatives across planning horizons
+ */
+function advanceRoadmapHorizons() {
+    if (!confirm("⚠️ Advance Roadmap Horizons?\n\nThis will shift all items:\n- Next (3M) → Now (1M)\n- Later (6M) → Next (3M)\n\nItems currently in 'Now' will remain there but should be reviewed for backlog/archive.")) return;
+
+    let shiftCount = 0;
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.planningHorizon === '3M') {
+                    item.planningHorizon = '1M';
+                    shiftCount++;
+                } else if (item.planningHorizon === '6M') {
+                    item.planningHorizon = '3M';
+                    shiftCount++;
+                }
+            });
+        });
+    });
+
+    if (typeof showToast === 'function') showToast(`Roadmap advanced! ${shiftCount} items shifted horizons.`);
+    if (typeof renderRoadmapView === 'function') renderRoadmapView();
+}
+
 function openReleaseEdit(releaseId) {
     const release = releaseId ? UPDATE_DATA.metadata.releases.find(r => r.id === releaseId) : { name: '', targetDate: '', goal: '', linkedOKR: '' };
     editContext = { type: 'release', releaseId };
