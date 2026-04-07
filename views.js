@@ -533,7 +533,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     const tags = renderTagPills(item.tags);
     const blockerStrip = item.blocker ? `<div class="blocker-strip"><span class="blocker-badge">&#128274; Blocker</span>${item.blockerNote || 'This item is flagged as a blocker'}</div>` : '';
 
-    const storyPointsHTML = item.storyPoints ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[9px] border border-slate-200 shadow-sm" title="Story Points">${item.storyPoints} SP</span>` : '';
+    const storyPointsHTML = item.storyPoints ? `<span class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-xs border border-slate-200" title="Story Points">${item.storyPoints} SP</span>` : '';
     const displayText = highlightSearch(item.text);
     const effectiveNote = item.note || '';
 
@@ -555,11 +555,11 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
             }
             if (showStrategyInline) {
                 strategicContext = `
-                    <div class="flex items-center gap-2 mt-2 mb-1">
-                        <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[9px] font-black border border-indigo-100 flex items-center gap-1 shadow-sm" title="Strategic Epic">
+                    <div class="flex items-center gap-2 mt-1.5 mb-0.5">
+                        <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-medium border border-indigo-100 flex items-center gap-1" title="Strategic Epic">
                             🚀 ${epic.name}
                         </span>
-                        ${okrText ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100 flex items-center gap-1 shadow-sm" title="Aligned OKR">${okrText}</span>` : ''}
+                        ${okrText ? `<span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-100 flex items-center gap-1" title="Aligned OKR">${okrText}</span>` : ''}
                     </div>
                 `;
             }
@@ -645,16 +645,16 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
         if (linkedEpic && linkedEpic.linkedOKR) {
             const okrIndex = (UPDATE_DATA.metadata?.okrs || []).findIndex(o => o.id === linkedEpic.linkedOKR);
             if (okrIndex >= 0) {
-                okrAction = `<button onclick="event.stopPropagation(); if(typeof openOKREdit==='function') openOKREdit(${okrIndex})" class="send-to-backlog-btn" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0;">🎯 Update OKR</button>`;
+                okrAction = `<button onclick="event.stopPropagation(); if(typeof openOKREdit==='function') openOKREdit(${okrIndex})" class="item-action-btn okr">🎯 OKR</button>`;
             }
         }
 
         cmsControls = `
-            <div class="flex items-center gap-3 mt-1.5 flex-wrap ${isRoadmap ? 'opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-300' : ''}">
-                <span onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="text-[11px] text-blue-600 hover:text-blue-800 cursor-pointer font-bold underline underline-offset-2">Edit</span>
-                <span onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="text-[11px] text-red-600 hover:text-red-800 cursor-pointer font-bold underline underline-offset-2">Delete</span>
-                <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn">→ Backlog</button>
-                <button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="send-to-backlog-btn ${item.blocker ? 'text-red-600 border-red-200 bg-red-50' : ''}">${item.blocker ? '&#128275; Unblock' : '&#128274; Flag Blocker'}</button>
+            <div class="cms-controls-row flex items-center gap-1.5 flex-wrap">
+                <button onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="item-action-btn edit">Edit</button>
+                <button onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn delete">Delete</button>
+                <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>
+                <button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>
                 ${okrAction}
             </div>
         `;
@@ -685,6 +685,26 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     const readinessBadgeHTML = (() => { try { return typeof getReadinessBadge === 'function' ? getReadinessBadge(item) : ''; } catch(e) { return ''; } })();
     const jumpLinksHTML = (() => { try { return typeof renderJumpLinks === 'function' ? renderJumpLinks(item, viewPrefix) : ''; } catch(e) { return ''; } })();
 
+    // Tier 3 expandable content (detail on demand)
+    const hasExpandable = !isRoadmap && (usecase || metricRowHTML || effortImpactHTML || acHTML || roiScoreHTML || lifecycleRailHTML || readinessBadgeHTML || jumpLinksHTML)
+    const expandId = `${viewPrefix}-expand-${item.id}`
+    const toggleId = `${viewPrefix}-expand-toggle-${item.id}`
+    const expandableContent = hasExpandable ? `
+        <div id="${expandId}" class="item-expand hidden">
+            ${usecase ? `<div class="mb-2 text-sm text-slate-600">${usecase}</div>` : ''}
+            ${metricRowHTML}
+            ${effortImpactHTML}
+            ${acHTML}
+            ${roiScoreHTML ? `<div class="mt-1 flex">${roiScoreHTML}</div>` : ''}
+            ${lifecycleRailHTML || readinessBadgeHTML || jumpLinksHTML ? `
+            <div class="item-meta-row mt-2">
+                ${lifecycleRailHTML}
+                ${readinessBadgeHTML}
+                ${jumpLinksHTML}
+            </div>` : ''}
+        </div>
+    ` : ''
+
     return `
         ${blockerStrip}
         <div class="item-row ${status.bucket} ${mode}-perspective"
@@ -696,39 +716,32 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                 <div class="flex justify-between items-start w-full gap-4">
                     <div class="flex items-start gap-4 flex-1">
                         <div class="flex flex-col gap-1 items-center flex-shrink-0 mt-1">
-                            <span class="status-pill ${status.class} text-[10px] py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
-                            <span class="status-pill ${priorityInfo.class} text-[9px] py-0 px-1 opacity-80 uppercase font-black tracking-tighter w-full text-center">${priorityLabel}</span>
+                            <span class="status-pill ${status.class} py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
+                            <span class="status-pill ${priorityInfo.class} text-[10px] py-0 px-1 opacity-70 w-full text-center">${priorityLabel}</span>
                             ${personaHTML}
                         </div>
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                             <div class="info-wrapper mb-1">
-                                <span class="info-text flex items-center">${displayText}${due}${storyPointsHTML}</span>
+                                <span class="info-text flex items-center flex-wrap gap-1">${displayText}${due}${storyPointsHTML}</span>
                                 <button class="info-btn" aria-label="More information" onclick="event.stopPropagation(); document.getElementById('${viewPrefix}-tooltip-${item.id}').classList.toggle('visible')">i</button>
                                 ${tooltipHTML.replace('class="tooltip-content"', `id="${viewPrefix}-tooltip-${item.id}" class="tooltip-content"`)}
                             </div>
-                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <div class="flex flex-wrap items-center gap-1.5 mb-1">
                                 ${strategicContext}
                                 ${!isRoadmap ? `
-                                    ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints || []).find(s => s.id === item.sprintId)?.name || item.sprintId}</span>` : ''}
-                                    ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}</span>` : ''}
+                                    ${item.sprintId ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">🏃 ${(UPDATE_DATA.metadata.sprints || []).find(s => s.id === item.sprintId)?.name || item.sprintId}</span>` : ''}
+                                    ${item.releasedIn ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-100">📦 ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}</span>` : ''}
                                 ` : ''}
                                 ${mode !== 'exec' && tags ? `<div class="flex flex-wrap gap-1">${tags}</div>` : ''}
                             </div>
-                            ${!isRoadmap ? `
-                                <div class="mb-2">${usecase}</div>
-                                ${metricRowHTML}
-                                ${effortImpactHTML}
-                                ${acHTML}
-                            ` : ''}
-                            ${lifecycleRailHTML || readinessBadgeHTML || jumpLinksHTML ? `
-                            <div class="item-meta-row">
-                                ${lifecycleRailHTML}
-                                ${readinessBadgeHTML}
-                                ${jumpLinksHTML}
-                            </div>` : ''}
-                            <div class="flex flex-wrap items-center gap-2 mt-2">
-                                <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-bold px-2 py-1 ${isRoadmap ? 'bg-slate-50 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} rounded transition-all">💬 ${(item.comments || []).length} Comments</button>
-                                ${cmsControls ? `<div>${cmsControls}</div>` : ''}
+                            ${expandableContent}
+                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                ${hasExpandable ? `
+                                <button id="${toggleId}" class="item-expand-toggle" onclick="event.stopPropagation(); const el=document.getElementById('${expandId}'); const me=document.getElementById('${toggleId}'); el.classList.toggle('hidden'); me.classList.toggle('open');">
+                                    <span class="chevron">▾</span> Details
+                                </button>` : ''}
+                                <button id="${viewPrefix}-comment-btn-${item.id}" onclick="event.stopPropagation(); toggleComments(${trackIndex}, ${subtrackIndex}, ${itemIndex}, '${item.id}', '${viewPrefix}')" class="text-[11px] font-medium px-2 py-0.5 ${isRoadmap ? 'bg-slate-50 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} rounded transition-all">💬 ${(item.comments || []).length}</button>
+                                ${cmsControls}
                             </div>
 
                             ${isGrooming ? `
@@ -789,23 +802,18 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             </div>
                         </div>
                     </div>
-                    <div class="flex-shrink-0 flex flex-col items-end justify-between min-w-[110px] py-0.5">
+                    <div class="flex-shrink-0 flex flex-col items-end gap-2 py-0.5">
                         <div class="flex flex-wrap justify-end gap-1">
                             ${renderContributors(item.contributors)}
                         </div>
-                        <div class="flex flex-col items-end gap-2 mt-auto">
-                            ${roiScoreHTML}
-                            ${item.mediaUrl ? `
-                                <div class="group relative inline-block">
-                                    <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()" class="flex items-center justify-center h-8 px-3 rounded bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm text-xs font-bold text-slate-600 truncate max-w-[120px]">
-                                        ${item.mediaUrl.match(/\\.(jpeg|jpg|gif|png|webp)$/i) ? `
-                                        <img src="${item.mediaUrl}" class="h-10 w-16 object-cover rounded shadow-sm cursor-zoom-in hover:scale-105 transition-transform" 
-                                             onerror="this.style.display='none'; this.parentElement.innerHTML='🔗 Link'; this.parentElement.className='flex items-center justify-center h-8 px-3 rounded bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm text-xs font-bold text-slate-600 truncate max-w-[120px]';">
-                                        ` : `🔗 Link`}
-                                    </a>
-                                </div>
-                            ` : ''}
-                        </div>
+                        ${item.mediaUrl ? `
+                            <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()" class="flex items-center justify-center h-7 px-2 rounded bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-xs font-medium text-slate-500 truncate max-w-[100px]">
+                                ${item.mediaUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? `
+                                <img src="${item.mediaUrl}" class="h-8 w-12 object-cover rounded cursor-zoom-in hover:scale-105 transition-transform"
+                                     onerror="this.style.display='none'; this.parentElement.textContent='🔗 Link';">
+                                ` : `🔗 Link`}
+                            </a>
+                        ` : ''}
                     </div>
                 </div>
                 ${(() => { try { return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''; } catch(e) { return ''; } })()}

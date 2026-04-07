@@ -248,16 +248,16 @@ summary::-webkit-details-marker {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Track Cards — borderless, shadow-elevated, stage-threaded */
+/* Track Cards — bordered, stage-threaded */
 .track-card {
-    background: var(--surface-inset);
+    background: rgba(255,255,255,0.6);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    border: none;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
     border-left: 4px solid transparent; /* stage color set via data-stage or JS */
     overflow: visible;
-    margin-bottom: 1rem;
-    transition: box-shadow var(--transition-base);
+    margin-bottom: 1.5rem;
+    transition: border-color var(--transition-base);
 }
 
 /* Fix for rounded corners when using overflow: visible */
@@ -401,8 +401,7 @@ summary::-webkit-details-marker {
 
 .item-row:hover {
     background: var(--surface-card-hover);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .item-row:last-child {
@@ -454,8 +453,8 @@ summary::-webkit-details-marker {
 }
 
 .status-pill {
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     padding: 0.2rem 0.625rem;
@@ -975,8 +974,8 @@ summary::-webkit-details-marker {
 }
 
 .field-label {
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #64748b;
@@ -1108,7 +1107,7 @@ summary::-webkit-details-marker {
     border-radius: 10px;
     margin-bottom: 14px;
     font-size: 0.6rem;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
 }
@@ -1618,7 +1617,7 @@ summary::-webkit-details-marker {
     background: #ef4444;
     color: white;
     font-size: 0.6rem;
-    font-weight: 900;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     padding: 0.15rem 0.5rem;
@@ -1629,7 +1628,7 @@ summary::-webkit-details-marker {
 /* Tag / Label pills */
 .tag-pill {
     font-size: 0.6rem;
-    font-weight: 800;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0.15rem 0.5rem;
@@ -1788,7 +1787,7 @@ summary::-webkit-details-marker {
     margin-bottom: 3px;
 }
 .exec-blocker-meta {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: #64748b;
     display: flex;
     flex-wrap: wrap;
@@ -1819,7 +1818,7 @@ summary::-webkit-details-marker {
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     padding: 4px 8px;
     margin: -4px -4px 8px -4px;
     background: #f0fdf4;
@@ -1852,7 +1851,7 @@ summary::-webkit-details-marker {
     background: #f8fafc;
 }
 .backlog-sprint-badge {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 20px;
@@ -1923,6 +1922,57 @@ summary::-webkit-details-marker {
 .send-to-backlog-btn:hover {
     background: #f3f4f6;
     color: #374151;
+}
+
+/* Item expand/collapse */
+.item-expand { margin-top: 8px; }
+.item-expand-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #94a3b8;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    transition: color 0.15s;
+}
+.item-expand-toggle:hover { color: #64748b; }
+.item-expand-toggle .chevron { transition: transform 0.2s ease; display: inline-block; }
+.item-expand-toggle.open .chevron { transform: rotate(180deg); }
+
+/* Unified item quick-action buttons */
+.item-action-btn {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+.item-action-btn.edit   { color: #3b82f6; }
+.item-action-btn.edit:hover   { background: #eff6ff; border-color: #bfdbfe; }
+.item-action-btn.delete { color: #ef4444; }
+.item-action-btn.delete:hover { background: #fef2f2; border-color: #fecaca; }
+.item-action-btn.neutral { color: #64748b; }
+.item-action-btn.neutral:hover { background: #f1f5f9; border-color: #e2e8f0; }
+.item-action-btn.active { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+.item-action-btn.okr   { color: #047857; }
+.item-action-btn.okr:hover   { background: #ecfdf5; border-color: #a7f3d0; }
+
+/* CMS controls fade in on hover */
+.cms-controls-row {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.item-row:hover .cms-controls-row {
+    opacity: 1;
 }
 
 /* Contributor tag-input */
@@ -2239,8 +2289,8 @@ summary::-webkit-details-marker {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 9999px;
     padding: 2px 10px;
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.06em;
 }
 
@@ -2301,7 +2351,7 @@ summary::-webkit-details-marker {
 }
 
 .comment-meta {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: #94a3b8;
     margin-top: 3px;
 }
@@ -2354,8 +2404,8 @@ summary::-webkit-details-marker {
     color: #7e22ce;
     border: 1px solid #e9d5ff;
     border-radius: 9999px;
-    font-size: 0.62rem;
-    font-weight: 900;
+    font-size: 0.7rem;
+    font-weight: 600;
     padding: 1px 8px;
     margin-left: 4px;
     vertical-align: middle;
@@ -2606,8 +2656,8 @@ summary::-webkit-details-marker {
 /* Horizon pill badges on task items */
 .horizon-pill {
     display: inline-block;
-    font-size: 9px;
-    font-weight: 900;
+    font-size: 10px;
+    font-weight: 700;
     letter-spacing: 0.08em;
     padding: 1px 6px;
     border-radius: 999px;
@@ -2660,7 +2710,7 @@ summary::-webkit-details-marker {
     padding: 4px 12px;
     border-radius: 8px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
     border: 1.5px solid transparent;
@@ -2757,7 +2807,7 @@ summary::-webkit-details-marker {
 
 .horizon-badge {
     font-size: 10px;
-    font-weight: 900;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 3px 10px;
@@ -3342,7 +3392,7 @@ summary::-webkit-details-marker {
     text-align: center;
     padding: 8px 12px;
     font-size: 10px;
-    font-weight: 800;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #64748b;

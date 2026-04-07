@@ -8,11 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=04072">
+    <link rel="stylesheet" href="styles.css?v=04073">
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
-    <div class="p-3 md:p-6">
+    <div class="p-3 md:px-8 md:py-6">
 
         <div id="auth-loading">
             <div class="loader"></div>
@@ -95,7 +95,7 @@
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
         <!-- CORE SCRIPTS -->
         <script src="core.js?v=04071"></script>
-        <script src="views.js?v=04072"></script>
+        <script src="views.js?v=04073"></script>
         <script src="cms.js?v=04071"></script>
         <script src="app.js?v=04071"></script>
         <script>
@@ -113,7 +113,7 @@
         </script>
 
         <!-- NEW FEATURE MODULES -->
-        <script src="modes.js?v=04071"></script>
+        <script src="modes.js?v=04073"></script>
         <script src="wizard.js?v=04071"></script>
         <script src="workflow-nav.js?v=04071"></script>
         <script src="dependency-view.js?v=04071"></script>
@@ -171,7 +171,7 @@
 
                     <!-- Contextual Breadcrumb (Injected by workflow-nav.js) -->
                     <div id="breadcrumb-nav"
-                        class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
+                        class="flex items-center gap-2 text-xs font-medium text-slate-400">
                         <!-- Discovery / OKRs -->
                     </div>
                 </div>
@@ -267,7 +267,7 @@
 
             <!-- Floating Legend (HUD) -->
             <div
-                class="fixed bottom-6 right-6 z-[100] flex gap-3 flex-wrap text-[10px] font-black uppercase tracking-widest bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-2xl">
+                class="fixed bottom-6 right-6 z-[100] flex gap-3 flex-wrap text-xs font-medium bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-2xl">
                 <div class="flex items-center gap-1.5">
                     <div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-slate-500">Done</span>
                 </div>

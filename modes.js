@@ -193,15 +193,12 @@ function renderModeSwitcher() {
                 class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border ${colorClass} transition-all hover:bg-white hover:shadow-sm active:scale-95 group relative">
             
             <div class="flex items-center gap-2">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-20"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
-                </span>
-                <span class="text-[10px] font-black uppercase tracking-widest opacity-40">Perspective:</span>
+                <span class="inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
+                <span class="text-[10px] font-semibold opacity-50">Perspective:</span>
             </div>
 
             <div class="flex items-center gap-2">
-                <span class="text-xs font-black uppercase tracking-widest">${config.name}</span>
+                <span class="text-xs font-semibold">${config.name}</span>
                 <span class="text-[8px] opacity-50 group-hover:opacity-100 transition-opacity translate-y-[0.5px]">▾</span>
             </div>
         </button>
