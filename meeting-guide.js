@@ -128,6 +128,12 @@ const MEETING_SCENARIOS = {
                 detectComplete: () => window.currentActiveView === 'releases',
             },
             {
+                label: 'Confirm previous sprint is CLOSED',
+                detail: 'If the previous sprint is still "active", close it now using the "🏁 Close Sprint" ceremony. This ensures velocity is recorded and items are rolled over.',
+                action: { label: '→ Open Sprint', fn: () => switchView('sprint') },
+                detectComplete: () => false,
+            },
+            {
                 label: 'Lock sprint — brief devs',
                 detail: 'Everyone reviews their tasks. Scope is now locked. Dev: ask PM about any unclear AC now.',
                 action: { label: '→ Open Kanban', fn: () => switchView('kanban') },
@@ -141,8 +147,8 @@ const MEETING_SCENARIOS = {
         meta: { cadence: 'Quarterly · Half day', who: 'PM + Leadership', view: 'okr' },
         steps: [
             {
-                label: 'Review last quarter\'s OKRs',
-                detail: 'What did we achieve? Score each Key Result 0–100%. Be honest — this feeds the next cycle.',
+                label: 'Archive & Close last quarter\'s OKRs',
+                detail: 'Formalize the outcomes of the previous cycle. Use the "🏁 Close OKR" ceremony to score each Objective and record final results.',
                 action: { label: '→ OKR View', fn: () => switchView('okr') },
                 detectComplete: () => window.currentActiveView === 'okr',
             },
@@ -202,8 +208,8 @@ const MEETING_SCENARIOS = {
                 detectComplete: () => window.currentActiveView === 'releases',
             },
             {
-                label: 'Publish the release',
-                detail: 'Set the publish date. Click "Publish Release" — this triggers analytics update.',
+                label: 'Execute Ship Release Ceremony',
+                detail: 'Finalize the production milestone. Use the "🚢 Ship Release" button. This formalizes the version and manages any missed item rollovers.',
                 action: null,
                 detectComplete: () => false,
             },
@@ -335,10 +341,10 @@ const MEETING_SCENARIOS = {
                 detectComplete: () => false,
             },
             {
-                label: 'Update OKR progress',
-                detail: 'Based on this sprint\'s output, update Key Result current values.',
-                action: { label: '→ OKRs', fn: () => switchView('okr') },
-                detectComplete: () => window.currentActiveView === 'okr',
+                label: 'Execute Sprint Close Ceremony',
+                detail: 'The final ritual. Click "🏁 Close Sprint" on the active sprint card. This records velocity history and guides you through rolling over or dropping un-done items.',
+                action: { label: '→ Open Sprint', fn: () => switchView('sprint') },
+                detectComplete: () => false,
             },
             {
                 label: 'Feed learnings to next planning',

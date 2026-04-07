@@ -11,7 +11,7 @@ index.html          → Shell, auth gatekeeper, view containers, script tags (?v
 app.js              → UPDATE_DATA global, renderDashboard(), switchView(), normalizeData()
 core.js             → statusConfig, contributorColors, search/filter helpers, blocker strip
 views.js            → All primary view renderers (Track, Backlog, Sprint, Status, etc.)
-cms.js              → CRUD modal, 4-pillar form, GitHub sync, metadata editors
+cms.js              → CRUD modal, 4-pillar form, GitHub sync, lifecycle ceremony engine
 modes.js            → Persona system (PM/Dev/Exec), mode filtering, navigation
 okr-module.js       → OKR view and progress calculation
 kanban-view.js      → Drag-and-drop Kanban board
@@ -259,6 +259,45 @@ Vision (metadata.vision)                     — Multi-year north star        [V
                            └─ Releases      — Created in Definition,        [Review/Ship stage]
                                               published after Delivery
 ```
+
+---
+
+## Engineering Lifecycle Ceremonies
+
+The platform acts as a process coach, providing guided "Close Ceremonies" across all strategic and tactical cycles. These are available in **PM Mode** (?cms=true).
+
+### 1. Sprint Close (`views.js`, `cms.js`)
+Triggered via **"🏁 Close Sprint"** on an active sprint card.
+- **Guided Review**: Review items that were Done vs. Not Done.
+- **Rollover Logic**: Move items to Next Sprint, Backlog, or Drop them.
+- **Velocity Auto-Sync**: Records final completed story points into `metadata.velocityHistory`.
+
+### 2. OKR Close (`okr-module.js`, `cms.js`)
+Triggered via **"🏁 Close OKR"** on an active OKR card.
+- **Formal Outcome**: Set status to `achieved`, `missed`, or `cancelled`.
+- **Final Result**: Document the impact/learnings in a persistent result note.
+
+### 3. Epic Close (`views.js`, `cms.js`)
+Triggered via **"🏁 Close Epic"** on an in-progress epic card.
+- **Tactical Cleanup**: Marks epic as `completed` and rolls all incomplete tasks back to the team **Backlog**.
+
+### 4. Release Ship (`views.js`, `cms.js`)
+Triggered via **"🚢 Ship Release"** on a release card.
+- **Production Milestone**: Finalizes the version and moves any missed items to the next scheduled release.
+
+### 5. Roadmap Advance (`views.js`, `cms.js`)
+Triggered via **"⏩ Advance Horizons"** in the Roadmap management ribbon.
+- **Strategic Nudge**: Bulk shifts all roadmap items across planning horizons (3M → 1M, 6M → 3M) as quarters progress.
+
+---
+
+## Historical Lens (The Visual System)
+
+When a cycle is formally closed, the platform applies a **Historical Lens** to those entities using the `.lifecycle-closed` CSS class.
+
+- **High-Fidelity Grayscale**: Uses a `grayscale(0.8)` filter to distinguish past work from live execution.
+- **Reduced Opacity**: `opacity(0.65)` minimizes visual noise for executives reviewing historical data.
+- **Interactive Guards**: Prevents accidental data mutations on closed items while keeping them accessible for retrospects.
 
 ---
 
