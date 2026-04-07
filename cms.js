@@ -47,8 +47,13 @@ function updateTabCounts() {
  */
 function switchView(viewId) {
     if (window.isActionLockActive) return; // Ignore view switches while an action is in progress
-    // 1. Close any open modals
-    closeCmsModal();
+    
+    // 1. Close any open modals UNLESS we just showed a ceremony success screen
+    if (window._skipModalCloseOnce) {
+        window._skipModalCloseOnce = false; // Reset for next time
+    } else {
+        closeCmsModal();
+    }
 
     // 2. Hide all views
     document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
@@ -1900,12 +1905,15 @@ async function saveSprintClose(sprintId) {
         velocityResult: Math.round((completedPoints / (plannedPoints || 1)) * 100)
     };
 
+    // ENSURE MODAL STAYS OPEN for the summary screen
+    window._skipModalCloseOnce = true;
+
     renderCeremonySuccess('sprint', {
         title: `Sprint ${sprint.name} Closed`,
         description: `Cycle successfully completed with ${summary.velocityResult}% commitment hit.`,
         details: [
             { label: 'Moved to Next Sprint', count: summary.movedToNext, icon: '🏃' },
-            { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' },
+            { label: 'Physically Moved to Backlog Subtrack', count: summary.movedToBacklog, icon: '📚' },
             { label: 'Dropped (Unassigned)', count: summary.dropped, icon: '🗑️' }
         ],
         actions: [
@@ -1934,7 +1942,28 @@ function closeOKR(idx) {
     UPDATE_DATA.metadata.okrs[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    if (typeof showToast === 'function') showToast(`OKR marked as ${result}`);
+    
+    // Counts for summary
+    const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id);
+    const completedEpics = linkedEpics.filter(e => e.status === 'completed').length;
+
+    // ENSURE MODAL STAYS OPEN
+    window._skipModalCloseOnce = true;
+
+    renderCeremonySuccess('okr', {
+        title: `Quarterly OKR Closed`,
+        description: `Strategic objective marked as ${result}. Mission impact recorded.`,
+        details: [
+            { label: 'Total Linked Epics', count: linkedEpics.length, icon: '🚀' },
+            { label: 'Completed Initiatives', count: completedEpics, icon: '✅' },
+            { label: 'Result Type', count: result.toUpperCase(), icon: '🎯' }
+        ],
+        actions: [
+            { label: 'Review Analytics', fn: () => switchView('analytics') },
+            { label: 'View OKR List', fn: () => switchView('okr') }
+        ]
+    });
+
     if (typeof renderOkrView === 'function') renderOkrView();
 }
 
@@ -1973,11 +2002,14 @@ function closeEpic(idx) {
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     
+    // ENSURE MODAL STAYS OPEN
+    window._skipModalCloseOnce = true;
+
     renderCeremonySuccess('epic', {
         title: `Epic Closed: ${epic.name}`,
         description: 'Strategic initiative successfully archived. Cleanup complete.',
         details: [
-            { label: 'Items Moved to Backlog', count: sortedPending.length, icon: '📚' }
+            { label: 'Tasks Physically Moved to Backlog', count: sortedPending.length, icon: '📚' }
         ],
         actions: [
             { label: 'View Backlog', fn: () => switchView('backlog') },
@@ -2065,6 +2097,10 @@ function renderCeremonySuccess(type, config) {
             </button>
         </div>
     `;
+
+    // ENSURE MODAL IS VISIBLE (especially for Epic/OKR/Release closures that start without a modal)
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 /**
@@ -2103,12 +2139,15 @@ function shipRelease(releaseId) {
     UPDATE_DATA.metadata.releases[releaseIdx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    
+
+    // ENSURE MODAL STAYS OPEN
+    window._skipModalCloseOnce = true;
+
     renderCeremonySuccess('release', {
         title: `Release Shipped: ${release.name}`,
         description: 'Production milestone achieved. Milestone metrics recorded.',
         details: [
-            { label: 'Items Rolled to Next Release', count: pendingItems.length, icon: '📦' }
+            { label: 'Rolled to Next Placement', count: pendingItems.length, icon: '📦' }
         ],
         actions: [
             { label: 'Manage Releases', fn: () => switchView('releases') },
