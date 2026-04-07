@@ -1891,10 +1891,29 @@ async function saveSprintClose(sprintId) {
     // 5. Notify and Save
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     
-    if (typeof showToast === 'function') showToast(`Sprint ${sprint.name} closed successfully.`);
-    else alert(`Sprint ${sprint.name} closed successfully.`);
+    // Counts for summary
+    const summary = {
+        movedToNext: movements.filter(m => m.resolution === 'next').length,
+        movedToBacklog: movements.filter(m => m.resolution === 'backlog').length,
+        dropped: movements.filter(m => m.resolution === 'drop').length,
+        totalResolved: movements.length,
+        velocityResult: Math.round((completedPoints / (plannedPoints || 1)) * 100)
+    };
 
-    closeCmsModal();
+    renderCeremonySuccess('sprint', {
+        title: `Sprint ${sprint.name} Closed`,
+        description: `Cycle successfully completed with ${summary.velocityResult}% commitment hit.`,
+        details: [
+            { label: 'Moved to Next Sprint', count: summary.movedToNext, icon: '🏃' },
+            { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' },
+            { label: 'Dropped (Unassigned)', count: summary.dropped, icon: '🗑️' }
+        ],
+        actions: [
+            { label: 'View Backlog', fn: () => switchView('backlog') },
+            { label: 'Go to Kanban', fn: () => switchView('kanban') }
+        ]
+    });
+
     if (typeof renderSprintView === 'function') renderSprintView();
     if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
 }
@@ -1953,7 +1972,19 @@ function closeEpic(idx) {
     UPDATE_DATA.metadata.epics[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    if (typeof showToast === 'function') showToast(`Epic ${epic.name} closed. ${pendingItems.length} items moved to backlog.`);
+    
+    renderCeremonySuccess('epic', {
+        title: `Epic Closed: ${epic.name}`,
+        description: 'Strategic initiative successfully archived. Cleanup complete.',
+        details: [
+            { label: 'Items Moved to Backlog', count: sortedPending.length, icon: '📚' }
+        ],
+        actions: [
+            { label: 'View Backlog', fn: () => switchView('backlog') },
+            { label: 'Return to Epics', fn: () => switchView('epics') }
+        ]
+    });
+
     if (typeof renderEpicsView === 'function') renderEpicsView();
 }
 
@@ -1982,6 +2013,58 @@ function moveItemToBacklog(itemRef) {
     if (itemObj) {
         backlogSubtrack.items.push(itemObj);
     }
+}
+
+/**
+ * Ceremony Handoff UI: Renders a success summary after a lifecycle closure
+ */
+function renderCeremonySuccess(type, config) {
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-emerald-600">
+            <span class="text-2xl">✨</span>
+            <span class="font-black tracking-tight">Mission Accomplished</span>
+        </div>
+    `;
+
+    const detailsHtml = config.details.map(d => `
+        <div class="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-xl">${d.icon}</span>
+                <span class="text-xs font-bold text-slate-700">${d.label}</span>
+            </div>
+            <span class="text-lg font-black text-slate-900">${d.count}</span>
+        </div>
+    `).join('');
+
+    const actionsHtml = config.actions.map(a => `
+        <button onclick="(${a.fn.toString()})(); closeCmsModal();" class="cms-btn cms-btn-secondary !w-full flex justify-center py-3">
+            ${a.label}
+        </button>
+    `).join('');
+
+    document.getElementById('modal-form').innerHTML = `
+        <div class="text-center py-6">
+            <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
+                <span class="text-4xl">🏁</span>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-1">${config.title}</h3>
+            <p class="text-xs font-bold text-slate-500 mb-8 max-w-xs mx-auto">${config.description}</p>
+            
+            <div class="space-y-3 mb-8">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Handoff Audit</div>
+                ${detailsHtml}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modal-footer').innerHTML = `
+        <div class="grid grid-cols-2 gap-3 w-full">
+            ${actionsHtml}
+            <button onclick="closeCmsModal()" class="cms-btn cms-btn-primary !w-full col-span-2 py-3">
+                Done
+            </button>
+        </div>
+    `;
 }
 
 /**
@@ -2020,7 +2103,19 @@ function shipRelease(releaseId) {
     UPDATE_DATA.metadata.releases[releaseIdx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    if (typeof showToast === 'function') showToast(`Release ${release.name} Shipped! 📦`);
+    
+    renderCeremonySuccess('release', {
+        title: `Release Shipped: ${release.name}`,
+        description: 'Production milestone achieved. Milestone metrics recorded.',
+        details: [
+            { label: 'Items Rolled to Next Release', count: pendingItems.length, icon: '📦' }
+        ],
+        actions: [
+            { label: 'Manage Releases', fn: () => switchView('releases') },
+            { label: 'View OKRs', fn: () => switchView('okr') }
+        ]
+    });
+
     if (typeof renderReleasesView === 'function') renderReleasesView();
 }
 

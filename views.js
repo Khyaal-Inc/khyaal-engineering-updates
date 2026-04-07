@@ -666,7 +666,10 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
 
         // Stage-specific extra actions
         const blockerBtn = (itemStage === 'delivery') ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>` : (item.blocker ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn active">🔓 Unblock</button>` : '')
-        const backlogBtn = (itemStage === 'definition' || itemStage === 'delivery') ? `<button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>` : ''
+        
+        // Hide Backlog button if already in backlog View or status is Later
+        const isAlreadyBacklog = (viewPrefix === 'backlog' || item.status === 'later');
+        const backlogBtn = (itemStage === 'definition' || itemStage === 'delivery') && !isAlreadyBacklog ? `<button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>` : ''
 
         cmsControls = `
             <div class="cms-controls-row flex items-center gap-1.5 flex-wrap">
@@ -831,7 +834,13 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                         ` : ''}
                     </div>
                 </div>
-                ${(() => { try { return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''; } catch(e) { return ''; } })()}
+                ${(() => { 
+                    try { 
+                        // Hide Quick Actions if Grooming is active to avoid Duplicate UI
+                        if (isGrooming) return '';
+                        return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, viewPrefix, trackIndex, subtrackIndex, itemIndex) : ''; 
+                    } catch(e) { return ''; } 
+                })()}
             </div>
         </div>
     `;
@@ -1408,18 +1417,17 @@ function renderRoadmapView() {
                 <div id="roadmap-next-action-mount">
                     ${renderPrimaryStageAction('roadmap')}
                 </div>
-                ${showManagement ? `
-                    <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                    <button onclick="advanceRoadmapHorizons()" class="btn-lifecycle btn-lifecycle-secondary no-disable">
-                        <span>⏩</span> Advance Horizons
-                    </button>
-                ` : ''}
                 
                 ${showManagement ? `
                 <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
+                <button onclick="advanceRoadmapHorizons()" 
+                    class="px-4 py-2.5 rounded-xl text-xs font-black text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-100 shadow-sm flex items-center gap-2">
+                    <span>⏩</span> Advance Horizons
+                </button>
+                <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
                 <button onclick="openRoadmapEdit()" 
                     class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
-                    <span class="text-lg">Track Edit</span> Add Roadmap Item
+                    🗺️ Add Roadmap Item
                 </button>
                 ` : ''}
             </div>
