@@ -99,6 +99,7 @@ function synthesizeAudit(type, targetId) {
     if (type === 'okr') {
         const okr = UPDATE_DATA.metadata.okrs.find(o => o.id === targetId);
         if (!okr) return null;
+        const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id);
         return {
             title: `Historical OKR State`,
             description: `Snapshot synthesized from current records. Objective: ${okr.objective.substring(0, 50)}...`,
@@ -107,6 +108,7 @@ function synthesizeAudit(type, targetId) {
                 { label: 'Success Rate', count: `${okr.overallProgress}%`, icon: '📈' },
                 { label: 'Key Results', count: (okr.keyResults || []).length, icon: '📋' }
             ],
+            items: linkedEpics.map(e => ({ name: e.name, status: e.status, destination: 'Initiative' })),
             actions: [
                 { label: 'Review Analytics', fn: () => switchView('analytics') }
             ]
@@ -125,8 +127,26 @@ function synthesizeAudit(type, targetId) {
                 { label: 'Resource Load', count: `${totalPoints} SP`, icon: '💎' },
                 { label: 'Execution Breadth', count: `${epicItems.length} Tasks`, icon: '📊' }
             ],
+            items: epicItems.map(i => ({ name: i.text, status: i.status, destination: 'Completed' })),
             actions: [
                 { label: 'Return to Epics', fn: () => switchView('epics') }
+            ]
+        };
+    }
+    if (type === 'sprint') {
+        const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === targetId);
+        if (!sprint) return null;
+        const sprintItems = findItemsByMetadataId('sprintId', sprint.id);
+        return {
+            title: `Sprint ${sprint.name} Historical Audit`,
+            description: `Synthesized from archived project data.`,
+            details: [
+                { label: 'Final Status', count: 'CLOSED', icon: '🔒' },
+                { label: 'Task Volume', count: sprintItems.length, icon: '📋' }
+            ],
+            items: sprintItems.map(i => ({ name: i.text, status: i.status, destination: 'Retained' })),
+            actions: [
+                { label: 'Review Dashboard', fn: () => switchView('dashboard') }
             ]
         };
     }
@@ -2030,6 +2050,11 @@ async function saveSprintClose(sprintId) {
             { label: `Rolled to ${nextSprintName}`, count: summary.movedToNext, icon: '🏃' },
             { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' }
         ],
+        items: items.map(i => ({
+            name: i.text,
+            status: i.status === 'done' ? 'done' : 'rolled',
+            destination: i.status === 'done' ? 'Shipped' : (movements.find(m => m.item.id === i.id)?.resolution || 'next').toUpperCase()
+        })),
         actions: [
             { label: 'Review Retrospective', fn: () => switchView('analytics') },
             { label: 'Go to Kanban', fn: () => switchView('kanban') }
@@ -2081,6 +2106,7 @@ function closeOKR(idx) {
             { label: 'Strategic Breadth', count: `${tracksInvolved.size} Tracks`, icon: '🌐' },
             { label: 'Initiative Conversion', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
         ],
+        items: linkedEpics.map(e => ({ name: e.name, status: e.status, destination: 'Initiative' })),
         actions: [
             { label: 'Review Detailed Metrics', fn: () => switchView('analytics') },
             { label: 'View OKR Alignment', fn: () => switchView('okr') }
@@ -2144,6 +2170,7 @@ function closeEpic(idx) {
             { label: 'Resource Intensity', count: `${totalPoints} SP`, icon: '💎' },
             { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' }
         ],
+        items: epicItems.map(i => ({ name: i.text, status: i.status, destination: i.status === 'done' ? 'Completed' : 'Backlog' })),
         actions: [
             { label: 'View Analytics', fn: () => switchView('analytics') },
             { label: 'Return to Epics', fn: () => switchView('epics') }
@@ -2214,6 +2241,30 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
         </button>`;
     }).join('');
 
+    let impactHtml = '';
+    if (config.items && config.items.length > 0) {
+        impactHtml = `
+            <div class="mt-8 text-left">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Impact Log</div>
+                <div class="audit-impact-log bg-slate-50/50 rounded-2xl border border-slate-100 overflow-y-auto max-h-[220px] p-2 space-y-1 custom-scrollbar">
+                    ${config.items.map(item => `
+                        <div class="flex items-center justify-between p-2 hover:bg-white rounded-xl transition-colors group">
+                            <div class="flex items-center gap-2 overflow-hidden mr-3">
+                                <span class="text-[10px] shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    ${item.status === 'done' || item.status === 'achieved' || item.status === 'completed' ? '✅' : '🏃'}
+                                </span>
+                                <span class="text-[10px] font-bold text-slate-600 truncate" title="${item.name}">${item.name}</span>
+                            </div>
+                            <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${item.status === 'done' || item.status === 'achieved' || item.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50'} shrink-0">
+                                ${item.destination || item.status}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     document.getElementById('modal-form').innerHTML = `
         <div class="text-center py-6">
             <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
@@ -2222,11 +2273,14 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
             <h3 class="text-xl font-black text-slate-900 mb-1">${config.title}</h3>
             <p class="text-xs font-bold text-slate-500 mb-8 max-w-xs mx-auto">${config.description}</p>
             
-            <div class="space-y-3 mb-8">
+            <div class="space-y-3">
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Handoff Audit</div>
                 ${detailsHtml}
             </div>
-            ${isHistorical ? `<div class="text-[9px] font-medium text-slate-300 italic">Audit recorded on: ${new Date(config.timestamp || Date.now()).toLocaleString()}</div>` : ''}
+
+            ${impactHtml}
+            
+            ${isHistorical ? `<div class="mt-6 text-[9px] font-medium text-slate-300 italic">Audit recorded on: ${new Date(config.timestamp || Date.now()).toLocaleString()}</div>` : ''}
         </div>
     `;
 
