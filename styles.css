@@ -272,6 +272,28 @@ summary::-webkit-details-marker {
     background: #cbd5e1;
 }
 
+.audit-link {
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.audit-link:hover {
+    color: #10b981 !important;
+    text-decoration: underline !important;
+}
+
+.highlight-pulse {
+    animation: highlight-pulse-animation 2s ease-in-out infinite;
+    position: relative;
+    z-index: 10;
+}
+
+@keyframes highlight-pulse-animation {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); border-color: #10b981; }
+    70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); border-color: #10b981; }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
 .btn-lifecycle {
     display: inline-flex;
     align-items: center;

@@ -102,13 +102,18 @@ function synthesizeAudit(type, targetId) {
         const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id);
         return {
             title: `Historical OKR State`,
-            description: `Snapshot synthesized from current records. Objective: ${okr.objective.substring(0, 50)}...`,
+            description: `Snapshot synthesized from current records.`,
+            mission: {
+                objective: okr.objective,
+                track: okr.owner,
+                timeline: okr.quarter
+            },
             details: [
                 { label: 'Strategic Result', count: (okr.result || 'ARCHIVED').toUpperCase(), icon: '🎯' },
                 { label: 'Success Rate', count: `${okr.overallProgress}%`, icon: '📈' },
                 { label: 'Key Results', count: (okr.keyResults || []).length, icon: '📋' }
             ],
-            items: linkedEpics.map(e => ({ name: e.name, status: e.status, destination: 'Initiative' })),
+            items: linkedEpics.map(e => ({ id: e.id, name: e.name, status: e.status, destination: 'Initiative', type: 'epic', lead: okr.owner })),
             actions: [
                 { label: 'Review Analytics', fn: () => switchView('analytics') }
             ]
@@ -122,12 +127,18 @@ function synthesizeAudit(type, targetId) {
         return {
             title: `Historical Epic State`,
             description: `Audit synthesized from current metadata.`,
+            mission: {
+                objective: epic.objective,
+                track: epic.track,
+                timeline: epic.timeline
+            },
+            wins: epic.successMetrics,
             details: [
                 { label: 'Epic Life-state', count: 'COMPLETED', icon: '🚀' },
                 { label: 'Resource Load', count: `${totalPoints} SP`, icon: '💎' },
                 { label: 'Execution Breadth', count: `${epicItems.length} Tasks`, icon: '📊' }
             ],
-            items: epicItems.map(i => ({ name: i.text, status: i.status, destination: 'Completed' })),
+            items: epicItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: 'Completed', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
             actions: [
                 { label: 'Return to Epics', fn: () => switchView('epics') }
             ]
@@ -144,7 +155,7 @@ function synthesizeAudit(type, targetId) {
                 { label: 'Final Status', count: 'CLOSED', icon: '🔒' },
                 { label: 'Task Volume', count: sprintItems.length, icon: '📋' }
             ],
-            items: sprintItems.map(i => ({ name: i.text, status: i.status, destination: 'Retained' })),
+            items: sprintItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: 'Retained', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
             actions: [
                 { label: 'Review Dashboard', fn: () => switchView('dashboard') }
             ]
@@ -167,7 +178,7 @@ function synthesizeAudit(type, targetId) {
 /**
  * Global View Orchestrator
  */
-function switchView(viewId) {
+function switchView(viewId, targetId = null) {
     if (window.isActionLockActive) return; // Ignore view switches while an action is in progress
     
     // 1. Close any open modals UNLESS we just showed a ceremony success screen
@@ -196,6 +207,18 @@ function switchView(viewId) {
         if (viewId === 'analytics' && typeof renderAnalyticsView === 'function') renderAnalyticsView();
         if (viewId === 'status' && typeof renderStatusView === 'function') renderStatusView();
         if (viewId === 'priority' && typeof renderPriorityView === 'function') renderPriorityView();
+
+        // 3a. Deep link highlighting
+        if (targetId) {
+            setTimeout(() => {
+                const element = document.getElementById(targetId) || document.querySelector(`[data-id="${targetId}"]`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.add('highlight-pulse');
+                    setTimeout(() => element.classList.remove('highlight-pulse'), 3000);
+                }
+            }, 300);
+        }
     }
 
     // 4. Update tab state
@@ -2051,8 +2074,12 @@ async function saveSprintClose(sprintId) {
             { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' }
         ],
         items: items.map(i => ({
+            id: i.id,
             name: i.text,
+            type: 'task',
             status: i.status === 'done' ? 'done' : 'rolled',
+            lead: (i.contributors || [])[0],
+            points: i.storyPoints,
             destination: i.status === 'done' ? 'Shipped' : (movements.find(m => m.item.id === i.id)?.resolution || 'next').toUpperCase()
         })),
         actions: [
@@ -2101,12 +2128,24 @@ function closeOKR(idx) {
     const auditConfig = {
         title: `Quarterly OKR Closed`,
         description: `Strategic objective archived with ${performanceScore}% overall progression. Outcome: ${result.toUpperCase()}.`,
+        mission: {
+            objective: okr.objective,
+            track: okr.owner,
+            timeline: okr.quarter
+        },
         details: [
             { label: 'KR Achievement Rate', count: `${achievedKRs} / ${totalKRs}`, icon: '🎯' },
             { label: 'Strategic Breadth', count: `${tracksInvolved.size} Tracks`, icon: '🌐' },
             { label: 'Initiative Conversion', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
         ],
-        items: linkedEpics.map(e => ({ name: e.name, status: e.status, destination: 'Initiative' })),
+        items: linkedEpics.map(e => ({ 
+            id: e.id, 
+            name: e.name, 
+            status: e.status, 
+            destination: 'Initiative', 
+            type: 'epic', 
+            lead: okr.owner // OKR Owner is the strategic lead
+        })),
         actions: [
             { label: 'Review Detailed Metrics', fn: () => switchView('analytics') },
             { label: 'View OKR Alignment', fn: () => switchView('okr') }
@@ -2165,12 +2204,26 @@ function closeEpic(idx) {
     const auditConfig = {
         title: `Epic Closed: ${epic.name}`,
         description: 'Strategic initiative successfully archived. Cleanup complete.',
+        mission: {
+            objective: epic.objective,
+            track: epic.track,
+            timeline: epic.timeline
+        },
+        wins: epic.successMetrics,
         details: [
             { label: 'Task Throughput', count: `${doneCount} / ${epicItems.length} Tasks`, icon: '📊' },
             { label: 'Resource Intensity', count: `${totalPoints} SP`, icon: '💎' },
             { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' }
         ],
-        items: epicItems.map(i => ({ name: i.text, status: i.status, destination: i.status === 'done' ? 'Completed' : 'Backlog' })),
+        items: epicItems.map(i => ({ 
+            id: i.id, 
+            name: i.text, 
+            type: 'task', 
+            status: i.status, 
+            lead: (i.contributors || [])[0], 
+            points: i.storyPoints, 
+            destination: i.status === 'done' ? 'Completed' : 'Backlog' 
+        })),
         actions: [
             { label: 'View Analytics', fn: () => switchView('analytics') },
             { label: 'Return to Epics', fn: () => switchView('epics') }
@@ -2245,21 +2298,60 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
     if (config.items && config.items.length > 0) {
         impactHtml = `
             <div class="mt-8 text-left">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Impact Log</div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Impact Log & Deep Links</div>
                 <div class="audit-impact-log bg-slate-50/50 rounded-2xl border border-slate-100 overflow-y-auto max-h-[220px] p-2 space-y-1 custom-scrollbar">
-                    ${config.items.map(item => `
-                        <div class="flex items-center justify-between p-2 hover:bg-white rounded-xl transition-colors group">
-                            <div class="flex items-center gap-2 overflow-hidden mr-3">
-                                <span class="text-[10px] shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    ${item.status === 'done' || item.status === 'achieved' || item.status === 'completed' ? '✅' : '🏃'}
+                    ${config.items.map(item => {
+                        const isDone = item.status === 'done' || item.status === 'achieved' || item.status === 'completed';
+                        const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' ? `openItemEdit('${item.id}')` : '');
+                        
+                        return `
+                            <div class="flex items-center justify-between p-2 hover:bg-white rounded-xl transition-colors group">
+                                <div class="flex items-center gap-2 overflow-hidden mr-3">
+                                    <span class="text-[10px] shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
+                                        ${isDone ? '✅' : '🏃'}
+                                    </span>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] font-bold text-slate-600 truncate cursor-pointer hover:text-emerald-600 hover:underline audit-link" 
+                                              onclick="${linkFn}" title="Click to view details">${item.name}</span>
+                                        ${item.lead ? `<span class="text-[8px] font-medium text-slate-400">Lead: ${item.lead} ${item.points ? `• ${item.points} SP` : ''}</span>` : ''}
+                                    </div>
+                                </div>
+                                <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50'} shrink-0">
+                                    ${item.destination || item.status}
                                 </span>
-                                <span class="text-[10px] font-bold text-slate-600 truncate" title="${item.name}">${item.name}</span>
                             </div>
-                            <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${item.status === 'done' || item.status === 'achieved' || item.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50'} shrink-0">
-                                ${item.destination || item.status}
-                            </span>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    let missionHtml = '';
+    if (config.mission) {
+        missionHtml = `
+            <div class="mb-8 p-5 bg-slate-900 rounded-3xl text-left border border-slate-800 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-4xl">🎯</div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-black uppercase tracking-widest border border-indigo-500/30">Strategic Mission</span>
+                    <span class="text-[9px] font-bold text-slate-500">${config.mission.track} • ${config.mission.timeline}</span>
+                </div>
+                <h4 class="text-sm font-bold text-white leading-snug">${config.mission.objective}</h4>
+            </div>
+        `;
+    }
+
+    let winsHtml = '';
+    if (config.wins) {
+        winsHtml = `
+            <div class="mt-8 text-left">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Outcome & Wins</div>
+                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start gap-3">
+                    <span class="text-xl">🏆</span>
+                    <div>
+                        <div class="text-[10px] font-black text-indigo-900 uppercase mb-1">Target Metrics Verified</div>
+                        <p class="text-xs font-bold text-indigo-700 leading-relaxed">${config.wins}</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -2267,16 +2359,21 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
 
     document.getElementById('modal-form').innerHTML = `
         <div class="text-center py-6">
-            <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
-                <span class="text-4xl">${isHistorical ? '📜' : '🏁'}</span>
+            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
+                <span class="text-3xl">${isHistorical ? '📜' : '🏁'}</span>
             </div>
+            
+            ${missionHtml}
+
             <h3 class="text-xl font-black text-slate-900 mb-1">${config.title}</h3>
             <p class="text-xs font-bold text-slate-500 mb-8 max-w-xs mx-auto">${config.description}</p>
             
             <div class="space-y-3">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Handoff Audit</div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Performance Audit</div>
                 ${detailsHtml}
             </div>
+
+            ${winsHtml}
 
             ${impactHtml}
             
