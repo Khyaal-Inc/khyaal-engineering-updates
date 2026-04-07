@@ -278,8 +278,27 @@ summary::-webkit-details-marker {
 }
 
 .audit-link:hover {
-    color: #10b981 !important;
+    color: #4f46e5 !important; /* Indigo primary for sleek links */
     text-decoration: underline !important;
+}
+
+/* SLEEK AUDIT REFINEMENTS */
+.glass-header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 27, 75, 0.98)) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.2), 
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.audit-impact-log::-webkit-scrollbar {
+    width: 3px;
+}
+
+.audit-impact-log::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
 }
 
 .highlight-pulse {

@@ -113,7 +113,14 @@ function synthesizeAudit(type, targetId) {
                 { label: 'Success Rate', count: `${okr.overallProgress}%`, icon: '📈' },
                 { label: 'Key Results', count: (okr.keyResults || []).length, icon: '📋' }
             ],
-            items: linkedEpics.map(e => ({ id: e.id, name: e.name, status: e.status, destination: 'Initiative', type: 'epic', lead: okr.owner })),
+            items: [
+                ...(okr.keyResults || []).map(kr => ({ 
+                    name: `KR: ${kr.description} (${kr.current}/${kr.target} ${kr.unit})`, 
+                    status: kr.status, 
+                    destination: 'Key Result' 
+                })),
+                ...linkedEpics.map(e => ({ id: e.id, name: e.name, status: e.status, destination: 'Initiative', type: 'epic', lead: okr.owner }))
+            ],
             actions: [
                 { label: 'Review Analytics', fn: () => switchView('analytics') }
             ]
@@ -2138,14 +2145,21 @@ function closeOKR(idx) {
             { label: 'Strategic Breadth', count: `${tracksInvolved.size} Tracks`, icon: '🌐' },
             { label: 'Initiative Conversion', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
         ],
-        items: linkedEpics.map(e => ({ 
-            id: e.id, 
-            name: e.name, 
-            status: e.status, 
-            destination: 'Initiative', 
-            type: 'epic', 
-            lead: okr.owner // OKR Owner is the strategic lead
-        })),
+        items: [
+            ...(okr.keyResults || []).map(kr => ({ 
+                name: `KR: ${kr.description} (${kr.current}/${kr.target} ${kr.unit})`, 
+                status: kr.status, 
+                destination: 'Key Result' 
+            })),
+            ...linkedEpics.map(e => ({ 
+                id: e.id, 
+                name: e.name, 
+                status: e.status, 
+                destination: 'Initiative', 
+                type: 'epic', 
+                lead: okr.owner // OKR Owner is the strategic lead
+            }))
+        ],
         actions: [
             { label: 'Review Detailed Metrics', fn: () => switchView('analytics') },
             { label: 'View OKR Alignment', fn: () => switchView('okr') }
@@ -2274,49 +2288,76 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
         </div>
     `;
 
-    const detailsHtml = config.details.map(d => `
-        <div class="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="text-xl">${d.icon}</span>
-                <span class="text-xs font-bold text-slate-700">${d.label}</span>
-            </div>
-            <span class="text-lg font-black text-slate-900">${d.count}</span>
+    const detailsHtml = `
+        <div class="grid grid-cols-3 gap-2 bg-slate-50/50 rounded-2xl border border-slate-100 p-2">
+            ${config.details.map(d => `
+                <div class="flex flex-col items-center justify-center p-2 rounded-xl bg-white/50 border border-transparent hover:border-slate-200 transition-all">
+                    <div class="flex items-center gap-1.5 mb-0.5 opacity-60">
+                        <span class="text-xs shrink-0">${d.icon}</span>
+                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-tighter truncate">${d.label}</span>
+                    </div>
+                    <span class="text-sm font-black text-slate-900 leading-none">${d.count}</span>
+                </div>
+            `).join('')}
         </div>
-    `).join('');
+    `;
 
     const actionsHtml = config.actions.map(a => {
-        // If historical, we don't necessarily want to run the same navigation functions 
-        // provided during the live ceremony (they might be closure-specific)
         const label = a.label;
         const fnStr = a.fn.toString();
-        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn cms-btn-secondary !w-full flex justify-center py-3">
-            ${label}
+        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn cms-btn-secondary !text-[10px] !font-black !uppercase !tracking-widest !py-2.5 !rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group">
+            <span class="group-hover:translate-x-0.5 transition-transform">${label}</span>
         </button>`;
     }).join('');
+
+    let missionHtml = '';
+    if (config.mission) {
+        missionHtml = `
+            <div class="mb-4 p-4 glass-header rounded-[2rem] text-left border border-white/20 shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 to-indigo-950">
+                <div class="absolute top-0 right-0 p-4 opacity-5 text-4xl">🌐</div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="px-2 py-0.5 rounded bg-white/10 text-white text-[8px] font-black uppercase tracking-[0.2em] border border-white/10 backdrop-blur-md">Mission Context</span>
+                    <span class="text-[9px] font-bold text-white/40">${config.mission.track} • ${config.mission.timeline}</span>
+                </div>
+                <h4 class="text-xs font-bold text-white/90 leading-relaxed max-w-[90%]">${config.mission.objective}</h4>
+            </div>
+        `;
+    }
+
+    let winsHtml = '';
+    if (config.wins) {
+        winsHtml = `
+            <div class="mt-6 text-left relative pl-5 py-1">
+                <div class="absolute left-1 top-2 bottom-2 w-0.5 bg-indigo-400/40 rounded-full"></div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Strategic Outcome Verified</div>
+                <p class="text-[11px] font-semibold text-slate-700 leading-relaxed italic">"${config.wins}"</p>
+            </div>
+        `;
+    }
 
     let impactHtml = '';
     if (config.items && config.items.length > 0) {
         impactHtml = `
-            <div class="mt-8 text-left">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Impact Log & Deep Links</div>
-                <div class="audit-impact-log bg-slate-50/50 rounded-2xl border border-slate-100 overflow-y-auto max-h-[220px] p-2 space-y-1 custom-scrollbar">
+            <div class="mt-6 text-left">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div> Impact Log & Drill-Down
+                </div>
+                <div class="audit-impact-log bg-slate-50/50 rounded-2xl border border-slate-100 overflow-y-auto max-h-[180px] p-1.5 space-y-1 custom-scrollbar">
                     ${config.items.map(item => {
                         const isDone = item.status === 'done' || item.status === 'achieved' || item.status === 'completed';
                         const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' ? `openItemEdit('${item.id}')` : '');
                         
                         return `
-                            <div class="flex items-center justify-between p-2 hover:bg-white rounded-xl transition-colors group">
+                            <div class="flex items-center justify-between p-1.5 hover:bg-white rounded-xl transition-all group border border-transparent hover:border-slate-100 hover:shadow-sm">
                                 <div class="flex items-center gap-2 overflow-hidden mr-3">
-                                    <span class="text-[10px] shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
-                                        ${isDone ? '✅' : '🏃'}
-                                    </span>
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-bold text-slate-600 truncate cursor-pointer hover:text-emerald-600 hover:underline audit-link" 
+                                    <div class="w-1.5 h-1.5 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-amber-400'} shrink-0 opacity-40 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-[10px] font-bold text-slate-700 truncate cursor-pointer hover:text-indigo-600 transition-colors audit-link" 
                                               onclick="${linkFn}" title="Click to view details">${item.name}</span>
-                                        ${item.lead ? `<span class="text-[8px] font-medium text-slate-400">Lead: ${item.lead} ${item.points ? `• ${item.points} SP` : ''}</span>` : ''}
+                                        ${item.lead ? `<span class="text-[8px] font-medium text-slate-400">Lead: ${item.lead} ${item.points ? ` • ${item.points} SP` : ''}</span>` : ''}
                                     </div>
                                 </div>
-                                <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/50' : 'bg-amber-50 text-amber-600 border border-amber-100/50'} shrink-0">
+                                <span class="text-[7px] font-black uppercase px-1.5 py-0.5 rounded-md ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/30' : 'bg-amber-50 text-amber-600 border border-amber-100/30'} shrink-0">
                                     ${item.destination || item.status}
                                 </span>
                             </div>
@@ -2327,66 +2368,40 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
         `;
     }
 
-    let missionHtml = '';
-    if (config.mission) {
-        missionHtml = `
-            <div class="mb-8 p-5 bg-slate-900 rounded-3xl text-left border border-slate-800 shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10 text-4xl">🎯</div>
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-black uppercase tracking-widest border border-indigo-500/30">Strategic Mission</span>
-                    <span class="text-[9px] font-bold text-slate-500">${config.mission.track} • ${config.mission.timeline}</span>
-                </div>
-                <h4 class="text-sm font-bold text-white leading-snug">${config.mission.objective}</h4>
-            </div>
-        `;
-    }
-
-    let winsHtml = '';
-    if (config.wins) {
-        winsHtml = `
-            <div class="mt-8 text-left">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Strategic Outcome & Wins</div>
-                <div class="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start gap-3">
-                    <span class="text-xl">🏆</span>
-                    <div>
-                        <div class="text-[10px] font-black text-indigo-900 uppercase mb-1">Target Metrics Verified</div>
-                        <p class="text-xs font-bold text-indigo-700 leading-relaxed">${config.wins}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
     document.getElementById('modal-form').innerHTML = `
-        <div class="text-center py-6">
-            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
-                <span class="text-3xl">${isHistorical ? '📜' : '🏁'}</span>
+        <div class="text-center py-4">
+            <div class="relative w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100 shadow-inner group">
+                <span class="text-2xl">${isHistorical ? '📜' : '🏁'}</span>
+                <div class="absolute -right-1 -bottom-1 w-5 h-5 bg-white border border-slate-100 rounded-full flex items-center justify-center text-[10px] shadow-sm transform group-hover:scale-110 transition-transform">✨</div>
             </div>
             
             ${missionHtml}
 
-            <h3 class="text-xl font-black text-slate-900 mb-1">${config.title}</h3>
-            <p class="text-xs font-bold text-slate-500 mb-8 max-w-xs mx-auto">${config.description}</p>
+            <div class="space-y-1 mb-6">
+                <h3 class="text-lg font-black text-slate-900 tracking-tight leading-none">${config.title}</h3>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${config.description}</p>
+            </div>
             
-            <div class="space-y-3">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Performance Audit</div>
+            <div class="space-y-4">
+                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] text-left mb-2 ml-1">Lifecycle Performance</div>
                 ${detailsHtml}
             </div>
 
             ${winsHtml}
 
             ${impactHtml}
-            
-            ${isHistorical ? `<div class="mt-6 text-[9px] font-medium text-slate-300 italic">Audit recorded on: ${new Date(config.timestamp || Date.now()).toLocaleString()}</div>` : ''}
         </div>
     `;
 
     document.getElementById('modal-footer').innerHTML = `
-        <div class="grid grid-cols-2 gap-3 w-full">
-            ${actionsHtml}
-            <button onclick="closeCmsModal()" class="cms-btn cms-btn-primary !w-full col-span-2 py-3">
+        <div class="p-4 border-t border-slate-100">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                ${actionsHtml}
+            </div>
+            <button onclick="closeCmsModal()" class="cms-btn cms-btn-primary !w-full py-3 !rounded-2xl shadow-xl transition-all active:scale-95">
                 Done
             </button>
+            ${isHistorical ? `<div class="mt-4 text-center text-[8px] font-bold text-slate-300 uppercase tracking-widest bg-slate-50 py-1.5 rounded-full border border-slate-100">Audit Trace • ${new Date(config.timestamp || Date.now()).toLocaleDateString()}</div>` : ''}
         </div>
     `;
 
