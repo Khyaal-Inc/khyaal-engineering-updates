@@ -43,6 +43,104 @@ function updateTabCounts() {
 }
 
 /**
+ * Persists a ceremony audit for historical replay
+ */
+function saveCeremonyAudit(type, targetId, config) {
+    if (!UPDATE_DATA.metadata.ceremonyAudits) UPDATE_DATA.metadata.ceremonyAudits = [];
+    
+    const auditRecord = {
+        id: `audit-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        type: type,
+        targetId: targetId,
+        config: config
+    };
+
+    // Keep history but only the last 3 per entity to avoid bloat
+    UPDATE_DATA.metadata.ceremonyAudits.push(auditRecord);
+    const entityAudits = UPDATE_DATA.metadata.ceremonyAudits.filter(a => a.targetId === targetId);
+    if (entityAudits.length > 3) {
+        const oldestIdx = UPDATE_DATA.metadata.ceremonyAudits.indexOf(entityAudits[0]);
+        UPDATE_DATA.metadata.ceremonyAudits.splice(oldestIdx, 1);
+    }
+}
+
+/**
+ * Re-plays a historical ceremony audit summary
+ */
+function viewCeremonyAudit(type, targetId) {
+    let auditConfig = null;
+    let isHistorical = false;
+
+    if (UPDATE_DATA.metadata.ceremonyAudits) {
+        const audits = UPDATE_DATA.metadata.ceremonyAudits.filter(a => a.targetId === targetId && a.type === type);
+        if (audits.length > 0) {
+            auditConfig = audits[audits.length - 1].config;
+            isHistorical = true;
+        }
+    }
+
+    // Fallback: If no saved audit, synthesize one from current state
+    if (!auditConfig) {
+        auditConfig = synthesizeAudit(type, targetId);
+    }
+
+    if (auditConfig) {
+        renderCeremonySuccess(type, auditConfig, isHistorical);
+    } else {
+        if (typeof showToast === 'function') showToast('Audit data unavailable for this item.');
+    }
+}
+
+/**
+ * Creates a "synthetic" audit record for items closed before the audit system was live
+ */
+function synthesizeAudit(type, targetId) {
+    if (type === 'okr') {
+        const okr = UPDATE_DATA.metadata.okrs.find(o => o.id === targetId);
+        if (!okr) return null;
+        return {
+            title: `Historical OKR State`,
+            description: `Snapshot synthesized from current records. Objective: ${okr.result || 'Archive'}.`,
+            details: [
+                { label: 'Strategic Result', count: (okr.result || 'N/A').toUpperCase(), icon: '🎯' },
+                { label: 'Status', count: (okr.status || 'CLOSED').toUpperCase(), icon: '📊' }
+            ],
+            actions: [
+                { label: 'Review Analytics', fn: () => switchView('analytics') }
+            ]
+        };
+    }
+    if (type === 'epic') {
+        const epic = UPDATE_DATA.metadata.epics.find(e => e.id === targetId);
+        if (!epic) return null;
+        return {
+            title: `Historical Epic State`,
+            description: `Snapshot synthesized from current records.`,
+            details: [
+                { label: 'Epic Life-state', count: 'COMPLETED', icon: '🚀' },
+                { label: 'Health at Archive', count: (epic.health || 'on-track').toUpperCase(), icon: '🏥' }
+            ],
+            actions: [
+                { label: 'Return to Epics', fn: () => switchView('epics') }
+            ]
+        };
+    }
+    // Generic fallback for others
+    return {
+        title: `Audit Trace`,
+        description: `This item was closed before the rich audit system was active.`,
+        details: [
+            { label: 'Record Type', count: type.toUpperCase(), icon: '📜' },
+            { label: 'Final State', count: 'COMPLETED', icon: '✅' }
+        ],
+        actions: [
+            { label: 'Return to Dashboard', fn: () => switchView('analytics') }
+        ]
+    };
+}
+
+/**
  * Global View Orchestrator
  */
 function switchView(viewId) {
@@ -1908,11 +2006,12 @@ async function saveSprintClose(sprintId) {
     // ENSURE MODAL STAYS OPEN for the summary screen
     window._skipModalCloseOnce = true;
 
-    renderCeremonySuccess('sprint', {
+    const nextSprintName = nextSprint ? nextSprint.name : 'Backlog';
+    const auditConfig = {
         title: `Sprint ${sprint.name} Closed`,
         description: `Cycle successfully completed with ${summary.velocityResult}% commitment hit.`,
         details: [
-            { label: 'Moved to Next Sprint', count: summary.movedToNext, icon: '🏃' },
+            { label: `Moved to Next Sprint (${nextSprintName})`, count: summary.movedToNext, icon: '🏃' },
             { label: 'Physically Moved to Backlog Subtrack', count: summary.movedToBacklog, icon: '📚' },
             { label: 'Dropped (Unassigned)', count: summary.dropped, icon: '🗑️' }
         ],
@@ -1920,7 +2019,10 @@ async function saveSprintClose(sprintId) {
             { label: 'View Backlog', fn: () => switchView('backlog') },
             { label: 'Go to Kanban', fn: () => switchView('kanban') }
         ]
-    });
+    };
+
+    saveCeremonyAudit('sprint', sprintId, auditConfig);
+    renderCeremonySuccess('sprint', auditConfig);
 
     if (typeof renderSprintView === 'function') renderSprintView();
     if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
@@ -1950,7 +2052,7 @@ function closeOKR(idx) {
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
-    renderCeremonySuccess('okr', {
+    const auditConfig = {
         title: `Quarterly OKR Closed`,
         description: `Strategic objective marked as ${result}. Mission impact recorded.`,
         details: [
@@ -1962,7 +2064,10 @@ function closeOKR(idx) {
             { label: 'Review Analytics', fn: () => switchView('analytics') },
             { label: 'View OKR List', fn: () => switchView('okr') }
         ]
-    });
+    };
+
+    saveCeremonyAudit('okr', okr.id, auditConfig);
+    renderCeremonySuccess('okr', auditConfig);
 
     if (typeof renderOkrView === 'function') renderOkrView();
 }
@@ -2005,7 +2110,7 @@ function closeEpic(idx) {
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
-    renderCeremonySuccess('epic', {
+    const auditConfig = {
         title: `Epic Closed: ${epic.name}`,
         description: 'Strategic initiative successfully archived. Cleanup complete.',
         details: [
@@ -2015,7 +2120,10 @@ function closeEpic(idx) {
             { label: 'View Backlog', fn: () => switchView('backlog') },
             { label: 'Return to Epics', fn: () => switchView('epics') }
         ]
-    });
+    };
+
+    saveCeremonyAudit('epic', epic.id, auditConfig);
+    renderCeremonySuccess('epic', auditConfig);
 
     if (typeof renderEpicsView === 'function') renderEpicsView();
 }
@@ -2050,11 +2158,11 @@ function moveItemToBacklog(itemRef) {
 /**
  * Ceremony Handoff UI: Renders a success summary after a lifecycle closure
  */
-function renderCeremonySuccess(type, config) {
+function renderCeremonySuccess(type, config, isHistorical = false) {
     document.getElementById('modal-title').innerHTML = `
         <div class="flex items-center gap-3 text-emerald-600">
             <span class="text-2xl">✨</span>
-            <span class="font-black tracking-tight">Mission Accomplished</span>
+            <span class="font-black tracking-tight">${isHistorical ? 'Historical Audit' : 'Mission Accomplished'}</span>
         </div>
     `;
 
@@ -2068,16 +2176,20 @@ function renderCeremonySuccess(type, config) {
         </div>
     `).join('');
 
-    const actionsHtml = config.actions.map(a => `
-        <button onclick="(${a.fn.toString()})(); closeCmsModal();" class="cms-btn cms-btn-secondary !w-full flex justify-center py-3">
-            ${a.label}
-        </button>
-    `).join('');
+    const actionsHtml = config.actions.map(a => {
+        // If historical, we don't necessarily want to run the same navigation functions 
+        // provided during the live ceremony (they might be closure-specific)
+        const label = a.label;
+        const fnStr = a.fn.toString();
+        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn cms-btn-secondary !w-full flex justify-center py-3">
+            ${label}
+        </button>`;
+    }).join('');
 
     document.getElementById('modal-form').innerHTML = `
         <div class="text-center py-6">
             <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-emerald-100/50 shadow-inner">
-                <span class="text-4xl">🏁</span>
+                <span class="text-4xl">${isHistorical ? '📜' : '🏁'}</span>
             </div>
             <h3 class="text-xl font-black text-slate-900 mb-1">${config.title}</h3>
             <p class="text-xs font-bold text-slate-500 mb-8 max-w-xs mx-auto">${config.description}</p>
@@ -2086,6 +2198,7 @@ function renderCeremonySuccess(type, config) {
                 <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left mb-2 ml-1">Lifecycle Handoff Audit</div>
                 ${detailsHtml}
             </div>
+            ${isHistorical ? `<div class="text-[9px] font-medium text-slate-300 italic">Audit recorded on: ${new Date(config.timestamp || Date.now()).toLocaleString()}</div>` : ''}
         </div>
     `;
 
@@ -2098,7 +2211,7 @@ function renderCeremonySuccess(type, config) {
         </div>
     `;
 
-    // ENSURE MODAL IS VISIBLE (especially for Epic/OKR/Release closures that start without a modal)
+    // ENSURE MODAL IS VISIBLE
     document.getElementById('cms-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -2143,17 +2256,21 @@ function shipRelease(releaseId) {
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
-    renderCeremonySuccess('release', {
+    const nextReleaseName = nextRelease ? nextRelease.name : 'Backlog';
+    const auditConfig = {
         title: `Release Shipped: ${release.name}`,
         description: 'Production milestone achieved. Milestone metrics recorded.',
         details: [
-            { label: 'Rolled to Next Placement', count: pendingItems.length, icon: '📦' }
+            { label: `Rolled to Next Placement (${nextReleaseName})`, count: pendingItems.length, icon: '📦' }
         ],
         actions: [
             { label: 'Manage Releases', fn: () => switchView('releases') },
             { label: 'View OKRs', fn: () => switchView('okr') }
         ]
-    });
+    };
+
+    saveCeremonyAudit('release', releaseId, auditConfig);
+    renderCeremonySuccess('release', auditConfig);
 
     if (typeof renderReleasesView === 'function') renderReleasesView();
 }

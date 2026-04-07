@@ -1277,7 +1277,7 @@ function renderEpicsView() {
             <div class="flex flex-wrap gap-1.5 ml-auto">
                 <button onclick="openEpicEdit(${idx})" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteEpic(${idx})" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="closeEpic(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close Epic</button>` : ''}
+                ${!isClosed ? `<button onclick="closeEpic(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close Epic</button>` : `<button onclick="viewCeremonyAudit('epic', '${e.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
                 <button onclick="groomEpicTasks('${e.id}')" class="item-action-btn neutral">Groom 📚</button>
                 <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
@@ -1595,7 +1595,7 @@ function renderSprintView() {
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openSprintEdit('${s.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteSprint('${s.id}')" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="renderSprintCloseModal('${s.id}')" class="item-action-btn lifecycle no-disable">🏁 Close Sprint</button>` : ''}
+                ${!isClosed ? `<button onclick="renderSprintCloseModal('${s.id}')" class="item-action-btn lifecycle no-disable">🏁 Close Sprint</button>` : `<button onclick="viewCeremonyAudit('sprint', '${s.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
                 <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
@@ -1717,7 +1717,7 @@ function renderReleasesView() {
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openReleaseEdit('${r.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteRelease('${r.id}')" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="shipRelease('${r.id}')" class="item-action-btn lifecycle no-disable">🚢 Ship Release</button>` : ''}
+                ${!isClosed ? `<button onclick="shipRelease('${r.id}')" class="item-action-btn lifecycle no-disable">🚢 Ship Release</button>` : `<button onclick="viewCeremonyAudit('release', '${r.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
                 <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';

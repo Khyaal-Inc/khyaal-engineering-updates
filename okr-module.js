@@ -215,7 +215,7 @@ function renderOkrCard(okr, idx) {
         <div class="flex gap-1.5">
             <button onclick="openOKREdit(${idx})" class="item-action-btn edit">Edit</button>
             <button onclick="deleteOKR(${idx})" class="item-action-btn delete">Delete</button>
-            ${!isClosed ? `<button onclick="closeOKR(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close OKR</button>` : ''}
+            ${!isClosed ? `<button onclick="closeOKR(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close OKR</button>` : `<button onclick="viewCeremonyAudit('okr', '${okr.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
         </div>
     ` : '';
 

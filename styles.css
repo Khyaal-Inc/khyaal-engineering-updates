@@ -231,6 +231,25 @@ summary::-webkit-details-marker {
     display: none !important;
 }
 
+.lifecycle-closed .no-disable {
+    pointer-events: auto !important;
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+.item-action-btn.neutral.no-disable {
+    background: #10b981 !important; /* Vibrant Emerald */
+    color: white !important;
+    border-color: #059669 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.item-action-btn.neutral.no-disable:hover {
+    background: #059669 !important;
+    transform: scale(1.05);
+}
+
 .btn-lifecycle {
     display: inline-flex;
     align-items: center;
