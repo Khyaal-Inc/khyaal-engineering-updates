@@ -101,10 +101,11 @@ function synthesizeAudit(type, targetId) {
         if (!okr) return null;
         return {
             title: `Historical OKR State`,
-            description: `Snapshot synthesized from current records. Objective: ${okr.result || 'Archive'}.`,
+            description: `Snapshot synthesized from current records. Objective: ${okr.objective.substring(0, 50)}...`,
             details: [
-                { label: 'Strategic Result', count: (okr.result || 'N/A').toUpperCase(), icon: '🎯' },
-                { label: 'Status', count: (okr.status || 'CLOSED').toUpperCase(), icon: '📊' }
+                { label: 'Strategic Result', count: (okr.result || 'ARCHIVED').toUpperCase(), icon: '🎯' },
+                { label: 'Success Rate', count: `${okr.overallProgress}%`, icon: '📈' },
+                { label: 'Key Results', count: (okr.keyResults || []).length, icon: '📋' }
             ],
             actions: [
                 { label: 'Review Analytics', fn: () => switchView('analytics') }
@@ -114,12 +115,15 @@ function synthesizeAudit(type, targetId) {
     if (type === 'epic') {
         const epic = UPDATE_DATA.metadata.epics.find(e => e.id === targetId);
         if (!epic) return null;
+        const epicItems = findItemsByMetadataId('epicId', epic.id);
+        const totalPoints = epicItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
         return {
             title: `Historical Epic State`,
-            description: `Snapshot synthesized from current records.`,
+            description: `Audit synthesized from current metadata.`,
             details: [
                 { label: 'Epic Life-state', count: 'COMPLETED', icon: '🚀' },
-                { label: 'Health at Archive', count: (epic.health || 'on-track').toUpperCase(), icon: '🏥' }
+                { label: 'Resource Load', count: `${totalPoints} SP`, icon: '💎' },
+                { label: 'Execution Breadth', count: `${epicItems.length} Tasks`, icon: '📊' }
             ],
             actions: [
                 { label: 'Return to Epics', fn: () => switchView('epics') }
@@ -1994,6 +1998,16 @@ async function saveSprintClose(sprintId) {
     // 5. Notify and Save
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     
+    // High-Fidelity Stats
+    const totalTasks = items.length;
+    const doneTasksCount = doneItems.length;
+    const contributionSet = new Set();
+    items.forEach(i => {
+        if (Array.isArray(i.contributors)) {
+            i.contributors.forEach(c => contributionSet.add(c));
+        }
+    });
+
     // Counts for summary
     const summary = {
         movedToNext: movements.filter(m => m.resolution === 'next').length,
@@ -2009,14 +2023,15 @@ async function saveSprintClose(sprintId) {
     const nextSprintName = nextSprint ? nextSprint.name : 'Backlog';
     const auditConfig = {
         title: `Sprint ${sprint.name} Closed`,
-        description: `Cycle successfully completed with ${summary.velocityResult}% commitment hit.`,
+        description: `Mission completed with ${completedPoints} pts verified. Commitment Precision: ${summary.velocityResult}%.`,
         details: [
-            { label: `Moved to Next Sprint (${nextSprintName})`, count: summary.movedToNext, icon: '🏃' },
-            { label: 'Physically Moved to Backlog Subtrack', count: summary.movedToBacklog, icon: '📚' },
-            { label: 'Dropped (Unassigned)', count: summary.dropped, icon: '🗑️' }
+            { label: 'Contributor Density', count: contributionSet.size, icon: '👥' },
+            { label: 'Task Closure Ratio', count: `${doneTasksCount} / ${totalTasks}`, icon: '📊' },
+            { label: `Rolled to ${nextSprintName}`, count: summary.movedToNext, icon: '🏃' },
+            { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' }
         ],
         actions: [
-            { label: 'View Backlog', fn: () => switchView('backlog') },
+            { label: 'Review Retrospective', fn: () => switchView('analytics') },
             { label: 'Go to Kanban', fn: () => switchView('kanban') }
         ]
     };
@@ -2052,17 +2067,23 @@ function closeOKR(idx) {
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
+    // High-Fidelity Stats
+    const totalKRs = (okr.keyResults || []).length;
+    const achievedKRs = (okr.keyResults || []).filter(kr => kr.status === 'achieved' || kr.progress >= 100).length;
+    const tracksInvolved = new Set(linkedEpics.map(e => e.track).filter(Boolean));
+    const performanceScore = okr.overallProgress || 0;
+
     const auditConfig = {
         title: `Quarterly OKR Closed`,
-        description: `Strategic objective marked as ${result}. Mission impact recorded.`,
+        description: `Strategic objective archived with ${performanceScore}% overall progression. Outcome: ${result.toUpperCase()}.`,
         details: [
-            { label: 'Total Linked Epics', count: linkedEpics.length, icon: '🚀' },
-            { label: 'Completed Initiatives', count: completedEpics, icon: '✅' },
-            { label: 'Result Type', count: result.toUpperCase(), icon: '🎯' }
+            { label: 'KR Achievement Rate', count: `${achievedKRs} / ${totalKRs}`, icon: '🎯' },
+            { label: 'Strategic Breadth', count: `${tracksInvolved.size} Tracks`, icon: '🌐' },
+            { label: 'Initiative Conversion', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
         ],
         actions: [
-            { label: 'Review Analytics', fn: () => switchView('analytics') },
-            { label: 'View OKR List', fn: () => switchView('okr') }
+            { label: 'Review Detailed Metrics', fn: () => switchView('analytics') },
+            { label: 'View OKR Alignment', fn: () => switchView('okr') }
         ]
     };
 
@@ -2110,14 +2131,21 @@ function closeEpic(idx) {
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
+    // High-Fidelity Stats
+    const epicItems = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
+    const doneCount = epicItems.filter(i => i.status === 'done').length;
+    const totalPoints = epicItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+
     const auditConfig = {
         title: `Epic Closed: ${epic.name}`,
         description: 'Strategic initiative successfully archived. Cleanup complete.',
         details: [
-            { label: 'Tasks Physically Moved to Backlog', count: sortedPending.length, icon: '📚' }
+            { label: 'Task Throughput', count: `${doneCount} / ${epicItems.length} Tasks`, icon: '📊' },
+            { label: 'Resource Intensity', count: `${totalPoints} SP`, icon: '💎' },
+            { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' }
         ],
         actions: [
-            { label: 'View Backlog', fn: () => switchView('backlog') },
+            { label: 'View Analytics', fn: () => switchView('analytics') },
             { label: 'Return to Epics', fn: () => switchView('epics') }
         ]
     };
