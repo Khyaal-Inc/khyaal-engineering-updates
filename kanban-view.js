@@ -230,10 +230,13 @@ function renderKanbanCard(item) {
                 </div>
             </div>
             
-            <!-- Quick Actions -->
-            <div class="mt-2 pt-2 border-t border-slate-50/50">
-                ${(() => { try { return typeof renderQuickActionBar === 'function' ? renderQuickActionBar(item, 'kanban', item.trackIndex, item.subtrackIndex, item.itemIndex) : ''; } catch(e) { return ''; } })()}
-            </div>
+            <!-- Quick Actions (hover-reveal, CMS-gated, delivery-stage aware) -->
+            ${typeof shouldShowManagement === 'function' && shouldShowManagement() ? `
+            <div class="cms-controls-row flex items-center gap-1.5 flex-wrap mt-2 pt-2 border-t border-slate-100">
+                <button onclick="event.stopPropagation(); openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})" class="item-action-btn edit">Edit</button>
+                <button onclick="event.stopPropagation(); deleteItem(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex}, '${item.id}', 'kanban')" class="item-action-btn delete">Delete</button>
+                <button onclick="event.stopPropagation(); toggleBlocker(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex}, '${item.id}', 'kanban')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>
+            </div>` : ''}
             <div class="drop-indicator absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 rounded hidden"></div>
         </div>
     `;

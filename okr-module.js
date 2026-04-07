@@ -210,9 +210,9 @@ function renderOkrCard(okr, idx) {
 
     // Management Actions
     const cmsActions = showManagement ? `
-        <div class="flex gap-2">
-            <button onclick="openOKREdit(${idx})" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest px-2 py-1">Edit</button>
-            <button onclick="deleteOKR(${idx})" class="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors uppercase tracking-widest px-2 py-1">Delete</button>
+        <div class="flex gap-1.5">
+            <button onclick="openOKREdit(${idx})" class="item-action-btn edit">Edit</button>
+            <button onclick="deleteOKR(${idx})" class="item-action-btn delete">Delete</button>
         </div>
     ` : '';
 

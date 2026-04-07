@@ -258,7 +258,7 @@ function renderWorkflowView() {
                 </div>
                 <ul class="space-y-2 mb-4">${stepsList}</ul>
                 <div class="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Output</div>
+                    <div class="text-[10px] font-medium text-slate-400">Output</div>
                     <div class="text-xs font-bold text-slate-600 text-right max-w-xs">${s.output}</div>
                 </div>
                 <div class="mt-3 flex justify-end">
@@ -276,7 +276,7 @@ function renderWorkflowView() {
             </div>
 
             <!-- Lifecycle flow strip -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-2 flex-wrap text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-2 flex-wrap text-[10px] font-medium text-slate-500">
                 <span class="text-slate-300">Flow:</span>
                 <span class="px-2 py-1 bg-slate-100 rounded">🔍 Discovery</span><span class="text-slate-300">→</span>
                 <span class="px-2 py-1 bg-indigo-100 rounded text-indigo-700">🌟 Vision</span><span class="text-slate-300">→</span>
@@ -649,13 +649,28 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
             }
         }
 
+        // Lifecycle-aware quick actions — show only what's relevant per stage
+        // Stage is inferred from viewPrefix (which view is rendering this item)
+        const viewStageMap = {
+            roadmap: 'definition', backlog: 'definition', sprint: 'definition', gantt: 'definition',
+            main: 'delivery', kanban: 'delivery', track: 'delivery', dependency: 'delivery',
+            releases: 'review', analytics: 'review', status: 'review', priority: 'review', contributor: 'review',
+            okr: 'vision', epics: 'vision',
+            ideation: 'discovery', spikes: 'discovery', discovery: 'discovery'
+        }
+        const itemStage = viewStageMap[viewPrefix] || viewStageMap[mode === 'exec' ? 'okr' : 'main'] || 'delivery'
+
+        // Edit + Delete always available in CMS mode
+        const editBtn = `<button onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="item-action-btn edit">Edit</button>`
+        const deleteBtn = `<button onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn delete">Delete</button>`
+
+        // Stage-specific extra actions
+        const blockerBtn = (itemStage === 'delivery') ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>` : (item.blocker ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn active">🔓 Unblock</button>` : '')
+        const backlogBtn = (itemStage === 'definition' || itemStage === 'delivery') ? `<button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>` : ''
+
         cmsControls = `
             <div class="cms-controls-row flex items-center gap-1.5 flex-wrap">
-                <button onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="item-action-btn edit">Edit</button>
-                <button onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn delete">Delete</button>
-                <button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>
-                <button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>
-                ${okrAction}
+                ${editBtn}${deleteBtn}${backlogBtn}${blockerBtn}${okrAction}
             </div>
         `;
     }
@@ -881,7 +896,7 @@ function renderStatusView() {
                 html += `
                     <div class="item-row hover:bg-slate-50 transition-colors">
                         <div class="flex-1">
-                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
+                            <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-medium text-xs inline-block mb-1.5 border border-slate-200">
                                 ${item.track} &rarr; ${item.subtrack}
                             </span>
                             ${renderItem(item, 'status', item.trackIndex, item.subtrackIndex, item.itemIndex)}
@@ -953,7 +968,7 @@ function renderPriorityView() {
                 const priorityOpts = ['high', 'medium', 'low'].map(p => `<option value="${p}" ${p === (item.priority || 'medium') ? 'selected' : ''}>${p}</option>`).join('');
                 html += `
                     <div class="item-row hover:bg-slate-50 transition-colors">
-                        <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-bold text-[0.65rem] uppercase tracking-wider inline-block mb-1.5 border border-slate-200">
+                        <span style="color: ${trackColor}; background: ${trackColor}10;" class="px-2 py-0.5 rounded-md font-medium text-xs inline-block mb-1.5 border border-slate-200">
                             ${item.track} &rarr; ${item.subtrack}
                         </span>
                         ${renderItem(item, 'priority', item.trackIndex, item.subtrackIndex, item.itemIndex)}
@@ -1039,7 +1054,7 @@ function renderContributorView() {
             const statusCfg = statusConfig[status] || { icon: '•', color: '#64748b' };
             html += `
                 <div class="status-group mb-2 last:mb-0">
-                    <div class="text-[9px] font-black uppercase tracking-widest mb-2 px-2 py-0.5 flex items-center gap-2 w-fit -ml-2 border-l-4 rounded-r" style="color: ${statusCfg.color}; background: ${statusCfg.color}10; border-color: ${statusCfg.color};">
+                    <div class="text-[10px] font-semibold mb-2 px-2 py-0.5 flex items-center gap-2 w-fit -ml-2 border-l-4 rounded-r" style="color: ${statusCfg.color}; background: ${statusCfg.color}10; border-color: ${statusCfg.color};">
                         ${status}
                     </div>
                     <div class="space-y-0.5 px-1">
@@ -1249,11 +1264,11 @@ function renderEpicsView() {
         const epicHorizon = data.metadata.roadmap?.find(h => h.id === e.planningHorizon);
 
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex flex-wrap gap-2 ml-auto">
-                <button onclick="openEpicEdit(${idx})" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded">Edit</button>
-                <button onclick="deleteEpic(${idx})" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-widest bg-rose-50 px-2 py-1 rounded">Delete</button>
-                <button onclick="groomEpicTasks('${e.id}')" class="text-sky-600 hover:text-sky-800 text-[10px] font-black uppercase tracking-widest bg-sky-50 px-2 py-1 rounded">Groom Tasks 📚</button>
-                <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="text-emerald-600 hover:text-emerald-800 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded">➕ Task</button>
+            <div class="flex flex-wrap gap-1.5 ml-auto">
+                <button onclick="openEpicEdit(${idx})" class="item-action-btn edit">Edit</button>
+                <button onclick="deleteEpic(${idx})" class="item-action-btn delete">Delete</button>
+                <button onclick="groomEpicTasks('${e.id}')" class="item-action-btn neutral">Groom 📚</button>
+                <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
 
@@ -1262,11 +1277,11 @@ function renderEpicsView() {
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4 items-start">
                 <!-- WHAT: Vision & Success -->
                 <div class="md:col-span-1 space-y-2">
-                    <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Epic Vision (The What)</span>
+                    <span class="text-slate-400 font-medium text-[10px] block">Epic Vision (The What)</span>
                     <div class="text-xs font-bold text-slate-800 leading-snug line-clamp-3" title="${e.description || ''}">${e.description || 'No vision statement provided.'}</div>
                     ${e.successCriteria ? `
                     <div class="bg-indigo-50/50 p-2 rounded-lg border border-indigo-100 mt-2">
-                        <span class="text-indigo-400 font-black uppercase text-[8px] tracking-[0.2em] block mb-1">Success Criteria</span>
+                        <span class="text-indigo-400 font-medium text-[10px] block mb-1">Success Criteria</span>
                         <div class="text-[10px] font-black text-indigo-900 leading-tight">${e.successCriteria}</div>
                     </div>
                     ` : ''}
@@ -1274,11 +1289,11 @@ function renderEpicsView() {
 
                 <!-- WHERE: Strategic Alignment -->
                 <div class="space-y-2">
-                    <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Alignment (The Where)</span>
+                    <span class="text-slate-400 font-medium text-[10px] block">Alignment (The Where)</span>
                     ${epicOKR ? `
                         <div class="px-3 py-2 bg-white border border-indigo-600/10 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center mb-0.5">
-                                <div class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Objective</div>
+                                <div class="text-[8px] font-medium text-[10px] text-indigo-400">Objective</div>
                                 ${e.strategicWeight ? `<div class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1 rounded">${e.strategicWeight}% Weight</div>` : ''}
                             </div>
                             <button onclick="switchView('okr')" class="epic-okr-link" title="View OKR">🎯 ${epicOKR.objective}</button>
@@ -1286,7 +1301,7 @@ function renderEpicsView() {
                     ` : ''}
                     ${epicHorizon ? `
                         <div class="px-3 py-2 bg-white border border-slate-900/10 rounded-lg shadow-sm mt-2">
-                            <div class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Horizon</div>
+                            <div class="text-[8px] font-medium text-[10px] text-slate-400 mb-0.5">Horizon</div>
                             <div class="text-[10px] font-black text-slate-800 truncate">🗺️ ${epicHorizon.label.split('(')[0]}</div>
                         </div>
                     ` : ''}
@@ -1294,14 +1309,14 @@ function renderEpicsView() {
 
                 <!-- WHEN: Lifecycle -->
                 <div class="md:col-span-1">
-                     <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block mb-3 px-1">Epic Lifecycle (The When)</span>
+                     <span class="text-slate-400 font-medium text-[10px] block mb-3 px-1">Epic Lifecycle (The When)</span>
                      ${renderEpicLifecycle(e.stage)}
                 </div>
 
                 <!-- HOW: Progress & Health -->
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] block">Health (The How)</span>
+                        <span class="text-slate-400 font-medium text-[10px] block">Health (The How)</span>
                         <span class="px-1.5 py-0.5 bg-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-100 text-${e.health === 'on-track' ? 'green' : (e.health === 'caution' || e.health === 'at-risk' ? 'amber' : 'rose')}-700 rounded font-black text-[8px] border border-current uppercase">
                             ${e.health}
                         </span>
@@ -1425,9 +1440,9 @@ function renderRoadmapView() {
         const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
 
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex gap-2 ml-4">
-                <button onclick="openRoadmapEdit('${h.id}')" class="text-indigo-600 hover:text-indigo-800 text-[10px] font-black uppercase tracking-widest bg-white/80 px-2 py-1 rounded border border-indigo-100 transition-colors">Edit</button>
-                <button onclick="deleteRoadmap('${h.id}')" class="text-rose-600 hover:text-rose-800 text-[10px] font-black uppercase tracking-widest bg-white/80 px-2 py-1 rounded border border-rose-100 transition-colors">Delete</button>
+            <div class="flex gap-1.5 ml-4">
+                <button onclick="openRoadmapEdit('${h.id}')" class="item-action-btn edit">Edit</button>
+                <button onclick="deleteRoadmap('${h.id}')" class="item-action-btn delete">Delete</button>
             </div>
         ` : '';
 
@@ -1439,7 +1454,7 @@ function renderRoadmapView() {
                         <div class="px-6 py-3 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-800 rounded-2xl font-black text-sm uppercase tracking-[0.2em] border-2 border-current flex items-center gap-4 shadow-md bg-white">
                             ${h.label || h.name}
                             ${cmsActions}
-                            ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="bg-${h.color || 'slate'}-600 text-white hover:scale-110 p-1.5 rounded-xl text-[10px] w-7 h-7 flex items-center justify-center transition-all shadow-lg" title="Add Task to this Horizon"><span>➕</span></button>` : ''}
+                            ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="item-action-btn okr" title="Add Task to this Horizon">+ Task</button>` : ''}
                         </div>
                         <div class="h-[2px] flex-1 bg-slate-200"></div>
                     </div>
@@ -1560,10 +1575,10 @@ function renderSprintView() {
     sprints.forEach((s, idx) => {
         const sprintItems = applyExecFilter(findItemsByMetadataId('sprintId', s.id), 'sprint');
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex gap-2 ml-4">
-                <button onclick="openSprintEdit('${s.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
-                <button onclick="deleteSprint('${s.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
-                <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            <div class="flex gap-1.5 ml-4">
+                <button onclick="openSprintEdit('${s.id}')" class="item-action-btn edit">Edit</button>
+                <button onclick="deleteSprint('${s.id}')" class="item-action-btn delete">Delete</button>
+                <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
 
@@ -1680,10 +1695,10 @@ function renderReleasesView() {
     releases.forEach((r, idx) => {
         const releaseItems = applyExecFilter(findItemsByMetadataId('releasedIn', r.id), 'releases');
         const cmsActions = shouldShowManagement() ? `
-            <div class="flex gap-2 ml-4">
-                <button onclick="openReleaseEdit('${r.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold uppercase tracking-tighter">Edit</button>
-                <button onclick="deleteRelease('${r.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold uppercase tracking-tighter">Delete</button>
-                <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-tighter">➕ Task</button>
+            <div class="flex gap-1.5 ml-4">
+                <button onclick="openReleaseEdit('${r.id}')" class="item-action-btn edit">Edit</button>
+                <button onclick="deleteRelease('${r.id}')" class="item-action-btn delete">Delete</button>
+                <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
 
@@ -2239,12 +2254,13 @@ function renderDiscoveryView() {
             </div>
             
             <div class="flex items-center gap-3">
-                <button onclick="openAddItemModal('${currentView === 'ideation' ? 'idea' : 'spike'}')" 
-                        class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-black shadow-lg shadow-indigo-100 hover:bg-slate-900 transition-all">
+                ${shouldShowManagement() ? `
+                <button onclick="openAddItemModal('${currentView === 'ideation' ? 'idea' : 'spike'}')"
+                        class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-900 transition-all">
                     + Add ${currentView === 'ideation' ? 'Idea' : 'Spike'}
-                </button>
-                <button onclick="switchView('${currentView === 'ideation' ? 'spikes' : 'okr'}')" 
-                        class="bg-white text-slate-900 border border-slate-200 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-slate-50 transition-all flex items-center gap-2">
+                </button>` : ''}
+                <button onclick="switchView('${currentView === 'ideation' ? 'spikes' : 'okr'}')"
+                        class="bg-white text-slate-900 border border-slate-200 px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 transition-all flex items-center gap-2">
                     Next: ${currentView === 'ideation' ? 'Explore Spikes' : 'Set Strategy'} 🚀
                 </button>
             </div>

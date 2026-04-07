@@ -1971,7 +1971,8 @@ summary::-webkit-details-marker {
     opacity: 0;
     transition: opacity 0.15s ease;
 }
-.item-row:hover .cms-controls-row {
+.item-row:hover .cms-controls-row,
+.kanban-card:hover .cms-controls-row {
     opacity: 1;
 }
 
