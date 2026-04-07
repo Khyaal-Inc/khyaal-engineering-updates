@@ -1824,26 +1824,45 @@ async function saveSprintClose(sprintId) {
 
     // 2. Apply rollover resolutions
     const resolutionSelects = document.querySelectorAll('[id^="rollover-"]');
+    const movements = [];
+    
     resolutionSelects.forEach(select => {
         const itemId = select.getAttribute('data-item-id');
         const resolution = select.value;
         const item = items.find(i => i.id === itemId);
+        if (item) movements.push({ item, resolution });
+    });
 
-        if (item) {
-            // Update the real item in UPDATE_DATA
-            const track = UPDATE_DATA.tracks[item.trackIndex];
-            const subtrack = track.subtracks[item.subtrackIndex];
-            const realItem = subtrack.items[item.itemIndex];
+    // Sort descending by itemIndex so splice doesn't affect subsequent indices
+    movements.sort((a, b) => b.item.itemIndex - a.item.itemIndex);
 
-            if (resolution === 'next' && nextSprint) {
+    movements.forEach(m => {
+        const { item, resolution } = m;
+        // Update the real item in UPDATE_DATA
+        const track = UPDATE_DATA.tracks[item.trackIndex];
+        const subtrack = track.subtracks[item.subtrackIndex];
+        const realItem = subtrack.items[item.itemIndex];
+
+        if (resolution === 'next') {
+            if (nextSprint) {
                 realItem.sprintId = nextSprint.id;
-            } else if (resolution === 'backlog') {
+                realItem.status = 'next'; // Reset to Planned for new cycle
+            } else {
+                // Fallback to backlog if no next sprint exists
                 realItem.sprintId = '';
                 realItem.status = 'later';
-            } else if (resolution === 'drop') {
-                realItem.sprintId = '';
+                // Physically move to Backlog subtrack
+                moveItemToBacklog(item);
+                if (typeof showToast === 'function') showToast(`No future sprint found — #${realItem.id} moved to backlog.`, 'warn');
             }
+        } else if (resolution === 'backlog') {
+            realItem.sprintId = '';
+            realItem.status = 'later';
+            moveItemToBacklog(item);
+        } else if (resolution === 'drop') {
+            realItem.sprintId = '';
         }
+        realItem.updatedAt = new Date().toISOString();
     });
 
     // 3. Record Velocity History
@@ -1870,6 +1889,8 @@ async function saveSprintClose(sprintId) {
     UPDATE_DATA.metadata.sprints[sprintIndex].completedPoints = completedPoints;
 
     // 5. Notify and Save
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
+    
     if (typeof showToast === 'function') showToast(`Sprint ${sprint.name} closed successfully.`);
     else alert(`Sprint ${sprint.name} closed successfully.`);
 
@@ -1891,7 +1912,9 @@ function closeOKR(idx) {
 
     UPDATE_DATA.metadata.okrs[idx].status = 'closed';
     UPDATE_DATA.metadata.okrs[idx].result = result.toLowerCase();
+    UPDATE_DATA.metadata.okrs[idx].updatedAt = new Date().toISOString();
 
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     if (typeof showToast === 'function') showToast(`OKR marked as ${result}`);
     if (typeof renderOkrView === 'function') renderOkrView();
 }
@@ -1909,20 +1932,56 @@ function closeEpic(idx) {
     const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
     const pendingItems = items.filter(i => i.status !== 'done');
 
-    // Move pending to backlog
-    pendingItems.forEach(item => {
+    // 1. Group items by source subtrack to safely move them without index shifting
+    // Sort descending by itemIndex so splice doesn't affect subsequent indices
+    const sortedPending = [...pendingItems].sort((a, b) => b.itemIndex - a.itemIndex);
+
+    // 2. Move pending to backlog
+    sortedPending.forEach(item => {
         const track = UPDATE_DATA.tracks[item.trackIndex];
         const subtrack = track.subtracks[item.subtrackIndex];
         const realItem = subtrack.items[item.itemIndex];
         
         realItem.epicId = '';
         realItem.status = 'later';
+        realItem.updatedAt = new Date().toISOString();
+
+        moveItemToBacklog(item);
     });
 
     UPDATE_DATA.metadata.epics[idx].status = 'completed';
+    UPDATE_DATA.metadata.epics[idx].updatedAt = new Date().toISOString();
 
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     if (typeof showToast === 'function') showToast(`Epic ${epic.name} closed. ${pendingItems.length} items moved to backlog.`);
     if (typeof renderEpicsView === 'function') renderEpicsView();
+}
+
+/**
+ * Shared Helper: Physically move an item to the "Backlog" subtrack of its parent track
+ * Used by ceremonies for physical data organization
+ */
+function moveItemToBacklog(itemRef) {
+    const track = UPDATE_DATA.tracks[itemRef.trackIndex];
+    if (!track) return;
+
+    const sourceSubtrack = track.subtracks[itemRef.subtrackIndex];
+    if (!sourceSubtrack) return;
+
+    const backlogSubtrack = track.subtracks.find(s => s.name === 'Backlog');
+    if (!backlogSubtrack) return;
+
+    // Don't move if it's already in the backlog
+    if (sourceSubtrack === backlogSubtrack) return;
+
+    // 1. Get the real item object from the source
+    const itemsToMove = sourceSubtrack.items.splice(itemRef.itemIndex, 1);
+    const itemObj = itemsToMove[0];
+
+    // 2. Add to backlog
+    if (itemObj) {
+        backlogSubtrack.items.push(itemObj);
+    }
 }
 
 /**
@@ -1949,13 +2008,18 @@ function shipRelease(releaseId) {
         
         if (nextRelease) {
             realItem.releasedIn = nextRelease.id;
+            realItem.status = 'next'; // Reset to Planned for next release
         } else {
             realItem.releasedIn = ''; // Back to unassigned if no next release
+            realItem.status = 'later';
         }
+        realItem.updatedAt = new Date().toISOString();
     });
 
     UPDATE_DATA.metadata.releases[releaseIdx].status = 'completed';
+    UPDATE_DATA.metadata.releases[releaseIdx].updatedAt = new Date().toISOString();
 
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     if (typeof showToast === 'function') showToast(`Release ${release.name} Shipped! 📦`);
     if (typeof renderReleasesView === 'function') renderReleasesView();
 }
@@ -1968,6 +2032,8 @@ function advanceRoadmapHorizons() {
     if (!confirm("⚠️ Advance Roadmap Horizons?\n\nThis will shift all items:\n- Next (3M) → Now (1M)\n- Later (6M) → Next (3M)\n\nItems currently in 'Now' will remain there but should be reviewed for backlog/archive.")) return;
 
     let shiftCount = 0;
+    
+    // 1. Advance items
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
@@ -1978,10 +2044,24 @@ function advanceRoadmapHorizons() {
                     item.planningHorizon = '3M';
                     shiftCount++;
                 }
+                item.updatedAt = new Date().toISOString();
             });
         });
     });
 
+    // 2. Strategic Sync: Advance Epics
+    if (UPDATE_DATA.metadata.epics) {
+        UPDATE_DATA.metadata.epics.forEach(epic => {
+            if (epic.planningHorizon === '3M') {
+                epic.planningHorizon = '1M';
+            } else if (epic.planningHorizon === '6M') {
+                epic.planningHorizon = '3M';
+            }
+            epic.updatedAt = new Date().toISOString();
+        });
+    }
+
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     if (typeof showToast === 'function') showToast(`Roadmap advanced! ${shiftCount} items shifted horizons.`);
     if (typeof renderRoadmapView === 'function') renderRoadmapView();
 }

@@ -208,7 +208,7 @@ function renderOkrCard(okr, idx) {
     const stage = getOkrLifecycleStage(progress);
     
     // Check if OKR is closed
-    const isClosed = ['achieved', 'missed', 'cancelled'].includes(okr.status);
+    const isClosed = okr.status === 'closed' || ['achieved', 'missed', 'cancelled'].includes(okr.status);
 
     // Management Actions
     const cmsActions = showManagement ? `
