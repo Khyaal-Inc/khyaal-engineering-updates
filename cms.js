@@ -2281,84 +2281,104 @@ function moveItemToBacklog(itemRef) {
  * Ceremony Handoff UI: Renders a success summary after a lifecycle closure
  */
 function renderCeremonySuccess(type, config, isHistorical = false) {
-    document.getElementById('modal-title').innerHTML = `
-        <div class="flex items-center gap-3 text-emerald-600">
-            <span class="text-2xl">✨</span>
-            <span class="font-black tracking-tight">${isHistorical ? 'Historical Audit' : 'Mission Accomplished'}</span>
-        </div>
-    `;
+    // 0. OVERRIDE GENERIC MODAL HEADER (MODERN CONTRAST)
+    const modalTitleEl = document.getElementById('modal-title');
+    if (modalTitleEl) {
+        modalTitleEl.innerHTML = `
+            <div class="flex items-center justify-center gap-4 text-emerald-600 w-full ml-auto mr-auto pl-12 py-2">
+                <span class="text-2xl filter drop-shadow-sm">✨</span>
+                <span class="font-black tracking-tighter text-lg uppercase text-slate-800">Platform Lifecycle Audit</span>
+            </div>
+        `;
+    }
 
+    // 1. SYMMETRIC ACTION CENTER (HIGH CONTRAST)
+    const allActions = [...config.actions];
+    const showDoneInGrid = allActions.length === 1; 
+    
+    const actionsHtml = allActions.map(a => {
+        const fnStr = a.fn.toString();
+        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn !bg-white hover:!bg-slate-50 !text-slate-950 !text-[12px] !font-black !uppercase !tracking-widest !py-4 !rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group border-2 border-slate-200/60 w-full mb-0 overflow-hidden relative active:scale-95">
+            <span class="relative z-10">${a.label}</span>
+        </button>`;
+    }).join('');
+
+    const doneButtonHtml = `<button onclick="closeCmsModal()" class="cms-btn cms-btn-primary w-full py-4 !rounded-full shadow-xl transition-all active:scale-95 !bg-slate-900 !text-white font-black uppercase tracking-widest text-[12px] border-2 border-white/10 flex items-center justify-center mb-0 hover:!bg-black">
+        Done
+    </button>`;
+
+    // 2. MISSION BANNER (CONTRAST & BREADTH)
+    let missionHtml = '';
+    if (config.mission) {
+        missionHtml = `
+            <div class="mb-6 py-4 px-8 glass-header !rounded-3xl border-2 border-slate-800 shadow-2xl w-full bg-slate-950 flex flex-col text-left relative overflow-hidden shrink-0">
+                <div class="absolute right-0 top-0 py-6 px-4 opacity-[0.05] text-7xl transform rotate-12 pointer-events-none select-none text-white">🌐</div>
+                <div class="flex items-center gap-3 mb-2.5 relative z-10">
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-[0.25em] border border-emerald-500/30 backdrop-blur-md flex items-center gap-1.5 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Strategic Context
+                    </span>
+                    <span class="text-[10px] font-bold text-white/50 tracking-[0.15em] uppercase">${config.mission.track} • ${config.mission.timeline}</span>
+                </div>
+                <h4 class="text-[14px] font-black text-white leading-tight tracking-tight relative z-10 pr-24">${config.mission.objective}</h4>
+            </div>
+        `;
+    }
+
+    // 3. PERFORMANCE RIBBON (HIGH DEFINITION)
     const detailsHtml = `
-        <div class="grid grid-cols-3 gap-2 bg-slate-50/50 rounded-2xl border border-slate-100 p-2">
-            ${config.details.map(d => `
-                <div class="flex flex-col items-center justify-center p-2 rounded-xl bg-white/50 border border-transparent hover:border-slate-200 transition-all">
-                    <div class="flex items-center gap-1.5 mb-0.5 opacity-60">
-                        <span class="text-xs shrink-0">${d.icon}</span>
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-tighter truncate">${d.label}</span>
+        <div class="flex items-center justify-between bg-white border-2 border-slate-200 !rounded-3xl w-full py-5 shadow-sm mb-6 shrink-0">
+            ${config.details.map((d, i) => `
+                <div class="flex-1 flex flex-col items-center justify-center ${i < config.details.length - 1 ? 'border-r-2 border-slate-100' : ''} px-6">
+                    <div class="flex items-center gap-2 opacity-60 mb-1.5">
+                        <span class="text-[10px] shrink-0">${d.icon}</span>
+                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] truncate">${d.label}</span>
                     </div>
-                    <span class="text-sm font-black text-slate-900 leading-none">${d.count}</span>
+                    <span class="text-[16px] font-black text-slate-950 leading-none tracking-tighter">${d.count}</span>
                 </div>
             `).join('')}
         </div>
     `;
 
-    const actionsHtml = config.actions.map(a => {
-        const label = a.label;
-        const fnStr = a.fn.toString();
-        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn cms-btn-secondary !text-[10px] !font-black !uppercase !tracking-widest !py-2.5 !rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 group">
-            <span class="group-hover:translate-x-0.5 transition-transform">${label}</span>
-        </button>`;
-    }).join('');
-
-    let missionHtml = '';
-    if (config.mission) {
-        missionHtml = `
-            <div class="mb-4 p-4 glass-header rounded-[2rem] text-left border border-white/20 shadow-xl relative overflow-hidden bg-gradient-to-br from-slate-900 to-indigo-950">
-                <div class="absolute top-0 right-0 p-4 opacity-5 text-4xl">🌐</div>
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-0.5 rounded bg-white/10 text-white text-[8px] font-black uppercase tracking-[0.2em] border border-white/10 backdrop-blur-md">Mission Context</span>
-                    <span class="text-[9px] font-bold text-white/40">${config.mission.track} • ${config.mission.timeline}</span>
-                </div>
-                <h4 class="text-xs font-bold text-white/90 leading-relaxed max-w-[90%]">${config.mission.objective}</h4>
-            </div>
-        `;
-    }
-
+    // 4. STRATEGIC WINS (BOLD ANCHOR)
     let winsHtml = '';
     if (config.wins) {
         winsHtml = `
-            <div class="mt-6 text-left relative pl-5 py-1">
-                <div class="absolute left-1 top-2 bottom-2 w-0.5 bg-indigo-400/40 rounded-full"></div>
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Strategic Outcome Verified</div>
-                <p class="text-[11px] font-semibold text-slate-700 leading-relaxed italic">"${config.wins}"</p>
+            <div class="mb-8 text-center w-full px-8 border-l-4 border-indigo-500/80 py-2 bg-indigo-50/30 rounded-r-2xl">
+                <div class="text-[9px] font-black text-indigo-600 uppercase tracking-[0.35em] mb-2 text-left flex items-center gap-2">
+                     Verified Strategic Success
+                </div>
+                <p class="text-[12px] font-bold text-slate-900 italic leading-relaxed text-left">"${config.wins}"</p>
             </div>
         `;
     }
 
+    // 5. IMPACT LOG (MAX CONTRAST)
     let impactHtml = '';
     if (config.items && config.items.length > 0) {
+        const itemType = type === 'okr' ? 'KEY RESULT' : (type === 'epic' ? 'INITIATIVE' : 'ITEM');
         impactHtml = `
-            <div class="mt-6 text-left">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1 flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div> Impact Log & Drill-Down
+            <div class="text-left w-full mt-2 shrink-0">
+                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.35em] mb-3 px-1 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Detailed Lifecycle Trace
                 </div>
-                <div class="audit-impact-log bg-slate-50/50 rounded-2xl border border-slate-100 overflow-y-auto max-h-[180px] p-1.5 space-y-1 custom-scrollbar">
+                <div class="audit-impact-log bg-slate-50/50 rounded-3xl border-2 border-slate-200 overflow-y-auto max-h-[220px] p-2.5 space-y-1.5 custom-scrollbar w-full shadow-inner">
                     ${config.items.map(item => {
                         const isDone = item.status === 'done' || item.status === 'achieved' || item.status === 'completed';
                         const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' ? `openItemEdit('${item.id}')` : '');
                         
                         return `
-                            <div class="flex items-center justify-between p-1.5 hover:bg-white rounded-xl transition-all group border border-transparent hover:border-slate-100 hover:shadow-sm">
-                                <div class="flex items-center gap-2 overflow-hidden mr-3">
-                                    <div class="w-1.5 h-1.5 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-amber-400'} shrink-0 opacity-40 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="flex items-center justify-between p-2 px-6 bg-white border border-slate-100 rounded-2xl transition-all group hover:border-indigo-300 hover:shadow-md active:scale-[0.99] cursor-pointer" 
+                                  onclick="${linkFn}">
+                                <div class="flex items-center gap-4 overflow-hidden mr-6">
+                                    <div class="w-2.5 h-2.5 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-amber-400'} shrink-0 opacity-80 group-hover:opacity-100 transition-all shadow-sm"></div>
                                     <div class="flex flex-col min-w-0">
-                                        <span class="text-[10px] font-bold text-slate-700 truncate cursor-pointer hover:text-indigo-600 transition-colors audit-link" 
-                                              onclick="${linkFn}" title="Click to view details">${item.name}</span>
-                                        ${item.lead ? `<span class="text-[8px] font-medium text-slate-400">Lead: ${item.lead} ${item.points ? ` • ${item.points} SP` : ''}</span>` : ''}
+                                        <span class="text-[11px] font-black text-slate-900 truncate uppercase tracking-tight group-hover:text-indigo-600 transition-colors">${item.name}</span>
+                                        ${item.lead ? `<span class="text-[9px] font-bold text-slate-500">Lead: ${item.lead} ${item.points ? ` • ${item.points} SP` : ''}</span>` : ''}
                                     </div>
                                 </div>
-                                <span class="text-[7px] font-black uppercase px-1.5 py-0.5 rounded-md ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100/30' : 'bg-amber-50 text-amber-600 border border-amber-100/30'} shrink-0">
-                                    ${item.destination || item.status}
+                                <span class="text-[9px] font-black uppercase px-4 py-1.5 rounded-full ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'} shrink-0 tracking-tight shadow-sm">
+                                    ${itemType}
                                 </span>
                             </div>
                         `;
@@ -2368,46 +2388,49 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
         `;
     }
 
+    // 6. ASSEMBLE CONTENT (MAX BREADTH 1100px)
     document.getElementById('modal-form').innerHTML = `
-        <div class="text-center py-4">
-            <div class="relative w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100 shadow-inner group">
+        <div class="text-center py-6 px-12 flex flex-col items-center w-full max-w-[1100px] mx-auto animate-fadeInDown">
+            <div class="relative w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-slate-200 shadow-xl group hover:scale-110 transition-transform">
                 <span class="text-2xl">${isHistorical ? '📜' : '🏁'}</span>
-                <div class="absolute -right-1 -bottom-1 w-5 h-5 bg-white border border-slate-100 rounded-full flex items-center justify-center text-[10px] shadow-sm transform group-hover:scale-110 transition-transform">✨</div>
+                <div class="absolute -right-1 -bottom-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white shadow-lg shadow-emerald-200 animate-pulse"></div>
             </div>
             
-            ${missionHtml}
+            <div class="space-y-1.5 mb-10 w-full text-center">
+                <h3 class="text-2xl font-black text-slate-950 tracking-tighter leading-none">${config.title}</h3>
+                <p class="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-90">${config.description}</p>
+            </div>
 
-            <div class="space-y-1 mb-6">
-                <h3 class="text-lg font-black text-slate-900 tracking-tight leading-none">${config.title}</h3>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${config.description}</p>
-            </div>
-            
-            <div class="space-y-4">
-                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] text-left mb-2 ml-1">Lifecycle Performance</div>
+            <div class="w-full flex flex-col items-center gap-3">
+                ${missionHtml}
                 ${detailsHtml}
+                ${winsHtml}
+                ${impactHtml}
             </div>
-
-            ${winsHtml}
-
-            ${impactHtml}
         </div>
     `;
 
+    // 7. ACTION CENTER (HEAVY CONTRAST FOOTER)
     document.getElementById('modal-footer').innerHTML = `
-        <div class="p-4 border-t border-slate-100">
-            <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="p-10 border-t-2 border-slate-200 bg-slate-100/30 flex flex-col items-center w-full">
+            <div class="w-full max-w-[1100px] grid ${showDoneInGrid ? 'grid-cols-2' : 'grid-cols-1'} gap-8">
                 ${actionsHtml}
+                ${showDoneInGrid ? doneButtonHtml : ''}
             </div>
-            <button onclick="closeCmsModal()" class="cms-btn cms-btn-primary !w-full py-3 !rounded-2xl shadow-xl transition-all active:scale-95">
-                Done
-            </button>
-            ${isHistorical ? `<div class="mt-4 text-center text-[8px] font-bold text-slate-300 uppercase tracking-widest bg-slate-50 py-1.5 rounded-full border border-slate-100">Audit Trace • ${new Date(config.timestamp || Date.now()).toLocaleDateString()}</div>` : ''}
+            ${!showDoneInGrid ? `<div class="w-full max-w-[1100px] mt-6">${doneButtonHtml}</div>` : ''}
+            ${isHistorical ? `<div class="mt-8 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] opacity-60 flex items-center gap-3 bg-white px-6 py-2 rounded-full border-2 border-slate-100 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-slate-300 animate-pulse"></span> 🛡️ Historical Trace • ${new Date(config.timestamp || Date.now()).toLocaleDateString()}
+            </div>` : ''}
         </div>
     `;
 
-    // ENSURE MODAL IS VISIBLE
-    document.getElementById('cms-modal').classList.add('active');
+    // 8. FINALIZE & RENDER
+    const modal = document.getElementById('cms-modal');
+    modal.classList.add('active');
+    modal.scrollTop = 0;
     document.body.style.overflow = 'hidden';
+    
+    console.log("RENDER HIGH_CONTRAST AUDIT v8.0 [EXPANSIVE_BREADTH]");
 }
 
 /**
