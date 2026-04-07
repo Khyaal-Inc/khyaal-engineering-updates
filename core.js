@@ -87,7 +87,7 @@ function renderBlockerStrip() {
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
                     </span>
-                    <span class="text-[10px] font-black text-red-700">${blockers.length}</span>
+                    <span class="text-[10px] font-semibold text-red-700">${blockers.length}</span>
                 </button>
             `;
         } else {
@@ -107,8 +107,8 @@ function renderBlockerStrip() {
     let html = `<div class="bg-red-50 p-4 rounded-2xl border border-red-200 shadow-xl animate-fadeInDown">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-black bg-red-600 text-white px-2 py-1 rounded-full uppercase tracking-widest">🚨 ${blockers.length} Active Blocker${blockers.length > 1 ? 's' : ''}</span>
-                            <span class="text-xs text-red-800 font-bold">Action required to unblock progress</span>
+                            <span class="text-xs font-semibold bg-red-600 text-white px-2.5 py-1 rounded-full">🚨 ${blockers.length} Active Blocker${blockers.length > 1 ? 's' : ''}</span>
+                            <span class="text-xs text-red-800 font-medium">Action required to unblock progress</span>
                         </div>
                         <button onclick="document.getElementById('global-blocker-strip').classList.add('hidden')" class="text-red-400 hover:text-red-700">✕</button>
                     </div>
@@ -120,8 +120,8 @@ function renderBlockerStrip() {
             <div class="blocker-alert-item border-l-4 border-red-500 bg-white/50 p-3 rounded-r-xl shadow-sm">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex-1">
-                        <div class="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">${b.track} / ${b.subtrack}</div>
-                        <div class="text-sm font-black text-red-900">${b.text}</div>
+                        <div class="text-[10px] font-medium text-red-400 mb-1">${b.track} › ${b.subtrack}</div>
+                        <div class="text-sm font-semibold text-red-900">${b.text}</div>
                         ${b.note ? `<div class="text-xs text-red-700 italic mt-1 bg-red-100/50 p-1.5 rounded-lg border border-red-100">• ${b.note}</div>` : ''}
                     </div>
                     ${b.id ? `<button onclick="resolveBlocker('${b.id}')" class="blocker-resolve-btn shrink-0">✅ Resolve</button>` : ''}

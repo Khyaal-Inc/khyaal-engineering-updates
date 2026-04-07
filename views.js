@@ -123,7 +123,7 @@ function renderWorkflowView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🛠️</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Engineering Playbook</span>
+                    <span class="text-[10px] font-medium text-slate-400">Engineering Playbook</span>
                     <h2 class="text-sm font-black text-slate-800">Process & Workflow</h2>
                 </div>
             </div>
@@ -309,7 +309,7 @@ function renderTrackView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">🏗️</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · All work organized by engineering team — see who owns what</span>
+                        <span class="text-[10px] font-medium text-slate-400">Delivery · All work organized by engineering team — see who owns what</span>
                         <h2 class="text-sm font-black text-slate-800">Engineering Tracks</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('track') : ''}
@@ -412,10 +412,10 @@ function renderTrackView() {
             <div class="track-header" style="background: linear-gradient(135deg, ${accentColor} 0%, #1e293b 100%)">
                 <div class="flex justify-between items-center w-full">
                     <div class="flex items-center gap-3">
-                        <span class="text-xl font-black uppercase tracking-tighter">${track.name}</span>
+                        <span class="text-xl font-bold">${track.name}</span>
                         <div class="flex items-center gap-1.5 px-2 py-1 rounded bg-white/10 border border-white/20 backdrop-blur-sm" title="Team Pulse: ${healthScore}% Healthy">
                             <div class="w-2 h-2 rounded-full ${healthColor} ${healthScore < 90 ? 'animate-pulse' : ''}"></div>
-                            <span class="text-[10px] font-black uppercase tracking-widest">${healthStatus}</span>
+                            <span class="text-[10px] font-medium">${healthStatus}</span>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -453,17 +453,17 @@ function renderTrackView() {
                             box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     
                     <div class="flex items-center gap-4 flex-1 min-w-0">
-                        <span class="font-black text-slate-900 text-lg truncate">${subtrack.name}</span>
-                        <span class="flex-shrink-0 text-[11px] font-black text-slate-600 bg-white/90 px-2.5 py-1 rounded-full border border-slate-200 shadow-sm tracking-wider">${percent}%</span>
-                        ${blockerCount > 0 ? `<span class="flex-shrink-0 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">&#128274; ${blockerCount} blocker${blockerCount > 1 ? 's' : ''}</span>` : ''}
+                        <span class="font-semibold text-slate-900 text-base truncate">${subtrack.name}</span>
+                        <span class="flex-shrink-0 text-[11px] font-semibold text-slate-600 bg-white/90 px-2.5 py-1 rounded-full border border-slate-200 shadow-sm">${percent}%</span>
+                        ${blockerCount > 0 ? `<span class="flex-shrink-0 text-[10px] font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">🔒 ${blockerCount} blocker${blockerCount > 1 ? 's' : ''}</span>` : ''}
                     </div>
 
                     <div class="flex gap-2 items-center flex-shrink-0">
                         ${shouldShowManagement() ? `
                         <div class="flex gap-1" onclick="event.stopPropagation()">
-                            <button onclick="addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 font-bold border border-emerald-100 shadow-sm transition-colors uppercase tracking-wider">Add Item</button>
-                            <button onclick="openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-md hover:bg-blue-100 font-bold border border-blue-100 shadow-sm transition-colors uppercase tracking-wider">Edit</button>
-                            <button onclick="deleteSubtrack(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-red-50 text-red-700 px-2.5 py-1.5 rounded-md hover:bg-red-100 font-bold border border-red-100 shadow-sm transition-colors uppercase tracking-wider">Delete</button>
+                            <button onclick="addItem(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 font-medium border border-emerald-100 transition-colors">+ Item</button>
+                            <button onclick="openSubtrackEdit(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1.5 rounded-md hover:bg-blue-100 font-medium border border-blue-100 transition-colors">Edit</button>
+                            <button onclick="deleteSubtrack(${trackIndex}, ${subtrackIndex})" class="text-[10px] bg-red-50 text-red-700 px-2.5 py-1.5 rounded-md hover:bg-red-100 font-medium border border-red-100 transition-colors">Delete</button>
                         </div>
                         ` : ''}
                         <span class="ml-2 text-slate-400">
@@ -594,9 +594,9 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     if ((item.effortLevel || item.impactLevel) && showExecutionInline) {
         effortImpactHTML = `
             <div class="mt-2 pt-2 border-t border-slate-100 flex items-center">
-                <div class="flex gap-4 text-[10px] uppercase tracking-wider">
-                    ${item.effortLevel ? `<span><span class="font-black text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
-                    ${item.impactLevel ? `<span><span class="font-black text-slate-400">Value:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
+                <div class="flex gap-4 text-[10px]">
+                    ${item.effortLevel ? `<span><span class="font-medium text-slate-400">Effort:</span> <span class="text-slate-700">${item.effortLevel}</span></span>` : ''}
+                    ${item.impactLevel ? `<span><span class="font-medium text-slate-400">Value:</span> <span class="text-slate-700">${item.impactLevel}</span></span>` : ''}
                 </div>
             </div>
         `;
@@ -606,7 +606,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
     if (item.acceptanceCriteria && item.acceptanceCriteria.length > 0 && showExecutionInline) {
         acHTML = `
             <div class="mt-2 pt-2 border-t border-slate-100">
-                <span class="block font-black text-slate-400 text-[10px] mb-1 uppercase tracking-wider">Acceptance Criteria</span>
+                <span class="block font-medium text-slate-400 text-[10px] mb-1">Acceptance Criteria</span>
                 <ul class="list-disc pl-4 space-y-1 text-[10px] text-slate-600 font-medium">
                     ${item.acceptanceCriteria.map(ac => `<li>${ac}</li>`).join('')}
                 </ul>
@@ -747,7 +747,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             ${isGrooming ? `
                                 <div class="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4" onclick="event.stopPropagation()">
                                     <div>
-                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Priority</label>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">Priority</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="high" ${item.priority === 'high' ? 'selected' : ''}>High</option>
                                             <option value="medium" ${item.priority === 'medium' || !item.priority ? 'selected' : ''}>Medium</option>
@@ -755,21 +755,21 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">Epic</label>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">Epic</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'epicId', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Epic</option>
                                             ${(UPDATE_DATA.metadata.epics || []).map(e => `<option value="${e.id}" ${item.epicId === e.id ? 'selected' : ''}>${e.name}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🏃 Sprint</label>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">🏃 Sprint</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'sprintId', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Sprint</option>
                                             ${(UPDATE_DATA.metadata.sprints || []).map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">📦 Release</label>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">📦 Release</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'releasedIn', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">No Release</option>
                                             ${(UPDATE_DATA.metadata.releases || []).find(r => r.id === item.releasedIn)?.name || item.releasedIn}
@@ -777,7 +777,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-indigo-400 uppercase mb-1.5 tracking-wider">🎯 Horizon</label>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">🎯 Horizon</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">None</option>
                                             ${((UPDATE_DATA.metadata && UPDATE_DATA.metadata.roadmap) || [
@@ -834,7 +834,7 @@ function renderStatusView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">📊</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tactical Health Tracking</span>
+                    <span class="text-[10px] font-medium text-slate-400">Tactical Health Tracking</span>
                     <h2 class="text-sm font-black text-slate-800">Status Categorization</h2>
                 </div>
             </div>
@@ -911,7 +911,7 @@ function renderPriorityView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">⚡</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Definition · Items ranked by business priority</span>
+                    <span class="text-[10px] font-medium text-slate-400">Definition · Items ranked by business priority</span>
                     <h2 class="text-sm font-black text-slate-800">Priority Matrix</h2>
                 </div>
             </div>
@@ -982,7 +982,7 @@ function renderContributorView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">👥</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Work distribution across team members</span>
+                    <span class="text-[10px] font-medium text-slate-400">Delivery · Work distribution across team members</span>
                     <h2 class="text-sm font-black text-slate-800">Contributor Workload</h2>
                 </div>
             </div>
@@ -1082,7 +1082,7 @@ function renderBacklogView() {
                     <div class="flex items-center gap-3 px-2">
                         <span class="text-xl">📚</span>
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Items waiting to be planned into a sprint</span>
+                            <span class="text-[10px] font-medium text-slate-400">Stage 3 · Plan — Items waiting to be planned into a sprint</span>
                             <h2 class="text-sm font-black text-slate-800">Engineering Backlog</h2>
                         </div>
                         ${typeof renderInfoButton === 'function' ? renderInfoButton('backlog') : ''}
@@ -1207,7 +1207,7 @@ function renderEpicsView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🚀</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Vision / Strategic Epics</span>
+                    <span class="text-[10px] font-medium text-slate-400">Vision / Strategic Epics</span>
                     <h2 class="text-sm font-black text-slate-800">Engineering Epics</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('epics') : ''}
@@ -1380,7 +1380,7 @@ function renderRoadmapView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🗺️</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Future Product Horizons</span>
+                    <span class="text-[10px] font-medium text-slate-400">Future Product Horizons</span>
                     <h2 class="text-sm font-black text-slate-800">Strategic Roadmap</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('roadmap') : ''}
@@ -1454,7 +1454,7 @@ function renderRoadmapView() {
                                     <span class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200">Primary Strategic Alignment</span>
                                     <div class="h-[1px] flex-1 bg-indigo-400/30"></div>
                                 </div>
-                                <h3 class="text-xl font-black leading-tight flex items-start gap-4">
+                                <h3 class="text-xl font-bold leading-tight flex items-start gap-4">
                                     <span class="text-3xl mt-1">🎯</span>
                                     <span>${horizonOKR.objective}</span>
                                 </h3>
@@ -1522,7 +1522,7 @@ function renderSprintView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">🏃</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 3 · Plan — Work your team has committed to this time window</span>
+                        <span class="text-[10px] font-medium text-slate-400">Stage 3 · Plan — Work your team has committed to this time window</span>
                         <h2 class="text-sm font-black text-slate-800">Sprint Management</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('sprint') : ''}
@@ -1608,7 +1608,7 @@ function renderSprintView() {
                             </div>
                         </div>
                         <div class="text-right">
-                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Capacity</div>
+                             <div class="text-[10px] font-medium text-slate-400 mb-1">Capacity</div>
                              <span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold uppercase tracking-wider">${totalSprintItems} Tasks</span>
                              ${totalSprintItems > 0 ? `
                              <div class="sprint-density-bar mt-2">
@@ -1643,7 +1643,7 @@ function renderReleasesView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📦</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Stage 5 · Ship — Publish completed work to stakeholders</span>
+                        <span class="text-[10px] font-medium text-slate-400">Stage 5 · Ship — Publish completed work to stakeholders</span>
                         <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('releases') : ''}
@@ -1702,7 +1702,7 @@ function renderReleasesView() {
                             <div class="text-sm font-bold text-slate-500 mt-1">🎯 Target: ${r.targetDate || 'TBD'}</div>
                         </div>
                         <div class="text-right">
-                             <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Scope</div>
+                             <div class="text-[10px] font-medium text-slate-400 mb-1">Scope</div>
                              <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold uppercase tracking-wider">${releaseItems.length} Tasks</span>
                         </div>
                     </div>
@@ -1823,7 +1823,7 @@ function renderGanttView() {
                     <div class="flex items-center gap-3 px-2">
                         <span class="text-xl">📅</span>
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Timeline of epics and milestones</span>
+                            <span class="text-[10px] font-medium text-slate-400">Delivery · Timeline of epics and milestones</span>
                             <h2 class="text-sm font-black text-slate-800">Gantt Timeline</h2>
                         </div>
                         ${typeof renderInfoButton === 'function' ? renderInfoButton('gantt') : ''}
@@ -2080,8 +2080,8 @@ function renderWorkflowView() {
             <div class="max-w-3xl mx-auto py-10 px-6 mb-24">
                 <!-- V3 MacOS-Style Header -->
                 <div class="flex flex-col items-center mb-12 text-center">
-                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Engineering Playbook</div>
-                    <h2 class="text-3xl font-black text-slate-800 tracking-tight mb-8">Lifecycle Sequential Guide</h2>
+                    <div class="text-[10px] font-medium text-slate-400 mb-4 tracking-widest uppercase">Engineering Playbook</div>
+                    <h2 class="text-3xl font-bold text-slate-800 tracking-tight mb-8">Lifecycle Sequential Guide</h2>
                     
                     <div class="persona-picker-macos">
                         <button onclick="setWorkflowTab('pm')" class="tab-btn ${currentWorkflowTab === 'pm' ? 'active' : ''}">
@@ -2121,7 +2121,7 @@ function renderWorkflowView() {
                             </button>
                         </div>
 
-                        <h3 class="text-base font-black text-slate-800 mb-4 leading-tight">${step.title}</h3>
+                        <h3 class="text-base font-bold text-slate-800 mb-4 leading-tight">${step.title}</h3>
 
                         <div class="space-y-4">
                             <!-- Goal Line (High Density) -->
@@ -2232,7 +2232,7 @@ function renderDiscoveryView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🔍</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Discovery / Exploration & Ideation</span>
+                    <span class="text-[10px] font-medium text-slate-400">Discovery / Exploration & Ideation</span>
                     <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">${title}</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton(currentView) : ''}
@@ -2320,7 +2320,7 @@ function renderDiscoveryView() {
             `).join('') : `
                 <div class="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-slate-300">
                     <div class="text-5xl mb-4">💡</div>
-                    <h3 class="text-xl font-black text-slate-900">No active discovery items</h3>
+                    <h3 class="text-xl font-bold text-slate-900">No active discovery items</h3>
                     <p class="text-slate-500 mt-2">Tag items with #idea or #spike in the backlog to see them here.</p>
                 </div>
             `}

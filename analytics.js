@@ -28,8 +28,8 @@ function renderAnalyticsView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📈</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Engineering Analytics</span>
-                        <h2 class="text-sm font-black text-slate-800">Velocity & Retrospective</h2>
+                        <span class="text-[10px] font-medium text-slate-400">Review / Engineering Analytics</span>
+                        <h2 class="text-sm font-bold text-slate-800">Velocity & Retrospective</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('analytics') : ''}
                 </div>

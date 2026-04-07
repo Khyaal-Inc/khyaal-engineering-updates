@@ -97,17 +97,17 @@ function renderKanbanView() {
                         <span class="text-white text-xl">📋</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Stage 4 · Build — Drag cards to update live status</span>
-                        <h2 class="text-base font-black text-slate-800">Unified Kanban</h2>
+                        <span class="text-[10px] font-medium text-slate-400">Stage 4 · Build — Drag cards to update live status</span>
+                        <h2 class="text-base font-bold text-slate-800">Unified Kanban</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('kanban') : ''}
                 </div>
 
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                        <span class="text-[10px] font-black uppercase text-slate-400 px-3">Swimlanes:</span>
-                        <select id="kanban-swimlane" onchange="renderKanbanView()" 
-                            class="bg-slate-50 border-none rounded-lg px-4 py-1.5 text-xs font-black text-slate-700 focus:ring-0 cursor-pointer hover:bg-slate-100 transition-colors">
+                        <span class="text-[10px] font-medium text-slate-400 px-3">Swimlanes:</span>
+                        <select id="kanban-swimlane" onchange="renderKanbanView()"
+                            class="bg-slate-50 border-none rounded-lg px-4 py-1.5 text-xs font-medium text-slate-700 focus:ring-0 cursor-pointer hover:bg-slate-100 transition-colors">
                             <option value="none" ${swimlane === 'none' ? 'selected' : ''}>None (Flat View)</option>
                             <option value="epic" ${swimlane === 'epic' ? 'selected' : ''}>By Strategic Epic</option>
                             <option value="track" ${swimlane === 'track' ? 'selected' : ''}>By Functional Track</option>
@@ -138,7 +138,7 @@ function renderKanbanView() {
                     <div class="kanban-row ${groupIdx > 0 ? 'pt-2' : ''}">
                         ${group.title ? `
                             <div class="flex items-center gap-3 mb-4 px-2">
-                                <span class="px-4 py-1.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-indigo-100/50 border border-indigo-500/30">
+                                <span class="px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full shadow-sm">
                                     ${group.title}
                                 </span>
                                 <div class="flex-1 h-[2px] bg-slate-200/60 ml-1 rounded-full"></div>
@@ -158,8 +158,8 @@ function renderKanbanView() {
                                          ondragleave="handleKanbanDragLeave(event)">
                                         <div class="flex justify-between items-center mb-3 px-1 flex-shrink-0">
                                             <div class="flex items-center gap-1.5">
-                                                <h4 class="text-[11px] font-black uppercase tracking-wider text-slate-900">${col.title}</h4>
-                                                <span class="text-[9px] font-black bg-slate-100 text-slate-800 px-1 py-0.5 rounded border border-slate-200 shadow-sm">${columnItems.length}</span>
+                                                <h4 class="text-xs font-semibold text-slate-700">${col.title}</h4>
+                                                <span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">${columnItems.length}</span>
                                             </div>
                                         </div>
                                         <div class="space-y-3 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
@@ -201,32 +201,32 @@ function renderKanbanCard(item) {
              onclick="openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex})">
             
             <div class="flex justify-between items-start mb-1">
-                <span class="text-[8px] font-black uppercase tracking-[0.1em] text-slate-400">${item.track || 'No Track'}</span>
+                <span class="text-[10px] font-medium text-slate-400">${item.track || 'No Track'}</span>
                 ${storyPoints}
             </div>
 
-            <h4 class="text-[12px] font-black text-slate-900 leading-tight mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
+            <h4 class="text-xs font-semibold text-slate-900 leading-tight mb-1 line-clamp-2 hover:text-indigo-600 transition-colors">${item.text}</h4>
 
             ${item.acceptanceCriteria ? `<div class="kanban-card-ac">${(Array.isArray(item.acceptanceCriteria) ? item.acceptanceCriteria[0] : String(item.acceptanceCriteria).split('\\n')[0]).substring(0, 80)}${String(item.acceptanceCriteria).length > 80 ? '…' : ''}</div>` : ''}
 
             ${epicBadge}
 
             ${item.mediaUrl ? `
-                <div class="mt-2 text-[10px] font-black text-indigo-500 hover:text-indigo-700">
+                <div class="mt-2 text-[10px] font-medium text-indigo-500 hover:text-indigo-700">
                     <a href="${item.mediaUrl}" target="_blank" onclick="event.stopPropagation()">🔗 ${item.mediaUrl.match(/\\.(jpeg|jpg|gif|png|webp)$/i) ? 'View Media' : 'View Link'}</a>
                 </div>
             ` : ''}
 
-            <div class="flex justify-between items-center text-[9px] text-slate-800 mt-2 pt-1.5 border-t border-slate-100">
-                <div class="flex items-center gap-1 font-black">
-                    <div class="w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center text-[8px] font-black text-white shadow-sm">
+            <div class="flex justify-between items-center text-[10px] text-slate-600 mt-2 pt-1.5 border-t border-slate-100">
+                <div class="flex items-center gap-1 font-medium">
+                    <div class="w-4 h-4 rounded-full bg-slate-700 flex items-center justify-center text-[8px] font-semibold text-white">
                         ${(item.contributors?.[0] || 'U').charAt(0)}
                     </div>
-                    <span class="capitalize tracking-tighter">${contributors}</span>
+                    <span class="capitalize">${contributors}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    ${item.blocker ? '<span class="text-[7px] font-black bg-red-100 text-red-800 px-1 py-0.5 rounded border border-red-200 animate-pulse">🛑 Blocked</span>' : ''}
-                    ${item.due ? `<span class="font-black text-slate-500 bg-slate-50 px-1 py-0.5 rounded border border-slate-100 text-[8px]">📅 ${item.due.split('-').slice(1).join('/')}</span>` : ''}
+                    ${item.blocker ? '<span class="text-[10px] font-medium bg-red-50 text-red-700 px-1.5 py-0.5 rounded border border-red-200">🛑 Blocked</span>' : ''}
+                    ${item.due ? `<span class="font-medium text-slate-500 bg-slate-50 px-1 py-0.5 rounded border border-slate-100 text-[10px]">📅 ${item.due.split('-').slice(1).join('/')}</span>` : ''}
                 </div>
             </div>
             

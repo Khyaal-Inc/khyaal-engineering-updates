@@ -326,13 +326,13 @@ summary::-webkit-details-marker {
 }
 
 .status-card {
-    background: var(--surface-inset);
+    background: rgba(255,255,255,0.6);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    border: none;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
     overflow: visible;
-    margin-bottom: 1rem;
-    transition: box-shadow var(--transition-base);
+    margin-bottom: 1.5rem;
+    transition: border-color var(--transition-base);
 }
 
 .status-card>*:first-child {

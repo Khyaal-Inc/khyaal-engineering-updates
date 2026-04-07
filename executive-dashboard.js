@@ -23,8 +23,8 @@ function renderExecutiveDashboard() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📊</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Executive Pulse</span>
-                        <h2 class="text-sm font-black text-slate-800">Executive Health Dashboard</h2>
+                        <span class="text-[10px] font-medium text-slate-400">Review / Executive Pulse</span>
+                        <h2 class="text-sm font-bold text-slate-800">Executive Health Dashboard</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('dashboard') : ''}
                 </div>
@@ -80,7 +80,7 @@ function renderExecutiveSummary() {
 
     return `
         <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-8 rounded-2xl text-white shadow-2xl">
-            <h1 class="text-3xl font-black mb-6">Executive Dashboard</h1>
+            <h1 class="text-3xl font-bold mb-6">Executive Dashboard</h1>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
@@ -124,12 +124,12 @@ function renderOKRSummary() {
             
             <div class="flex justify-between items-end mb-8 relative z-10">
                 <div>
-                    <h2 class="text-3xl font-black text-slate-900 tracking-tight">Strategic Progress</h2>
+                    <h2 class="text-3xl font-bold text-slate-900 tracking-tight">Strategic Progress</h2>
                     <p class="text-slate-500 font-medium text-sm mt-1">Outcome-based achievement per quarter</p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-1">Portfolio Health</span>
-                    <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-black rounded-full border border-emerald-100 shadow-sm">On Track</span>
+                    <span class="text-[10px] font-medium text-slate-400 block mb-1">Portfolio Health</span>
+                    <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded-full border border-emerald-100">On Track</span>
                 </div>
             </div>
 
@@ -149,15 +149,15 @@ function renderOKRSummary() {
                                 <span class="bg-white p-2 rounded-xl shadow-sm text-lg">${progress >= 90 ? '🏆' : progress >= 70 ? '📈' : '⚡'}</span>
                                 <div class="text-right">
                                     <div class="text-2xl font-black ${textColor}">${progress}%</div>
-                                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${okr.quarter}</div>
+                                    <div class="text-[10px] font-medium text-slate-400">${okr.quarter}</div>
                                 </div>
                             </div>
-                            
-                            <h3 class="font-black text-slate-800 text-sm leading-tight mb-4 min-h-[40px] line-clamp-2">${okr.objective}</h3>
-                            
-                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-2">
+
+                            <h3 class="font-semibold text-slate-800 text-sm leading-tight mb-4 min-h-[40px] line-clamp-2">${okr.objective}</h3>
+
+                            <div class="flex items-center justify-between text-[11px] font-medium text-slate-500 mb-2">
                                 <span>KR Milestone Success</span>
-                                <span class="text-slate-800 font-black">${achievedKR} / ${krCount}</span>
+                                <span class="text-slate-800 font-semibold">${achievedKR} / ${krCount}</span>
                             </div>
 
                             <div class="w-full bg-slate-200 rounded-full h-2 mb-4 overflow-hidden">
@@ -166,10 +166,10 @@ function renderOKRSummary() {
                             
                             <div class="pt-3 border-t border-slate-200/50 flex justify-between items-center">
                                 <div>
-                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Owner: ${okr.owner || '—'}</span>
-                                    <span class="text-[10px] font-black mt-0.5 block">${healthSignal}</span>
+                                    <span class="text-[10px] text-slate-400 font-medium block">Owner: ${okr.owner || '—'}</span>
+                                    <span class="text-[10px] font-medium mt-0.5 block">${healthSignal}</span>
                                 </div>
-                                <button onclick="switchView('okr')" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm transition-all hover:scale-105 active:scale-95">Strategy Hub 🎯</button>
+                                <button onclick="switchView('okr')" class="text-[10px] font-medium text-indigo-600 hover:text-indigo-800 bg-white border border-slate-200 px-2 py-1 rounded transition-all">Strategy Hub 🎯</button>
                             </div>
                         </div>
                     `;

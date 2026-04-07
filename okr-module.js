@@ -128,7 +128,7 @@ function renderOkrView() {
                 <div class="flex items-start gap-4">
                     <div class="text-4xl">🌟</div>
                     <div class="flex-1">
-                        <h3 class="text-sm font-black text-indigo-900 uppercase tracking-widest mb-2">Product Vision & Strategy</h3>
+                        <h3 class="text-sm font-semibold text-indigo-900 mb-2">Product Vision & Strategy</h3>
                         <p class="text-lg font-semibold text-slate-800 leading-relaxed">${vision}</p>
                     </div>
                     ${showManagement ? `
@@ -158,8 +158,8 @@ function renderOkrView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🎯</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Quarterly Strategic Alignment</span>
-                    <h2 class="text-sm font-black text-slate-800">Objectives & Key Results</h2>
+                    <span class="text-[10px] font-medium text-slate-400">Quarterly Strategic Alignment</span>
+                    <h2 class="text-sm font-bold text-slate-800">Objectives & Key Results</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('okr') : ''}
             </div>
@@ -228,12 +228,12 @@ function renderOkrCard(okr, idx) {
                 <div class="flex justify-between items-start mb-4">
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-3">
-                            <div class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${stage.color} flex items-center gap-1.5 shadow-sm">
+                            <div class="px-2.5 py-1 rounded-full text-[10px] font-semibold border ${stage.color} flex items-center gap-1.5">
                                 <span>${stage.icon}</span> ${stage.label} Stage
                             </div>
-                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">${okr.quarter}</span>
+                            <span class="text-[10px] font-medium text-slate-500">${okr.quarter}</span>
                         </div>
-                        <h2 class="text-2xl font-black text-slate-900 tracking-tight leading-tight mt-1">${okr.objective}</h2>
+                        <h2 class="text-xl font-bold text-slate-900 tracking-tight leading-tight mt-1">${okr.objective}</h2>
                         <div class="flex items-center gap-2 mt-1">
                             <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[10px]">👤</div>
                             <span class="text-xs font-bold text-slate-600">${okr.owner}</span>
@@ -250,7 +250,7 @@ function renderOkrCard(okr, idx) {
                                     stroke-dashoffset="${2 * Math.PI * 28 * (1 - progress / 100)}" 
                                     class="${progress >= 70 ? 'text-emerald-500' : 'text-indigo-500'} transition-all duration-1000" />
                             </svg>
-                            <span class="absolute text-sm font-black text-slate-900">${progress}%</span>
+                            <span class="absolute text-sm font-bold text-slate-900">${progress}%</span>
                         </div>
                     </div>
                 </div>
@@ -259,25 +259,25 @@ function renderOkrCard(okr, idx) {
                 ${isExec && !showExecExecutionDetails ? `
                     <div class="bg-indigo-50/30 rounded-xl p-5 border border-indigo-200 mb-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-[10px] font-black uppercase text-indigo-900/60 tracking-widest">Strategic Pulse & ROI Insight</h4>
-                            <button onclick="toggleExecDetail()" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 underline uppercase tracking-widest">
+                            <h4 class="text-[10px] font-medium text-indigo-900/60">Strategic Pulse & ROI Insight</h4>
+                            <button onclick="toggleExecDetail()" class="text-[10px] font-medium text-indigo-600 hover:text-indigo-800">
                                 View Execution Details →
                             </button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-0 border border-indigo-100/50 rounded-lg overflow-hidden bg-white/50">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border border-indigo-100/50 rounded-lg overflow-hidden bg-white/50">
                             <div class="p-4 border-r border-indigo-100/50 space-y-1">
-                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Focus Area</div>
-                                <div class="text-xs font-bold text-slate-700">${okr.keyResults[0]?.description.split(' ').slice(0, 3).join(' ')}...</div>
+                                <div class="text-[10px] font-medium text-slate-400">Focus Area</div>
+                                <div class="text-xs font-medium text-slate-700">${okr.keyResults[0]?.description.split(' ').slice(0, 3).join(' ')}...</div>
                             </div>
                             <div class="p-4 border-r border-indigo-100/50 space-y-1">
-                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Strategic Drift</div>
-                                <div class="text-xs font-bold text-emerald-600 flex items-center gap-1.5 leading-none">
+                                <div class="text-[10px] font-medium text-slate-400">Strategic Drift</div>
+                                <div class="text-xs font-medium text-emerald-600 flex items-center gap-1.5 leading-none">
                                     <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Healthy / On-Track
                                 </div>
                             </div>
                             <div class="p-4 space-y-1">
-                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Target Outcome</div>
-                                <div class="text-xs font-bold text-slate-700">${okr.keyResults.length} Key Results Active</div>
+                                <div class="text-[10px] font-medium text-slate-400">Target Outcome</div>
+                                <div class="text-xs font-medium text-slate-700">${okr.keyResults.length} Key Results Active</div>
                             </div>
                         </div>
                     </div>

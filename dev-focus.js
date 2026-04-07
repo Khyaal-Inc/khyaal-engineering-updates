@@ -94,8 +94,8 @@ function renderMyTasksView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">✅</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery / Personal Task Focus</span>
-                        <h2 class="text-sm font-black text-slate-800">My Tasks</h2>
+                        <span class="text-[10px] font-medium text-slate-400">Delivery / Personal Task Focus</span>
+                        <h2 class="text-sm font-bold text-slate-800">My Tasks</h2>
                     </div>
                 </div>
 
@@ -136,19 +136,19 @@ function renderMyTasksView() {
             <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <h3 class="font-bold text-slate-900 mb-3">Quick Actions</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <button onclick="switchView('kanban')" class="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                    <button onclick="switchView('kanban')" class="p-4 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-center">
                         <div class="text-2xl mb-1">📊</div>
                         <div class="text-sm font-bold text-slate-900">Kanban</div>
                     </button>
-                    <button onclick="switchView('dependency')" class="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                    <button onclick="switchView('dependency')" class="p-4 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-center">
                         <div class="text-2xl mb-1">🕸️</div>
                         <div class="text-sm font-bold text-slate-900">Dependencies</div>
                     </button>
-                    <button onclick="switchView('sprint')" class="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                    <button onclick="switchView('sprint')" class="p-4 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-center">
                         <div class="text-2xl mb-1">🏃</div>
                         <div class="text-sm font-bold text-slate-900">Sprint</div>
                     </button>
-                    <button onclick="switchView('workflow')" class="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                    <button onclick="switchView('workflow')" class="p-4 border border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-center">
                         <div class="text-2xl mb-1">🛠️</div>
                         <div class="text-sm font-bold text-slate-900">Playbook</div>
                     </button>
@@ -162,14 +162,14 @@ function renderTaskSection(title, tasks, color) {
     if (tasks.length === 0) return '';
 
     const colorMap = {
-        red: 'border-red-500 bg-red-50',
-        orange: 'border-orange-500 bg-orange-50',
-        blue: 'border-blue-500 bg-blue-50',
-        slate: 'border-slate-300 bg-slate-50'
+        red: 'border-red-200 bg-red-50',
+        orange: 'border-orange-200 bg-orange-50',
+        blue: 'border-blue-200 bg-blue-50',
+        slate: 'border-slate-200 bg-slate-50'
     };
 
     return `
-        <div class="bg-white p-6 rounded-xl border-2 ${colorMap[color]} shadow-sm">
+        <div class="bg-white p-6 rounded-xl border ${colorMap[color]} shadow-sm">
             <h2 class="text-xl font-bold text-slate-900 mb-4">${title} (${tasks.length})</h2>
             <div class="space-y-3">
                 ${tasks.map(task => renderDevTaskCard(task)).join('')}

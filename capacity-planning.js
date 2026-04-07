@@ -31,8 +31,8 @@ function renderCapacityView() {
                 <div class="flex items-center gap-3 px-2">
                     <span class="text-xl">📊</span>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Review / Team Capacity</span>
-                        <h2 class="text-sm font-black text-slate-800">Resource & Load Balance</h2>
+                        <span class="text-[10px] font-medium text-slate-400">Review / Team Capacity</span>
+                        <h2 class="text-sm font-bold text-slate-800">Resource & Load Balance</h2>
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@ function renderCapacityView() {
             </div>
 
             <!-- Capacity Overview -->
-            <div class="bg-white p-6 rounded-xl border-2 border-slate-900 shadow-xl">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <h2 class="text-2xl font-bold text-slate-900 mb-4">Team Capacity Overview</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-blue-50 rounded-lg">
