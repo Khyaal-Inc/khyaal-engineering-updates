@@ -9,6 +9,7 @@
 | Search/filter | core.js | `isItemInSearch()`, `isItemInDateRange()` |
 | Status/priority configs | core.js | `statusConfig`, `priorityConfig` |
 | Persona switching | modes.js | `switchMode()`, `getCurrentMode()` |
+| Strategic Ribbon | workflow-nav.js | **OWNER**: `renderWorkflowNav()`, `WORKFLOW_STAGES` |
 | Mode filters | modes.js | `getModeFilter()` |
 | Edit modal form | cms.js | `buildContextAwareForm()` (line ~278) |
 | Pillar visibility | cms.js | `getVisibleFieldGroups()` (line 164) |
@@ -60,16 +61,16 @@ GitHub (data.json updated)
 ## Keyboard Shortcuts
 | Key | Action |
 |-----|--------|
-| `1` | Epics view |
-| `2` | Roadmap |
-| `3` | Backlog |
-| `4` | Sprint |
-| `5` | Track |
-| `6` | Releases |
-| `7` | By Status |
-| `8` | By Priority |
-| `9` | By Contributor |
-| `0` | Dependencies |
+| `1` | Epics view (Vision) |
+| `2` | Roadmap (Plan) |
+| `3` | Backlog (Plan) |
+| `4` | Sprint (Plan) |
+| `5` | Track (Build) |
+| `6` | Releases (Ship) |
+| `7` | By Status (Build) |
+| `8` | By Priority (Build) |
+| `9` | By Contributor (Build) |
+| `0` | Dependencies (Build) |
 | `/` | Focus search |
 | `Alt+1/2/3` | Switch PM/Dev/Exec mode |
 

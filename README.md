@@ -39,7 +39,8 @@ Browser
   └── index.html          (HTML shell, auth, view containers)
        ├── core.js         (constants, helpers, switchView, keyboard shortcuts)
        ├── app.js          (UPDATE_DATA, renderDashboard, normalizeData)
-       ├── modes.js        (PM/Dev/Exec personas, STAGE_TO_VIEWS, stage tabs, nav)
+       ├── workflow-nav.js (**OWNER**: Unified Strategic Ribbon, lifecycle taxonomy)
+       ├── modes.js        (PM/Dev/Exec personas, mode-based filtering, Alt+1/2/3)
        ├── views.js        (Track, Backlog, Sprint, Status, Priority, Contributor, Releases, Gantt, Roadmap, Epics, Workflow, Discovery)
        ├── cms.js          (edit modal, GitHub sync, ceremony engine, audit system)
        ├── lifecycle-guide.js  (quick actions, gateway checks, toasts, sprint HUD)
@@ -49,6 +50,7 @@ Browser
        ├── analytics.js    (Google Charts velocity/burndown)
        ├── capacity-planning.js (team workload)
        ├── dev-focus.js    (Developer "My Tasks" view)
+       ├── executive-dashboard.js (Exec KPI summary)
        └── styles.css      (full design system)
 ```
 

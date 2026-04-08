@@ -260,7 +260,7 @@ You'll find ceremony buttons in ribbons and on relevant cards when the timing is
 
 **What it does**:
 1. Shows tasks linked to this Epic
-2. Sets Epic stage to "Delivery" (from Vision/Definition)
+2. Sets Epic stage to "Build" (from Vision/Plan)
 3. Records kickoff date
 4. Creates a ceremony audit
 

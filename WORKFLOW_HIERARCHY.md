@@ -52,7 +52,7 @@ Discover → Vision → Plan → Build → Ship → (loops back)
 3. Link Key Results to Epics via the "Linked Epic" field
 4. Get Exec sign-off on OKR targets via the Dashboard
 
-**Output:** OKRs with linked Epics and measurable Key Results → feeds Definition  
+**Output:** OKRs with linked Epics and measurable Key Results → feeds Plan
 **Views:** OKR, Epics
 
 ---
@@ -230,7 +230,7 @@ Ideation → Spikes → OKR → Epics → Roadmap → Backlog → Sprint → Bui
 2. **Link everything:** Maintain Epic → OKR → KR linkages for full traceability
 3. **Create release early, ship late:** Create the release milestone during sprint planning; populate it at sprint end
 4. **Resolve blockers fast:** Use the blocker strip "✅ Resolve" button to unblock team members
-5. **Regular cadence:** Discovery (ongoing) → Vision (quarterly) → Definition (per sprint) → Delivery (daily) → Review (per sprint)
+5. **Regular cadence:** Discover (ongoing) → Vision (quarterly) → Plan (per sprint) → Build (daily) → Ship (per sprint)
 6. **Update OKR progress after each release:** Manually update Key Result `current` values after shipping
 
 ---
