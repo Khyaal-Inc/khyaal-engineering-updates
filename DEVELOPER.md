@@ -10,26 +10,26 @@
 
 ```
 Browser
-  └── index.html          (HTML shell + auth gatekeeper + script tags)
-       ├── core.js         (constants, helpers, global config)
-       ├── app.js          (UPDATE_DATA, renderDashboard, switchView, normalizeData)
-       ├── modes.js        (PM/Dev/Exec personas, stage tabs, nav)
-       ├── views.js        (all primary view renderers)
-       ├── cms.js          (edit modal, GitHub sync, CRUD)
-       ├── lifecycle-guide.js  (quick actions, ceremonies, toasts, gateway checks)
-       ├── workflow-nav.js (Engineering Playbook popover)
-       ├── okr-module.js   (OKR view)
-       ├── kanban-view.js  (Kanban drag-drop board)
-       ├── dependency-view.js (Mermaid dependency graph)
-       ├── analytics.js    (Google Charts velocity/burndown)
+  └── index.html              (HTML shell + auth gatekeeper + script tags)
+       ├── core.js             (constants, helpers, switchView, keyboard shortcuts)
+       ├── app.js              (UPDATE_DATA, renderDashboard, normalizeData)
+       ├── modes.js            (PM/Dev/Exec personas, STAGE_TO_VIEWS, renderStageTabs, renderViewSubtabs)
+       ├── views.js            (all primary view renderers + renderItem + grooming mode)
+       ├── cms.js              (edit modal, GitHub sync, ceremony engine, audit system, CRUD)
+       ├── lifecycle-guide.js  (QA_DEFS quick actions, gateway checks, toasts, sprint HUD, cadence nudge)
+       ├── workflow-nav.js     (Engineering Playbook popover, WORKFLOW_STAGES)
+       ├── okr-module.js       (OKR view + KR progress calculation)
+       ├── kanban-view.js      (Kanban drag-drop board)
+       ├── dependency-view.js  (Mermaid dependency graph)
+       ├── analytics.js        (Google Charts velocity/burndown)
        ├── capacity-planning.js (team workload)
-       ├── dev-focus.js    (My Tasks personal view)
+       ├── dev-focus.js        (My Tasks personal view)
        ├── executive-dashboard.js (Exec KPI summary)
-       └── styles.css      (full design system, all component CSS)
+       └── styles.css          (full design system)
 ```
 
 ### Stack
-- **Vanilla JS** ES6+ — no framework, no build step
+- **Vanilla JS** ES6+ — no framework, no build step, no semicolons
 - **Tailwind CSS** via CDN — utility classes only
 - **Mermaid.js** — dependency/Gantt diagrams
 - **Google Charts** — analytics charts
@@ -39,103 +39,375 @@ Browser
 
 ## Global State: `UPDATE_DATA`
 
-The single source of truth. All views read from this object. Never mutate it directly except in CMS functions.
+The single source of truth. All views read from this object. **Never mutate it directly except in CMS functions.**
 
 ```js
 UPDATE_DATA = {
-  metadata: {
-    title: string,
-    dateRange: string,
-    description: string,
-    nextReview: string,
-    modes: { default: 'pm' | 'dev' | 'exec' },
-    
-    okrs: OKR[],         // Quarterly Objectives + Key Results
-    epics: Epic[],       // Strategic initiatives
-    sprints: Sprint[],   // 2-week iterations
-    releases: Release[], // Versioned ship milestones
-    roadmap: Horizon[],  // Planning horizon metadata
-    
-    capacity: {
-      teamMembers: string[],  // All contributor names
-      hoursPerDay: number,
-      sprintDays: number
+  metadata: { ...see schemas below... },
+  tracks: Track[]   // The projects — primary anchor for all work
+}
+```
+
+---
+
+## Metadata Schemas
+
+### `metadata` (top-level fields)
+
+```json
+{
+  "title": "Khyaal Engineering Pulse",
+  "dateRange": "23rd March - 3rd April 2026",
+  "description": "Executive Updates",
+  "vision": "Multi-year north-star statement for the product/company",
+  "nextReview": "2026-04-10",
+  "modes": {
+    "default": "pm",
+    "devDefaultView": "my-tasks",
+    "execDefaultView": "dashboard"
+  }
+}
+```
+
+---
+
+### `metadata.okrs[]` — Quarterly Objectives & Key Results
+
+Links upward to nothing. Epics link down to OKRs via `epic.linkedOKR`.
+
+```json
+{
+  "id": "okr-q1-2026-platform",     // Unique ID referenced by epics, sprints
+  "quarter": "Q1 2026",             // Display label
+  "objective": "Modernize platform infrastructure and achieve security excellence",
+  "owner": "Platform Team",         // Display label for responsible team/person
+  "status": "active",               // "active" | "achieved" | "missed" | "cancelled" — set by OKR Close ceremony
+  "launchedAt": "2026-01-15",       // ISO date — set by OKR Launch ceremony (null until launched)
+  "overallProgress": 99,            // 0–100 — auto-calculated or manually set
+  "result": "",                     // Free text outcome note — filled at OKR Close
+  "keyResults": [
+    {
+      "id": "kr-platform-1",
+      "description": "Migrate 100% of legacy pages to new platform",
+      "target": 29,                 // Numeric target value
+      "current": 29,                // Current tracked value
+      "unit": "pages",              // Unit label shown in UI ("pages" / "%" / "hours" / "launch" etc.)
+      "progress": 100,              // 0–100 — can be auto-derived from current/target or manually overridden
+      "status": "achieved",         // "on-track" | "at-risk" | "achieved" | "missed"
+      "linkedEpic": "platform-modernization"  // epic.id — drives OKR progress roll-up
+    }
+  ]
+}
+```
+
+**How OKR progress is calculated** (`okr-module.js`):  
+Average of all `keyResults[].progress`. If a KR has `current` and `target`, progress = `min(100, round(current/target * 100))`.
+
+---
+
+### `metadata.epics[]` — Strategic Initiatives
+
+The bridge between OKRs and delivery items. Items link to epics via `item.epicId`.
+
+```json
+{
+  "id": "platform-modernization",   // Unique ID — used as item.epicId reference
+  "name": "Platform Modernization Epic",
+  "track": "Khyaal Platform",       // Which project this epic belongs to
+  "objective": "Modernize legacy systems and enhance platform capabilities",
+  "scope": "Website migration, 50Above50 improvements, CRM integration",
+  "keyDeliverables": "29 pages migrated, subscription launch, security hardening",
+  "successCriteria": "All pages migrated with 30% performance improvement",
+  "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
+  "timeline": "Feb 1 - Apr 10, 2026",
+  "health": "on-track",             // "on-track" | "at-risk" | "off-track" — manual
+  "status": "active",               // "active" | "in_progress" | "completed" | "cancelled" — set by ceremonies
+  "linkedOKR": "okr-q1-2026-platform",  // okr.id — shown in epic card, drives OKR roll-up
+  "planningHorizon": "1M",          // "1M" | "3M" | "6M" | "1Y"
+  "kickedOffAt": null,              // ISO date — set by Epic Kickoff ceremony (null until kicked off)
+  "usecase": "",                    // Optional user/business impact statement
+  "impactLevel": "high",            // "low" | "medium" | "high"
+  "strategicWeight": 80,            // 1–100 importance score
+  "riskType": "technical",          // "technical" | "market" | "resource" | "dependency"
+  "mediaUrl": ""                    // Optional link to Figma/doc/external resource
+}
+```
+
+---
+
+### `metadata.sprints[]` — 2-Week Iterations
+
+Items link to sprints via `item.sprintId`.
+
+```json
+{
+  "id": "sprint-4",                 // Unique ID — used as item.sprintId reference
+  "name": "Enhancement Sprint",     // Display name
+  "startDate": "2026-03-15",        // ISO date
+  "endDate": "2026-03-28",          // ISO date
+  "goal": "Complete security compliance and launch analytics capabilities",
+  "tracks": ["Khyaal Platform", "Pulse", "DevOps"],  // Which projects are included
+  "plannedPoints": 55,              // Story points committed at kickoff
+  "completedPoints": null,          // Story points actually completed (null = in progress)
+  "status": "active",               // "planned" | "active" | "completed"
+  "linkedOKR": "okr-q1-2026-analytics",  // Optional — okr.id for strategic alignment
+  "kickedOffAt": null,              // ISO datetime — set by Sprint Kickoff ceremony
+  "sprintHistory": [],              // Append-only array of historical sprint snapshots
+  "goal": ""                        // Sprint goal statement
+}
+```
+
+**`sprintHistory[]` entry** (written by Sprint Close ceremony):
+```json
+{
+  "closedAt": "2026-03-28T17:00:00.000Z",
+  "completedPoints": 48,
+  "plannedPoints": 52,
+  "velocity": 92,
+  "doneCount": 12,
+  "totalCount": 15
+}
+```
+
+---
+
+### `metadata.releases[]` — Versioned Ship Milestones
+
+Items link to releases via `item.releasedIn`.
+
+```json
+{
+  "id": "v2.1-platform-foundation",  // Unique ID — used as item.releasedIn reference
+  "name": "v2.1 Platform Foundation",
+  "targetDate": "2026-02-28",        // ISO date — planned ship date
+  "tracks": ["Khyaal Platform"],     // Which projects are included
+  "features": "29 legacy pages migrated, $99 subscription launch, basic security",
+  "successCriteria": "All pages migrated with 30% performance improvement",
+  "impact": "Improved user experience, new revenue stream, security baseline",
+  "status": "completed",             // "planned" | "in_progress" | "completed" — set by Ship Release ceremony
+  "linkedEpic": "platform-modernization",  // Optional — epic.id for alignment
+  "linkedOKR": "",                   // Optional — okr.id
+  "lockedAt": null,                  // ISO datetime — set by Release Lock ceremony
+  "shippedAt": null                  // ISO datetime — set by Ship Release ceremony
+}
+```
+
+---
+
+### `metadata.roadmap[]` — Planning Horizon Buckets
+
+These are **bucket definitions**, not items. Items use `item.planningHorizon` to assign themselves to a bucket. The roadmap view groups items by this field.
+
+```json
+{
+  "id": "1M",                        // Horizon key — matches item.planningHorizon values
+  "label": "Now (Immediate / 1 Month)",
+  "color": "blue",                   // Theme color for this horizon's section
+  "linkedObjective": "okr-q1-2026-platform"  // Optional — okr.id for strategic context
+}
+```
+
+**Standard horizon IDs**: `"1M"` (Now) · `"3M"` (Next) · `"6M"` (Later) · `"1Y"` (Future/TBD)
+
+**Advance Horizons ceremony** shifts all items: `3M → 1M`, `6M → 3M`, `1Y → 6M` — use when a quarter rolls over.
+
+---
+
+### `metadata.capacity` — Team Workload Config
+
+Used by the Capacity Planning view (`capacity-planning.js`) to calculate workload vs. availability.
+
+```json
+{
+  "totalCapacity": 86,               // Sum of all teamMembers[].capacity (story points per sprint)
+  "teamMembers": [
+    {
+      "name": "Subhrajit",           // Must match contributor names used in item.contributors[]
+      "capacity": 13,                // Story points this person can handle per sprint
+      "track": "Khyaal Platform",    // Which project they primarily work on
+      "role": "Full Stack Engineer"  // Display label
+    }
+  ]
+}
+```
+
+**Important**: `teamMembers[].name` must exactly match strings used in `item.contributors[]` — this is how Dev mode filtering, capacity calculation, and contributor view all work.
+
+---
+
+### `metadata.velocityHistory[]` — Append-Only Sprint Velocity Log
+
+Written by the Sprint Close ceremony. Drives the Analytics view charts.
+
+```json
+{
+  "sprintId": "sprint-3",            // References sprints[].id
+  "planned": 52,                     // Story points committed
+  "completed": 48,                   // Story points actually done
+  "velocity": 92,                    // Completion % = round(completed/planned * 100)
+  "dates": "Mar 1-14, 2026",         // Human-readable date range for chart labels
+  "forecast": null                   // Optional — forecasted points for future sprints (null = historical)
+}
+```
+
+---
+
+### `metadata.activity[]` — Append-Only Change Log
+
+Written by `logChange(action, target)` in `cms.js` every time a CMS operation occurs. Capped at 50 entries (oldest dropped first).
+
+```json
+{
+  "id": "act-1743811200000",         // "act-" + Date.now()
+  "timestamp": "2026-04-05T10:00:00.000Z",
+  "action": "Edit Item",             // Human-readable action label
+  "target": "Captcha implementation",// What was affected
+  "author": "PM / Strategist"        // Currently hardcoded — future: currentUser
+}
+```
+
+**Common `action` values**: `"Edit Item"` · `"Add Item"` · `"Edit Sprint"` · `"Edit Release"` · `"Edit Metadata"` · `"Edit Epic"` · `"Edit OKR"` · `"sprint-assign"` · `"release-assign"` · `"status-change"` · `"priority-change"` · `"Blocker Resolved"`
+
+---
+
+### `metadata.ceremonyAudits[]` — Ceremony History Records
+
+Written by `saveCeremonyAudit(type, targetId, config)` in `cms.js`. Max 3 records per entity (oldest dropped). Replayed by `viewCeremonyAudit(type, targetId)`.
+
+```json
+{
+  "id": "audit-1743811200000",       // "audit-" + Date.now()
+  "timestamp": "2026-04-05T10:00:00.000Z",
+  "type": "sprint",                  // Ceremony type — see below
+  "targetId": "sprint-4",            // ID of the entity this ceremony was performed on
+  "config": {
+    "title": "Sprint Enhancement Sprint Closed",
+    "description": "48/55 pts · 87% commitment · 12/15 tasks done",
+    "mission": { "objective": "...", "track": "...", "timeline": "..." },
+    "details": [{ "label": "Velocity", "count": "48 / 55 pts", "icon": "⚡" }],
+    "extras": [{ "label": "Top Contributors", "value": "Subhrajit (5), Vivek (3)" }],
+    "items": [{ "id": "task-id", "name": "...", "status": "done", "destination": "Shipped" }],
+    "actions": []
+  }
+}
+```
+
+**Ceremony `type` values**: `"sprint"` · `"sprint-kickoff"` · `"okr"` · `"okr-launch"` · `"epic"` · `"epic-kickoff"` · `"release"` · `"release-lock"`
+
+`synthesizeAudit(type, targetId)` in `cms.js` creates an audit-compatible config object from current live data — used as fallback when no saved audit exists.
+
+---
+
+### `metadata.customStatuses[]` — Optional Extra Status Values
+
+Injected into `statusConfig` (core.js) at runtime by `normalizeData()`. Use to extend the 8 built-in statuses without changing core.js.
+
+```json
+[
+  {
+    "id": "pending-approval",        // Status key — used as item.status value
+    "label": "Pending Approval",     // Display label in badges and selects
+    "class": "badge-pending",        // CSS class — must be defined in styles.css
+    "bucket": "bucket-onhold"        // Which kanban column bucket it groups into
+  }
+]
+```
+
+---
+
+### `tracks[]` — Projects (Primary Anchor)
+
+Tracks are the top-level project containers. Every item lives inside a track → subtrack hierarchy. The `#global-team-filter` in the app bar filters all views by track name.
+
+```json
+{
+  "id": "platform",                  // URL-safe identifier
+  "name": "Khyaal Platform",         // Display name — used in filter dropdown
+  "theme": "blue",                   // Color theme: "blue" | "emerald" | "violet" | "amber" | "rose" | "slate"
+  "subtracks": [
+    {
+      "name": "Website",             // Subtrack name — shown as section header in track view
+      "items": [ ...Item[] ]         // All tasks in this subtrack
     },
-    velocityHistory: VelocityEntry[],  // Append-only sprint velocity log
-    activity: ActivityEntry[],         // Append-only change log
-    ceremonyAudits: CeremonyAudit[],   // Append-only ceremony records
-    customStatuses: CustomStatus[],    // Optional extra status values
-  },
-  
-  tracks: Track[]  // The projects — primary anchor for all work
+    {
+      "name": "Backlog",             // Convention: a "Backlog" subtrack is used by backlog view
+      "items": []
+    }
+  ]
 }
 ```
 
-### Track (Project)
+**Track → Subtrack → Item is the canonical data path**:
 ```js
-Track = {
-  id: string,        // e.g., 'mobile', 'backend'
-  name: string,      // Display name e.g., 'Mobile'
-  theme: string,     // Color key: 'blue' | 'emerald' | 'violet' | 'amber' | 'rose' | 'slate'
-  subtracks: Subtrack[]
-}
-
-Subtrack = {
-  name: string,       // e.g., 'Now', 'Backlog', 'Sprint 12'
-  items: Item[]
-}
+UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex]
 ```
 
-### Item (Task)
+`getActiveTeam()` in `core.js` reads `#global-team-filter` value and returns the selected track name. All views use this to filter.
+
+---
+
+### `Item` (Task) — Full Schema
+
 ```js
-Item = {
-  id: string,                  // Unique — set by normalizeData() if missing
+{
+  // Identity
+  id: string,                  // Unique across ALL items — set by normalizeData() if missing
   text: string,                // Task title (required)
-  status: Status,              // now | next | later | qa | review | blocked | onhold | done
+
+  // Status & Priority
+  status: 'now' | 'next' | 'later' | 'qa' | 'review' | 'blocked' | 'onhold' | 'done',
   priority: 'high' | 'medium' | 'low',
-  
-  // Strategic alignment
-  epicId: string,              // Links to metadata.epics[].id
-  sprintId: string,            // Links to metadata.sprints[].id
-  releasedIn: string,          // Links to metadata.releases[].id
+
+  // Strategic alignment (links to metadata entities)
+  epicId: string,              // → metadata.epics[].id
+  sprintId: string,            // → metadata.sprints[].id
+  releasedIn: string,          // → metadata.releases[].id
   planningHorizon: '1M' | '3M' | '6M' | '1Y',
-  
+
   // Sizing
   storyPoints: 1 | 2 | 3 | 5 | 8 | 13 | 21,   // Fibonacci only
-  
+
   // Execution
-  contributors: string[],      // Names matching capacity.teamMembers[]
+  contributors: string[],      // Names — must match capacity.teamMembers[].name
   startDate: string,           // ISO date YYYY-MM-DD
   due: string,                 // ISO date YYYY-MM-DD
-  
+
   // Blocking
   blocker: boolean,
   blockerNote: string,
-  
+
   // Clarity
-  usecase: string,             // Why — business value
-  acceptanceCriteria: string,  // What "done" looks like
-  note: string,                // Any additional context
-  
-  // Strategic metadata (PM/Exec only)
+  usecase: string,             // Why — business/user value
+  acceptanceCriteria: string | string[],  // "done" definition — may be string or array
+  note: string,                // Technical notes, implementation details
+
+  // Strategic metadata (PM/Exec only — readonly in Dev mode)
   impactLevel: 'low' | 'medium' | 'high',
   effortLevel: 'low' | 'medium' | 'high',
-  successMetric: string,
-  strategicWeight: number,     // 1–10 importance score
-  riskType: string,
-  persona: string,             // Target user persona
-  
+  successMetric: string,       // How success will be measured
+  strategicWeight: number,     // 1–100 importance score
+  riskType: string,            // "technical" | "market" | "resource" | "dependency"
+  persona: string,             // Target user persona description
+
   // Relationships
-  dependencies: string[],      // item.id strings
-  tags: string[],
-  
+  dependencies: string[],      // item.id strings (other items this depends on)
+  tags: string[],              // Free-form labels — filterable via tag filter bar
+
   // Media
-  mediaUrl: string,
-  publishedDate: string,
-  
+  mediaUrl: string,            // Link to Figma/doc/video/PR
+  publishedDate: string,       // ISO date — when shipped/published
+
   // Audit
-  updatedAt: string,           // ISO timestamp
-  comments: Comment[]
+  comments: Comment[],
+  createdAt: string,           // ISO timestamp
+  updatedAt: string            // ISO timestamp — set on every CMS save
+}
+
+Comment = {
+  id: string,                  // "c-" + Date.now()
+  text: string,
+  author: string,              // "PM" | contributor name
+  timestamp: string            // ISO timestamp
 }
 ```
 
@@ -147,11 +419,11 @@ Item = {
 |------|------|
 | `index.html` | HTML shell, auth gatekeeper, script tags, view containers |
 | `app.js` | `UPDATE_DATA`, `renderDashboard()`, `switchView()`, `normalizeData()`, search |
-| `core.js` | `statusConfig`, `contributorColors`, `themeColors`, `getActiveTeam()`, `updateTabCounts()`, `renderBlockerStrip()` |
-| `modes.js` | Personas, `STAGE_TO_VIEWS`, `renderStageTabs()`, `renderViewSubtabs()`, `renderModeSwitcher()`, mode filter logic |
-| `views.js` | All primary view renderers, `renderItem()`, `renderPrimaryStageAction()`, grooming mode |
-| `cms.js` | `openItemEdit()`, `addItem()`, `saveCms()`, `saveToGithub()`, `deleteItem()`, 4-pillar form, metadata editors, ceremony modals |
-| `lifecycle-guide.js` | `QA_DEFS` quick actions, `getQuickActions()`, `renderQuickActionBar()`, `VIEW_INFO_CARDS`, `showHandoffToast()`, gateway checks, sprint HUD, cadence nudge |
+| `core.js` | `statusConfig`, `contributorColors`, `themeColors`, `getActiveTeam()`, `updateTabCounts()`, `renderBlockerStrip()`, `switchView()` |
+| `modes.js` | Personas, `STAGE_TO_VIEWS`, `STAGE_METADATA`, `VIEW_METADATA`, `renderStageTabs()`, `renderViewSubtabs()`, `renderModeSwitcher()`, `switchStage()`, `getStageForView()`, mode filter logic |
+| `views.js` | All primary view renderers, `renderItem()`, `renderPrimaryStageAction()`, grooming mode, `shouldShowManagement()` |
+| `cms.js` | `openItemEdit()`, `addItem()`, `saveCms()`, `saveToGithub()`, `deleteItem()`, 4-pillar form, metadata editors, ceremony modals, `synthesizeAudit()`, `renderCeremonySuccess()`, `logChange()` |
+| `lifecycle-guide.js` | `QA_DEFS` quick actions, `getQuickActions()`, `renderQuickActionBar()`, `VIEW_INFO_CARDS`, `showHandoffToast()`, `runGatewayCheck()`, sprint HUD, cadence nudge, `checkStageCompletion()` |
 | `workflow-nav.js` | Engineering Playbook popover, `WORKFLOW_STAGES` |
 
 ---
@@ -161,24 +433,29 @@ Item = {
 The app bar has two rows rendered by `modes.js`:
 
 ### Stage Tabs (`renderStageTabs(activeView)`)
-Renders 5 lifecycle stage buttons into `#stage-tabs`. Each tab:
-- Shows stage icon + label
-- Highlights in stage color when active
+Renders into `#stage-tabs`. Each tab:
+- Highlights with stage color when active (uses `--tab-color` CSS variable + `color-mix()`)
 - Shows ✓ when `checkStageCompletion(stageId)` returns true
-- Calls `switchStage(key)` on click → switches to stage's primary view
+- Calls `switchStage(stageKey)` → switches to stage's `primaryView`
 
 ```js
-// STAGE_TO_VIEWS defines which views appear in each stage per mode:
-STAGE_TO_VIEWS.pm.build = ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor']
-// Dev mode has fewer views per stage
-// Exec mode skips Build entirely
+// STAGE_TO_VIEWS maps views to stages per mode:
+STAGE_TO_VIEWS.pm = {
+  discovery: ['ideation', 'spikes'],
+  vision:    ['okr', 'epics'],
+  plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
+  build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
+  review:    ['releases', 'analytics', 'dashboard', 'workflow']
+}
+// dev: discovery, plan (sprint only), build (my-tasks/kanban/track/dependency), review (workflow)
+// exec: discovery, vision, plan (roadmap only), review (releases/analytics/dashboard)
 ```
 
 ### View Sub-tabs (`renderViewSubtabs(activeView)`)
-Renders the views within the current stage into `#view-subtabs`. Hidden when a stage has only one view. IDs match `VIEW_METADATA` keys. Tab counts rendered by `updateTabCounts()` in core.js.
+Renders into `#view-subtabs`. Hidden when a stage has ≤1 view. Each button calls `switchView(viewId)`.
 
-### Both update on every `switchView()` call:
-The override in `lifecycle-guide.js` (~line 1171) calls these after every view switch:
+### Both update on every `switchView()` call
+Override in `lifecycle-guide.js` (~line 1171):
 ```js
 if (typeof renderStageTabs === 'function') renderStageTabs(viewId);
 if (typeof renderViewSubtabs === 'function') renderViewSubtabs(viewId);
@@ -194,7 +471,6 @@ function renderMyView() {
   const container = document.getElementById('my-view-view')
   if (!container) return
   const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null
-  // build HTML string
   container.innerHTML = `...`
 }
 ```
@@ -204,14 +480,14 @@ function renderMyView() {
 <div id="my-view-view" class="view-section"></div>
 ```
 
-3. **Add script tag** in `index.html`:
+3. **Add script tag** in `index.html` (match `?v=` version string):
 ```html
 <script src="my-view.js?v=04031"></script>
 ```
 
-4. **Add case** in `switchView()` in `app.js`:
+4. **Add case** in `switchView()` in `core.js`:
 ```js
-case 'my-view': renderMyView(); break;
+if (view === 'my-view') renderMyView();
 ```
 
 5. **Add to `VIEW_METADATA`** in `modes.js`:
@@ -219,7 +495,7 @@ case 'my-view': renderMyView(); break;
 'my-view': { label: '🔧 My View', category: 'primary' }
 ```
 
-6. **Add to `STAGE_TO_VIEWS`** in `modes.js` (under the right stage and mode):
+6. **Add to `STAGE_TO_VIEWS`** in `modes.js` (pick the right stage and mode):
 ```js
 STAGE_TO_VIEWS.pm.build.push('my-view')
 ```
@@ -239,10 +515,10 @@ runSafe(renderMyView, 'MyView');
 
 ## How to Add a New Quick Action
 
-Quick actions are defined in `QA_DEFS` in `lifecycle-guide.js` (~line 488).
+Quick actions are defined in `QA_DEFS` in `lifecycle-guide.js` (~line 488). Three types:
 
 ```js
-// Action type — executes immediately
+// Type 1: action — executes immediately on click
 'my-action': {
   label: '🔧 My Action',
   type: 'action',
@@ -254,63 +530,59 @@ Quick actions are defined in `QA_DEFS` in `lifecycle-guide.js` (~line 488).
   }
 }
 
-// Dropdown type — shows a select before executing
+// Type 2: dropdown — shows a select, then executes with selected value
 'my-dropdown': {
-  label: '📦 My Dropdown',
+  label: '📦 Assign Sprint',
   type: 'dropdown',
   opts: () => (window.UPDATE_DATA?.metadata?.sprints || []).filter(s => s.status !== 'completed'),
   optLabel: s => s.name,
+  optValue: s => s.id,          // optional, defaults to s.id
   exec: (item, selectedId) => {
     item.sprintId = selectedId
     _qaSave()
-    showHandoffToast('Assigned ✓')
+    showHandoffToast('Sprint assigned ✓')
   }
 }
 
-// Inline date picker type
+// Type 3: inline-date — shows a date picker, then executes with selected date string
 'my-date': {
-  label: '📅 Set Date',
+  label: '📅 Set Due Date',
   type: 'inline-date',
   exec: (item, val) => {
     if (!val) return
     item.due = val
     _qaSave()
-    showHandoffToast(`Date set: ${val} ✓`)
+    showHandoffToast(`Due: ${val} ✓`)
   }
 }
 ```
 
-Then add the action ID to `getQuickActions()` for the right view/status combinations:
+Then add the action ID to `getQuickActions(item, viewId)` for the right view/status:
 ```js
-// In getQuickActions(item, viewId):
-if (viewId === 'sprint' && s === 'now') {
-  acts.push('my-action')
-}
+if (viewId === 'sprint' && s === 'now') acts.push('my-action')
 ```
 
 Assign a pill color in `QA_PILL_CLASS`:
 ```js
-'my-action': 'qa-pill-transit'  // blue, green, amber, red, orange — see styles.css
+'my-action': 'qa-pill-transit'  // transit=blue, qa=amber, review=purple, done=green, assign=indigo, warn=red
 ```
 
 ---
 
 ## How to Add a New Ceremony
 
-Ceremonies are lifecycle milestone events. They open a modal, execute an action, and record an audit. Pattern:
+Ceremonies open a modal, execute an action, record an audit, then show a success screen.
 
-### 1. Add the trigger button to the relevant view
-In the view's ribbon or card controls (views.js or the module file):
+### 1. Trigger button in view ribbon/card
 ```js
 <button onclick="myNewCeremony('${entity.id}')" class="...">🎉 Kick Off</button>
 ```
 
-### 2. Create the ceremony modal function in `cms.js`
+### 2. Ceremony modal function in `cms.js`
 ```js
 function myNewCeremony(entityId) {
-  const entity = findEntityById(entityId)
+  const entity = (UPDATE_DATA.metadata.myEntities || []).find(e => e.id === entityId)
   if (!entity) return
-
   window.isActionLockActive = true
 
   const modal = document.createElement('div')
@@ -335,28 +607,23 @@ function myNewCeremony(entityId) {
 }
 ```
 
-### 3. Create the confirmation function
+### 3. Confirmation function
 ```js
 function confirmMyNewCeremony(entityId) {
-  const entity = findEntityById(entityId)
+  const entity = (UPDATE_DATA.metadata.myEntities || []).find(e => e.id === entityId)
   entity.status = 'active'
   entity.startedAt = new Date().toISOString().split('T')[0]
 
-  // Record ceremony audit
-  const auditConfig = {
-    type: 'my-ceremony',
-    title: `My Ceremony — ${entity.name}`,
-    timestamp: new Date().toISOString(),
-    entityId,
-    // ...any extra fields
-  }
-  const audit = synthesizeAudit(auditConfig)
-  window.UPDATE_DATA.metadata.ceremonyAudits.push(audit)
+  // Build audit config
+  const auditConfig = synthesizeAudit('my-ceremony', entityId)  // or build manually
+
+  // Save ceremony audit
+  saveCeremonyAudit('my-ceremony', entityId, auditConfig)
 
   closeCeremonyModal()
   saveToLocalStorage()
   renderDashboard()
-  showHandoffToast(`${entity.name} kicked off ✓`, null, null, 3000)
+  renderCeremonySuccess('my-ceremony', auditConfig, false)
 }
 ```
 
@@ -374,26 +641,27 @@ if (UPDATE_DATA.metadata.myEntities) {
 
 ## The 4-Pillar CMS Field System
 
-The item edit modal organizes fields into 4 semantic pillars. Defined in `FIELD_GROUPS` in `cms.js` (~line 114):
+Defined in `FIELD_GROUPS` in `cms.js` (~line 114):
 
 ```js
 const FIELD_GROUPS = {
   what:  ['text', 'usecase', 'epicId', 'persona', 'tags'],
   when:  ['planningHorizon', 'sprintId', 'startDate', 'due', 'releasedIn', 'publishedDate'],
   where: ['status', 'contributors', 'blockerNote', 'dependencies', 'note', 'mediaUrl'],
-  how:   ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel', 'successMetric', 'strategicWeight', 'riskType']
+  how:   ['storyPoints', 'priority', 'acceptanceCriteria', 'impactLevel', 'effortLevel',
+          'successMetric', 'strategicWeight', 'riskType']
 }
 ```
 
 ### Persona visibility
-- **PM**: [what, when, where, how]
-- **Dev**: [where, how, what, when] — strategic fields read-only
+- **PM**: [what, when, where, how] — all 4 in strategy-first order
+- **Dev**: [where, how, what, when] — all 4, execution-first; strategic fields readonly
 - **Exec**: [what, when, where] — no HOW pillar
 
 ### View layer: `LIFECYCLE_FIELD_MAP` (~line 148)
-Controls which fields are shown by default in each view (before "Show All" toggle).
+Controls which fields show by default per view (before "Show All" toggle). Views not in this map show all fields.
 
-### Adding a new field to the form
+### Adding a new field
 ```
 1. Add case in renderField() (~line 452):
    case 'myField':
@@ -402,7 +670,7 @@ Controls which fields are shown by default in each view (before "Show All" toggl
        <input type="text" id="edit-myField" value="${item.myField || ''}" class="cms-input" ${attr}>
      </div>`
 
-2. Add to FIELD_GROUPS pillar (choose the right pillar)
+2. Add to correct FIELD_GROUPS pillar
 
 3. Add to LIFECYCLE_FIELD_MAP views where it makes sense
 
@@ -413,35 +681,37 @@ Controls which fields are shown by default in each view (before "Show All" toggl
    if (item.myField === undefined) item.myField = ''
 ```
 
+### Developer-protected fields (readonly in dev mode)
+Controlled by `isFieldProtected()` (cms.js ~line 793):
+`epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId`
+
 ---
 
 ## Lifecycle Ceremony Audit System
 
-Every ceremony is recorded as an audit entry in `metadata.ceremonyAudits[]`.
+Every ceremony is recorded in `metadata.ceremonyAudits[]`.
 
-### `synthesizeAudit(config)` in `cms.js`
-Builds a rich audit object from a config. Handles these ceremony types:
-- `sprint` / `sprint-kickoff`
-- `okr` / `okr-launch`
-- `epic` / `epic-kickoff`
-- `release` / `release-lock`
-- `roadmap`
+### `saveCeremonyAudit(type, targetId, config)` — cms.js:48
+Appends audit record. Caps at 3 per entity (oldest dropped).
 
-### `renderCeremonySuccess(audit)` in `cms.js`
-Renders the ceremony result view — shown immediately after a ceremony completes:
-- Color accent bar (ceremony-type specific)
-- Historical date badge
-- Extras section (velocity trend, contributors, etc.)
-- Enhanced item rows (status + destination + id)
+### `synthesizeAudit(type, targetId)` — cms.js:99
+Builds a rich audit object from current live data. Handles these types:
+- `sprint` / `sprint-kickoff` — velocity, commitment %, contributor breakdown
+- `okr` / `okr-launch` — KR hit rate, linked epics, strategic breadth
+- `epic` / `epic-kickoff` — task throughput, story points, top contributors
+- `release` / `release-lock` — items shipped, epics covered, QA/review counts
 
-### `viewCeremonyAudit(auditId)` in `cms.js`
-Reopens a historical ceremony audit modal from the audit list.
+### `renderCeremonySuccess(type, config, isHistorical)` — cms.js
+Renders the ceremony result full-screen view with color accent bar, stats, item rows, and action buttons.
+
+### `viewCeremonyAudit(type, targetId)` — cms.js:71
+Reopens a historical ceremony audit from `ceremonyAudits[]`. Falls back to `synthesizeAudit()` if no saved record.
 
 ---
 
 ## Persona Filter System
 
-### `getModeFilter()` in `modes.js`
+### `getModeFilter()` — modes.js
 Returns a filter function based on current mode:
 ```js
 // Dev mode: only items assigned to currentUser
@@ -453,8 +723,8 @@ Returns a filter function based on current mode:
 // PM mode: null (no filter — sees everything)
 ```
 
-### `shouldShowManagement()` in `views.js`
-Returns `true` if the user is in CMS mode (authenticated + `?cms=true` param). Controls whether edit/delete/add buttons appear.
+### `shouldShowManagement()` — views.js
+Returns `true` if the user is in CMS mode (authenticated + `?cms=true` param). Controls edit/delete/add buttons.
 
 ### Applying filters in a view renderer
 ```js
@@ -463,14 +733,10 @@ function renderMyView() {
   if (!container) return
 
   const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null
-  let items = getAllItems()  // your helper to get all items flat
+  let items = UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items))
   if (modeFilter) items = items.filter(modeFilter)
 
-  // Exec filter banner (shows count + "show all" toggle)
-  const allItems = getAllItems()
-  const filteredHtml = renderExecFilterBanner(items.length, allItems.length, 'my-view')
-
-  container.innerHTML = filteredHtml + `...your view HTML...`
+  container.innerHTML = `...`
 }
 ```
 
@@ -478,19 +744,19 @@ function renderMyView() {
 
 ## Gateway Check System
 
-Before executing some quick actions, a gateway check validates preconditions.
+Validates preconditions before quick actions execute.
 
-### `runGatewayCheck(actionId, item)` in `lifecycle-guide.js`
+### `runGatewayCheck(actionId, item)` — lifecycle-guide.js
 Returns `{ blocked: bool, msg: string, warn: string }`:
-- `blocked` → action prevented entirely, shows error toast
-- `warn` → soft warning, shows toast with "Continue anyway →" CTA
+- `blocked: true` → action prevented, shows error toast
+- `warn: string` → soft warning, shows "Continue anyway →" toast
 
-### Adding a new gateway check
-In the `GATEWAY_CHECKS` object in `lifecycle-guide.js`:
+### Adding a gateway check
+In `GATEWAY_CHECKS` in `lifecycle-guide.js`:
 ```js
 'my-action': (item) => {
-  if (!item.storyPoints) return { warn: 'Task has no size estimate — add story points first' }
-  if (!item.epicId)      return { blocked: true, msg: 'No epic linked — connect this to a strategic goal first' }
+  if (!item.storyPoints) return { warn: 'No size estimate — add story points first' }
+  if (!item.epicId)      return { blocked: true, msg: 'No epic linked — connect to a strategic goal first' }
   return {}
 }
 ```
@@ -499,27 +765,28 @@ In the `GATEWAY_CHECKS` object in `lifecycle-guide.js`:
 
 ## Save Chain
 
-Understanding the full save flow prevents data loss:
-
 ```
 User edits in modal
   → saveCms()
-    → validateCmsForm()    [abort if invalid]
-    → saveCmsChanges()     [writes to UPDATE_DATA in memory]
-    → saveToLocalStorage() [persists to browser localStorage as JSON]
-    → renderDashboard()    [re-renders all views from UPDATE_DATA]
-      [User clicks "Save to GitHub" in CMS bar]
-        → saveToGithub()
-          → GET sha from GitHub API  [required to update existing file]
-          → PUT new content to GitHub API
+    → validateCmsForm()     [abort if invalid]
+    → saveCmsChanges()      [writes to UPDATE_DATA in memory]
+    → saveToLocalStorage()  [persists to browser localStorage as JSON string]
+    → renderDashboard()     [re-renders all views from UPDATE_DATA]
+
+  [User clicks "Save to GitHub" in CMS bar]
+    → saveToGithub()
+      → GET sha from GitHub API   [required to update existing file]
+      → PUT new content to GitHub API
 ```
 
 ### Key globals
-- `window.isActionLockActive = true` — set during modal ops to prevent background renders
+- `window.isActionLockActive = true` — set during modal ops to prevent background renders; **always reset in finally or on close**
 - `window.editContext` — holds `{type, trackIndex, subtrackIndex, itemIndex}` for current edit
-- `localStorage['khyaal_mode']` — persists current mode across page loads
+- `window.currentActiveView` — current view ID string, updated by `switchView()`
+- `localStorage['khyaal_mode']` — persists mode across page loads
 - `localStorage['khyaal_current_user']` — persists dev mode user selection
 - `localStorage['khyaal_site_auth']` — persists site auth hash
+- `localStorage['khyaal_data']` — cached UPDATE_DATA as JSON
 
 ---
 
@@ -531,15 +798,20 @@ User edits in modal
 ```css
 --status-{name}-bg, --status-{name}-text, --status-{name}-border, --status-{name}-accent
 /* names: done, now, next, later, blocked, onhold, qa, review */
+
+/* On-Hold uses teal to distinguish from Later (slate): */
+--status-onhold-bg:    #f0fdfa;
+--status-onhold-text:  #0f766e;
+--status-onhold-border:#99f6e4;
 ```
 
 **Lifecycle stage colors**:
 ```css
---stage-discover: #7c3aed  /* Purple */
---stage-goals:    #4f46e5  /* Indigo */
---stage-plan:     #2563eb  /* Blue */
---stage-build:    #059669  /* Green */
---stage-ship:     #d97706  /* Amber */
+--stage-discover: #7c3aed  /* Purple  — 🔍 Discover */
+--stage-goals:    #4f46e5  /* Indigo  — 🌟 Vision */
+--stage-plan:     #2563eb  /* Blue    — 📐 Plan */
+--stage-build:    #059669  /* Green   — ⚡ Build */
+--stage-ship:     #d97706  /* Amber   — 🏁 Ship */
 ```
 
 **Surface layers** (glassmorphism):
@@ -549,34 +821,58 @@ User edits in modal
 --surface-overlay: rgba(255,255,255,0.92)
 ```
 
-**Shadow scale**: `--shadow-xs` through `--shadow-xl`
+**Border radius scale**: `--radius-sm` (8px) · `--radius-md` (12px) · `--radius-lg` (16px) · `--radius-xl` (20px) · `--radius-2xl` (24px) · `--radius-pill` (9999px)
 
-**Border radius scale**: `--radius-sm` (8px) through `--radius-2xl` (24px), `--radius-pill` (9999px)
-
-### Button scale (new unified system)
+### Button scale
 ```css
-.btn-xs  /* 0.65rem, 3px 8px padding */
-.btn-sm  /* 0.75rem, 5px 12px */
-.btn-md  /* 0.8rem,  7px 16px */
-.btn-lg  /* 0.875rem, 9px 20px */
+.btn-xs  /* 0.65rem, 3px 8px padding, 7px radius */
+.btn-sm  /* 0.75rem, 5px 12px, 9px radius */
+.btn-md  /* 0.8rem,  7px 16px, 10px radius */
+.btn-lg  /* 0.875rem, 9px 20px, 12px radius */
 ```
 
 ### Key component classes
 ```css
-.item-row          /* Task card wrapper */
-.status-pill       /* Status badge (done/now/next etc.) */
-.badge-*           /* Status-colored badges */
-.item-action-btn   /* Edit/Delete/Blocker buttons on cards */
-.cms-btn, .cms-btn-primary, .cms-btn-secondary, .cms-btn-danger  /* Modal buttons */
-.qa-pill           /* Quick action pill */
-.qa-pill-transit/qa/review/done/assign/warn  /* Color families */
+/* Navigation */
+.app-bar, .app-bar-left, .app-bar-right, .app-bar-stages
+.stage-tab, .stage-tab-active, .stage-tab-done, .stage-tab-check
+.view-subtabs-bar, .view-subtab, .view-subtab-active
+.mode-seg-control, .mode-seg-btn, .mode-seg-active
+.kp-logo, .project-select, .app-bar-gear
+
+/* Item cards */
+.item-row           /* Task card wrapper */
+.status-pill        /* Status badge */
+.badge-*            /* Status-colored badges (badge-done, badge-now, etc.) */
+.item-action-btn    /* Edit/Delete/Blocker buttons */
+
+/* CMS */
+.cms-btn, .cms-btn-primary, .cms-btn-secondary, .cms-btn-danger
+.cms-input, .cms-label, .cms-modal-overlay
+
+/* Quick actions */
+.qa-pill            /* Base quick action pill */
+.qa-pill-transit    /* Blue — status transitions */
+.qa-pill-qa         /* Amber — QA actions */
+.qa-pill-review     /* Purple — review actions */
+.qa-pill-done       /* Green — completion */
+.qa-pill-assign     /* Indigo — assignment */
+.qa-pill-warn       /* Red — warnings/blockers */
+
+/* Toasts */
 .lgt               /* Handoff toast container */
 .lgi-card          /* Info card */
-.stage-tab         /* App bar stage tab */
-.view-subtab       /* Sub-tab row button */
-.mode-seg-control, .mode-seg-btn, .mode-seg-active  /* Mode switcher */
-.groom-badge, .groom-done, .groom-todo, .groom-none  /* Grooming readiness */
-.grooming-session-bar  /* Grooming mode header */
+
+/* Ceremonies */
+.ceremony-modal-overlay
+.ceremony-success-view
+
+/* Grooming */
+.grooming-session-bar
+.groom-badge, .groom-done, .groom-todo, .groom-none
+
+/* Dev user modal */
+.dev-user-modal-overlay, .dev-user-modal-card, .dev-user-btn
 ```
 
 ---
@@ -585,18 +881,12 @@ User edits in modal
 
 ### Find an item by ID
 ```js
-// From cms.js:
-const { item, trackIndex, subtrackIndex, itemIndex } = findItemById(itemId)
+const { item, trackIndex, subtrackIndex, itemIndex } = findItemById(itemId)  // cms.js
 ```
 
-### Find item by track/subtrack/item index
+### Find item by index path
 ```js
 const item = UPDATE_DATA.tracks[ti].subtracks[si].items[ii]
-```
-
-### Log a change to activity feed
-```js
-logChange('Updated sprint assignment', item.text)  // from cms.js
 ```
 
 ### Get all items flat
@@ -604,8 +894,21 @@ logChange('Updated sprint assignment', item.text)  // from cms.js
 // From lifecycle-guide.js:
 _getAllItemsFlat()
 
-// Or build your own:
+// Or inline:
 UPDATE_DATA.tracks.flatMap(t => t.subtracks.flatMap(s => s.items))
+```
+
+### Find all items linked to a metadata entity
+```js
+// From cms.js — finds items where item[field] === id
+findItemsByMetadataId('epicId', 'platform-modernization')
+findItemsByMetadataId('sprintId', 'sprint-4')
+findItemsByMetadataId('releasedIn', 'v2.1-platform-foundation')
+```
+
+### Log a change to activity feed
+```js
+logChange('Updated sprint assignment', item.text)  // cms.js
 ```
 
 ### Re-render after mutating data
@@ -616,52 +919,70 @@ renderDashboard()
 
 ### Switch to a view programmatically
 ```js
-switchView('kanban')  // triggers view render + stage tab + subtab update
+switchView('kanban')  // core.js — triggers render + stage tab + subtab update
+```
+
+### Show a handoff toast
+```js
+// (message, ctaLabel, ctaFn, durationMs)
+showHandoffToast('Sprint closed ✓', 'View Analytics →', () => switchView('analytics'), 4000)
+showHandoffToast('No sprint active', null, null, 3000)  // no CTA
 ```
 
 ---
 
 ## Common Gotchas
 
-1. **`window.isActionLockActive = true`** — if you forget to reset this after a modal op, `renderDashboard()` will stop working. Always reset in `finally` or after close.
+1. **`window.isActionLockActive = true` stuck** — if you forget to reset this after a modal op, `renderDashboard()` silently skips. Always reset in `finally` or on modal close. Debug: open console, run `window.isActionLockActive = false; renderDashboard()`.
 
-2. **Don't mutate `UPDATE_DATA` outside of cms.js** — views should only read from it. Write via CMS functions.
+2. **Don't mutate `UPDATE_DATA` outside cms.js** — views should only read. Write via CMS functions to keep the save chain intact.
 
-3. **New fields need `normalizeData()` defaults** — historical items won't have new fields. Always add: `if (item.myField === undefined) item.myField = ''` in `app.js normalizeData()`.
+3. **New fields need `normalizeData()` defaults** — historical items won't have new fields. Always add `if (item.myField === undefined) item.myField = ''` in `app.js normalizeData()`.
 
-4. **Tag widget fields** (contributors, tags, dependencies) use `window['selection_${fieldId}']` as the return value, not `getElementById`. Don't try to read them with `getElementById`.
+4. **Tag widget fields** (contributors, tags, dependencies) use `window['selection_${fieldId}']` as the return value, not `getElementById`. They render their own custom widget.
 
-5. **`saveToGithub()` needs GET sha first** — GitHub API requires the file's current SHA to update it. The function handles this, but don't try to PUT directly.
+5. **`saveToGithub()` needs GET sha first** — GitHub API requires the file's current SHA to update it. The function handles this automatically — don't try to PUT directly.
 
-6. **Tailwind dynamic classes** — don't build class strings dynamically like `grid-cols-${n}`. Tailwind purges unused classes. Use inline styles or explicit class names.
+6. **Tailwind dynamic class names** — don't build class strings dynamically like `` `grid-cols-${n}` ``. Tailwind purges unused classes. Use inline styles or explicit class names.
 
-7. **`renderDynamicNavigation()`** — this function's container (`#dynamic-nav-container`) was removed from the HTML. The function now no-ops. Navigation uses `renderStageTabs()` + `renderViewSubtabs()` instead.
+7. **View not appearing in sub-tabs** — check `STAGE_TO_VIEWS` in `modes.js`. A view must be listed for the current mode + stage to appear in sub-tabs. `VIEW_METADATA` must also have an entry for the view ID.
 
-8. **Sprint HUD** — mounts into `#sprint-ribbon-hud` (in sprint view ribbon) with fallback to `#sprint-hud-mount` (legacy, removed from app bar). If sprint HUD doesn't show, check the view is rendering the mount point.
+8. **Sprint HUD** — mounts into `#sprint-ribbon-hud` (inside sprint view ribbon). Falls back to `#sprint-hud-mount` (legacy). If HUD doesn't appear, check the sprint view is rendering the mount point.
 
-9. **Cache-busting** — all `<script>` tags use `?v=04031`. When adding new JS files, match this version string. Data is fetched with `?v=${Date.now()}` for always-fresh loads.
+9. **Cache-busting** — all `<script>` tags use `?v=04031`. When adding new JS files, match this version string exactly. Data fetched with `?v=${Date.now()}` for always-fresh loads.
 
-10. **The `?cms=true` query param** — must be present in the URL AND the user must be GitHub-authenticated for `shouldShowManagement()` to return `true`. URL alone is not enough.
+10. **`?cms=true` alone is not enough** — user must also be GitHub-authenticated (PAT entered) for `shouldShowManagement()` to return `true`. The URL param just surfaces the login UI.
+
+11. **`acceptanceCriteria` is string or array** — some items have it as a newline-separated string, others as an array. Always handle both: `Array.isArray(ac) ? ac.join('\n') : (ac || '')`.
+
+12. **`getActiveTeam()`** — reads from `#global-team-filter` by element ID. This works because the same element ID is used in the app bar after the redesign. If you ever rename the element, update `getActiveTeam()` in `core.js`.
 
 ---
 
 ## Deployment
 
-The entire app is static files + 1 Lambda function.
-
 ### Files to host (GitHub Pages or any CDN)
-All `.html`, `.js`, `.css` files. No build step.
+All `.html`, `.js`, `.css` files. No build step — serve them as-is.
 
 ### AWS Lambda (`auth_gatekeeper.js`)
 Handles:
-- Password hash validation (prevents public access)
-- Fetching `data.json` from the private GitHub repo
-- Forwarding GitHub PAT calls for CMS save
+1. Password hash validation (prevents unauthenticated access)
+2. Fetching `data.json` from the private GitHub repo
+3. Forwarding GitHub PAT calls for CMS save operations
 
-### Environment
-- `LAMBDA_URL` — set in `index.html` inline script
-- GitHub PAT — entered by user at runtime, stored in `localStorage['GITHUB_CMS_TOKEN']`
-- Site auth hash — validated by Lambda, stored in `localStorage['khyaal_site_auth']`
+**Environment variables**:
+- `EXPECTED_PASSWORD_HASH` — SHA-256 hex of the site password
+- `GITHUB_TOKEN` — GitHub PAT with `repo` scope for data.json access
+
+**`index.html` constants** (update these after Lambda deploy):
+- `LAMBDA_URL` — the Lambda function URL
+- GitHub repo owner/name for the `saveToGithub()` PUT path
+
+### One-time setup
+```sh
+sh deploy_auth.sh    # deploys Lambda + sets env vars
+# Then update LAMBDA_URL in index.html inline script
+```
 
 ---
 
@@ -683,12 +1004,16 @@ Example: adding a `risks[]` array to metadata.
 3. Add modal editor in cms.js:
    function openRiskEdit(riskId) { ... }
    function saveRiskEdit() { ... }
+   // Follow pattern of openEpicEdit() / openSprintEdit()
 
 4. Add CMS controls in appropriate view ribbon (views.js):
    <button onclick="openRiskEdit()">+ Add Risk</button>
 
-5. Consider adding a quick action in lifecycle-guide.js:
+5. Optionally add a quick action in lifecycle-guide.js:
    'link-risk': { label: '⚠️ Link Risk', type: 'dropdown', ... }
+
+6. Add normalizeData() defaults for any lifecycle fields:
+   if (r.kickedOffAt === undefined) r.kickedOffAt = null
 ```
 
 ---
