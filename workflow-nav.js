@@ -6,13 +6,13 @@
 
 const WORKFLOW_STAGES = {
     discovery: {
-        name: 'Discovery',
+        name: 'Discover',
         icon: '🔍',
         label: 'Validation',
         description: 'Spikes & Ideation: Capturing ideas and validating feasibility',
         cadence: 'Ongoing',
-        views: ['ideation', 'spikes', 'workflow'],
-        color: '#6366f1', // indigo
+        views: ['workflow', 'ideation', 'spikes'],
+        color: '#6366f1', // indigo',
         order: 1
     },
     vision: {
@@ -25,8 +25,8 @@ const WORKFLOW_STAGES = {
         color: '#8b5cf6', // purple
         order: 2
     },
-    definition: {
-        name: 'Definition',
+    plan: {
+        name: 'Plan',
         icon: '📐',
         label: 'Planning',
         description: 'Sprint Planning: Grooming backlog, planning sprints, mapping roadmap horizons',
@@ -35,8 +35,8 @@ const WORKFLOW_STAGES = {
         color: '#3b82f6', // blue
         order: 3
     },
-    delivery: {
-        name: 'Delivery',
+    build: {
+        name: 'Build',
         icon: '⚡',
         label: 'Execution',
         description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
@@ -46,12 +46,12 @@ const WORKFLOW_STAGES = {
         order: 4
     },
     review: {
-        name: 'Review',
+        name: 'Ship',
         icon: '🏁',
         label: 'Ship & Review',
         description: 'Ship & Retro: Publish releases, review analytics, update OKR progress',
         cadence: 'Per Sprint',
-        views: ['releases', 'analytics', 'dashboard', 'capacity', 'status', 'priority', 'contributor'],
+        views: ['releases', 'analytics', 'dashboard'],
         color: '#f59e0b', // amber
         order: 5
     }
@@ -91,11 +91,11 @@ function detectStageFromView() {
     try {
         const sections = document.querySelectorAll('.view-section.active');
         if (sections.length === 0) return;
-        
+
         // Priority: Use the last active section (most recently switched)
         const activeSection = sections[sections.length - 1];
         const activeView = activeSection.id.replace('-view', '');
-        
+
         if (!activeView) return;
 
         // Find which stage contains this view
@@ -105,9 +105,9 @@ function detectStageFromView() {
                 currentWorkflowStage = stageKey;
                 window.khyaal_current_stage = stageKey; // Global sync
                 localStorage.setItem('khyaal_workflow_stage', stageKey);
-                
+
                 console.log(`🧬 Stage Detected: ${stageKey} (from ${activeView})`);
-                
+
                 if (stageChanged && typeof updateWorkflowStageUI === 'function') {
                     updateWorkflowStageUI();
                 }
@@ -135,10 +135,14 @@ function switchWorkflowStage(stageKey) {
     renderWorkflowNav();
     updateCommandStripNav();
 
+    // Switch view only if not staying in modal (preserves the popover)
     if (typeof switchView === 'function' && defaultView) {
         switchView(defaultView);
-    } else {
-        updateWorkflowStageUI();
+    }
+
+    // Dynamic Sync: Update the "outside" chips (view sub-tabs)
+    if (typeof renderViewSubtabs === 'function') {
+        renderViewSubtabs(defaultView);
     }
 
     console.log(`Switched to ${stage.name} workflow stage`);
@@ -150,20 +154,26 @@ function switchWorkflowStage(stageKey) {
 function updateCommandStripNav() {
     const miniPipeline = document.getElementById('mini-pipeline');
     const breadcrumb = document.getElementById('breadcrumb-nav');
-    
+
     if (!miniPipeline || !breadcrumb) {
         console.warn('⚠️ Navigation placeholders (mini-pipeline or breadcrumb-nav) missing from DOM. Skipping ribbon render.');
         return;
     }
 
+    const availableStages = Object.entries(WORKFLOW_STAGES)
+        .filter(([key]) => isStageAvailableInCurrentMode(key));
+
+    const currentIdx = availableStages.findIndex(([key]) => key === currentWorkflowStage);
+
     // 1. Render Mini Icons
-    miniPipeline.innerHTML = Object.entries(WORKFLOW_STAGES)
-        .filter(([key]) => isStageAvailableInCurrentMode(key))
-        .map(([key, stage]) => {
+    miniPipeline.innerHTML = availableStages
+        .map(([key, stage], index) => {
             const isActive = currentWorkflowStage === key;
+            const isPast = index < currentIdx;
+
             return `
                 <button onclick="switchWorkflowStage('${key}')" 
-                    class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${isActive ? 'shadow-lg ring-2 ring-white' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}"
+                    class="mini-pipeline-btn ${isActive ? 'active shadow-sm' : 'bg-transparent text-slate-400 hover:bg-slate-200/40'}"
                     title="${stage.name}"
                     style="${isActive ? `background-color: ${stage.color}; color: white;` : ''}"
                 >
@@ -174,36 +184,62 @@ function updateCommandStripNav() {
 
     // 2. Render Breadcrumb
     const activeStage = WORKFLOW_STAGES[currentWorkflowStage];
-    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr';
+    const activeViewId = window.currentActiveView || document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr';
+    let viewName = formatViewName(activeViewId);
+
+    // Aesthetic Logic: Avoid "Ship / Ship" redundancy
+    if (viewName.toLowerCase() === activeStage?.name.toLowerCase()) {
+        viewName = 'Overview'; // Or just hide the view part
+    }
 
     breadcrumb.innerHTML = `
-        <div class="flex items-center cursor-pointer group hover:bg-slate-50 px-2 py-1 rounded-lg transition-all" onclick="toggleStrategyMenu()">
-            <span class="font-black group-hover:text-indigo-600 transition-colors" 
-                  style="color: var(--stage-color, ${activeStage?.color || '#6366f1'})">
+        <div class="flex items-center cursor-pointer group hover:bg-slate-50/50 px-2 py-1 rounded-lg transition-all" onclick="toggleStrategyMenu()">
+            <span class="font-black text-[13px] group-hover:text-indigo-600 transition-colors" 
+                  style="color: ${activeStage?.color || '#6366f1'}">
                 ${activeStage ? activeStage.name : 'Unknown'}
             </span>
-            <span class="mx-1.5 text-slate-300 group-hover:text-slate-400">/</span>
-            <span class="text-slate-800 font-extrabold group-hover:text-black">${activeView.charAt(0).toUpperCase() + activeView.slice(1)}</span>
-            <span class="ml-2 text-[10px] text-slate-300 group-hover:text-indigo-400 transition-colors">▼</span>
+            <span class="mx-1 text-slate-300 group-hover:text-slate-400">/</span>
+            <span class="text-slate-600 font-bold text-[12px] group-hover:text-black">${viewName}</span>
+            <span class="ml-1.5 text-[8px] text-slate-400 group-hover:text-indigo-400 transition-colors">▼</span>
         </div>
     `;
+}
+
+/**
+ * Format view device IDs into readable nav labels
+ */
+function formatViewName(viewId) {
+    if (!viewId) return 'Home';
+
+    const overrides = {
+        'okr': 'Strategy',
+        'epics': 'Vision',
+        'my-tasks': 'My Day',
+        'releases': 'Ship',
+        'analytics': 'Trends',
+        'gantt': 'Timeline'
+    };
+
+    if (overrides[viewId]) return overrides[viewId];
+
+    return viewId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 function toggleStrategyMenu() {
     const container = document.getElementById('workflow-nav-container');
     const backdrop = document.getElementById('strategy-backdrop');
     if (!container || !backdrop) return;
-    
+
     const isHidden = container.classList.contains('hidden');
     if (isHidden) {
         renderWorkflowNav(); // Fresh render
         container.classList.remove('hidden', 'pointer-events-none');
         backdrop.classList.remove('hidden', 'pointer-events-none');
         container.classList.add('animate-in', 'fade-in', 'slide-in-from-top-2');
-        
+
         // Auto-focus on active/priority stage
         setTimeout(scrollToActiveStage, 300);
-        
+
         // Close on click outside
         const closeHandler = (e) => {
             if (e.target === backdrop) {
@@ -212,7 +248,7 @@ function toggleStrategyMenu() {
             }
         };
         backdrop.addEventListener('click', closeHandler);
-        
+
         console.log('📖 Strategic Navigation opened');
     } else {
         container.classList.add('hidden', 'pointer-events-none');
@@ -242,7 +278,7 @@ function toggleWorkflowNav() {
 function scrollToActiveStage() {
     const pipeline = document.querySelector('.workflow-pipeline-container');
     const activeStage = document.querySelector('.pipeline-stage.active');
-    
+
     if (pipeline && activeStage) {
         pipeline.scrollTo({
             left: activeStage.offsetLeft - pipeline.offsetLeft - 60,
@@ -283,11 +319,11 @@ function renderWorkflowNav() {
                     <div class="persona-segmented-control">
                         <div class="persona-slider" style="transform: translateX(${activeMode === 'pm' ? '0' : activeMode === 'dev' ? '100.5%' : '201%'});"></div>
                         ${['pm', 'dev', 'exec'].map(mode => {
-                            const config = (typeof MODE_CONFIG !== 'undefined') ? MODE_CONFIG[mode] : null;
-                            if (!config) return '';
-                            const isActive = mode === activeMode;
-                            const activeClass = isActive ? `active active-${mode}` : '';
-                            return `
+        const config = (typeof MODE_CONFIG !== 'undefined') ? MODE_CONFIG[mode] : null;
+        if (!config) return '';
+        const isActive = mode === activeMode;
+        const activeClass = isActive ? `active active-${mode}` : '';
+        return `
                                 <button
                                     onclick="event.stopPropagation(); switchMode('${mode}', true); renderWorkflowNav(); setTimeout(scrollToActiveStage, 100);"
                                     class="persona-tab ${activeClass}"
@@ -296,7 +332,7 @@ function renderWorkflowNav() {
                                     <span class="hidden sm:inline">${config.name.split(' ')[0]}</span>
                                 </button>
                             `;
-                        }).join('')}
+    }).join('')}
                     </div>
                 </div>
 
@@ -313,27 +349,27 @@ function renderWorkflowNav() {
             <!-- Horizontal Pipeline Container (Strategy Pop-over Style) -->
             <div class="workflow-pipeline-container flex items-stretch gap-4 pb-2">
                 ${availableStages.map(([key, stage], idx) => {
-                    const isActive = currentWorkflowStage === key;
-                    const isLast = idx === availableStages.length - 1;
-                    if (isActive) {
-                        document.documentElement.style.setProperty('--stage-color', stage.color);
-                    }
-                    
-                    // Adaptive Hero/Compact Logic: Ensure focus stages match WORKFLOW_STAGES keys
-                    const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
-                    let displayState = 'hero'; // Default for PM
+        const isActive = currentWorkflowStage === key;
+        const isLast = idx === availableStages.length - 1;
+        if (isActive) {
+            document.documentElement.style.setProperty('--stage-color', stage.color);
+        }
 
-                    if (isActive) {
-                        displayState = 'hero'; // Selected stage is always prominent
-                    } else if (activeMode === 'dev') {
-                        // Developer focus: Planning (definition) & Execution (delivery)
-                        displayState = (key === 'definition' || key === 'delivery') ? 'hero' : 'compact';
-                    } else if (activeMode === 'exec') {
-                        // Executive focus: Strategic (discovery, vision) & Analytics (review)
-                        displayState = (key === 'discovery' || key === 'vision' || key === 'review') ? 'hero' : 'compact';
-                    }
+        // Adaptive Hero/Compact Logic: Ensure focus stages match WORKFLOW_STAGES keys
+        const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
+        let displayState = 'hero'; // Default for PM
 
-                    return `
+        if (isActive) {
+            displayState = 'hero'; // Selected stage is always prominent
+        } else if (activeMode === 'dev') {
+            // Developer focus: Planning (plan) & Execution (build)
+            displayState = (key === 'plan' || key === 'build') ? 'hero' : 'compact';
+        } else if (activeMode === 'exec') {
+            // Executive focus: Strategic (discovery, vision) & Analytics (review)
+            displayState = (key === 'discovery' || key === 'vision' || key === 'review') ? 'hero' : 'compact';
+        }
+
+        return `
                         <div id="stage-card-${key}" class="pipeline-stage ${displayState} flex flex-col gap-3 ${isActive ? 'active' : 'hover:opacity-100'} transition-all duration-500 ease-in-out" style="--stage-color: ${stage.color};">
                             <!-- Stage Header (Clickable) -->
                             <div 
@@ -349,23 +385,23 @@ function renderWorkflowNav() {
                                 ${isActive ? '<div class="ml-auto text-xs animate-bounce-horizontal">➔</div>' : ''}
                             </div>
                             
-                            <!-- Sub-views for THIS stage (Always visible) -->
-                            <div class="flex flex-nowrap gap-2 px-1 py-1 transition-all duration-500 mt-auto min-h-[44px]">
+                            <!-- Sub-views for THIS stage (Now Wrapping) -->
+                            <div class="flex flex-wrap gap-2 px-1 py-1 transition-all duration-500 mt-auto min-h-[44px]">
                                 ${stage.views
-                                    .filter(view => isViewAvailableInCurrentMode(view))
-                                    .map(view => {
-                                        const viewLabels = {
-                                            'okr': '🎯 OKRs', 'epics': '🚀 Epics', 'roadmap': '🗺️ Roadmap', 'backlog': '📚 Backlog',
-                                            'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active', 
-                                            'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links', 
-                                            'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data', 
-                                            'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk', 
-                                            'contributor': '👥 Team', 'gantt': '📅 Gantt', 'ideation': '💡 Ideas', 'spikes': '🧪 Spikes'
-                                        };
-                                        const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
-                                        const isViewActive = activeView === view;
-                                        
-                                        return `
+                .filter(view => isViewAvailableInCurrentMode(view))
+                .map(view => {
+                    const viewLabels = {
+                        'okr': '🎯 OKRs', 'epics': '🚀 Epics', 'roadmap': '🗺️ Roadmap', 'backlog': '📚 Backlog',
+                        'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active',
+                        'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links',
+                        'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data',
+                        'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk',
+                        'contributor': '👥 Team', 'gantt': '📅 Gantt', 'ideation': '💡 Ideas', 'spikes': '🧪 Spikes'
+                    };
+                    const activeView = document.querySelector('.view-section.active')?.id.replace('-view', '');
+                    const isViewActive = activeView === view;
+
+                    return `
                                             <button 
                                                 onclick="switchView('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" 
                                                 class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${isViewActive ? 'bg-[var(--stage-color)] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-[var(--stage-color)]/10 hover:text-[var(--stage-color)]'}"
@@ -374,7 +410,7 @@ function renderWorkflowNav() {
                                                 ${viewLabels[view]?.split(' ')[1] || view}
                                             </button>
                                         `;
-                                    }).join('')}
+                }).join('')}
                             </div>
                         </div>
 
@@ -384,13 +420,13 @@ function renderWorkflowNav() {
                             </div>
                         ` : ''}
                     `;
-                }).join('')}
+    }).join('')}
             </div>
         </div>
     `;
 
     container.innerHTML = navHtml;
-    
+
     // Ensure Command Strip is also up to date
     updateCommandStripNav();
 }
@@ -425,9 +461,9 @@ function renderWorkflowStage(key, stage) {
             ${isActive ? `
                 <div class="workflow-stage-views">
                     ${stage.views
-                        .filter(view => isViewAvailableInCurrentMode(view))
-                        .map(view => renderWorkflowNavPill(view))
-                        .join('')}
+                .filter(view => isViewAvailableInCurrentMode(view))
+                .map(view => renderWorkflowNavPill(view))
+                .join('')}
                 </div>
             ` : ''}
         </div>
@@ -499,9 +535,9 @@ function isStageAvailableInCurrentMode(stageKey) {
 
     const currentMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
-    // Developer mode focus: Definition & Delivery (Planning & Execution)
+    // Developer mode focus: Planning & Execution
     if (currentMode === 'dev') {
-        return ['definition', 'delivery', 'review'].includes(stageKey);
+        return ['plan', 'build', 'review'].includes(stageKey);
     }
 
     // Executive mode focus: Discovery, Vision & Review (Strategic & Reporting)
@@ -619,7 +655,7 @@ function showRecommendedActions() {
 // Hook into view switching to update workflow nav
 const originalSwitchView = window.switchView;
 if (originalSwitchView) {
-    window.switchView = function(view) {
+    window.switchView = function (view) {
         originalSwitchView(view);
         updateWorkflowStageUI();
     };

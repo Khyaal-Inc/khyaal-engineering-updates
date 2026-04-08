@@ -128,6 +128,11 @@ function switchStage(stageKey) {
 function renderStageTabs(activeView) {
     const container = document.getElementById('stage-tabs');
     if (!container) return;
+    
+    // Unified Navigation: Hide center tabs in favor of the new Strategic Ribbon
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    return;
     const mode = currentMode || 'pm';
     const stageMap = STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm;
     const activeStage = getStageForView(activeView || window.currentActiveView || '');
@@ -152,24 +157,57 @@ function renderStageTabs(activeView) {
 function renderViewSubtabs(activeView) {
     const container = document.getElementById('view-subtabs');
     if (!container) return;
-    const mode = currentMode || 'pm';
-    const stage = getStageForView(activeView || window.currentActiveView || '');
-    const views = (STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm)[stage] || [];
 
-    if (views.length <= 1) {
+    // Source of Truth: Use the strategic stage views
+    const stageKey = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery';
+    const stage = typeof WORKFLOW_STAGES !== 'undefined' ? WORKFLOW_STAGES[stageKey] : null;
+    
+    if (!stage) {
+        console.warn('Strategic stage metadata missing. Sub-tabs may be incomplete.');
+        return;
+    }
+
+    const mode = currentMode || 'pm';
+    const availableModeViews = MODE_CONFIG[mode]?.availableViews || [];
+    
+    // Filter stage views by what's available for this persona
+    const views = stage.views.filter(v => availableModeViews.includes(v));
+
+    if (views.length === 0) {
         container.style.display = 'none';
         return;
     }
-    container.style.display = '';
+    
+    container.style.display = 'flex';
+    container.style.gap = '8px';
+    container.style.padding = '12px 0';
 
     container.innerHTML = views.map(viewId => {
         const meta = VIEW_METADATA[viewId];
         const isActive = viewId === (activeView || window.currentActiveView);
-        const badgeId = meta?.badge || `tab-count-${viewId}`;
-        return `<button onclick="switchView('${viewId}')" id="btn-${viewId}"
-            class="view-subtab ${isActive ? 'view-subtab-active' : ''}">
-            ${meta?.label || viewId}<span id="${badgeId}" class="tab-count"></span>
-        </button>`;
+        
+        // Define labels locally to match popover logic
+        const viewLabels = {
+            'okr': '🎯 OKRs', 'epics': '🚀 Epics', 'roadmap': '🗺️ Roadmap', 'backlog': '📚 Backlog',
+            'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active', 
+            'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links', 
+            'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data', 
+            'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk', 
+            'contributor': '👥 Team', 'gantt': '📅 Gantt', 'ideation': '💡 Ideas', 'spikes': '🧪 Spikes'
+        };
+
+        const label = viewLabels[viewId] || meta?.label || viewId;
+        const emoji = label.includes(' ') ? label.split(' ')[0] : '';
+        const text = label.includes(' ') ? label.split(' ')[1] : label;
+
+        return `
+            <button onclick="switchView('${viewId}')" id="btn-${viewId}"
+                class="view-subtab ${isActive ? 'view-subtab-active' : ''} group"
+                style="--active-color: ${stage.color}"
+            >
+                <span class="text-[12px] group-hover:scale-110 transition-transform">${emoji}</span>
+                <span class="uppercase font-extrabold tracking-wider text-[10px]">${text}</span>
+            </button>`;
     }).join('');
 }
 
