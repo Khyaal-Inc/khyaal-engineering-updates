@@ -97,89 +97,150 @@ function viewCeremonyAudit(type, targetId) {
  * Creates a "synthetic" audit record for items closed before the audit system was live
  */
 function synthesizeAudit(type, targetId) {
-    if (type === 'okr') {
+    if (type === 'okr' || type === 'okr-launch') {
         const okr = UPDATE_DATA.metadata.okrs.find(o => o.id === targetId);
         if (!okr) return null;
         const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id);
+        const completedEpics = linkedEpics.filter(e => e.status === 'completed').length;
+        const totalKRs = (okr.keyResults || []).length;
+        const achievedKRs = (okr.keyResults || []).filter(kr => kr.status === 'achieved' || (kr.current >= kr.target)).length;
+        const linkedSprints = (UPDATE_DATA.metadata.sprints || []).filter(s => s.linkedOKR === okr.id);
+        const krItems = (okr.keyResults || []).map(kr => {
+            const pct = kr.target ? Math.min(100, Math.round(((kr.current || 0) / kr.target) * 100)) : 0;
+            return { name: `${kr.description} · ${kr.current || 0}/${kr.target} ${kr.unit}`, status: pct >= 100 ? 'done' : 'on-track', destination: `${pct}% complete` };
+        });
         return {
-            title: `Historical OKR State`,
-            description: `Snapshot synthesized from current records.`,
-            mission: {
-                objective: okr.objective,
-                track: okr.owner,
-                timeline: okr.quarter
-            },
+            title: `${okr.quarter}: ${type === 'okr-launch' ? 'Quarter Launched' : 'OKR Closed'}`,
+            description: `Synthesized from current records · ${okr.overallProgress || 0}% progress · ${achievedKRs}/${totalKRs} KRs hit`,
+            mission: { objective: okr.objective, track: okr.owner, timeline: okr.quarter },
             details: [
-                { label: 'Strategic Result', count: (okr.result || 'ARCHIVED').toUpperCase(), icon: '🎯' },
-                { label: 'Success Rate', count: `${okr.overallProgress}%`, icon: '📈' },
-                { label: 'Key Results', count: (okr.keyResults || []).length, icon: '📋' }
+                { label: 'Outcome', count: (okr.result || (type === 'okr-launch' ? 'ACTIVE' : 'ARCHIVED')).toUpperCase(), icon: '🎯' },
+                { label: 'Progress', count: `${okr.overallProgress || 0}%`, icon: '📈' },
+                { label: 'KR Hit Rate', count: `${achievedKRs} / ${totalKRs}`, icon: '📋' },
+                { label: 'Epics', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
+            ],
+            extras: [
+                { label: 'Linked Sprints', value: linkedSprints.length },
+                { label: 'Strategic Breadth', value: `${new Set(linkedEpics.map(e => e.track).filter(Boolean)).size} tracks` }
             ],
             items: [
-                ...(okr.keyResults || []).map(kr => ({ 
-                    name: `KR: ${kr.description} (${kr.current}/${kr.target} ${kr.unit})`, 
-                    status: kr.status, 
-                    destination: 'Key Result' 
-                })),
-                ...linkedEpics.map(e => ({ id: e.id, name: e.name, status: e.status, destination: 'Initiative', type: 'epic', lead: okr.owner }))
+                ...krItems,
+                ...linkedEpics.map(e => ({ id: e.id, name: e.name, status: e.status, destination: e.status === 'completed' ? 'Delivered' : 'Pending', type: 'epic', lead: okr.owner }))
             ],
-            actions: [
-                { label: 'Review Analytics', fn: () => switchView('analytics') }
-            ]
+            actions: [{ label: 'View OKRs', fn: () => switchView('okr') }, { label: 'View Analytics', fn: () => switchView('analytics') }]
         };
     }
-    if (type === 'epic') {
+    if (type === 'epic' || type === 'epic-kickoff') {
         const epic = UPDATE_DATA.metadata.epics.find(e => e.id === targetId);
         if (!epic) return null;
         const epicItems = findItemsByMetadataId('epicId', epic.id);
+        const doneItems = epicItems.filter(i => i.status === 'done');
         const totalPoints = epicItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+        const donePoints = doneItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+        const completionPct = epicItems.length ? Math.round((doneItems.length / epicItems.length) * 100) : 0;
+        const epicOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === epic.linkedOKR);
+        const contrTaskCount = {};
+        epicItems.forEach(i => (i.contributors || []).forEach(c => { contrTaskCount[c] = (contrTaskCount[c] || 0) + 1; }));
+        const topContributors = Object.entries(contrTaskCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n]) => n).join(', ') || 'N/A';
         return {
-            title: `Historical Epic State`,
-            description: `Audit synthesized from current metadata.`,
+            title: `${type === 'epic-kickoff' ? 'Epic Kicked Off' : 'Epic Closed'}: ${epic.name}`,
+            description: `${completionPct}% complete · ${donePoints}/${totalPoints} SP delivered`,
             mission: {
-                objective: epic.objective,
-                track: epic.track,
-                timeline: epic.timeline
+                objective: epic.successCriteria || epic.description || epic.name,
+                track: epicOKR ? `OKR: ${epicOKR.objective.substring(0, 50)}` : (epic.track || 'N/A'),
+                timeline: epic.planningHorizon || epic.timeline || 'N/A'
             },
-            wins: epic.successMetrics,
+            wins: epic.successMetrics || epic.successCriteria,
             details: [
-                { label: 'Epic Life-state', count: 'COMPLETED', icon: '🚀' },
-                { label: 'Resource Load', count: `${totalPoints} SP`, icon: '💎' },
-                { label: 'Execution Breadth', count: `${epicItems.length} Tasks`, icon: '📊' }
+                { label: 'Stage at State', count: (epic.stage || 'delivery').toUpperCase(), icon: '🚦' },
+                { label: 'Task Throughput', count: `${doneItems.length} / ${epicItems.length}`, icon: '📊' },
+                { label: 'Points', count: `${donePoints} / ${totalPoints} SP`, icon: '💎' },
+                { label: 'Team Size', count: Object.keys(contrTaskCount).length, icon: '👥' }
             ],
-            items: epicItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: 'Completed', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
-            actions: [
-                { label: 'Return to Epics', fn: () => switchView('epics') }
-            ]
+            extras: [
+                { label: 'Top Contributors', value: topContributors },
+                { label: 'Linked OKR', value: epicOKR ? epicOKR.quarter : 'None' },
+                { label: 'Epic Health', value: completionPct >= 80 ? 'Healthy' : completionPct >= 50 ? 'At Risk' : 'Critical' }
+            ],
+            items: epicItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: i.status === 'done' ? 'Completed' : 'Backlog', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
+            actions: [{ label: 'Return to Epics', fn: () => switchView('epics') }]
         };
     }
-    if (type === 'sprint') {
+    if (type === 'sprint' || type === 'sprint-kickoff') {
         const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === targetId);
         if (!sprint) return null;
         const sprintItems = findItemsByMetadataId('sprintId', sprint.id);
+        const doneItems = sprintItems.filter(i => i.status === 'done');
+        const plannedPoints = sprintItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+        const completedPoints = doneItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+        const velocityPct = plannedPoints ? Math.round((completedPoints / plannedPoints) * 100) : 0;
+        const durationDays = (sprint.startDate && sprint.endDate)
+            ? Math.round((new Date(sprint.endDate) - new Date(sprint.startDate)) / (1000 * 60 * 60 * 24))
+            : null;
+        const sprintOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === sprint.linkedOKR);
+        const contrTaskCount = {};
+        sprintItems.forEach(i => (i.contributors || []).forEach(c => { contrTaskCount[c] = (contrTaskCount[c] || 0) + 1; }));
+        const topContributors = Object.entries(contrTaskCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, cnt]) => `${n} (${cnt})`).join(', ') || 'N/A';
         return {
-            title: `Sprint ${sprint.name} Historical Audit`,
-            description: `Synthesized from archived project data.`,
+            title: `Sprint ${sprint.name} ${type === 'sprint-kickoff' ? 'Kicked Off' : 'Closed'}`,
+            description: `${completedPoints}/${plannedPoints} pts · ${velocityPct}% commitment · ${doneItems.length}/${sprintItems.length} tasks done`,
+            mission: {
+                objective: sprint.goal || 'No goal defined',
+                track: 'Sprint Team',
+                timeline: `${sprint.startDate || 'TBD'} → ${sprint.endDate || 'TBD'}${durationDays ? ` (${durationDays}d)` : ''}`
+            },
             details: [
-                { label: 'Final Status', count: 'CLOSED', icon: '🔒' },
-                { label: 'Task Volume', count: sprintItems.length, icon: '📋' }
+                { label: 'Velocity', count: `${completedPoints} / ${plannedPoints} pts`, icon: '⚡' },
+                { label: 'Commitment', count: `${velocityPct}%`, icon: '📊' },
+                { label: 'Tasks Done', count: `${doneItems.length} / ${sprintItems.length}`, icon: '✅' },
+                { label: 'Contributors', count: Object.keys(contrTaskCount).length, icon: '👥' }
             ],
-            items: sprintItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: 'Retained', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
-            actions: [
-                { label: 'Review Dashboard', fn: () => switchView('dashboard') }
-            ]
+            extras: [
+                { label: 'Sprint Duration', value: durationDays ? `${durationDays} days` : 'N/A' },
+                { label: 'Top Contributors', value: topContributors },
+                { label: 'Blocked at Close', value: sprintItems.filter(i => i.status === 'blocked').length },
+                { label: 'OKR Aligned', value: sprintOKR ? sprintOKR.objective.substring(0, 50) : 'None' }
+            ],
+            items: sprintItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: i.status === 'done' ? 'Shipped' : 'Rolled', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
+            actions: [{ label: 'Review Analytics', fn: () => switchView('analytics') }, { label: 'Go to Kanban', fn: () => switchView('kanban') }]
         };
     }
-    // Generic fallback for others
+    if (type === 'release' || type === 'release-lock') {
+        const release = UPDATE_DATA.metadata.releases.find(r => r.id === targetId);
+        if (!release) return null;
+        const releaseItems = findItemsByMetadataId('releasedIn', targetId);
+        const doneItems = releaseItems.filter(i => i.status === 'done');
+        const totalPoints = releaseItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+        const releaseOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === release.linkedOKR);
+        const epicsInScope = [...new Set(releaseItems.filter(i => i.epicId).map(i => i.epicId))]
+            .map(eid => (UPDATE_DATA.metadata.epics || []).find(e => e.id === eid)).filter(Boolean);
+        return {
+            title: `${type === 'release-lock' ? 'Scope Locked' : 'Release Shipped'}: ${release.name}`,
+            description: `${doneItems.length}/${releaseItems.length} items shipped · ${totalPoints} SP · Target: ${release.targetDate || 'TBD'}`,
+            details: [
+                { label: 'Items Shipped', count: `${doneItems.length} / ${releaseItems.length}`, icon: '🚀' },
+                { label: 'Story Points', count: totalPoints, icon: '💎' },
+                { label: 'Epics Covered', count: epicsInScope.length, icon: '📦' },
+                { label: 'Target Date', count: release.targetDate || 'TBD', icon: '📅' }
+            ],
+            extras: [
+                { label: 'Linked OKR', value: releaseOKR ? releaseOKR.quarter : 'None' },
+                { label: 'QA Items', value: releaseItems.filter(i => i.status === 'qa').length },
+                { label: 'In Review', value: releaseItems.filter(i => i.status === 'review').length }
+            ],
+            items: releaseItems.map(i => ({ id: i.id, name: i.text, status: i.status, destination: i.status === 'done' ? 'Shipped' : 'Pending', type: 'task', lead: (i.contributors || [])[0], points: i.storyPoints })),
+            actions: [{ label: 'View Releases', fn: () => switchView('releases') }]
+        };
+    }
+    // Generic fallback
     return {
-        title: `Audit Trace`,
+        title: `Lifecycle Audit`,
         description: `This item was closed before the rich audit system was active.`,
         details: [
             { label: 'Record Type', count: type.toUpperCase(), icon: '📜' },
             { label: 'Final State', count: 'COMPLETED', icon: '✅' }
         ],
-        actions: [
-            { label: 'Return to Dashboard', fn: () => switchView('analytics') }
-        ]
+        actions: [{ label: 'Return to Dashboard', fn: () => switchView('analytics') }]
     };
 }
 
@@ -2075,15 +2136,50 @@ async function saveSprintClose(sprintId) {
     window._skipModalCloseOnce = true;
 
     const nextSprintName = nextSprint ? nextSprint.name : 'Backlog';
+
+    // Velocity trend comparison
+    const history = UPDATE_DATA.metadata.velocityHistory || [];
+    const prevSprints = history.filter(h => h.sprintId !== sprintId).slice(-3);
+    const avgVelocity = prevSprints.length ? Math.round(prevSprints.reduce((sum, h) => sum + h.completed, 0) / prevSprints.length) : null;
+    const velocityTrend = avgVelocity !== null ? (completedPoints >= avgVelocity ? `↑ Above avg (${avgVelocity} pts)` : `↓ Below avg (${avgVelocity} pts)`) : 'First sprint';
+
+    // Sprint duration in days
+    const durationDays = (sprint.startDate && sprint.endDate)
+        ? Math.round((new Date(sprint.endDate) - new Date(sprint.startDate)) / (1000 * 60 * 60 * 24))
+        : null;
+
+    // Blocked items count at closure
+    const blockedCount = items.filter(i => i.status === 'blocked').length;
+
+    // Top contributors by task count
+    const contrTaskCount = {};
+    items.forEach(i => (i.contributors || []).forEach(c => { contrTaskCount[c] = (contrTaskCount[c] || 0) + 1; }));
+    const topContributors = Object.entries(contrTaskCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n, cnt]) => `${n} (${cnt})`).join(', ') || 'N/A';
+
+    // Linked OKR
+    const sprintOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === sprint.linkedOKR);
+
     const auditConfig = {
         timestamp: new Date().toISOString(),
         title: `Sprint ${sprint.name} Closed`,
-        description: `Mission completed with ${completedPoints} pts verified. Commitment Precision: ${summary.velocityResult}%.`,
+        description: `${completedPoints} pts delivered · ${summary.velocityResult}% commitment met · ${velocityTrend}`,
+        mission: {
+            objective: sprint.goal || 'No goal defined for this sprint',
+            track: 'Sprint Team',
+            timeline: `${sprint.startDate || 'TBD'} → ${sprint.endDate || 'TBD'}${durationDays ? ` (${durationDays}d)` : ''}`
+        },
         details: [
-            { label: 'Contributor Density', count: contributionSet.size, icon: '👥' },
-            { label: 'Task Closure Ratio', count: `${doneTasksCount} / ${totalTasks}`, icon: '📊' },
-            { label: `Rolled to ${nextSprintName}`, count: summary.movedToNext, icon: '🏃' },
-            { label: 'Moved to Backlog', count: summary.movedToBacklog, icon: '📚' }
+            { label: 'Velocity', count: `${completedPoints} / ${plannedPoints} pts`, icon: '⚡' },
+            { label: 'Task Closure', count: `${doneTasksCount} / ${totalTasks}`, icon: '📊' },
+            { label: `Rolled → ${nextSprintName}`, count: summary.movedToNext, icon: '🏃' },
+            { label: 'To Backlog', count: summary.movedToBacklog, icon: '📚' }
+        ],
+        extras: [
+            { label: 'Velocity Trend', value: velocityTrend },
+            { label: 'Top Contributors', value: topContributors },
+            { label: 'Blocked at Close', value: blockedCount },
+            { label: 'Sprint Duration', value: durationDays ? `${durationDays} days` : 'N/A' },
+            { label: 'OKR Aligned', value: sprintOKR ? sprintOKR.objective.substring(0, 50) : 'None' }
         ],
         items: items.map(i => ({
             id: i.id,
@@ -2188,33 +2284,52 @@ function confirmCloseOKR(idx) {
     const tracksInvolved = new Set(linkedEpics.map(e => e.track).filter(Boolean));
     const performanceScore = okr.overallProgress || 0;
 
+    // Linked sprints count
+    const linkedSprints = (UPDATE_DATA.metadata.sprints || []).filter(s => s.linkedOKR === okr.id || (okr.keyResults || []).some(kr => kr.sprintId === s.id));
+
+    // KR detail items with progress bars
+    const krItems = (okr.keyResults || []).map(kr => {
+        const pct = kr.target ? Math.min(100, Math.round(((kr.current || 0) / kr.target) * 100)) : 0;
+        return {
+            name: `${kr.description} · ${kr.current || 0}/${kr.target} ${kr.unit}`,
+            status: pct >= 100 ? 'done' : (pct >= 60 ? 'on-track' : 'at-risk'),
+            destination: `${pct}% complete`,
+            points: null,
+            lead: null
+        };
+    });
+
+    const resultColor = result === 'achieved' ? 'emerald' : result === 'missed' ? 'amber' : 'slate';
+
     const auditConfig = {
         timestamp: new Date().toISOString(),
-        title: `Quarterly OKR Closed`,
-        description: `Strategic objective archived with ${performanceScore}% overall progression. Outcome: ${result.toUpperCase()}.`,
+        title: `OKR Closed: ${okr.quarter}`,
+        description: `${result.toUpperCase()} · ${performanceScore}% overall · ${achievedKRs}/${totalKRs} key results hit`,
         mission: {
             objective: okr.objective,
             track: okr.owner,
             timeline: okr.quarter
         },
         details: [
-            { label: 'KR Achievement Rate', count: `${achievedKRs} / ${totalKRs}`, icon: '🎯' },
-            { label: 'Strategic Breadth', count: `${tracksInvolved.size} Tracks`, icon: '🌐' },
-            { label: 'Initiative Conversion', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' }
+            { label: 'Outcome', count: result.toUpperCase(), icon: result === 'achieved' ? '🎯' : result === 'missed' ? '⚠️' : '🚫' },
+            { label: 'KR Hit Rate', count: `${achievedKRs} / ${totalKRs}`, icon: '📋' },
+            { label: 'Epics Converted', count: `${completedEpics} / ${linkedEpics.length}`, icon: '🚀' },
+            { label: 'Overall Progress', count: `${performanceScore}%`, icon: '📈' }
+        ],
+        extras: [
+            { label: 'Strategic Breadth', value: `${tracksInvolved.size} tracks involved` },
+            { label: 'Linked Sprints', value: linkedSprints.length },
+            { label: 'Linked Initiatives', value: linkedEpics.length }
         ],
         items: [
-            ...(okr.keyResults || []).map(kr => ({ 
-                name: `KR: ${kr.description} (${kr.current}/${kr.target} ${kr.unit})`, 
-                status: kr.status, 
-                destination: 'Key Result' 
-            })),
-            ...linkedEpics.map(e => ({ 
-                id: e.id, 
-                name: e.name, 
-                status: e.status, 
-                destination: 'Initiative', 
-                type: 'epic', 
-                lead: okr.owner // OKR Owner is the strategic lead
+            ...krItems,
+            ...linkedEpics.map(e => ({
+                id: e.id,
+                name: e.name,
+                status: e.status,
+                destination: e.status === 'completed' ? 'Delivered' : 'Pending',
+                type: 'epic',
+                lead: okr.owner
             }))
         ],
         actions: [
@@ -2237,54 +2352,126 @@ function closeEpic(idx) {
     const epic = UPDATE_DATA.metadata.epics[idx];
     if (!epic) return;
 
-    if (!confirm(`Are you sure you want to close Epic: "${epic.name}"?\n\nAny incomplete tasks will be moved to the Backlog.`)) return;
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
+    const doneItems = items.filter(i => i.status === 'done');
+    const pendingItems = items.filter(i => i.status !== 'done');
+    const blockedItems = items.filter(i => i.status === 'blocked');
+    const totalPoints = items.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    const donePoints = doneItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    const completionPct = items.length ? Math.round((doneItems.length / items.length) * 100) : 0;
+    const epicOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === epic.linkedOKR);
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []));
+
+    // Show a confirmation modal with epic stats before destructive action
+    editContext = { type: '_epicClose', idx };
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🏁</span>
+            <span class="font-black tracking-tight">Close Epic: ${epic.name}</span>
+        </div>`;
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Ceremony: Epic Closure</div>
+            <div class="stage-desc">Archive this initiative. Incomplete tasks will be moved to the Backlog.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="p-3 bg-slate-900 rounded-xl text-white text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Completion</div>
+                    <div class="text-2xl font-black">${completionPct}%</div>
+                </div>
+                <div class="p-3 bg-white border border-slate-200 rounded-xl text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Done / Total</div>
+                    <div class="text-2xl font-black">${doneItems.length} / ${items.length}</div>
+                </div>
+                <div class="p-3 bg-white border border-slate-200 rounded-xl text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">To Backlog</div>
+                    <div class="text-2xl font-black ${pendingItems.length > 0 ? 'text-amber-600' : 'text-emerald-600'}">${pendingItems.length}</div>
+                </div>
+            </div>
+            ${epicOKR ? `
+            <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-3">
+                <span>🎯</span>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-500 uppercase">Parent OKR</div>
+                    <div class="text-xs font-bold text-indigo-900">${epicOKR.objective}</div>
+                </div>
+            </div>` : ''}
+            ${pendingItems.length > 0 ? `
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-bold">
+                ⚠️ ${pendingItems.length} incomplete task${pendingItems.length !== 1 ? 's' : ''} will be moved to Backlog and unlinked from this epic.
+            </div>` : `
+            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 font-bold text-center">
+                🎉 All tasks complete — perfect closure!
+            </div>`}
+        </div>`;
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmCloseEpic(${idx})" class="cms-btn cms-btn-primary">🏁 Archive Epic</button>`;
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmCloseEpic(idx) {
+    const epic = UPDATE_DATA.metadata.epics[idx];
+    if (!epic) return;
 
     const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
+    const doneItems = items.filter(i => i.status === 'done');
     const pendingItems = items.filter(i => i.status !== 'done');
+    const blockedItems = items.filter(i => i.status === 'blocked');
+    const totalPoints = items.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    const donePoints = doneItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    const completionPct = items.length ? Math.round((doneItems.length / items.length) * 100) : 0;
+    const epicOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === epic.linkedOKR);
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []));
 
-    // 1. Group items by source subtrack to safely move them without index shifting
     // Sort descending by itemIndex so splice doesn't affect subsequent indices
     const sortedPending = [...pendingItems].sort((a, b) => b.itemIndex - a.itemIndex);
 
-    // 2. Move pending to backlog
     sortedPending.forEach(item => {
         const track = UPDATE_DATA.tracks[item.trackIndex];
         const subtrack = track.subtracks[item.subtrackIndex];
         const realItem = subtrack.items[item.itemIndex];
-        
         realItem.epicId = '';
         realItem.status = 'later';
         realItem.updatedAt = new Date().toISOString();
-
         moveItemToBacklog(item);
     });
 
     UPDATE_DATA.metadata.epics[idx].status = 'completed';
+    UPDATE_DATA.metadata.epics[idx].completedAt = new Date().toISOString();
     UPDATE_DATA.metadata.epics[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-
-    // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
-    // High-Fidelity Stats — use pre-computed items list (before move), counts are still valid
-    const doneCount = items.filter(i => i.status === 'done').length;
-    const totalPoints = items.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    // Top contributors sorted by task count
+    const contributorTaskCount = {};
+    items.forEach(i => (i.contributors || []).forEach(c => { contributorTaskCount[c] = (contributorTaskCount[c] || 0) + 1; }));
+    const topContributors = Object.entries(contributorTaskCount).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name).join(', ') || 'N/A';
 
     const auditConfig = {
         timestamp: new Date().toISOString(),
         title: `Epic Closed: ${epic.name}`,
-        description: 'Strategic initiative successfully archived. Cleanup complete.',
+        description: `${completionPct}% completion · ${donePoints} of ${totalPoints} story points delivered.`,
         mission: {
-            objective: epic.objective,
-            track: epic.track,
-            timeline: epic.timeline
+            objective: epic.successCriteria || epic.description || epic.name,
+            track: epicOKR ? `OKR: ${epicOKR.objective.substring(0, 60)}` : (epic.track || 'N/A'),
+            timeline: epic.planningHorizon || epic.timeline || 'N/A'
         },
-        wins: epic.successMetrics,
+        wins: epic.successMetrics || epic.successCriteria,
         details: [
-            { label: 'Task Throughput', count: `${doneCount} / ${epicItems.length} Tasks`, icon: '📊' },
-            { label: 'Resource Intensity', count: `${totalPoints} SP`, icon: '💎' },
-            { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' }
+            { label: 'Task Throughput', count: `${doneItems.length} / ${items.length}`, icon: '📊' },
+            { label: 'Points Delivered', count: `${donePoints} / ${totalPoints} SP`, icon: '💎' },
+            { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' },
+            { label: 'Stage at Close', count: (epic.stage || 'delivery').toUpperCase(), icon: '🚦' }
+        ],
+        extras: [
+            { label: 'Top Contributors', value: topContributors },
+            { label: 'Blocked at Close', value: blockedItems.length },
+            { label: 'Linked OKR', value: epicOKR ? epicOKR.quarter : 'None' },
+            { label: 'Epic Health', value: completionPct >= 80 ? 'Healthy' : completionPct >= 50 ? 'At Risk' : 'Critical' }
         ],
         items: items.map(i => ({
             id: i.id,
@@ -2338,156 +2525,194 @@ function moveItemToBacklog(itemRef) {
  * Ceremony Handoff UI: Renders a success summary after a lifecycle closure
  */
 function renderCeremonySuccess(type, config, isHistorical = false) {
-    // 0. OVERRIDE GENERIC MODAL HEADER (MODERN CONTRAST)
+    // Ceremony-type color accent config
+    const typeTheme = {
+        'sprint':         { color: '#059669', bg: 'bg-emerald-600', light: 'bg-emerald-50',  border: 'border-emerald-200', text: 'text-emerald-700', icon: '🏃', label: 'Sprint Ceremony' },
+        'sprint-kickoff': { color: '#0ea5e9', bg: 'bg-sky-600',     light: 'bg-sky-50',      border: 'border-sky-200',     text: 'text-sky-700',     icon: '🚀', label: 'Sprint Kickoff' },
+        'okr':            { color: '#4f46e5', bg: 'bg-indigo-600',  light: 'bg-indigo-50',   border: 'border-indigo-200',  text: 'text-indigo-700',  icon: '🎯', label: 'OKR Quarter Close' },
+        'okr-launch':     { color: '#4f46e5', bg: 'bg-indigo-600',  light: 'bg-indigo-50',   border: 'border-indigo-200',  text: 'text-indigo-700',  icon: '🎯', label: 'OKR Quarter Launch' },
+        'epic':           { color: '#7c3aed', bg: 'bg-violet-600',  light: 'bg-violet-50',   border: 'border-violet-200',  text: 'text-violet-700',  icon: '🚀', label: 'Epic Ceremony' },
+        'epic-kickoff':   { color: '#7c3aed', bg: 'bg-violet-600',  light: 'bg-violet-50',   border: 'border-violet-200',  text: 'text-violet-700',  icon: '🚀', label: 'Epic Kickoff' },
+        'release':        { color: '#d97706', bg: 'bg-amber-600',   light: 'bg-amber-50',    border: 'border-amber-200',   text: 'text-amber-700',   icon: '🚢', label: 'Release Ceremony' },
+        'release-lock':   { color: '#d97706', bg: 'bg-amber-600',   light: 'bg-amber-50',    border: 'border-amber-200',   text: 'text-amber-700',   icon: '📋', label: 'Release Scope Lock' },
+        'roadmap':        { color: '#0891b2', bg: 'bg-cyan-600',    light: 'bg-cyan-50',     border: 'border-cyan-200',    text: 'text-cyan-700',    icon: '🗺️', label: 'Roadmap Ceremony' }
+    };
+    const theme = typeTheme[type] || { color: '#475569', bg: 'bg-slate-600', light: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', icon: '📜', label: 'Lifecycle Ceremony' };
+
+    // 0. MODAL TITLE with ceremony type accent bar
     const modalTitleEl = document.getElementById('modal-title');
     if (modalTitleEl) {
         modalTitleEl.innerHTML = `
-            <div class="flex items-center justify-center gap-4 text-emerald-600 w-full ml-auto mr-auto pl-12 py-2">
-                <span class="text-2xl filter drop-shadow-sm">✨</span>
-                <span class="font-black tracking-tighter text-lg uppercase text-slate-800">Platform Lifecycle Audit</span>
-            </div>
-        `;
+            <div class="flex items-center gap-3 w-full">
+                <span class="px-3 py-1.5 rounded-full ${theme.light} ${theme.text} ${theme.border} border text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-1.5">
+                    <span>${theme.icon}</span>${theme.label}
+                </span>
+                <span class="font-black tracking-tight text-slate-800 text-sm flex-1 truncate">${isHistorical ? '📜 Historical Audit' : 'Lifecycle Audit'}</span>
+                ${isHistorical && config.timestamp ? `<span class="text-[9px] font-bold text-slate-400 shrink-0">${new Date(config.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>` : ''}
+            </div>`;
     }
 
-    // 1. SYMMETRIC ACTION CENTER (HIGH CONTRAST)
-    const allActions = [...config.actions];
-    const showDoneInGrid = allActions.length === 1; 
-    
+    // 1. ACTION CENTER BUTTONS
+    const allActions = [...(config.actions || [])];
+    const ispm = typeof getCurrentMode === 'function' && getCurrentMode() === 'pm';
+
+    // Reopen button for PM mode (historical view only)
+    let reopenHtml = '';
+    if (isHistorical && ispm && config._targetId && config._type) {
+        reopenHtml = `<button onclick="if(confirm('Reopen this lifecycle item? This will revert its status.')) { /* reopen logic */ closeCmsModal(); }" class="cms-btn !bg-white hover:!bg-red-50 !text-red-600 !text-[10px] !font-black !uppercase !tracking-widest !py-3 !rounded-full border-2 border-red-200 w-full">↩ Reopen</button>`;
+    }
+
     const actionsHtml = allActions.map(a => {
         const fnStr = a.fn.toString();
-        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn !bg-white hover:!bg-slate-50 !text-slate-950 !text-[12px] !font-black !uppercase !tracking-widest !py-4 !rounded-full transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group border-2 border-slate-200/60 w-full mb-0 overflow-hidden relative active:scale-95">
-            <span class="relative z-10">${a.label}</span>
+        return `<button onclick="(${fnStr})(); closeCmsModal();" class="cms-btn !bg-white hover:!bg-slate-50 !text-slate-950 !text-[11px] !font-black !uppercase !tracking-widest !py-3 !rounded-full transition-all shadow-sm hover:shadow-md border-2 border-slate-200 w-full active:scale-95">
+            ${a.label}
         </button>`;
     }).join('');
 
-    const doneButtonHtml = `<button onclick="closeCmsModal()" class="cms-btn cms-btn-primary w-full py-4 !rounded-full shadow-xl transition-all active:scale-95 !bg-slate-900 !text-white font-black uppercase tracking-widest text-[12px] border-2 border-white/10 flex items-center justify-center mb-0 hover:!bg-black">
+    const doneButtonHtml = `<button onclick="closeCmsModal()" class="cms-btn cms-btn-primary w-full py-3 !rounded-full shadow-lg transition-all active:scale-95 !bg-slate-900 !text-white font-black uppercase tracking-widest text-[11px] border-2 border-white/10 hover:!bg-black">
         Done
     </button>`;
 
-    // 2. MISSION BANNER (CONTRAST & BREADTH)
+    // 2. COLOR ACCENT TOP BAR
+    const accentBarHtml = `<div class="h-1.5 w-full rounded-full mb-6" style="background: linear-gradient(90deg, ${theme.color}, ${theme.color}88)"></div>`;
+
+    // 2b. Historical date badge (prominent)
+    const historicalBadgeHtml = isHistorical && config.timestamp ? `
+        <div class="flex items-center justify-center gap-2 mb-4">
+            <span class="px-4 py-1.5 bg-slate-100 border border-slate-200 rounded-full text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                <span>🛡️</span> Historical Trace · Recorded ${new Date(config.timestamp).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+        </div>` : '';
+
+    // 3. MISSION BANNER
     let missionHtml = '';
     if (config.mission) {
         missionHtml = `
-            <div class="mb-6 py-4 px-8 glass-header !rounded-3xl border-2 border-slate-800 shadow-2xl w-full bg-slate-950 flex flex-col text-left relative overflow-hidden shrink-0">
-                <div class="absolute right-0 top-0 py-6 px-4 opacity-[0.05] text-7xl transform rotate-12 pointer-events-none select-none text-white">🌐</div>
-                <div class="flex items-center gap-3 mb-2.5 relative z-10">
-                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-[0.25em] border border-emerald-500/30 backdrop-blur-md flex items-center gap-1.5 shadow-sm">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Strategic Context
-                    </span>
-                    <span class="text-[10px] font-bold text-white/50 tracking-[0.15em] uppercase">${config.mission.track} • ${config.mission.timeline}</span>
+            <div class="mb-4 py-4 px-6 rounded-2xl border border-slate-700 shadow-xl w-full bg-slate-950 flex flex-col text-left relative overflow-hidden shrink-0">
+                <div class="absolute right-3 top-3 opacity-[0.06] text-6xl pointer-events-none select-none">${theme.icon}</div>
+                <div class="flex items-center gap-2 mb-2 relative z-10">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">${config.mission.track} · ${config.mission.timeline}</span>
                 </div>
-                <h4 class="text-[14px] font-black text-white leading-tight tracking-tight relative z-10 pr-24">${config.mission.objective}</h4>
-            </div>
-        `;
+                <h4 class="text-[13px] font-black text-white leading-tight tracking-tight relative z-10 pr-16">${config.mission.objective}</h4>
+            </div>`;
     }
 
-    // 3. PERFORMANCE RIBBON (HIGH DEFINITION)
-    const detailsHtml = `
-        <div class="flex items-center justify-between bg-white border-2 border-slate-200 !rounded-3xl w-full py-5 shadow-sm mb-6 shrink-0">
+    // 4. PERFORMANCE RIBBON
+    const detailsHtml = config.details && config.details.length > 0 ? `
+        <div class="flex items-stretch bg-white border border-slate-200 rounded-2xl w-full shadow-sm mb-4 shrink-0 overflow-hidden">
             ${config.details.map((d, i) => `
-                <div class="flex-1 flex flex-col items-center justify-center ${i < config.details.length - 1 ? 'border-r-2 border-slate-100' : ''} px-6">
-                    <div class="flex items-center gap-2 opacity-60 mb-1.5">
-                        <span class="text-[10px] shrink-0">${d.icon}</span>
-                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] truncate">${d.label}</span>
-                    </div>
-                    <span class="text-[16px] font-black text-slate-950 leading-none tracking-tighter">${d.count}</span>
-                </div>
-            `).join('')}
-        </div>
-    `;
+                <div class="flex-1 flex flex-col items-center justify-center py-4 ${i < config.details.length - 1 ? 'border-r border-slate-100' : ''} px-3">
+                    <span class="text-[9px] shrink-0 mb-1">${d.icon}</span>
+                    <span class="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] text-center leading-tight mb-1.5">${d.label}</span>
+                    <span class="text-[15px] font-black text-slate-950 leading-none tracking-tighter text-center">${d.count}</span>
+                </div>`).join('')}
+        </div>` : '';
 
-    // 4. STRATEGIC WINS (BOLD ANCHOR)
+    // 5. EXTRAS (compact metadata grid)
+    let extrasHtml = '';
+    if (config.extras && config.extras.length > 0) {
+        extrasHtml = `
+            <div class="grid grid-cols-2 gap-2 mb-4 w-full">
+                ${config.extras.map(e => `
+                    <div class="flex items-center justify-between p-2 px-3 bg-slate-50 border border-slate-100 rounded-xl">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${e.label}</span>
+                        <span class="text-[10px] font-black text-slate-900 truncate max-w-[60%] text-right">${e.value}</span>
+                    </div>`).join('')}
+            </div>`;
+    }
+
+    // 6. STRATEGIC WINS
     let winsHtml = '';
     if (config.wins) {
         winsHtml = `
-            <div class="mb-8 text-center w-full px-8 border-l-4 border-indigo-500/80 py-2 bg-indigo-50/30 rounded-r-2xl">
-                <div class="text-[9px] font-black text-indigo-600 uppercase tracking-[0.35em] mb-2 text-left flex items-center gap-2">
-                     Verified Strategic Success
-                </div>
-                <p class="text-[12px] font-bold text-slate-900 italic leading-relaxed text-left">"${config.wins}"</p>
-            </div>
-        `;
+            <div class="mb-4 px-4 py-2.5 border-l-4 rounded-r-xl w-full" style="border-color: ${theme.color}; background: ${theme.color}10">
+                <div class="text-[8px] font-black uppercase tracking-[0.3em] mb-1" style="color: ${theme.color}">Success Criteria</div>
+                <p class="text-[11px] font-bold text-slate-900 italic leading-relaxed">"${config.wins}"</p>
+            </div>`;
     }
 
-    // 5. IMPACT LOG (MAX CONTRAST)
+    // 7. IMPACT LOG with enhanced item rows
     let impactHtml = '';
     if (config.items && config.items.length > 0) {
-        const itemType = type === 'okr' ? 'KEY RESULT' : (type === 'epic' ? 'INITIATIVE' : 'ITEM');
+        const statusColors = {
+            done: 'bg-emerald-500', completed: 'bg-emerald-500', achieved: 'bg-emerald-500', shipped: 'bg-emerald-500',
+            blocked: 'bg-red-500', 'at-risk': 'bg-red-400',
+            qa: 'bg-blue-500', review: 'bg-purple-500',
+            now: 'bg-indigo-500', next: 'bg-sky-400', later: 'bg-slate-400', 'on-track': 'bg-emerald-400',
+            rolled: 'bg-amber-400'
+        };
+        const statusLabels = {
+            done: 'Done', completed: 'Done', achieved: 'Achieved', shipped: 'Shipped',
+            blocked: 'Blocked', 'at-risk': 'At Risk',
+            qa: 'QA', review: 'Review', now: 'Active', next: 'Next', later: 'Later', 'on-track': 'On Track',
+            rolled: 'Rolled', pending: 'Pending', delivered: 'Delivered'
+        };
         impactHtml = `
-            <div class="text-left w-full mt-2 shrink-0">
-                <div class="text-[9px] font-black text-slate-500 uppercase tracking-[0.35em] mb-3 px-1 flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Detailed Lifecycle Trace
+            <div class="text-left w-full shrink-0">
+                <div class="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 px-1 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span> Lifecycle Trace (${config.items.length} items)
                 </div>
-                <div class="audit-impact-log bg-slate-50/50 rounded-3xl border-2 border-slate-200 overflow-y-auto max-h-[220px] p-2.5 space-y-1.5 custom-scrollbar w-full shadow-inner">
+                <div class="audit-impact-log bg-slate-50 rounded-2xl border border-slate-200 overflow-y-auto max-h-[200px] p-2 space-y-1 custom-scrollbar shadow-inner">
                     ${config.items.map(item => {
-                        const isDone = item.status === 'done' || item.status === 'achieved' || item.status === 'completed';
-                        const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' ? `openItemEdit('${item.id}')` : '');
-                        
+                        const statusKey = (item.status || '').toLowerCase();
+                        const isDone = ['done', 'completed', 'achieved', 'shipped'].includes(statusKey);
+                        const dotColor = statusColors[statusKey] || 'bg-slate-400';
+                        const statusLabel = statusLabels[statusKey] || (item.status || 'N/A');
+                        const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' && item.id ? `openItemEdit('${item.id}')` : '');
+                        const idTag = item.id ? `<span class="text-[8px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">#${String(item.id).substring(0, 12)}</span>` : '';
+
                         return `
-                            <div class="flex items-center justify-between p-2 px-6 bg-white border border-slate-100 rounded-2xl transition-all group hover:border-indigo-300 hover:shadow-md active:scale-[0.99] cursor-pointer" 
-                                  onclick="${linkFn}">
-                                <div class="flex items-center gap-4 overflow-hidden mr-6">
-                                    <div class="w-2.5 h-2.5 rounded-full ${isDone ? 'bg-emerald-500' : 'bg-amber-400'} shrink-0 opacity-80 group-hover:opacity-100 transition-all shadow-sm"></div>
-                                    <div class="flex flex-col min-w-0">
-                                        <span class="text-[11px] font-black text-slate-900 truncate uppercase tracking-tight group-hover:text-indigo-600 transition-colors">${item.name}</span>
-                                        ${item.lead ? `<span class="text-[9px] font-bold text-slate-500">Lead: ${item.lead} ${item.points ? ` • ${item.points} SP` : ''}</span>` : ''}
-                                    </div>
+                            <div class="flex items-center gap-2 p-2 pl-3 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all group ${linkFn ? 'cursor-pointer' : ''} active:scale-[0.99]"
+                                 ${linkFn ? `onclick="${linkFn}"` : ''}>
+                                <div class="w-2 h-2 rounded-full ${dotColor} shrink-0 opacity-75 group-hover:opacity-100"></div>
+                                <div class="flex-1 min-w-0 flex flex-col">
+                                    <span class="text-[10px] font-bold text-slate-800 truncate group-hover:text-indigo-700 transition-colors">${item.name}</span>
+                                    ${item.lead ? `<span class="text-[8px] text-slate-400">${item.lead}${item.points ? ` · ${item.points}SP` : ''}</span>` : ''}
                                 </div>
-                                <span class="text-[9px] font-black uppercase px-4 py-1.5 rounded-full ${isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'} shrink-0 tracking-tight shadow-sm">
-                                    ${itemType}
-                                </span>
-                            </div>
-                        `;
+                                <div class="flex items-center gap-1.5 shrink-0">
+                                    ${idTag}
+                                    <span class="text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${isDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}">${statusLabel}</span>
+                                    ${item.destination ? `<span class="text-[8px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">${item.destination}</span>` : ''}
+                                </div>
+                            </div>`;
                     }).join('')}
                 </div>
-            </div>
-        `;
+            </div>`;
     }
 
-    // 6. ASSEMBLE CONTENT (MAX BREADTH 1100px)
+    // 8. ASSEMBLE CONTENT
     document.getElementById('modal-form').innerHTML = `
-        <div class="text-center py-6 px-12 flex flex-col items-center w-full max-w-[1100px] mx-auto animate-fadeInDown">
-            <div class="relative w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-slate-200 shadow-xl group hover:scale-110 transition-transform">
-                <span class="text-2xl">${isHistorical ? '📜' : '🏁'}</span>
-                <div class="absolute -right-1 -bottom-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white shadow-lg shadow-emerald-200 animate-pulse"></div>
+        <div class="py-4 px-8 flex flex-col items-center w-full max-w-[1100px] mx-auto">
+            ${accentBarHtml}
+            ${historicalBadgeHtml}
+            <div class="space-y-1.5 mb-6 w-full text-center">
+                <h3 class="text-xl font-black text-slate-950 tracking-tighter leading-none">${config.title}</h3>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">${config.description}</p>
             </div>
-            
-            <div class="space-y-1.5 mb-10 w-full text-center">
-                <h3 class="text-2xl font-black text-slate-950 tracking-tighter leading-none">${config.title}</h3>
-                <p class="text-[11px] font-black text-slate-500 uppercase tracking-[0.5em] opacity-90">${config.description}</p>
-            </div>
-
-            <div class="w-full flex flex-col items-center gap-3">
+            <div class="w-full flex flex-col items-center gap-0">
                 ${missionHtml}
                 ${detailsHtml}
+                ${extrasHtml}
                 ${winsHtml}
                 ${impactHtml}
             </div>
-        </div>
-    `;
+        </div>`;
 
-    // 7. ACTION CENTER (HEAVY CONTRAST FOOTER)
+    // 9. ACTION CENTER FOOTER
     document.getElementById('modal-footer').innerHTML = `
-        <div class="p-10 border-t-2 border-slate-200 bg-slate-100/30 flex flex-col items-center w-full">
-            <div class="w-full max-w-[1100px] grid ${showDoneInGrid ? 'grid-cols-2' : 'grid-cols-1'} gap-8">
+        <div class="px-8 py-6 border-t border-slate-200 bg-slate-50/50 flex flex-col items-center w-full gap-3">
+            <div class="w-full max-w-[1100px] flex flex-wrap gap-3">
                 ${actionsHtml}
-                ${showDoneInGrid ? doneButtonHtml : ''}
+                ${reopenHtml}
+                ${doneButtonHtml}
             </div>
-            ${!showDoneInGrid ? `<div class="w-full max-w-[1100px] mt-6">${doneButtonHtml}</div>` : ''}
-            ${isHistorical ? `<div class="mt-8 text-[9px] font-black text-slate-400 uppercase tracking-[0.4em] opacity-60 flex items-center gap-3 bg-white px-6 py-2 rounded-full border-2 border-slate-100 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-slate-300 animate-pulse"></span> 🛡️ Historical Trace • ${new Date(config.timestamp || Date.now()).toLocaleDateString()}
-            </div>` : ''}
-        </div>
-    `;
+        </div>`;
 
-    // 8. FINALIZE & RENDER
+    // 10. FINALIZE
     const modal = document.getElementById('cms-modal');
     modal.classList.add('active');
     modal.scrollTop = 0;
     document.body.style.overflow = 'hidden';
-    
-    console.log("RENDER HIGH_CONTRAST AUDIT v8.0 [EXPANSIVE_BREADTH]");
 }
 
 /**
@@ -2532,14 +2757,29 @@ function shipRelease(releaseId) {
 
     const nextReleaseName = nextRelease ? nextRelease.name : 'Backlog';
     const doneItems = items.filter(i => i.status === 'done');
+    const qaItems = items.filter(i => i.status === 'qa');
+    const reviewItems = items.filter(i => i.status === 'review');
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+    const donePoints = doneItems.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+    const releaseOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === release.linkedOKR);
+    const epicsInScope = [...new Set(items.filter(i => i.epicId).map(i => i.epicId))]
+        .map(eid => (UPDATE_DATA.metadata.epics || []).find(e => e.id === eid)).filter(Boolean);
     const auditConfig = {
         timestamp: new Date().toISOString(),
         title: `Release Shipped: ${release.name}`,
-        description: `${doneItems.length} of ${items.length} items shipped. ${pendingItems.length > 0 ? `${pendingItems.length} rolled to ${nextReleaseName}.` : 'Clean ship — all items delivered.'}`,
+        description: `${doneItems.length}/${items.length} items shipped · ${donePoints}/${totalPoints} pts · ${pendingItems.length > 0 ? `${pendingItems.length} rolled to ${nextReleaseName}` : 'Clean ship!'}`,
         details: [
             { label: 'Items Shipped', count: `${doneItems.length} / ${items.length}`, icon: '🚀' },
+            { label: 'Points Delivered', count: `${donePoints} / ${totalPoints} SP`, icon: '💎' },
             { label: 'Rolled Over', count: pendingItems.length, icon: '📦' },
-            { label: 'Next Placement', count: nextReleaseName, icon: '📍' }
+            { label: 'Epics Covered', count: epicsInScope.length, icon: '🗂️' }
+        ],
+        extras: [
+            { label: 'Target Date', value: release.targetDate || 'TBD' },
+            { label: 'QA Items at Ship', value: qaItems.length },
+            { label: 'In Review at Ship', value: reviewItems.length },
+            { label: 'Linked OKR', value: releaseOKR ? releaseOKR.quarter : 'None' },
+            { label: 'Next Placement', value: nextReleaseName }
         ],
         items: items.map(i => ({
             id: i.id,
@@ -2563,49 +2803,554 @@ function shipRelease(releaseId) {
 }
 
 /**
- * Lifecycle Ceremony: Advance Roadmap Horizons
+ * Lifecycle Ceremony: Advance Roadmap Horizons (Full Modal)
  * Bulk nudge of strategic initiatives across planning horizons
  */
 function advanceRoadmapHorizons() {
-    if (!confirm("⚠️ Advance Roadmap Horizons?\n\nThis will shift all items:\n- Next (3M) → Now (1M)\n- Later (6M) → Next (3M)\n\nItems currently in 'Now' will remain there but should be reviewed for backlog/archive.")) return;
-
-    let shiftCount = 0;
-    
-    // 1. Advance items
+    // Collect all shiftable items
+    const shiftableItems = [];
     UPDATE_DATA.tracks.forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
-                if (item.planningHorizon === '3M') {
-                    item.planningHorizon = '1M';
-                    shiftCount++;
-                } else if (item.planningHorizon === '6M') {
-                    item.planningHorizon = '3M';
-                    shiftCount++;
+                if (item.planningHorizon === '3M' || item.planningHorizon === '6M') {
+                    shiftableItems.push({
+                        id: item.id,
+                        name: item.text,
+                        from: item.planningHorizon,
+                        to: item.planningHorizon === '3M' ? '1M' : '3M',
+                        track: track.name,
+                        status: item.status
+                    });
                 }
+            });
+        });
+    });
+
+    const shiftableEpics = [];
+    if (UPDATE_DATA.metadata.epics) {
+        UPDATE_DATA.metadata.epics.forEach(epic => {
+            if (epic.planningHorizon === '3M' || epic.planningHorizon === '6M') {
+                shiftableEpics.push({
+                    id: epic.id,
+                    name: epic.name,
+                    from: epic.planningHorizon,
+                    to: epic.planningHorizon === '3M' ? '1M' : '3M',
+                    isEpic: true
+                });
+            }
+        });
+    }
+
+    const all = [...shiftableItems, ...shiftableEpics];
+
+    if (all.length === 0) {
+        if (typeof showToast === 'function') showToast('No items to advance — all horizons are already at 1M or further.');
+        return;
+    }
+
+    // Build modal
+    editContext = { type: '_roadmapAdvance' };
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">⏩</span>
+            <span class="font-black tracking-tight">Quarter Planning: Advance Roadmap</span>
+        </div>`;
+
+    const rowsHtml = all.map(item => `
+        <div class="flex items-center gap-3 p-2.5 px-4 bg-white border border-slate-100 rounded-xl">
+            <input type="checkbox" id="advance-${item.id}" data-id="${item.id}" data-is-epic="${item.isEpic || false}" checked
+                class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 shrink-0">
+            <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-bold text-slate-800 truncate">${item.name}</div>
+                ${item.track ? `<div class="text-[9px] text-slate-400">${item.track} · ${item.status || ''}</div>` : `<div class="text-[9px] text-violet-500 font-black uppercase tracking-widest">Epic</div>`}
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-[9px] font-black px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full border border-slate-200">${item.from}</span>
+                <span class="text-slate-400 text-[10px]">→</span>
+                <span class="text-[9px] font-black px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">${item.to}</span>
+            </div>
+        </div>`).join('');
+
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner strategic">
+            <div class="stage-tag">Opening Ceremony: Quarter Planning</div>
+            <div class="stage-desc">Advance strategic items to the next planning horizon. Deselect any items you want to keep in their current horizon.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest">${all.length} items to shift</div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="document.querySelectorAll('[id^=advance-]').forEach(c=>c.checked=true)" class="text-[9px] font-black text-indigo-600 underline">Select All</button>
+                    <button type="button" onclick="document.querySelectorAll('[id^=advance-]').forEach(c=>c.checked=false)" class="text-[9px] font-black text-slate-500 underline">None</button>
+                </div>
+            </div>
+            <div class="space-y-1.5 max-h-[300px] overflow-y-auto custom-scrollbar bg-slate-50 rounded-2xl border border-slate-200 p-2">
+                ${rowsHtml}
+            </div>
+            <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[10px] text-amber-700 font-bold">
+                ⚠️ Items at <strong>1M</strong> horizon are not shifted. Review them manually for backlog or archive.
+            </div>
+        </div>`;
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmAdvanceRoadmapHorizons()" class="cms-btn cms-btn-primary">⏩ Advance Selected</button>`;
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmAdvanceRoadmapHorizons() {
+    const checkboxes = document.querySelectorAll('[id^="advance-"]:checked');
+    const selectedIds = new Set(Array.from(checkboxes).map(c => c.getAttribute('data-id')));
+    const epicIds = new Set(Array.from(checkboxes).filter(c => c.getAttribute('data-is-epic') === 'true').map(c => c.getAttribute('data-id')));
+
+    if (selectedIds.size === 0) {
+        if (typeof showToast === 'function') showToast('No items selected — nothing to advance.');
+        closeCmsModal();
+        return;
+    }
+
+    let itemShiftCount = 0;
+    let epicShiftCount = 0;
+    const shiftLog = [];
+
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (!selectedIds.has(item.id)) return;
+                if (epicIds.has(item.id)) return; // skip epic IDs in items
+                const from = item.planningHorizon;
+                if (from === '3M') { item.planningHorizon = '1M'; itemShiftCount++; shiftLog.push({ name: item.text, from, to: '1M' }); }
+                else if (from === '6M') { item.planningHorizon = '3M'; itemShiftCount++; shiftLog.push({ name: item.text, from, to: '3M' }); }
                 item.updatedAt = new Date().toISOString();
             });
         });
     });
 
-    // 2. Strategic Sync: Advance Epics
-    let epicShiftCount = 0;
     if (UPDATE_DATA.metadata.epics) {
         UPDATE_DATA.metadata.epics.forEach(epic => {
-            if (epic.planningHorizon === '3M') {
-                epic.planningHorizon = '1M';
-                epicShiftCount++;
-            } else if (epic.planningHorizon === '6M') {
-                epic.planningHorizon = '3M';
-                epicShiftCount++;
-            }
+            if (!epicIds.has(epic.id)) return;
+            const from = epic.planningHorizon;
+            if (from === '3M') { epic.planningHorizon = '1M'; epicShiftCount++; shiftLog.push({ name: epic.name, from, to: '1M', isEpic: true }); }
+            else if (from === '6M') { epic.planningHorizon = '3M'; epicShiftCount++; shiftLog.push({ name: epic.name, from, to: '3M', isEpic: true }); }
             epic.updatedAt = new Date().toISOString();
         });
     }
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    const msg = `Roadmap advanced — ${shiftCount} items${epicShiftCount > 0 ? ` + ${epicShiftCount} epics` : ''} shifted horizons.`;
-    if (typeof showToast === 'function') showToast(msg);
+    window._skipModalCloseOnce = true;
+
+    const auditConfig = {
+        timestamp: new Date().toISOString(),
+        title: `Roadmap Horizons Advanced`,
+        description: `${itemShiftCount} items + ${epicShiftCount} epics shifted to next horizon.`,
+        details: [
+            { label: 'Items Shifted', count: itemShiftCount, icon: '📋' },
+            { label: 'Epics Shifted', count: epicShiftCount, icon: '🚀' },
+            { label: 'Total', count: itemShiftCount + epicShiftCount, icon: '⏩' }
+        ],
+        items: shiftLog.map(s => ({
+            name: s.name,
+            status: s.isEpic ? 'epic' : 'shifted',
+            destination: `${s.from} → ${s.to}`,
+            lead: null, points: null
+        })),
+        actions: [
+            { label: 'View Roadmap', fn: () => switchView('roadmap') }
+        ]
+    };
+
+    saveCeremonyAudit('roadmap', `roadmap-advance-${Date.now()}`, auditConfig);
+    renderCeremonySuccess('roadmap', auditConfig);
+
     if (typeof renderRoadmapView === 'function') renderRoadmapView();
+}
+
+// ═══════════════════════════════════════════════════════
+// OPENING CEREMONIES
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Opening Ceremony: Sprint Kickoff
+ * Formally activates a planned sprint and commits the team
+ */
+function kickoffSprint(sprintId) {
+    const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId);
+    if (!sprint) return;
+
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : [];
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0);
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []))
+    const sprintOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === sprint.linkedOKR)
+    const capacity = UPDATE_DATA.metadata?.capacity?.teamMembers?.length || 0
+
+    editContext = { type: '_sprintKickoff', sprintId }
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🚀</span>
+            <span class="font-black tracking-tight">Sprint Kickoff: ${sprint.name}</span>
+        </div>`
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Opening Ceremony: Sprint Kickoff</div>
+            <div class="stage-desc">Formally activate this sprint. Align the team on the goal and commit to delivery.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-sm italic text-slate-700">
+                <span class="font-black not-italic text-slate-900 block mb-1">Sprint Goal</span>
+                ${sprint.goal || '<span class="text-slate-400">No goal defined — consider editing the sprint to add one.</span>'}
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Committed</div>
+                    <div class="text-2xl font-black text-slate-900">${totalPoints}</div>
+                    <div class="text-[9px] text-slate-500">story points</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Items</div>
+                    <div class="text-2xl font-black text-slate-900">${items.length}</div>
+                    <div class="text-[9px] text-slate-500">tasks</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Contributors</div>
+                    <div class="text-2xl font-black text-slate-900">${contributorSet.size || capacity}</div>
+                    <div class="text-[9px] text-slate-500">team members</div>
+                </div>
+            </div>
+            ${sprintOKR ? `
+            <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-3">
+                <span class="text-lg">🎯</span>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-500 uppercase">Aligned OKR</div>
+                    <div class="text-xs font-bold text-indigo-900">${sprintOKR.objective}</div>
+                    <div class="text-[9px] text-indigo-600">${sprintOKR.overallProgress || 0}% complete · ${sprintOKR.quarter}</div>
+                </div>
+            </div>` : ''}
+            <div class="grid grid-cols-2 gap-3 text-sm text-slate-600">
+                <div class="p-3 bg-white rounded-xl border border-slate-100">📅 Start: <span class="font-bold text-slate-900">${sprint.startDate || 'TBD'}</span></div>
+                <div class="p-3 bg-white rounded-xl border border-slate-100">🏁 End: <span class="font-bold text-slate-900">${sprint.endDate || 'TBD'}</span></div>
+            </div>
+        </div>`
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmKickoffSprint('${sprintId}')" class="cms-btn cms-btn-primary">🚀 Activate Sprint</button>`
+    document.getElementById('cms-modal').classList.add('active')
+    document.body.style.overflow = 'hidden'
+}
+
+function confirmKickoffSprint(sprintId) {
+    const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId)
+    if (!sprint) return
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : []
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0)
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []))
+    const sprintOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === sprint.linkedOKR)
+
+    sprint.status = 'active'
+    sprint.kickedOffAt = new Date().toISOString()
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
+    window._skipModalCloseOnce = true
+
+    const auditConfig = {
+        timestamp: new Date().toISOString(),
+        title: `Sprint Kickoff: ${sprint.name}`,
+        description: `${totalPoints} story points committed across ${items.length} tasks. Sprint is now active.`,
+        mission: { objective: sprint.goal || 'No goal defined', track: 'Sprint Team', timeline: `${sprint.startDate || 'TBD'} → ${sprint.endDate || 'TBD'}` },
+        details: [
+            { label: 'Committed Points', count: totalPoints, icon: '💎' },
+            { label: 'Tasks in Scope', count: items.length, icon: '📋' },
+            { label: 'Contributors', count: contributorSet.size, icon: '👥' },
+            { label: 'OKR Aligned', count: sprintOKR ? 'Yes' : 'No', icon: '🎯' }
+        ],
+        items: items.map(i => ({ id: i.id, name: i.text, type: 'task', status: i.status, lead: (i.contributors || [])[0], points: i.storyPoints, destination: 'Committed' })),
+        actions: [
+            { label: 'Open Kanban', fn: () => switchView('kanban') },
+            { label: 'View Sprint', fn: () => switchView('sprint') }
+        ]
+    }
+    saveCeremonyAudit('sprint-kickoff', sprintId, auditConfig)
+    renderCeremonySuccess('sprint-kickoff', auditConfig)
+    if (typeof renderSprintView === 'function') renderSprintView()
+}
+
+/**
+ * Opening Ceremony: OKR Quarter Launch
+ * Formally activates a new OKR quarter and aligns the team
+ */
+function launchOKR(idx) {
+    const okr = UPDATE_DATA.metadata.okrs[idx]
+    if (!okr) return
+    const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id)
+
+    editContext = { type: '_okrLaunch', idx }
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🎯</span>
+            <span class="font-black tracking-tight">Launch OKR Quarter</span>
+        </div>`
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner strategic">
+            <div class="stage-tag">Opening Ceremony: Quarter Launch</div>
+            <div class="stage-desc">Formally launch this strategic quarter. Align on objectives and commit to key results.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="p-4 bg-slate-900 rounded-2xl text-white">
+                <div class="text-[9px] font-black text-slate-400 uppercase mb-2">${okr.quarter} · ${okr.owner}</div>
+                <h3 class="text-sm font-black leading-snug">${okr.objective}</h3>
+            </div>
+            <div>
+                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Key Results (${(okr.keyResults || []).length})</div>
+                <div class="space-y-2 max-h-48 overflow-y-auto">
+                    ${(okr.keyResults || []).map(kr => `
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                            <div class="flex-1 text-xs font-bold text-slate-700">${kr.description}</div>
+                            <span class="text-[10px] font-black text-slate-500 shrink-0">Target: ${kr.target} ${kr.unit}</span>
+                        </div>`).join('')}
+                </div>
+            </div>
+            ${linkedEpics.length > 0 ? `
+            <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div class="text-[9px] font-black text-indigo-500 uppercase mb-2">Linked Initiatives (${linkedEpics.length})</div>
+                <div class="flex flex-wrap gap-2">${linkedEpics.map(e => `<span class="px-2 py-0.5 bg-white border border-indigo-200 rounded-full text-[10px] font-bold text-indigo-700">${e.name}</span>`).join('')}</div>
+            </div>` : ''}
+        </div>`
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmLaunchOKR(${idx})" class="cms-btn cms-btn-primary">🎯 Launch Quarter</button>`
+    document.getElementById('cms-modal').classList.add('active')
+    document.body.style.overflow = 'hidden'
+}
+
+function confirmLaunchOKR(idx) {
+    const okr = UPDATE_DATA.metadata.okrs[idx]
+    if (!okr) return
+    okr.launchedAt = new Date().toISOString()
+    okr.status = 'active'
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
+    window._skipModalCloseOnce = true
+
+    const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id)
+    const auditConfig = {
+        timestamp: new Date().toISOString(),
+        title: `Quarter Launched: ${okr.quarter}`,
+        description: `Strategic quarter formally activated. ${(okr.keyResults || []).length} key results in motion.`,
+        mission: { objective: okr.objective, track: okr.owner, timeline: okr.quarter },
+        details: [
+            { label: 'Key Results', count: (okr.keyResults || []).length, icon: '🎯' },
+            { label: 'Linked Epics', count: linkedEpics.length, icon: '🚀' },
+            { label: 'Owner', count: okr.owner || 'Unassigned', icon: '👤' },
+            { label: 'OKR Progress', count: `${okr.overallProgress || 0}%`, icon: '📈' }
+        ],
+        items: (okr.keyResults || []).map(kr => ({ name: `${kr.description}`, status: 'on-track', destination: `Target: ${kr.target} ${kr.unit}` })),
+        actions: [
+            { label: 'View OKRs', fn: () => switchView('okr') },
+            { label: 'View Epics', fn: () => switchView('epics') }
+        ]
+    }
+    saveCeremonyAudit('okr-launch', okr.id, auditConfig)
+    renderCeremonySuccess('okr-launch', auditConfig)
+    if (typeof renderOkrView === 'function') renderOkrView()
+}
+
+/**
+ * Opening Ceremony: Epic Kickoff
+ * Formally starts an epic and moves it into active delivery
+ */
+function kickoffEpic(idx) {
+    const epic = UPDATE_DATA.metadata.epics[idx]
+    if (!epic) return
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : []
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0)
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []))
+    const epicOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === epic.linkedOKR)
+    const horizon = (UPDATE_DATA.metadata.roadmap || []).find(h => h.id === epic.planningHorizon)
+
+    editContext = { type: '_epicKickoff', idx }
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🚀</span>
+            <span class="font-black tracking-tight">Epic Kickoff</span>
+        </div>`
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner defining">
+            <div class="stage-tag">Opening Ceremony: Epic Kickoff</div>
+            <div class="stage-desc">Move this epic from definition into active delivery. Confirm scope and team alignment.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <div class="text-xs font-black text-slate-900 mb-1">${epic.name}</div>
+                <div class="text-[11px] text-slate-600">${epic.description || 'No description'}</div>
+            </div>
+            ${epic.successCriteria ? `
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <div class="text-[9px] font-black text-emerald-600 uppercase mb-1">Success Criteria</div>
+                <div class="text-xs font-bold text-emerald-900">${epic.successCriteria}</div>
+            </div>` : ''}
+            <div class="grid grid-cols-3 gap-3">
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Story Pts</div>
+                    <div class="text-xl font-black">${totalPoints}</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Tasks</div>
+                    <div class="text-xl font-black">${items.length}</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Team</div>
+                    <div class="text-xl font-black">${contributorSet.size}</div>
+                </div>
+            </div>
+            ${epicOKR ? `
+            <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex gap-3 items-center">
+                <span>🎯</span>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-500 uppercase">Parent OKR</div>
+                    <div class="text-xs font-bold text-indigo-900">${epicOKR.objective}</div>
+                </div>
+            </div>` : ''}
+        </div>`
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmKickoffEpic(${idx})" class="cms-btn cms-btn-primary">🚀 Start Epic</button>`
+    document.getElementById('cms-modal').classList.add('active')
+    document.body.style.overflow = 'hidden'
+}
+
+function confirmKickoffEpic(idx) {
+    const epic = UPDATE_DATA.metadata.epics[idx]
+    if (!epic) return
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : []
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0)
+    const contributorSet = new Set(items.flatMap(i => i.contributors || []))
+    const epicOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === epic.linkedOKR)
+
+    epic.stage = 'delivery'
+    epic.kickedOffAt = new Date().toISOString()
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
+    window._skipModalCloseOnce = true
+
+    const auditConfig = {
+        timestamp: new Date().toISOString(),
+        title: `Epic Kickoff: ${epic.name}`,
+        description: `Epic moved to active delivery. ${totalPoints} story points committed across ${items.length} tasks.`,
+        mission: { objective: epic.successCriteria || epic.description || epic.name, track: epic.name, timeline: epic.planningHorizon || 'Unset' },
+        wins: epic.successCriteria,
+        details: [
+            { label: 'Story Points', count: totalPoints, icon: '💎' },
+            { label: 'Tasks', count: items.length, icon: '📋' },
+            { label: 'Contributors', count: contributorSet.size, icon: '👥' },
+            { label: 'Parent OKR', count: epicOKR ? epicOKR.quarter : 'None', icon: '🎯' }
+        ],
+        items: items.map(i => ({ id: i.id, name: i.text, type: 'task', status: i.status, lead: (i.contributors || [])[0], points: i.storyPoints, destination: 'In Scope' })),
+        actions: [
+            { label: 'View Epics', fn: () => switchView('epics') },
+            { label: 'Go to Backlog', fn: () => switchView('backlog') }
+        ]
+    }
+    saveCeremonyAudit('epic-kickoff', epic.id, auditConfig)
+    renderCeremonySuccess('epic-kickoff', auditConfig)
+    if (typeof renderEpicsView === 'function') renderEpicsView()
+}
+
+/**
+ * Opening Ceremony: Release Scope Lock
+ * Formalizes the items in a release and moves it to in-progress
+ */
+function lockReleaseScope(releaseId) {
+    const releaseIdx = UPDATE_DATA.metadata.releases.findIndex(r => r.id === releaseId)
+    if (releaseIdx === -1) return
+    const release = UPDATE_DATA.metadata.releases[releaseIdx]
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('releasedIn', releaseId) : []
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0)
+    const releaseOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === release.linkedOKR)
+    const epicsInScope = [...new Set(items.filter(i => i.epicId).map(i => i.epicId))]
+        .map(eid => (UPDATE_DATA.metadata.epics || []).find(e => e.id === eid))
+        .filter(Boolean)
+
+    editContext = { type: '_releaseLock', releaseId }
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">📋</span>
+            <span class="font-black tracking-tight">Lock Release Scope: ${release.name}</span>
+        </div>`
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner execution">
+            <div class="stage-tag">Opening Ceremony: Scope Lock</div>
+            <div class="stage-desc">Confirm and lock the scope of this release. No new items after this point without a change request.</div>
+        </div>
+        <div class="space-y-4">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Items</div>
+                    <div class="text-2xl font-black">${items.length}</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Story Pts</div>
+                    <div class="text-2xl font-black">${totalPoints}</div>
+                </div>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Target Date</div>
+                    <div class="text-sm font-black">${release.targetDate || 'TBD'}</div>
+                </div>
+            </div>
+            ${epicsInScope.length > 0 ? `
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                <div class="text-[9px] font-black text-amber-600 uppercase mb-2">Epics in Scope (${epicsInScope.length})</div>
+                <div class="flex flex-wrap gap-2">${epicsInScope.map(e => `<span class="px-2 py-0.5 bg-white border border-amber-200 rounded-full text-[10px] font-bold text-amber-700">${e.name}</span>`).join('')}</div>
+            </div>` : ''}
+            ${releaseOKR ? `
+            <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex gap-3 items-center">
+                <span>🎯</span>
+                <div>
+                    <div class="text-[9px] font-black text-indigo-500 uppercase">OKR Alignment</div>
+                    <div class="text-xs font-bold text-indigo-900">${releaseOKR.objective}</div>
+                </div>
+            </div>` : ''}
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm italic text-slate-700">
+                ${release.goal || '<span class="text-slate-400">No release goal defined.</span>'}
+            </div>
+        </div>`
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmLockReleaseScope('${releaseId}')" class="cms-btn cms-btn-primary">📋 Lock Scope</button>`
+    document.getElementById('cms-modal').classList.add('active')
+    document.body.style.overflow = 'hidden'
+}
+
+function confirmLockReleaseScope(releaseId) {
+    const releaseIdx = UPDATE_DATA.metadata.releases.findIndex(r => r.id === releaseId)
+    if (releaseIdx === -1) return
+    const release = UPDATE_DATA.metadata.releases[releaseIdx]
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('releasedIn', releaseId) : []
+    const totalPoints = items.reduce((sum, i) => sum + (parseInt(i.storyPoints) || 0), 0)
+    const releaseOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === release.linkedOKR)
+    const epicsInScope = [...new Set(items.filter(i => i.epicId).map(i => i.epicId))]
+        .map(eid => (UPDATE_DATA.metadata.epics || []).find(e => e.id === eid))
+        .filter(Boolean)
+
+    UPDATE_DATA.metadata.releases[releaseIdx].status = 'in_progress'
+    UPDATE_DATA.metadata.releases[releaseIdx].lockedAt = new Date().toISOString()
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
+    window._skipModalCloseOnce = true
+
+    const auditConfig = {
+        timestamp: new Date().toISOString(),
+        title: `Scope Locked: ${release.name}`,
+        description: `${items.length} items (${totalPoints} pts) locked for ${release.targetDate || 'TBD'}. Release is now in progress.`,
+        details: [
+            { label: 'Items Locked', count: items.length, icon: '🔒' },
+            { label: 'Story Points', count: totalPoints, icon: '💎' },
+            { label: 'Epics Covered', count: epicsInScope.length, icon: '🚀' },
+            { label: 'Target Date', count: release.targetDate || 'TBD', icon: '📅' }
+        ],
+        items: items.map(i => ({ id: i.id, name: i.text, type: 'task', status: i.status, lead: (i.contributors || [])[0], points: i.storyPoints, destination: 'Locked in Release' })),
+        actions: [
+            { label: 'View Releases', fn: () => switchView('releases') },
+            { label: 'Open Kanban', fn: () => switchView('kanban') }
+        ]
+    }
+    saveCeremonyAudit('release-lock', releaseId, auditConfig)
+    renderCeremonySuccess('release-lock', auditConfig)
+    if (typeof renderReleasesView === 'function') renderReleasesView()
 }
 
 function openReleaseEdit(releaseId) {

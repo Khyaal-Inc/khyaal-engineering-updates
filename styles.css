@@ -219,10 +219,46 @@ summary::-webkit-details-marker {
 .status-pill.review  { background: var(--status-review-bg);  color: var(--status-review-text);  border: 1px solid var(--status-review-border); }
 .status-pill.onhold  { background: var(--status-onhold-bg);  color: var(--status-onhold-text);  border: 1px solid var(--status-onhold-border); }
 
-/* Lifecycle Ceremony Styling */
+/* ═══════════════════════════════════════════
+   LIFECYCLE CEREMONY STYLING
+   ═══════════════════════════════════════════ */
+
+/* Corner ribbon — diagonal "CLOSED / SHIPPED / ACHIEVED" tag */
+.corner-ribbon-wrap {
+    position: relative;
+    overflow: hidden;
+}
+.corner-ribbon {
+    position: absolute;
+    top: 18px;
+    right: -30px;
+    width: 120px;
+    padding: 4px 0;
+    text-align: center;
+    font-size: 7.5px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: white;
+    transform: rotate(45deg);
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    user-select: none;
+}
+.corner-ribbon.ribbon-closed    { background: #475569; }
+.corner-ribbon.ribbon-active    { background: #4f46e5; }
+.corner-ribbon.ribbon-shipped   { background: #059669; }
+.corner-ribbon.ribbon-achieved  { background: #4f46e5; }
+.corner-ribbon.ribbon-missed    { background: #d97706; }
+.corner-ribbon.ribbon-cancelled { background: #6b7280; }
+.corner-ribbon.ribbon-planned   { background: #94a3b8; }
+.corner-ribbon.ribbon-kickoff   { background: #0ea5e9; }
+
+/* Lifecycle closed state */
 .lifecycle-closed {
-    filter: grayscale(0.6);
-    opacity: 0.7;
+    filter: grayscale(0.55);
+    opacity: 0.72;
 }
 
 .lifecycle-closed select,

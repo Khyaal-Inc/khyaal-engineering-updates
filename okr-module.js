@@ -209,20 +209,34 @@ function renderOkrCard(okr, idx) {
     
     // Check if OKR is closed
     const isClosed = okr.status === 'closed' || ['achieved', 'missed', 'cancelled'].includes(okr.status);
+    const isLaunched = !isClosed && !!okr.launchedAt;
+    const isPreLaunch = !isClosed && !okr.launchedAt;
+
+    // Ribbon config
+    const okrRibbonText = isClosed ? (okr.result || 'closed') : isLaunched ? 'Active' : 'Draft';
+    const okrRibbonClass = isClosed
+        ? (okr.result === 'achieved' ? 'ribbon-achieved' : okr.result === 'missed' ? 'ribbon-missed' : 'ribbon-cancelled')
+        : isLaunched ? 'ribbon-active' : 'ribbon-planned';
 
     // Management Actions
     const cmsActions = showManagement ? `
         <div class="flex gap-1.5">
             <button onclick="openOKREdit(${idx})" class="item-action-btn edit">Edit</button>
             <button onclick="deleteOKR(${idx})" class="item-action-btn delete">Delete</button>
-            ${!isClosed ? `<button onclick="closeOKR(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close OKR</button>` : `<button onclick="viewCeremonyAudit('okr', '${okr.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
+            ${isClosed
+                ? `<button onclick="viewCeremonyAudit('okr', '${okr.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`
+                : isPreLaunch
+                    ? `<button onclick="launchOKR(${idx})" class="item-action-btn lifecycle no-disable">🎯 Launch Quarter</button>`
+                    : `<button onclick="closeOKR(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close OKR</button>`
+            }
         </div>
     ` : '';
 
     const isExec = mode === 'exec';
 
     return `
-        <div class="bg-white rounded-2xl border border-slate-300 shadow-md hover:shadow-xl transition-all mb-6 overflow-hidden okr-card-hover ${isClosed ? 'lifecycle-closed' : ''}">
+        <div class="bg-white rounded-2xl border border-slate-300 shadow-md hover:shadow-xl transition-all mb-6 overflow-hidden okr-card-hover corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}">
+            <div class="corner-ribbon ${okrRibbonClass}">${okrRibbonText}</div>
             <!-- Top Status Bar -->
             <div class="h-1 w-full ${progressColor} opacity-80"></div>
             

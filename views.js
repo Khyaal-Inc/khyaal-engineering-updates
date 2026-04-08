@@ -1266,6 +1266,8 @@ function renderEpicsView() {
 
     epics.forEach((e, idx) => {
         const isClosed = e.status === 'completed';
+        const isDelivery = !isClosed && (e.stage === 'delivery' || e.stage === 'review' || e.kickedOffAt);
+        const isPreKickoff = !isClosed && !isDelivery;
         const epicItems = findItemsByMetadataId('epicId', e.id);
         const doneCount = epicItems.filter(i => i.status === 'done').length;
         const progress = epicItems.length ? Math.round((doneCount / epicItems.length) * 100) : 0;
@@ -1277,7 +1279,12 @@ function renderEpicsView() {
             <div class="flex flex-wrap gap-1.5 ml-auto">
                 <button onclick="openEpicEdit(${idx})" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteEpic(${idx})" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="closeEpic(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close Epic</button>` : `<button onclick="viewCeremonyAudit('epic', '${e.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
+                ${isClosed
+                    ? `<button onclick="viewCeremonyAudit('epic', '${e.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`
+                    : isPreKickoff
+                        ? `<button onclick="kickoffEpic(${idx})" class="item-action-btn lifecycle no-disable">🚀 Kickoff</button>`
+                        : `<button onclick="closeEpic(${idx})" class="item-action-btn lifecycle no-disable">🏁 Close Epic</button>`
+                }
                 <button onclick="groomEpicTasks('${e.id}')" class="item-action-btn neutral">Groom 📚</button>
                 <button onclick="addItem(0, 0, { epicId: '${e.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
@@ -1349,8 +1356,12 @@ function renderEpicsView() {
         let epicItemsForCard = findItemsByMetadataId('epicId', e.id);
         const epicItemsHtml = epicItemsForCard.map(item => renderItem(item, 'epic', item.trackIndex, item.subtrackIndex, item.itemIndex)).join('');
 
+        const epicRibbonText = isClosed ? 'Closed' : isDelivery ? 'In Flight' : 'Defining';
+        const epicRibbonClass = isClosed ? 'ribbon-closed' : isDelivery ? 'ribbon-active' : 'ribbon-planned';
+
         html += `
-            <div class="sprint-card epic-card p-0 mb-8 overflow-hidden rounded-3xl ${isClosed ? 'lifecycle-closed' : ''}" id="epic-${e.id}">
+            <div class="sprint-card epic-card p-0 mb-8 overflow-hidden rounded-3xl corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}" id="epic-${e.id}">
+                <div class="corner-ribbon ${epicRibbonClass}">${epicRibbonText}</div>
                 <div class="epic-section-header">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-md ring-2 ring-slate-100">
@@ -1363,7 +1374,7 @@ function renderEpicsView() {
                             </div>
                             <div class="flex items-center gap-2">
                                 <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none">${e.name}</h2>
-                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : ''}
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : isDelivery ? `<span class="lifecycle-closed-badge" style="background:#eef2ff;border-color:#c7d2fe;color:#4f46e5;">● In Flight</span>` : ''}
                             </div>
                         </div>
                         ${cmsActions}
@@ -1594,11 +1605,18 @@ function renderSprintView() {
     sprints.forEach((s, idx) => {
         const isClosed = s.status === 'completed';
         const sprintItems = applyExecFilter(findItemsByMetadataId('sprintId', s.id), 'sprint');
+        const isActive = s.status === 'active';
+        const isPlanned = !isClosed && !isActive;
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openSprintEdit('${s.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteSprint('${s.id}')" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="renderSprintCloseModal('${s.id}')" class="item-action-btn lifecycle no-disable">🏁 Close Sprint</button>` : `<button onclick="viewCeremonyAudit('sprint', '${s.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
+                ${isClosed
+                    ? `<button onclick="viewCeremonyAudit('sprint', '${s.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`
+                    : isPlanned
+                        ? `<button onclick="kickoffSprint('${s.id}')" class="item-action-btn lifecycle no-disable">🚀 Kickoff</button>`
+                        : `<button onclick="renderSprintCloseModal('${s.id}')" class="item-action-btn lifecycle no-disable">🏁 Close Sprint</button>`
+                }
                 <button onclick="addItem(0, 0, { sprintId: '${s.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
@@ -1627,15 +1645,19 @@ function renderSprintView() {
               ).join('')
             : '';
 
+        const sprintRibbonText = isClosed ? 'Closed' : isActive ? 'Active' : 'Planned';
+        const sprintRibbonClass = isClosed ? 'ribbon-closed' : isActive ? 'ribbon-active' : 'ribbon-planned';
+
         html += `
-            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm ${isClosed ? 'lifecycle-closed' : ''}">
+            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}">
+                ${(isClosed || isActive) ? `<div class="corner-ribbon ${sprintRibbonClass}">${sprintRibbonText}</div>` : ''}
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
                             ${sprintOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-100">🎯 Alignment: ${sprintOKR.objective.substring(0, 50)}${sprintOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
                             <div class="flex items-center gap-3">
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
-                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : ''}
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : isActive ? `<span class="lifecycle-closed-badge" style="background:#eef2ff;border-color:#c7d2fe;color:#4f46e5;">● Active</span>` : ''}
                                 ${cmsActions}
                             </div>
                             <div class="flex items-center gap-3 mt-1 flex-wrap">
@@ -1716,27 +1738,37 @@ function renderReleasesView() {
 
     releases.forEach((r, idx) => {
         const isClosed = r.status === 'completed';
+        const isInProgress = r.status === 'in_progress';
+        const isPlannedRelease = !isClosed && !isInProgress;
         const releaseItems = applyExecFilter(findItemsByMetadataId('releasedIn', r.id), 'releases');
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-1.5 ml-4">
                 <button onclick="openReleaseEdit('${r.id}')" class="item-action-btn edit">Edit</button>
                 <button onclick="deleteRelease('${r.id}')" class="item-action-btn delete">Delete</button>
-                ${!isClosed ? `<button onclick="shipRelease('${r.id}')" class="item-action-btn lifecycle no-disable">🚢 Ship Release</button>` : `<button onclick="viewCeremonyAudit('release', '${r.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`}
+                ${isClosed
+                    ? `<button onclick="viewCeremonyAudit('release', '${r.id}')" class="item-action-btn neutral no-disable">📜 Audit</button>`
+                    : isPlannedRelease
+                        ? `<button onclick="lockReleaseScope('${r.id}')" class="item-action-btn lifecycle no-disable">📋 Lock Scope</button>`
+                        : `<button onclick="shipRelease('${r.id}')" class="item-action-btn lifecycle no-disable">🚢 Ship Release</button>`
+                }
                 <button onclick="addItem(0, 0, { releasedIn: '${r.id}' })" class="item-action-btn okr">+ Task</button>
             </div>
         ` : '';
 
         const releaseOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === r.linkedOKR);
+        const releaseRibbonText = isClosed ? 'Shipped' : isInProgress ? 'In Progress' : 'Planned';
+        const releaseRibbonClass = isClosed ? 'ribbon-shipped' : isInProgress ? 'ribbon-active' : 'ribbon-planned';
 
         html += `
-            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm ${isClosed ? 'lifecycle-closed' : ''}">
+            <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}">
+                ${(isClosed || isInProgress) ? `<div class="corner-ribbon ${releaseRibbonClass}">${releaseRibbonText}</div>` : ''}
                 <div class="p-6 bg-slate-50 border-b">
                     <div class="flex justify-between items-start">
                         <div>
                             ${releaseOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px] font-black uppercase tracking-widest border border-amber-100">🚀 Strategic Value: ${releaseOKR.objective.substring(0, 50)}${releaseOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
                             <div class="flex items-center gap-3">
                                 <div class="font-black text-2xl text-slate-900">${r.name}</div>
-                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Shipped</span>` : ''}
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Shipped</span>` : isInProgress ? `<span class="lifecycle-closed-badge" style="background:#ecfdf5;border-color:#a7f3d0;color:#047857;">● Locked</span>` : ''}
                                 ${cmsActions}
                             </div>
                             <div class="text-sm font-bold text-slate-500 mt-1">🎯 Target: ${r.targetDate || 'TBD'}</div>

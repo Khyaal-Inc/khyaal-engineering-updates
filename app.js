@@ -61,16 +61,24 @@ function normalizeData() {
         if (UPDATE_DATA.metadata.epics) {
             UPDATE_DATA.metadata.epics.forEach(epic => {
                 if (!epic.status) epic.status = 'active';
+                if (epic.kickedOffAt === undefined) epic.kickedOffAt = null;
             });
         }
         if (UPDATE_DATA.metadata.okrs) {
             UPDATE_DATA.metadata.okrs.forEach(okr => {
                 if (!okr.status) okr.status = 'active';
+                if (okr.launchedAt === undefined) okr.launchedAt = null;
             });
         }
         if (UPDATE_DATA.metadata.releases) {
             UPDATE_DATA.metadata.releases.forEach(release => {
                 if (!release.status) release.status = 'planned';
+                if (release.lockedAt === undefined) release.lockedAt = null;
+            });
+        }
+        if (UPDATE_DATA.metadata.sprints) {
+            UPDATE_DATA.metadata.sprints.forEach(sprint => {
+                if (sprint.kickedOffAt === undefined) sprint.kickedOffAt = null;
             });
         }
         if (!UPDATE_DATA.metadata.ceremonyAudits) UPDATE_DATA.metadata.ceremonyAudits = [];
