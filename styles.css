@@ -221,20 +221,38 @@ summary::-webkit-details-marker {
 
 /* Lifecycle Ceremony Styling */
 .lifecycle-closed {
-    filter: grayscale(0.8);
-    opacity: 0.65;
-    pointer-events: none;
+    filter: grayscale(0.6);
+    opacity: 0.7;
 }
 
-.lifecycle-closed select, 
-.lifecycle-closed button:not(.no-disable) {
+.lifecycle-closed select,
+.lifecycle-closed button:not(.no-disable),
+.lifecycle-closed a:not(.no-disable) {
     display: none !important;
+    pointer-events: none !important;
 }
 
 .lifecycle-closed .no-disable {
+    display: inline-flex !important;
     pointer-events: auto !important;
     filter: none !important;
     opacity: 1 !important;
+}
+
+/* Closed badge shown on the card header */
+.lifecycle-closed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 900;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .item-action-btn.neutral.no-disable {
@@ -2087,6 +2105,8 @@ summary::-webkit-details-marker {
 .item-action-btn.active { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
 .item-action-btn.okr   { color: #047857; }
 .item-action-btn.okr:hover   { background: #ecfdf5; border-color: #a7f3d0; }
+.item-action-btn.lifecycle { color: #4f46e5; border-color: #e0e7ff; }
+.item-action-btn.lifecycle:hover { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; }
 
 /* CMS controls fade in on hover */
 .cms-controls-row {

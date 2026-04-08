@@ -75,7 +75,8 @@ function viewCeremonyAudit(type, targetId) {
     if (UPDATE_DATA.metadata.ceremonyAudits) {
         const audits = UPDATE_DATA.metadata.ceremonyAudits.filter(a => a.targetId === targetId && a.type === type);
         if (audits.length > 0) {
-            auditConfig = audits[audits.length - 1].config;
+            const latestAudit = audits[audits.length - 1];
+            auditConfig = { ...latestAudit.config, timestamp: latestAudit.timestamp };
             isHistorical = true;
         }
     }
@@ -1971,7 +1972,8 @@ async function saveSprintClose(sprintId) {
     if (sprintIndex === -1) return;
 
     const sprint = UPDATE_DATA.metadata.sprints[sprintIndex];
-    const nextSprint = UPDATE_DATA.metadata.sprints[sprintIndex + 1];
+    // Find next non-completed sprint by position (not just index+1, handles gaps/deletions)
+    const nextSprint = UPDATE_DATA.metadata.sprints.find((s, i) => i > sprintIndex && s.status !== 'completed');
 
     // 1. Calculate final points
     const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : [];
@@ -2003,12 +2005,11 @@ async function saveSprintClose(sprintId) {
         if (resolution === 'next') {
             if (nextSprint) {
                 realItem.sprintId = nextSprint.id;
-                realItem.status = 'next'; // Reset to Planned for new cycle
+                realItem.status = 'next'
             } else {
                 // Fallback to backlog if no next sprint exists
                 realItem.sprintId = '';
                 realItem.status = 'later';
-                // Physically move to Backlog subtrack
                 moveItemToBacklog(item);
                 if (typeof showToast === 'function') showToast(`No future sprint found — #${realItem.id} moved to backlog.`, 'warn');
             }
@@ -2017,7 +2018,10 @@ async function saveSprintClose(sprintId) {
             realItem.status = 'later';
             moveItemToBacklog(item);
         } else if (resolution === 'drop') {
+            // Drop = unassign from sprint and send to backlog as later
             realItem.sprintId = '';
+            realItem.status = 'later';
+            moveItemToBacklog(item);
         }
         realItem.updatedAt = new Date().toISOString();
     });
@@ -2072,6 +2076,7 @@ async function saveSprintClose(sprintId) {
 
     const nextSprintName = nextSprint ? nextSprint.name : 'Backlog';
     const auditConfig = {
+        timestamp: new Date().toISOString(),
         title: `Sprint ${sprint.name} Closed`,
         description: `Mission completed with ${completedPoints} pts verified. Commitment Precision: ${summary.velocityResult}%.`,
         details: [
@@ -2110,11 +2115,62 @@ function closeOKR(idx) {
     const okr = UPDATE_DATA.metadata.okrs[idx];
     if (!okr) return;
 
-    const result = prompt(`Close OKR: "${okr.objective}"\n\nEnter Result (achieved / missed / cancelled):`, 'achieved');
-    if (!result) return;
+    // Show a proper in-modal picker instead of raw browser prompt
+    editContext = { type: '_okrClose', idx };
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">🏁</span>
+            <span class="font-black tracking-tight">Close OKR</span>
+        </div>`;
+    document.getElementById('modal-form').innerHTML = `
+        <div class="lifecycle-banner strategic">
+            <div class="stage-tag">Ceremony: OKR Quarter Close</div>
+            <div class="stage-desc">Formalize the end of a strategic quarter. Record the outcome and archive the objective.</div>
+        </div>
+        <div class="space-y-5">
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-sm text-slate-700 italic">
+                <span class="font-black not-italic text-slate-900">Objective:</span> ${okr.objective}
+            </div>
+            <div class="p-4 bg-white border border-slate-200 rounded-2xl text-center">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Overall Progress</div>
+                <div class="text-3xl font-black text-slate-900">${okr.overallProgress || 0}%</div>
+            </div>
+            <div>
+                <label class="cms-label">Outcome Result</label>
+                <div class="grid grid-cols-3 gap-3" id="okr-result-picker">
+                    <button type="button" onclick="document.querySelectorAll('.okr-result-opt').forEach(b=>b.classList.remove('ring-2','ring-emerald-500')); this.classList.add('ring-2','ring-emerald-500'); document.getElementById('okr-result-value').value='achieved'"
+                        class="okr-result-opt p-3 rounded-xl border-2 border-slate-200 text-center cursor-pointer hover:border-emerald-400 transition-all">
+                        <div class="text-xl mb-1">🎯</div>
+                        <div class="text-xs font-black text-emerald-700">Achieved</div>
+                    </button>
+                    <button type="button" onclick="document.querySelectorAll('.okr-result-opt').forEach(b=>b.classList.remove('ring-2','ring-emerald-500')); this.classList.add('ring-2','ring-emerald-500'); document.getElementById('okr-result-value').value='missed'"
+                        class="okr-result-opt p-3 rounded-xl border-2 border-slate-200 text-center cursor-pointer hover:border-amber-400 transition-all">
+                        <div class="text-xl mb-1">⚠️</div>
+                        <div class="text-xs font-black text-amber-700">Missed</div>
+                    </button>
+                    <button type="button" onclick="document.querySelectorAll('.okr-result-opt').forEach(b=>b.classList.remove('ring-2','ring-emerald-500')); this.classList.add('ring-2','ring-emerald-500'); document.getElementById('okr-result-value').value='cancelled'"
+                        class="okr-result-opt p-3 rounded-xl border-2 border-slate-200 text-center cursor-pointer hover:border-slate-400 transition-all">
+                        <div class="text-xl mb-1">🚫</div>
+                        <div class="text-xs font-black text-slate-600">Cancelled</div>
+                    </button>
+                </div>
+                <input type="hidden" id="okr-result-value" value="achieved">
+            </div>
+        </div>`;
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="confirmCloseOKR(${idx})" class="cms-btn cms-btn-primary">🏁 Close OKR</button>`;
+    document.getElementById('cms-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmCloseOKR(idx) {
+    const result = document.getElementById('okr-result-value')?.value || 'achieved';
+    const okr = UPDATE_DATA.metadata.okrs[idx];
+    if (!okr) return;
 
     UPDATE_DATA.metadata.okrs[idx].status = 'closed';
-    UPDATE_DATA.metadata.okrs[idx].result = result.toLowerCase();
+    UPDATE_DATA.metadata.okrs[idx].result = result;
     UPDATE_DATA.metadata.okrs[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
@@ -2133,6 +2189,7 @@ function closeOKR(idx) {
     const performanceScore = okr.overallProgress || 0;
 
     const auditConfig = {
+        timestamp: new Date().toISOString(),
         title: `Quarterly OKR Closed`,
         description: `Strategic objective archived with ${performanceScore}% overall progression. Outcome: ${result.toUpperCase()}.`,
         mission: {
@@ -2206,16 +2263,16 @@ function closeEpic(idx) {
     UPDATE_DATA.metadata.epics[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    
+
     // ENSURE MODAL STAYS OPEN
     window._skipModalCloseOnce = true;
 
-    // High-Fidelity Stats
-    const epicItems = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('epicId', epic.id) : [];
-    const doneCount = epicItems.filter(i => i.status === 'done').length;
-    const totalPoints = epicItems.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
+    // High-Fidelity Stats — use pre-computed items list (before move), counts are still valid
+    const doneCount = items.filter(i => i.status === 'done').length;
+    const totalPoints = items.reduce((sum, item) => sum + (parseInt(item.storyPoints) || 0), 0);
 
     const auditConfig = {
+        timestamp: new Date().toISOString(),
         title: `Epic Closed: ${epic.name}`,
         description: 'Strategic initiative successfully archived. Cleanup complete.',
         mission: {
@@ -2229,14 +2286,14 @@ function closeEpic(idx) {
             { label: 'Resource Intensity', count: `${totalPoints} SP`, icon: '💎' },
             { label: 'Moved to Backlog', count: sortedPending.length, icon: '📚' }
         ],
-        items: epicItems.map(i => ({ 
-            id: i.id, 
-            name: i.text, 
-            type: 'task', 
-            status: i.status, 
-            lead: (i.contributors || [])[0], 
-            points: i.storyPoints, 
-            destination: i.status === 'done' ? 'Completed' : 'Backlog' 
+        items: items.map(i => ({
+            id: i.id,
+            name: i.text,
+            type: 'task',
+            status: i.status,
+            lead: (i.contributors || [])[0],
+            points: i.storyPoints,
+            destination: i.status === 'done' ? 'Completed' : 'Backlog'
         })),
         actions: [
             { label: 'View Analytics', fn: () => switchView('analytics') },
@@ -2474,12 +2531,25 @@ function shipRelease(releaseId) {
     window._skipModalCloseOnce = true;
 
     const nextReleaseName = nextRelease ? nextRelease.name : 'Backlog';
+    const doneItems = items.filter(i => i.status === 'done');
     const auditConfig = {
+        timestamp: new Date().toISOString(),
         title: `Release Shipped: ${release.name}`,
-        description: 'Production milestone achieved. Milestone metrics recorded.',
+        description: `${doneItems.length} of ${items.length} items shipped. ${pendingItems.length > 0 ? `${pendingItems.length} rolled to ${nextReleaseName}.` : 'Clean ship — all items delivered.'}`,
         details: [
-            { label: `Rolled to Next Placement (${nextReleaseName})`, count: pendingItems.length, icon: '📦' }
+            { label: 'Items Shipped', count: `${doneItems.length} / ${items.length}`, icon: '🚀' },
+            { label: 'Rolled Over', count: pendingItems.length, icon: '📦' },
+            { label: 'Next Placement', count: nextReleaseName, icon: '📍' }
         ],
+        items: items.map(i => ({
+            id: i.id,
+            name: i.text,
+            type: 'task',
+            status: i.status,
+            lead: (i.contributors || [])[0],
+            points: i.storyPoints,
+            destination: i.status === 'done' ? 'Shipped' : nextReleaseName
+        })),
         actions: [
             { label: 'Manage Releases', fn: () => switchView('releases') },
             { label: 'View OKRs', fn: () => switchView('okr') }
@@ -2518,19 +2588,23 @@ function advanceRoadmapHorizons() {
     });
 
     // 2. Strategic Sync: Advance Epics
+    let epicShiftCount = 0;
     if (UPDATE_DATA.metadata.epics) {
         UPDATE_DATA.metadata.epics.forEach(epic => {
             if (epic.planningHorizon === '3M') {
                 epic.planningHorizon = '1M';
+                epicShiftCount++;
             } else if (epic.planningHorizon === '6M') {
                 epic.planningHorizon = '3M';
+                epicShiftCount++;
             }
             epic.updatedAt = new Date().toISOString();
         });
     }
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    if (typeof showToast === 'function') showToast(`Roadmap advanced! ${shiftCount} items shifted horizons.`);
+    const msg = `Roadmap advanced — ${shiftCount} items${epicShiftCount > 0 ? ` + ${epicShiftCount} epics` : ''} shifted horizons.`;
+    if (typeof showToast === 'function') showToast(msg);
     if (typeof renderRoadmapView === 'function') renderRoadmapView();
 }
 

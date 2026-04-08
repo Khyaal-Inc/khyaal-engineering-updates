@@ -1361,7 +1361,10 @@ function renderEpicsView() {
                                 <div class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Strategic Epic</div>
                                 ${e.riskType && e.riskType !== 'none' ? `<span class="risk-badge risk-${e.riskType}">${e.riskType} Risk</span>` : ''}
                             </div>
-                            <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none">${e.name}</h2>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-lg font-black text-slate-900 tracking-tight leading-none">${e.name}</h2>
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : ''}
+                            </div>
                         </div>
                         ${cmsActions}
                     </div>
@@ -1630,14 +1633,15 @@ function renderSprintView() {
                     <div class="flex justify-between items-start">
                         <div>
                             ${sprintOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-100">🎯 Alignment: ${sprintOKR.objective.substring(0, 50)}${sprintOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-3">
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : ''}
                                 ${cmsActions}
                             </div>
                             <div class="flex items-center gap-3 mt-1 flex-wrap">
                                 <span class="text-sm font-bold text-slate-500">📅 ${s.startDate || 'TBD'} - ${s.endDate || 'TBD'}</span>
                                 ${releasePill}
-                                ${shouldShowManagement() ? `<button onclick="promoteSprintToRelease('${s.id}')" class="sprint-promote-btn">📦 Promote Done Items →</button>` : ''}
+                                ${!isClosed && shouldShowManagement() ? `<button onclick="promoteSprintToRelease('${s.id}')" class="sprint-promote-btn">📦 Promote Done Items →</button>` : ''}
                             </div>
                         </div>
                         <div class="text-right">
@@ -1730,8 +1734,9 @@ function renderReleasesView() {
                     <div class="flex justify-between items-start">
                         <div>
                             ${releaseOKR ? `<div class="mb-2"><span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px] font-black uppercase tracking-widest border border-amber-100">🚀 Strategic Value: ${releaseOKR.objective.substring(0, 50)}${releaseOKR.objective.length > 50 ? '...' : ''}</span></div>` : ''}
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-3">
                                 <div class="font-black text-2xl text-slate-900">${r.name}</div>
+                                ${isClosed ? `<span class="lifecycle-closed-badge">✓ Shipped</span>` : ''}
                                 ${cmsActions}
                             </div>
                             <div class="text-sm font-bold text-slate-500 mt-1">🎯 Target: ${r.targetDate || 'TBD'}</div>

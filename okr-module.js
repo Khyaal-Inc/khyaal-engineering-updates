@@ -235,7 +235,7 @@ function renderOkrCard(okr, idx) {
                                 <span>${stage.icon}</span> ${stage.label} Stage
                             </div>
                             <span class="text-[10px] font-medium text-slate-500">${okr.quarter}</span>
-                            ${isClosed ? `<span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest">${okr.status}</span>` : ''}
+                            ${isClosed ? `<span class="lifecycle-closed-badge">✓ ${(okr.result || 'closed').toUpperCase()}</span>` : ''}
                         </div>
                         <h2 class="text-xl font-bold text-slate-900 tracking-tight leading-tight mt-1">${okr.objective}</h2>
                         ${okr.result ? `<div class="mt-2 p-3 bg-slate-50 border-l-4 border-slate-900 text-xs text-slate-700 italic font-medium"><span class="font-black not-italic text-slate-900">Result:</span> ${okr.result}</div>` : ''}

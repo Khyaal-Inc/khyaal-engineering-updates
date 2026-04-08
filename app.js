@@ -52,7 +52,28 @@ function normalizeData() {
         UPDATE_DATA.metadata.sprints.forEach(sprint => {
             if (!sprint.sprintHistory) sprint.sprintHistory = [];
             if (sprint.goal === undefined) sprint.goal = '';
+            if (!sprint.status) sprint.status = 'planned';
         });
+    }
+
+    // 5. Normalize lifecycle close fields on metadata entities
+    if (UPDATE_DATA.metadata) {
+        if (UPDATE_DATA.metadata.epics) {
+            UPDATE_DATA.metadata.epics.forEach(epic => {
+                if (!epic.status) epic.status = 'active';
+            });
+        }
+        if (UPDATE_DATA.metadata.okrs) {
+            UPDATE_DATA.metadata.okrs.forEach(okr => {
+                if (!okr.status) okr.status = 'active';
+            });
+        }
+        if (UPDATE_DATA.metadata.releases) {
+            UPDATE_DATA.metadata.releases.forEach(release => {
+                if (!release.status) release.status = 'planned';
+            });
+        }
+        if (!UPDATE_DATA.metadata.ceremonyAudits) UPDATE_DATA.metadata.ceremonyAudits = [];
     }
 }
 
