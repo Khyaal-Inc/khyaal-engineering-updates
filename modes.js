@@ -58,12 +58,12 @@ const VIEW_METADATA = {
     'capacity': { label: '⚖️ Capacity', category: 'primary' },
     'ideation': { label: '💡 Ideation', category: 'primary' },
     'spikes': { label: '🧪 Spikes', category: 'primary' },
-    'status': { label: 'By Status', category: 'more' },
-    'priority': { label: 'By Priority', category: 'more' },
-    'contributor': { label: 'By Contributor', category: 'more' },
-    'dependency': { label: '🕸️ Dependencies', category: 'more' },
-    'gantt': { label: 'Gantt Chart', category: 'more' },
-    'workflow': { label: '🛠️ Engineering Playbook', category: 'special', style: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 font-bold ml-2 shadow-sm whitespace-nowrap' }
+    'status': { label: '🟡 By Status', category: 'primary' },
+    'priority': { label: '🔴 By Priority', category: 'primary' },
+    'contributor': { label: '👤 By Contributor', category: 'primary' },
+    'dependency': { label: '🕸️ Dependencies', category: 'primary' },
+    'gantt': { label: '📅 Gantt', category: 'primary' },
+    'workflow': { label: '🛠️ Playbook', category: 'primary' }
 };
 
 // ============================================================
@@ -75,14 +75,14 @@ const STAGE_TO_VIEWS = {
         vision:    ['okr', 'epics'],
         plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
         build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        review:    ['releases', 'analytics', 'dashboard']
+        review:    ['releases', 'analytics', 'dashboard', 'workflow']
     },
     dev: {
         discovery: ['ideation', 'spikes'],
         vision:    [],
         plan:      ['sprint'],
         build:     ['my-tasks', 'kanban', 'track', 'dependency'],
-        review:    []
+        review:    ['workflow']
     },
     exec: {
         discovery: ['ideation'],

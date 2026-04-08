@@ -1,127 +1,158 @@
 # Khyaal Engineering Pulse
 
-> Zero-deployment, GitHub-backed engineering dashboard for Khyaal team. Frontend-only SPA — no build step, no server.
+> Zero-deployment, GitHub-backed engineering dashboard. Frontend-only SPA — no build step, no server. Data lives in `data.json` on GitHub.
+
+---
+
+## What It Is
+
+A fully client-side engineering command center for product, engineering, and leadership teams. It renders your `data.json` from GitHub into a living dashboard — ceremonies, lifecycle stages, OKR tracking, sprint boards, capacity planning, and more. Nothing to deploy beyond static files and one AWS Lambda.
+
+For a full product guide (personas, views, ceremonies, how to use), see [GUIDE.md](GUIDE.md).  
+For technical architecture and developer patterns, see [DEVELOPER.md](DEVELOPER.md).
 
 ---
 
 ## Architecture
 
 ```
-index.html          → Shell, auth gatekeeper, view containers, script tags (?v=04031)
-app.js              → UPDATE_DATA global, renderDashboard(), switchView(), normalizeData()
-core.js             → statusConfig, contributorColors, search/filter helpers, blocker strip
-views.js            → All primary view renderers (Track, Backlog, Sprint, Status, etc.)
-cms.js              → CRUD modal, 4-pillar form, GitHub sync, lifecycle ceremony engine
-modes.js            → Persona system (PM/Dev/Exec), mode filtering, navigation
-okr-module.js       → OKR view and progress calculation
-kanban-view.js      → Drag-and-drop Kanban board
-dependency-view.js  → Mermaid.js dependency graph
-analytics.js        → Velocity/burndown charts (Google Charts)
-capacity-planning.js→ Team workload and sprint capacity
-dev-focus.js        → Developer "My Tasks" view
-executive-dashboard.js → Executive KPI summary
-styles.css          → Custom CSS (cms-*, view-section, kanban-*, badge-*, track-header)
-auth_gatekeeper.js  → AWS Lambda: validates password hash, proxies GitHub data fetch
-data.json           → Single source of truth (hosted on GitHub)
+Browser
+  └── index.html          (HTML shell, auth, view containers)
+       ├── core.js         (constants, helpers, switchView, keyboard shortcuts)
+       ├── app.js          (UPDATE_DATA, renderDashboard, normalizeData)
+       ├── modes.js        (PM/Dev/Exec personas, STAGE_TO_VIEWS, stage tabs, nav)
+       ├── views.js        (Track, Backlog, Sprint, Status, Priority, Contributor, Releases, Gantt, Roadmap, Epics, Workflow, Discovery)
+       ├── cms.js          (edit modal, GitHub sync, ceremony engine, audit system)
+       ├── lifecycle-guide.js  (quick actions, gateway checks, toasts, sprint HUD)
+       ├── okr-module.js   (OKR view + progress calculation)
+       ├── kanban-view.js  (drag-drop Kanban board)
+       ├── dependency-view.js  (Mermaid dependency graph)
+       ├── analytics.js    (Google Charts velocity/burndown)
+       ├── capacity-planning.js (team workload)
+       ├── dev-focus.js    (Developer "My Tasks" view)
+       ├── executive-dashboard.js (Exec KPI summary)
+       ├── workflow-nav.js (Engineering Playbook)
+       └── styles.css      (full design system)
 ```
+
+**Stack**: Vanilla JS ES6+ · Tailwind CSS (CDN) · Mermaid.js · Google Charts · AWS Lambda
 
 **Data flow:**
 ```
-GitHub (data.json) → Lambda fetch → UPDATE_DATA (memory + localStorage)
-                                         ↓ CMS edits
-                                    saveToLocalStorage()
-                                         ↓ "Save to GitHub"
-                                    saveToGithub() → GitHub PUT
+GitHub (data.json) → Lambda gatekeeper → UPDATE_DATA (memory + localStorage)
+                                              ↓ CMS edits
+                                         saveToLocalStorage()
+                                              ↓ "Save to GitHub" button
+                                         saveToGithub() → GitHub PUT API
 ```
 
 ---
 
-## Authentication & Setup
+## Setup & Authentication
 
 ### Site Auth
-Password → SHA-256 → Lambda validates against `EXPECTED_PASSWORD_HASH` → `showProtectedContent()`  
+Password → SHA-256 hash → Lambda validates against `EXPECTED_PASSWORD_HASH` → dashboard loads.  
 Session cached in `localStorage['khyaal_site_auth']` — auto-login on return.
 
 ### CMS Auth (edit mode)
 1. Navigate to `?cms=true`
-2. Enter GitHub Personal Access Token (PAT) → stored in `localStorage['gh_pat']`
-3. Action buttons appear: Save to GitHub, Archive, Settings, Logout
+2. Enter GitHub Personal Access Token (PAT) when prompted → stored in `localStorage['gh_pat']`
+3. CMS buttons appear: Add items, Edit, Delete, Save to GitHub, Archive, Settings, Logout
 
-One-time Lambda setup: `sh deploy_auth.sh` → set `GITHUB_TOKEN` env var → update `LAMBDA_URL` in index.html.
+### Lambda Setup (one-time)
+```sh
+sh deploy_auth.sh
+# Set GITHUB_TOKEN env var in Lambda
+# Update LAMBDA_URL constant in index.html
+```
 
 ---
 
 ## Three Persona Modes
 
-Switch with `Alt+1` / `Alt+2` / `Alt+3`. Mode persists in localStorage.
+Switch with `Alt+1` / `Alt+2` / `Alt+3` or use the PM / Dev / Exec buttons in the app bar. Mode persists in `localStorage['khyaal_mode']`.
 
-| Mode | Key | Default View | Theme | Filter |
-|------|-----|-------------|-------|--------|
-| 👨‍💼 Product Manager | `pm` | OKRs | Blue | All items |
-| 👩‍💻 Developer | `dev` | My Tasks | Green | Current user's items only |
-| 👔 Executive | `exec` | Dashboard | Purple | High-priority/blocked/now |
+| Mode | Key | Default View | Theme | What They See |
+|------|-----|-------------|-------|---------------|
+| 👨‍💼 Product Manager | `pm` | OKRs | Blue | Everything — all 5 stages, all views, full CMS |
+| 👩‍💻 Developer | `dev` | My Tasks | Green | Execution-only — tasks assigned to current user |
+| 👔 Executive | `exec` | Dashboard | Purple | Strategic only — OKRs, Epics, Roadmap, Analytics, Releases |
 
-**Developer mode specifics:**
-- Prompts user name selection on first switch (stored in `localStorage['khyaal_current_user']`)
+**Developer mode:**
+- Prompts user selection on first switch (stored in `localStorage['khyaal_current_user']`)
+- Filters items to only those assigned to the selected user
 - Strategic fields are readonly (🔒) in the edit modal
-- CMS pillars: WHERE → HOW → WHAT → WHEN (execution-first order)
+- CMS pillars shown in execution-first order: WHERE → HOW → WHAT → WHEN
 
-**Executive mode specifics:**
-- Only 3 CMS pillars shown (no Sync & Effort / HOW panel)
-- Views limited to: Dashboard, Epics, OKRs, Analytics, Roadmap, Releases, Ideation, Spikes
+**Executive mode:**
+- Only 3 CMS pillars (no Sync & Effort / HOW panel)
+- Filters to high-priority, blocked, and active (`now`) items only
 
 ---
 
-## Views
+## Navigation: 5-Stage Lifecycle
 
-### PM Mode Views
-| View ID | Shortcut | Stage | Description |
-|---------|----------|-------|-------------|
-| `ideation` | — | 🔍 Discovery | Idea capture (#idea, #spike tags) |
-| `spikes` | — | 🔍 Discovery | Technical spike validation |
-| `okr` | 1 | 🌟 Vision | OKRs with auto-calculated progress from linked items |
-| `epics` | — | 🌟 Vision | Strategic goals with health tracking |
-| `roadmap` | 2 | 📐 Definition | Planning horizons (1M/3M/6M/1Y) |
-| `backlog` | 3 | 📐 Definition | Grooming hub — story points, epic links, priorities |
-| `sprint` | 4 | 📐 Definition | 2-week cycles with velocity tracking |
-| `track` | 5 | 🚀 Delivery | Work grouped by product area / subtrack |
-| `kanban` | — | 🚀 Delivery | Drag-and-drop board (8 status columns) |
-| `dependency` | 0 | 🚀 Delivery | Mermaid.js dependency graph |
-| `gantt` | — | 🚀 Delivery | Timeline visualization |
-| `status` | 7 | 🚀 Delivery | Items grouped by delivery status |
-| `priority` | 8 | 🚀 Delivery | High/Medium/Low sorting |
-| `contributor` | 9 | 🚀 Delivery | Per-person task breakdown |
-| `releases` | 6 | 🏁 Review/Ship | Version milestones — created in Definition, published after Delivery |
-| `analytics` | — | 🏁 Review/Ship | Velocity charts, burndown, KPIs |
-| `capacity` | — | Planning | Team workload vs. sprint capacity |
-| `workflow` | — | All stages | PM/Dev playbook — 5-stage lifecycle guide |
+The app bar has two rows:
+- **Row 1**: `KP logo | Project selector | Stage tabs (center) | PM/Dev/Exec switcher | ⚙️ CMS`
+- **Row 2**: View sub-tabs for the active stage
 
-### Developer Mode Views
-`my-tasks`, `kanban`, `track`, `dependency`, `sprint`, `workflow`, `ideation`, `spikes`
+Stages and their views (PM mode):
 
-### Executive Mode Views
-`dashboard`, `epics`, `okr`, `analytics`, `roadmap`, `releases`, `ideation`, `spikes`
+| Stage | Icon | Views |
+|-------|------|-------|
+| Discover | 🔍 | Ideation, Spikes |
+| Vision | 🌟 | OKRs, Epics |
+| Plan | 📐 | Roadmap, Backlog, Sprints, Gantt, Capacity |
+| Build | ⚡ | Kanban, Tracks, Dependencies, By Status, By Priority, By Contributor |
+| Ship | 🏁 | Releases, Analytics, Dashboard, Playbook |
+
+---
+
+## All Views
+
+| View ID | Stage | Personas | Description |
+|---------|-------|---------|-------------|
+| `ideation` | Discover | PM, Exec | Idea capture — items tagged `#idea` |
+| `spikes` | Discover | PM, Dev | Technical spike investigations |
+| `okr` | Vision | PM, Exec | OKRs with auto-calculated KR progress |
+| `epics` | Vision | PM, Exec | Strategic initiatives with health tracking |
+| `roadmap` | Plan | PM, Exec | Planning horizons (1M/3M/6M/1Y) |
+| `backlog` | Plan | PM | Grooming hub — story points, epics, priorities |
+| `sprint` | Plan | PM, Dev | 2-week cycles, velocity tracking, HUD |
+| `gantt` | Plan | PM | Timeline bar chart |
+| `capacity` | Plan | PM | Team workload vs. sprint capacity |
+| `kanban` | Build | PM, Dev | Drag-and-drop 8-column board |
+| `track` | Build | PM, Dev | Work grouped by project/subtrack |
+| `dependency` | Build | PM, Dev | Mermaid.js dependency graph |
+| `status` | Build | PM | Items grouped by delivery status |
+| `priority` | Build | PM | High/Medium/Low sorting |
+| `contributor` | Build | PM | Per-person task breakdown |
+| `releases` | Ship | PM, Exec | Versioned milestones |
+| `analytics` | Ship | PM, Exec | Velocity charts, burndown, KPIs |
+| `dashboard` | Ship | PM, Exec | Executive KPI summary |
+| `workflow` | Ship | PM, Dev | Engineering Playbook — 5-stage lifecycle guide |
+| `my-tasks` | Build | Dev | Developer personal task view |
 
 ---
 
 ## Item Status Values
 
-| Status | Meaning | Kanban Column |
-|--------|---------|---------------|
-| `later` | Backlog / ideas | Backlog |
-| `next` | Planned, ready | Planned (Next) |
-| `now` | Active work | Developing (Now) |
-| `qa` | Being verified | Testing (QA) |
-| `review` | Awaiting sign-off | In Review (UAT) |
-| `blocked` | Stuck on dependency | Blocked (Urgent) |
-| `onhold` | Paused | On Hold (Parked) |
-| `done` | Shipped | Production (Done) |
+| Status | Visual | Meaning |
+|--------|--------|---------|
+| `later` | Slate | Backlog — not yet scheduled |
+| `next` | Indigo | Planned — ready for next sprint |
+| `now` | Blue | In progress — active development |
+| `qa` | Amber | Being tested / verified |
+| `review` | Purple | Awaiting sign-off / UAT |
+| `blocked` | Red | Blocked — needs attention |
+| `onhold` | Teal | Paused — intentionally deferred |
+| `done` | Green | Shipped to production |
 
 ---
 
 ## Data Model
 
-### Item Schema
+### Item Fields
 ```json
 {
   "id": "unique-id",
@@ -130,210 +161,146 @@ Switch with `Alt+1` / `Alt+2` / `Alt+3`. Mode persists in localStorage.
   "priority": "high",
   "storyPoints": 5,
   "planningHorizon": "1M",
-  "sprintId": "sprint-1",
-  "epicId": "epic-platform",
-  "releasedIn": "v2.1",
+  "sprintId": "sprint-4",
+  "epicId": "platform-modernization",
+  "releasedIn": "v2.1-platform-foundation",
   "contributors": ["Subhrajit", "Vivek"],
   "tags": ["feature", "frontend"],
   "dependencies": ["other-task-id"],
-  "blockerNote": "",
   "blocker": false,
-  "acceptanceCriteria": "Criterion 1\nCriterion 2",
+  "blockerNote": "",
+  "acceptanceCriteria": ["Criterion 1", "Criterion 2"],
   "impactLevel": "high",
   "effortLevel": "medium",
   "successMetric": "Latency < 200ms",
   "strategicWeight": 75,
   "riskType": "technical",
-  "mediaUrl": "https://...",
-  "usecase": "User/business impact",
+  "usecase": "User/business impact statement",
   "note": "Technical implementation notes",
+  "persona": "Senior user",
+  "mediaUrl": "",
   "startDate": "2026-02-01",
   "due": "2026-02-15",
   "publishedDate": "2026-03-20",
-  "comments": [{ "id": "c1", "text": "PR #123", "author": "PM", "timestamp": "..." }],
-  "createdAt": "2026-01-01",
-  "updatedAt": "2026-04-05"
+  "comments": [{ "id": "c1", "text": "...", "author": "PM", "timestamp": "..." }],
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-04-05T10:00:00.000Z"
 }
 ```
 
-**Story points**: Fibonacci only — `1, 2, 3, 5, 8, 13, 21`  
-**Planning horizon**: `1M` (Now) · `3M` (Next) · `6M` (Later) · `1Y` (TBD)
+**Constraints:**
+- `storyPoints`: Fibonacci — `1 | 2 | 3 | 5 | 8 | 13 | 21`
+- `planningHorizon`: `1M` · `3M` · `6M` · `1Y`
+- `impactLevel` / `effortLevel`: `low | medium | high`
+- `status`: `now | next | later | qa | review | blocked | onhold | done`
 
-### Metadata Schema (key fields)
-```json
-{
-  "metadata": {
-    "title": "Khyaal Engineering Pulse",
-    "okrs": [{ "id", "quarter", "objective", "owner", "keyResults[]", "overallProgress" }],
-    "epics": [{ "id", "name", "usecase", "status", "health", "linkedOKR" }],
-    "sprints": [{ "id", "name", "status", "startDate", "endDate", "plannedPoints" }],
-    "releases": [{ "id", "name", "releaseDate", "status", "linkedEpic" }],
-    "roadmap": [{ "name", "theme", "horizon", "status" }],
-    "capacity": { "totalCapacity": 86, "teamMembers": [{ "name", "capacity", "role" }] },
-    "velocityHistory": [{ "sprint", "planned", "completed" }],
-    "activity": [{ "id", "timestamp", "action", "target" }]
-  }
-}
-```
+### Metadata Structure (condensed)
+See [DEVELOPER.md](DEVELOPER.md) for the full annotated schemas for `okrs[]`, `epics[]`, `sprints[]`, `releases[]`, `roadmap[]`, `velocityHistory[]`, `activity[]`, `ceremonyAudits[]`, `customStatuses[]`, and `tracks[]`.
 
 ---
 
 ## CMS Edit Modal — 4-Pillar System
 
-The edit modal (`cms.js`) adapts to both the current **persona** and the **active view**.
+The edit modal adapts to both the current **persona** and the **active view**.
 
 ### 4 Pillars
 
-| Pillar | Label | Fields |
-|--------|-------|--------|
-| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags, note |
+| Pillar | Label | Core Fields |
+|--------|-------|-------------|
+| `what` | 🎯 Goal & Intent | text, usecase, epicId, persona, tags |
 | `when` | 📅 Timeline & Cycle | planningHorizon, sprintId, startDate, due, releasedIn, publishedDate |
-| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, mediaUrl |
+| `where` | ⚡ Action & Routing | status, contributors, blockerNote, dependencies, note, mediaUrl |
 | `how` | 🛠️ Sync & Effort | storyPoints, priority, acceptanceCriteria, impactLevel, effortLevel, successMetric, strategicWeight, riskType |
 
 ### Pillar Visibility by Persona
 - **PM**: `[what → when → where → how]` — all 4
 - **Developer**: `[where → how → what → when]` — all 4, execution-first; strategic fields readonly
-- **Executive**: `[what → when → where]` — 3 only, no Sync & Effort
-
-### Field Visibility by View (LIFECYCLE_FIELD_MAP)
-Default = only native fields shown. Toggle "Show All" to expand.
-
-| View | Native fields shown |
-|------|-------------------|
-| `backlog` | text, usecase, persona, sprintId, planningHorizon, status, epicId, priority, storyPoints, tags, impactLevel, effortLevel |
-| `sprint` | text, usecase, persona, acceptanceCriteria, sprintId, startDate, due, status, contributors, storyPoints, priority, blockerNote, note |
-| `track` | text, usecase, persona, acceptanceCriteria, due, sprintId, status, contributors, storyPoints, priority, dependencies, blockerNote, note |
-| `kanban` | text, sprintId, status, contributors, priority, storyPoints, blockerNote |
-| `releases` | text, releasedIn, publishedDate, status, mediaUrl, tags, note |
-| `roadmap` | text, planningHorizon, startDate, usecase, epicId, status, tags, impactLevel, effortLevel, riskType |
-| `epics` | text, usecase, persona, planningHorizon, impactLevel, status, epicId, successMetric, strategicWeight, riskType, mediaUrl |
-
-### Developer Field Protection (Strategic Shield)
-Fields readonly in dev mode:
-`epicId, impactLevel, successMetric, acceptanceCriteria, planningHorizon, releasedIn, strategicWeight, riskType, effortLevel, publishedDate, priority, usecase, persona, sprintId`
+- **Executive**: `[what → when → where]` — 3 only, no HOW
 
 ---
 
 ## Keyboard Shortcuts
 
-| Key | View/Action |
-|-----|-------------|
-| `1` | Epics |
-| `2` | Roadmap |
-| `3` | Backlog |
-| `4` | Sprint |
-| `5` | Track |
-| `6` | Releases |
-| `7` | By Status |
-| `8` | By Priority |
-| `9` | By Contributor |
-| `0` | Dependencies |
-| `/` | Focus search |
-| `Alt+1` | PM mode |
-| `Alt+2` | Developer mode |
-| `Alt+3` | Executive mode |
+| Key | Action |
+|-----|--------|
+| `1` | Epics view |
+| `2` | Roadmap view |
+| `3` | Backlog view |
+| `4` | Sprint view |
+| `5` | Track view |
+| `6` | Releases view |
+| `7` | By Status view |
+| `8` | By Priority view |
+| `9` | By Contributor view |
+| `0` | Dependencies view |
+| `/` | Focus search bar |
+| `Alt+1` | Switch to PM mode |
+| `Alt+2` | Switch to Developer mode |
+| `Alt+3` | Switch to Executive mode |
 
 ---
 
-## 5-Stage Lifecycle
+## Lifecycle Ceremonies
+
+All ceremonies are accessible from the relevant view in **PM mode with CMS active (`?cms=true`)**. Each ceremony records a `ceremonyAudit` entry in `metadata.ceremonyAudits[]`.
+
+| Ceremony | Trigger | What It Does |
+|----------|---------|--------------|
+| Sprint Kickoff | Sprint card → "▶ Kick Off" | Marks sprint active, sets `kickedOffAt`, records audit |
+| Sprint Close | Sprint card → "🏁 Close Sprint" | Reviews done/not-done items, rolls over, syncs velocity to `velocityHistory[]` |
+| OKR Launch | OKR card → "🚀 Launch Quarter" | Marks OKR active, sets `launchedAt`, records audit |
+| OKR Close | OKR card → "🏁 Close OKR" | Sets outcome (achieved/missed/cancelled), records final result |
+| Epic Kickoff | Epic card → "▶ Kick Off" | Marks epic active, sets `kickedOffAt`, records audit |
+| Epic Close | Epic card → "🏁 Close Epic" | Marks epic completed, rolls incomplete items to backlog |
+| Release Lock | Release card → "🔒 Lock Release" | Freezes release scope, sets `lockedAt` |
+| Ship Release | Release card → "🚢 Ship" | Marks released, moves missed items to next release |
+| Advance Horizons | Roadmap ribbon → "⏩ Advance" | Bulk shifts planning horizons (3M→1M, 6M→3M) |
+
+---
+
+## Product Hierarchy
 
 ```
-Discovery → Vision → Definition → Delivery → Review/Ship → (loops back)
-  Ideas      OKRs    Roadmap       Track       Releases
-  Spikes     Epics   Backlog       Kanban      Analytics
-                     Sprint
-```
-
-See `WORKFLOW_HIERARCHY.md` for full stage-by-stage guide with steps, personas, and navigation flow.
-
-## Product Hierarchy (OKR → Delivery)
-
-```
-Vision (metadata.vision)                     — Multi-year north star        [Vision stage]
-  └─ OKRs (metadata.okrs[])                 — Quarterly measurable outcomes [Vision stage]
-       └─ Epics (metadata.epics[])           — Strategic initiatives         [Vision stage]
-            └─ Roadmap Horizons              — 1M/3M/6M planning             [Definition stage]
-                 └─ Backlog items            — Granular tasks                [Definition stage]
-                      └─ Sprints            — 2-week execution cycles       [Definition stage]
-                           └─ Releases      — Created in Definition,        [Review/Ship stage]
-                                              published after Delivery
+Vision (metadata.vision)                       — Multi-year north star
+  └─ OKRs (metadata.okrs[])                   — Quarterly measurable outcomes
+       └─ Epics (metadata.epics[])             — Strategic initiatives (linked to OKR via linkedOKR)
+            └─ Roadmap Horizons (metadata.roadmap[]) — 1M/3M/6M planning buckets
+                 └─ Items (tracks[].subtracks[].items[]) — Granular tasks (linked via epicId)
+                      └─ Sprints (metadata.sprints[])   — 2-week execution (linked via sprintId)
+                           └─ Releases (metadata.releases[]) — Ship milestones (linked via releasedIn)
 ```
 
 ---
 
-## Engineering Lifecycle Ceremonies
+## Development Rules
 
-The platform acts as a process coach, providing guided "Close Ceremonies" across all strategic and tactical cycles. These are available in **PM Mode** (?cms=true).
+- Vanilla JS ES6+, no semicolons, no transpilation, no framework
+- No DOM manipulation in loops — build HTML strings, assign `innerHTML` once
+- Don't mutate `UPDATE_DATA` directly — only CMS functions may write to it
+- New fields → add default in `normalizeData()` in `app.js`
+- New views → container in `index.html` + case in `switchView()` + `STAGE_TO_VIEWS` + `VIEW_METADATA`
 
-### 1. Sprint Close (`views.js`, `cms.js`)
-Triggered via **"🏁 Close Sprint"** on an active sprint card.
-- **Guided Review**: Review items that were Done vs. Not Done.
-- **Rollover Logic**: Move items to Next Sprint, Backlog, or Drop them.
-- **Velocity Auto-Sync**: Records final completed story points into `metadata.velocityHistory`.
-
-### 2. OKR Close (`okr-module.js`, `cms.js`)
-Triggered via **"🏁 Close OKR"** on an active OKR card.
-- **Formal Outcome**: Set status to `achieved`, `missed`, or `cancelled`.
-- **Final Result**: Document the impact/learnings in a persistent result note.
-
-### 3. Epic Close (`views.js`, `cms.js`)
-Triggered via **"🏁 Close Epic"** on an in-progress epic card.
-- **Tactical Cleanup**: Marks epic as `completed` and rolls all incomplete tasks back to the team **Backlog**.
-
-### 4. Release Ship (`views.js`, `cms.js`)
-Triggered via **"🚢 Ship Release"** on a release card.
-- **Production Milestone**: Finalizes the version and moves any missed items to the next scheduled release.
-
-### 5. Roadmap Advance (`views.js`, `cms.js`)
-Triggered via **"⏩ Advance Horizons"** in the Roadmap management ribbon.
-- **Strategic Nudge**: Bulk shifts all roadmap items across planning horizons (3M → 1M, 6M → 3M) as quarters progress.
+Full patterns in [DEVELOPER.md](DEVELOPER.md).
 
 ---
 
-## Historical Lens (The Visual System)
+## Troubleshooting
 
-When a cycle is formally closed, the platform applies a **Historical Lens** to those entities using the `.lifecycle-closed` CSS class.
-
-- **High-Fidelity Grayscale**: Uses a `grayscale(0.8)` filter to distinguish past work from live execution.
-- **Reduced Opacity**: `opacity(0.65)` minimizes visual noise for executives reviewing historical data.
-- **Interactive Guards**: Prevents accidental data mutations on closed items while keeping them accessible for retrospects.
-
----
-
-## Development Guide
-
-### Adding a Field
-1. Default in `app.js normalizeData()`
-2. `case 'fieldName':` in `cms.js renderField()` returning HTML
-3. Add to pillar in `FIELD_GROUPS` (cms.js:114)
-4. Add to relevant `LIFECYCLE_FIELD_MAP` views (cms.js:148)
-5. Read back in `saveCmsChanges()` via `getElementById('edit-fieldName')`
-
-### Adding a View
-1. Container in index.html: `<div id="viewname-view" class="view-section"></div>`
-2. Case in `switchView()` in app.js
-3. Add to `availableViews` + `VIEW_METADATA` in modes.js
-4. Render function in new `.js` file + `<script>` tag in index.html
-
-### Code Style
-- Vanilla JS ES6+, no transpilation, no semicolons
-- No DOM manipulation in loops — build HTML strings, set `innerHTML` once
-- Don't mutate `UPDATE_DATA` directly — use CMS functions
-- New dependencies: CDN only
-
-### Troubleshooting
-- **Nothing renders**: check `window.isActionLockActive` — may be stuck `true`
-- **Data stale**: `localStorage['khyaal_data']` may be cached; clear or use `?archive` param
-- **Graph not rendering**: Mermaid.js CDN may be slow; check console
-- **OKR progress wrong**: verify `item.epicId` matches `epic.id` which matches `okr.linkedEpic`
-- **Kanban drag not working**: requires `?cms=true` mode active
+| Symptom | Likely Cause |
+|---------|-------------|
+| Nothing renders | `window.isActionLockActive` stuck `true` — open console, run `window.isActionLockActive = false; renderDashboard()` |
+| Stale data shown | `localStorage['khyaal_data']` cached — clear localStorage or use `?archive` param |
+| Dependency graph blank | Mermaid.js CDN slow — check browser console |
+| OKR progress wrong | Verify `item.epicId` → `epic.id` → `okr.linkedEpic` chain is intact |
+| Kanban drag not working | Requires `?cms=true` active |
+| View not showing in nav | Check `STAGE_TO_VIEWS` in modes.js — view must be listed for current mode |
 
 ---
 
 ## Credits
 
-Built for Khyaal Engineering Team · Zero-deployment · GitHub-backed · Client-side rendering  
-Security: AWS Lambda auth gatekeeper · Visualization: Mermaid.js + Google Charts · Styling: Tailwind CSS CDN
+Built for Khyaal Engineering Team  
+Zero-deployment · GitHub-backed · Client-side rendering  
+Auth: AWS Lambda · Visualization: Mermaid.js + Google Charts · Styling: Tailwind CSS CDN
 
 © 2026 Khyaal Inc.
