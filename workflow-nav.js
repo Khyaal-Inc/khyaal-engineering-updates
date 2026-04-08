@@ -11,7 +11,7 @@ const WORKFLOW_STAGES = {
         label: 'Validation',
         description: 'Spikes & Ideation: Capturing ideas and validating feasibility',
         cadence: 'Ongoing',
-        views: ['ideation', 'spikes'],
+        views: ['ideation', 'spikes', 'workflow'],
         color: '#6366f1', // indigo
         order: 1
     },
@@ -31,7 +31,7 @@ const WORKFLOW_STAGES = {
         label: 'Planning',
         description: 'Sprint Planning: Grooming backlog, planning sprints, mapping roadmap horizons',
         cadence: 'Weekly',
-        views: ['roadmap', 'backlog', 'sprint', 'gantt'],
+        views: ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
         color: '#3b82f6', // blue
         order: 3
     },
@@ -41,7 +41,7 @@ const WORKFLOW_STAGES = {
         label: 'Execution',
         description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
         cadence: 'Daily',
-        views: ['kanban', 'track', 'dependency'],
+        views: ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
         color: '#10b981', // green
         order: 4
     },
