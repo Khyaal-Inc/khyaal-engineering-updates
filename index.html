@@ -94,10 +94,10 @@
 
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
         <!-- CORE SCRIPTS -->
-        <script src="core.js?v=04073"></script>
-        <script src="views.js?v=04073"></script>
-        <script src="cms.js?v=04073"></script>
-        <script src="app.js?v=04073"></script>
+        <script src="core.js?v=04092"></script>
+        <script src="views.js?v=04092"></script>
+        <script src="cms.js?v=04092"></script>
+        <script src="app.js?v=04092"></script>
         <script>
             // Phase 6 Reset: Early-boot functional mapping
             window.openAddItemModal = function(type) {
@@ -113,18 +113,18 @@
         </script>
 
         <!-- NEW FEATURE MODULES -->
-        <script src="modes.js?v=04073"></script>
-        <script src="wizard.js?v=04073"></script>
-        <script src="workflow-nav.js?v=04091"></script>
-        <script src="dependency-view.js?v=04073"></script>
-        <script src="kanban-view.js?v=04073"></script>
-        <script src="okr-module.js?v=04073"></script>
-        <script src="analytics.js?v=04073"></script>
-        <script src="capacity-planning.js?v=04073"></script>
-        <script src="dev-focus.js?v=04073"></script>
-        <script src="executive-dashboard.js?v=04073"></script>
-        <script src="lifecycle-guide.js?v=04072"></script>
-        <script src="meeting-guide.js?v=04072"></script>
+        <script src="modes.js?v=04092"></script>
+        <script src="wizard.js?v=04092"></script>
+        <script src="workflow-nav.js?v=04092"></script>
+        <script src="dependency-view.js?v=04092"></script>
+        <script src="kanban-view.js?v=04092"></script>
+        <script src="okr-module.js?v=04092"></script>
+        <script src="analytics.js?v=04092"></script>
+        <script src="capacity-planning.js?v=04092"></script>
+        <script src="dev-focus.js?v=04092"></script>
+        <script src="executive-dashboard.js?v=04092"></script>
+        <script src="lifecycle-guide.js?v=04092"></script>
+        <script src="meeting-guide.js?v=04092"></script>
 
         <!-- Meeting Co-Pilot Panel (System E) -->
         <div id="guide-backdrop" onclick="typeof closeMeetingGuide==='function'&&closeMeetingGuide()"></div>
@@ -166,10 +166,16 @@
                     <select id="global-team-filter" class="project-select" onchange="onProjectChange()" title="Filter by project">
                         <option value="">📁 All Projects</option>
                     </select>
+
+                    <!-- Row 1 Navigation Placeholders (filled by workflow-nav.js) -->
+                    <div class="h-6 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
+                    <div id="mini-pipeline" class="flex gap-1.5 px-2"></div>
+                    <div class="h-6 w-[1px] bg-slate-200 mx-1 secret-separator hidden md:block"></div>
+                    <div id="breadcrumb-nav" class="flex items-center"></div>
                 </div>
 
-                <!-- Center: Stage Tabs -->
-                <nav id="stage-tabs" class="app-bar-stages"></nav>
+                <!-- Center: Stage Tabs (Legacy sync) -->
+                <nav id="stage-tabs" class="app-bar-stages hidden md:flex"></nav>
 
                 <!-- Right: Blocker badge + Mode switcher + Gear -->
                 <div class="app-bar-right">

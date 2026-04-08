@@ -79,7 +79,10 @@ function initWorkflowNav() {
     // Render workflow navigation
     renderWorkflowNav();
 
-    console.log('Workflow navigation initialized');
+    // Synergistic Sync: Ensure top ribbon matches initial state
+    updateCommandStripNav();
+
+    console.log('✅ Workflow navigation initialized');
 }
 
 // Detect workflow stage based on current active view
@@ -147,7 +150,11 @@ function switchWorkflowStage(stageKey) {
 function updateCommandStripNav() {
     const miniPipeline = document.getElementById('mini-pipeline');
     const breadcrumb = document.getElementById('breadcrumb-nav');
-    if (!miniPipeline || !breadcrumb) return;
+    
+    if (!miniPipeline || !breadcrumb) {
+        console.warn('⚠️ Navigation placeholders (mini-pipeline or breadcrumb-nav) missing from DOM. Skipping ribbon render.');
+        return;
+    }
 
     // 1. Render Mini Icons
     miniPipeline.innerHTML = Object.entries(WORKFLOW_STAGES)
