@@ -327,13 +327,6 @@ function renderTrackView() {
                     <div class="h-6 w-[1px] bg-slate-200 mx-1 hidden md:block"></div>
 
                     <div class="flex items-center gap-2">
-                        <select id="global-team-filter"
-                            class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-xs font-black text-slate-600 hover:bg-slate-100 transition-all cursor-pointer focus:ring-4 focus:ring-indigo-600/10"
-                            onchange="renderTrackView()">
-                            <option value="">🌍 All Tracks</option>
-                            ${teamOptions}
-                        </select>
-
                         <select id="date-range-preset" onchange="applyDatePreset(); renderTrackView();"
                             class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 text-xs font-black text-slate-600 hover:bg-slate-100 transition-all cursor-pointer focus:ring-4 focus:ring-indigo-600/10">
                             <option value="all">📅 All Dates</option>
@@ -1613,15 +1606,16 @@ function renderSprintView() {
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('sprint') : ''}
                 </div>
 
-                <!-- Group 2: Actions -->
+                <!-- Group 2: Sprint HUD + Actions -->
                 <div class="flex items-center gap-2">
+                    <div id="sprint-ribbon-hud"></div>
                     <div id="sprint-next-action-mount">
                         ${renderPrimaryStageAction('sprint')}
                     </div>
-                    
+
                     ${shouldShowManagement() ? `
                     <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                    <button onclick="openSprintEdit()" 
+                    <button onclick="openSprintEdit()"
                         class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
                         <span class="text-lg">➕</span> Add New Sprint
                     </button>

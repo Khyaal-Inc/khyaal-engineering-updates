@@ -850,10 +850,11 @@ function renderCadenceNudgeBanner() {
 window.renderCadenceNudgeBanner = renderCadenceNudgeBanner
 
 // ============================================================
-// SYSTEM N — Sprint Health HUD (command strip mini pill)
+// SYSTEM N — Sprint Health HUD (renders in sprint view ribbon)
 // ============================================================
 function renderSprintHUD() {
-    const slot = document.getElementById('sprint-hud-mount')
+    // Try sprint-ribbon mount first (in sprint view ribbon), fallback to legacy app bar mount
+    const slot = document.getElementById('sprint-ribbon-hud') || document.getElementById('sprint-hud-mount')
     if (!slot) return
     const sprints = window.UPDATE_DATA?.metadata?.sprints || []
     const active = sprints.find(s => s.status === 'active') || sprints[sprints.length - 1]
@@ -1175,7 +1176,9 @@ function getModalStageFromView(viewId) {
             _orig(viewId);
             window.currentActiveView = viewId;
             setTimeout(() => {
-                renderLifecycleBreadcrumb(viewId);
+                // Update stage tabs + view sub-tabs on every view switch
+                if (typeof renderStageTabs === 'function') renderStageTabs(viewId);
+                if (typeof renderViewSubtabs === 'function') renderViewSubtabs(viewId);
                 // System N — refresh Sprint HUD on every view switch
                 if (typeof renderSprintHUD  === 'function') renderSprintHUD();
                 // System L — show cadence nudge if relevant day

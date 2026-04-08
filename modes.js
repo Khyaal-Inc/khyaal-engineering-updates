@@ -66,6 +66,119 @@ const VIEW_METADATA = {
     'workflow': { label: '🛠️ Engineering Playbook', category: 'special', style: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 font-bold ml-2 shadow-sm whitespace-nowrap' }
 };
 
+// ============================================================
+// STAGE NAV SYSTEM — Maps stages to views per mode
+// ============================================================
+const STAGE_TO_VIEWS = {
+    pm: {
+        discovery: ['ideation', 'spikes'],
+        vision:    ['okr', 'epics'],
+        plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
+        build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
+        review:    ['releases', 'analytics', 'dashboard']
+    },
+    dev: {
+        discovery: ['ideation', 'spikes'],
+        vision:    [],
+        plan:      ['sprint'],
+        build:     ['my-tasks', 'kanban', 'track', 'dependency'],
+        review:    []
+    },
+    exec: {
+        discovery: ['ideation'],
+        vision:    ['okr', 'epics'],
+        plan:      ['roadmap'],
+        build:     [],
+        review:    ['releases', 'analytics', 'dashboard']
+    }
+};
+
+const STAGE_METADATA = {
+    discovery: { icon: '🔍', label: 'Discover', color: '#7c3aed', primaryView: 'ideation' },
+    vision:    { icon: '🌟', label: 'Vision',   color: '#4f46e5', primaryView: 'okr' },
+    plan:      { icon: '📐', label: 'Plan',     color: '#2563eb', primaryView: 'backlog' },
+    build:     { icon: '⚡', label: 'Build',    color: '#059669', primaryView: 'kanban' },
+    review:    { icon: '🏁', label: 'Ship',     color: '#d97706', primaryView: 'releases' }
+};
+
+// Get which lifecycle stage a view belongs to
+function getStageForView(viewId) {
+    const mode = currentMode || 'pm';
+    const stageMap = STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm;
+    for (const [stage, views] of Object.entries(stageMap)) {
+        if (views.includes(viewId)) return stage;
+    }
+    // fallback: check pm map
+    for (const [stage, views] of Object.entries(STAGE_TO_VIEWS.pm)) {
+        if (views.includes(viewId)) return stage;
+    }
+    return 'build';
+}
+
+// Switch to stage's primary view
+function switchStage(stageKey) {
+    const mode = currentMode || 'pm';
+    const views = (STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm)[stageKey] || [];
+    const primaryView = STAGE_METADATA[stageKey]?.primaryView;
+    const target = views.includes(primaryView) ? primaryView : views[0];
+    if (target && typeof switchView === 'function') switchView(target);
+}
+
+// Render stage tabs into #stage-tabs
+function renderStageTabs(activeView) {
+    const container = document.getElementById('stage-tabs');
+    if (!container) return;
+    const mode = currentMode || 'pm';
+    const stageMap = STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm;
+    const activeStage = getStageForView(activeView || window.currentActiveView || '');
+
+    container.innerHTML = Object.entries(STAGE_METADATA)
+        .filter(([key]) => (stageMap[key] || []).length > 0)
+        .map(([key, meta]) => {
+            const isActive = key === activeStage;
+            const done = typeof checkStageCompletion === 'function' && checkStageCompletion(key);
+            return `<button onclick="switchStage('${key}')"
+                class="stage-tab ${isActive ? 'stage-tab-active' : ''} ${done && !isActive ? 'stage-tab-done' : ''}"
+                ${isActive ? `style="--tab-color:${meta.color}"` : ''}
+                title="${meta.label}">
+                <span>${meta.icon}</span>
+                <span class="stage-tab-label">${meta.label}</span>
+                ${done && !isActive ? '<span class="stage-tab-check">✓</span>' : ''}
+            </button>`;
+        }).join('');
+}
+
+// Render view sub-tabs into #view-subtabs
+function renderViewSubtabs(activeView) {
+    const container = document.getElementById('view-subtabs');
+    if (!container) return;
+    const mode = currentMode || 'pm';
+    const stage = getStageForView(activeView || window.currentActiveView || '');
+    const views = (STAGE_TO_VIEWS[mode] || STAGE_TO_VIEWS.pm)[stage] || [];
+
+    if (views.length <= 1) {
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = '';
+
+    container.innerHTML = views.map(viewId => {
+        const meta = VIEW_METADATA[viewId];
+        const isActive = viewId === (activeView || window.currentActiveView);
+        const badgeId = meta?.badge || `tab-count-${viewId}`;
+        return `<button onclick="switchView('${viewId}')" id="btn-${viewId}"
+            class="view-subtab ${isActive ? 'view-subtab-active' : ''}">
+            ${meta?.label || viewId}<span id="${badgeId}" class="tab-count"></span>
+        </button>`;
+    }).join('');
+}
+
+// Called when project (team) filter changes
+function onProjectChange() {
+    if (typeof renderDashboard === 'function') renderDashboard();
+    renderStageTabs(window.currentActiveView);
+}
+
 // Current mode state
 let currentMode = 'pm';
 let currentUser = null; // For dev mode filtering
@@ -156,10 +269,12 @@ function applyMode(mode) {
     // Update mode switcher active state
     updateModeSwitcherState();
 
-    // Render dynamic navigation based on mode
-    renderDynamicNavigation(mode);
+    // Render stage tabs and view sub-tabs for new nav system
+    const activeView = window.currentActiveView || MODE_CONFIG[mode].defaultView;
+    renderStageTabs(activeView);
+    renderViewSubtabs(activeView);
 
-    // Update workflow navigation
+    // Update workflow navigation (kept for Engineering Playbook reference)
     if (typeof renderWorkflowNav === 'function') {
         renderWorkflowNav();
     }
@@ -174,35 +289,25 @@ function applyMode(mode) {
     }
 }
 
-// Render mode switcher in header
+// Render mode switcher — 3-button segmented control
 function renderModeSwitcher() {
     const container = document.getElementById('header-mode-switcher');
     if (!container) return;
 
-    const config = MODE_CONFIG[currentMode];
-    const colorClass = currentMode === 'dev' ? 'text-emerald-800 bg-emerald-50/50 border-emerald-100' : 
-                      currentMode === 'exec' ? 'text-purple-800 bg-purple-50/50 border-purple-100' : 
-                      'text-indigo-800 bg-indigo-50/50 border-indigo-100';
+    const modes = [
+        { key: 'pm',   label: 'PM',   icon: '👨‍💼', title: 'Product Manager — strategic planning, backlog, sprints' },
+        { key: 'dev',  label: 'Dev',  icon: '👩‍💻', title: 'Developer — my tasks, kanban, sprint board' },
+        { key: 'exec', label: 'Exec', icon: '👔',  title: 'Executive — OKRs, metrics, release health' }
+    ];
 
-    const dotColor = currentMode === 'dev' ? 'bg-emerald-500' : 
-                     currentMode === 'exec' ? 'bg-purple-500' : 
-                     'bg-indigo-500';
-
-    container.innerHTML = `
-        <button onclick="if(typeof toggleStrategyMenu === 'function') toggleStrategyMenu()" 
-                class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border ${colorClass} transition-all hover:bg-white hover:shadow-sm active:scale-95 group relative">
-            
-            <div class="flex items-center gap-2">
-                <span class="inline-flex rounded-full h-2 w-2 ${dotColor}"></span>
-                <span class="text-[10px] font-semibold opacity-50">Perspective:</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold">${config.name}</span>
-                <span class="text-[8px] opacity-50 group-hover:opacity-100 transition-opacity translate-y-[0.5px]">▾</span>
-            </div>
-        </button>
-    `;
+    container.innerHTML = `<div class="mode-seg-control" role="group" aria-label="Persona mode">
+        ${modes.map(m => `<button onclick="switchMode('${m.key}')"
+            class="mode-seg-btn ${currentMode === m.key ? 'mode-seg-active' : ''}"
+            title="${m.title}"
+            aria-pressed="${currentMode === m.key}">
+            <span>${m.icon}</span><span class="mode-seg-label">${m.label}</span>
+        </button>`).join('')}
+    </div>`;
 }
 
 // Update active state of mode buttons
@@ -211,10 +316,11 @@ function updateModeSwitcherState() {
     renderModeSwitcher();
 }
 
-// Render dynamic navigation based on current mode
+// Render dynamic navigation — legacy function, container removed.
+// Navigation now uses renderStageTabs() + renderViewSubtabs() in the app bar.
 function renderDynamicNavigation(mode) {
     const container = document.getElementById('dynamic-nav-container');
-    if (!container) return; // Silent return as container is removed
+    if (!container) return; // Container no longer exists — nav moved to stage tabs
 
     const config = MODE_CONFIG[mode];
     const navOrder = config.primaryNavOrder || [];
@@ -305,82 +411,49 @@ function renderDynamicNavigation(mode) {
     container.innerHTML = primaryButtons + moreViewsDropdown + specialViews;
 }
 
-// Filter which view buttons are shown based on mode (Legacy - replaced by renderDynamicNavigation)
-function filterViewsByMode(mode) {
-    // This function is now deprecated in favor of renderDynamicNavigation
-    // Kept for backwards compatibility
-    const config = MODE_CONFIG[mode];
-    const allViewButtons = document.querySelectorAll('.filter-btn');
+// filterViewsByMode — removed (deprecated, replaced by stage tabs + view subtabs)
 
-    allViewButtons.forEach(btn => {
-        const viewId = btn.id.replace('btn-', '');
+// Prompt user to select their name (for dev mode) — proper modal, no browser dialogs
+function promptUserSelection() {
+    const contributors = [...new Set(
+        (window.UPDATE_DATA?.tracks || []).flatMap(t =>
+            t.subtracks.flatMap(s => s.items.flatMap(i => i.contributors || []))
+        )
+    )].sort();
 
-        if (config.availableViews.includes(viewId)) {
-            btn.style.display = '';
-        } else {
-            btn.style.display = 'none';
-        }
-    });
-
-    // Special handling for "More Views" dropdown
-    const moreViewsBtn = document.querySelector('.relative.group');
-    if (moreViewsBtn) {
-        const dropdownItems = moreViewsBtn.querySelectorAll('.filter-btn');
-        const hasVisibleItems = Array.from(dropdownItems).some(btn => btn.style.display !== 'none');
-        moreViewsBtn.style.display = hasVisibleItems ? '' : 'none';
+    if (!contributors.length) {
+        if (typeof showHandoffToast === 'function')
+            showHandoffToast('No contributors found — add contributors to items first', null, null, 4000);
+        return;
     }
+
+    const existing = document.getElementById('dev-user-modal');
+    if (existing) existing.remove();
+
+    const el = document.createElement('div');
+    el.id = 'dev-user-modal';
+    el.className = 'dev-user-modal-overlay';
+    el.innerHTML = `<div class="dev-user-modal-card">
+        <p class="text-xs font-black text-slate-800 mb-1">Who are you?</p>
+        <p class="text-[11px] text-slate-400 mb-3">Dev mode filters tasks to your name.</p>
+        <div class="flex flex-wrap gap-2">
+            ${contributors.map(c => `<button onclick="selectDevUser('${c.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')" class="dev-user-btn">${c}</button>`).join('')}
+        </div>
+        <button onclick="document.getElementById('dev-user-modal').remove()"
+            class="mt-4 text-[10px] text-slate-400 hover:text-slate-600 transition-colors block">
+            Skip — show all tasks
+        </button>
+    </div>`;
+    document.body.appendChild(el);
 }
 
-// Prompt user to select their name (for dev mode)
-function promptUserSelection() {
-    const contributors = new Set();
-
-    // Extract all unique contributors from data
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                if (item.contributors && Array.isArray(item.contributors)) {
-                    item.contributors.forEach(c => contributors.add(c));
-                }
-            });
-        });
-    });
-
-    const contributorList = Array.from(contributors).sort();
-
-    if (contributorList.length === 0) {
-        alert('No contributors found in the system.');
-        return;
-    }
-
-    const selected = prompt(
-        'Select your name for Developer Mode:\n\n' +
-        contributorList.map((c, i) => `${i + 1}. ${c}`).join('\n') +
-        '\n\nEnter the number or name:'
-    );
-
-    if (!selected) return;
-
-    // Check if number was entered
-    const index = parseInt(selected) - 1;
-    let userName;
-
-    if (!isNaN(index) && contributorList[index]) {
-        userName = contributorList[index];
-    } else if (contributorList.includes(selected)) {
-        userName = selected;
-    } else {
-        alert('Invalid selection');
-        return;
-    }
-
-    currentUser = userName;
-    localStorage.setItem('khyaal_current_user', userName);
-
-    // Reload current view to apply filtering
-    if (typeof filterData === 'function') {
-        filterData();
-    }
+function selectDevUser(name) {
+    currentUser = name;
+    localStorage.setItem('khyaal_current_user', name);
+    document.getElementById('dev-user-modal')?.remove();
+    if (typeof showHandoffToast === 'function')
+        showHandoffToast(`Dev mode: showing ${name}'s tasks`, null, null, 3000);
+    if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 // Get current mode
@@ -467,3 +540,9 @@ window.getCurrentUser = getCurrentUser;
 window.isViewAvailable = isViewAvailable;
 window.getModeFilter = getModeFilter;
 window.promptUserSelection = promptUserSelection;
+window.selectDevUser = selectDevUser;
+window.renderStageTabs = renderStageTabs;
+window.renderViewSubtabs = renderViewSubtabs;
+window.switchStage = switchStage;
+window.getStageForView = getStageForView;
+window.onProjectChange = onProjectChange;

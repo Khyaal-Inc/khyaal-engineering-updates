@@ -169,10 +169,10 @@ function initDashboard() {
     switchView(defaultView);
     renderDashboard();
 
-    // Lifecycle Guide: init breadcrumb + current view tracking
+    // Init stage tabs + view sub-tabs
     window.currentActiveView = defaultView;
-    if (typeof renderLifecycleBreadcrumb === 'function') {
-        setTimeout(() => renderLifecycleBreadcrumb(defaultView), 150);
+    if (typeof renderStageTabs === 'function') {
+        setTimeout(() => { renderStageTabs(defaultView); renderViewSubtabs(defaultView); }, 150);
     }
 
 

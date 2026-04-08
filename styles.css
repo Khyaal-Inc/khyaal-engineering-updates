@@ -46,10 +46,10 @@
   --status-review-border:#fde68a;
   --status-review-accent:#f59e0b;
 
-  --status-onhold-bg:    #f8fafc;
-  --status-onhold-text:  #64748b;
-  --status-onhold-border:#cbd5e1;
-  --status-onhold-accent:#64748b;
+  --status-onhold-bg:    #f0fdfa;
+  --status-onhold-text:  #0f766e;
+  --status-onhold-border:#99f6e4;
+  --status-onhold-accent:#14b8a6;
 
   /* ── Surface Layers ── */
   --surface-base:       #f8fafc;
@@ -4584,6 +4584,130 @@ summary::-webkit-details-marker {
     border-bottom: 1px solid var(--glass-border-subtle) !important;
     box-shadow: 0 1px 0 rgba(255,255,255,0.7), var(--shadow-sm) !important;
 }
+
+/* ================================================================
+   APP BAR — 2-Row Navigation System
+   ================================================================ */
+
+/* Row 1: App bar */
+.app-bar {
+    max-width: 1720px; margin: 0 auto; height: 48px; padding: 0 16px;
+    display: flex; align-items: center; gap: 8px; justify-content: space-between;
+}
+.app-bar-left  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.app-bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.app-bar-stages { display: flex; align-items: center; gap: 2px; flex: 1; justify-content: center; }
+.app-bar-gear {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; border: 1px solid transparent; color: #94a3b8;
+    background: transparent; cursor: pointer; transition: all 0.15s; font-size: 1rem;
+}
+.app-bar-gear:hover { background: #f1f5f9; border-color: #e2e8f0; color: #0f172a; }
+
+/* KP logo badge */
+.kp-logo {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 900; font-style: italic; letter-spacing: -0.04em;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.35); flex-shrink: 0;
+}
+
+/* Project (track) selector */
+.project-select {
+    font-size: 0.7rem; font-weight: 700; color: #374151;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 4px 10px; cursor: pointer; outline: none;
+    transition: all 0.15s; max-width: 150px;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+    padding-right: 24px;
+}
+.project-select:hover, .project-select:focus { border-color: #c7d2fe; background-color: white; }
+
+/* Stage tabs */
+.stage-tab {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 20px;
+    font-size: 0.7rem; font-weight: 700;
+    border: 1px solid transparent; background: transparent; color: #94a3b8;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.stage-tab:hover { background: #f1f5f9; color: #475569; }
+.stage-tab-active {
+    background: color-mix(in srgb, var(--tab-color, #4f46e5) 10%, white);
+    color: var(--tab-color, #4f46e5);
+    border-color: color-mix(in srgb, var(--tab-color, #4f46e5) 25%, transparent);
+    font-weight: 900;
+}
+.stage-tab-done { color: #64748b; }
+.stage-tab-check { font-size: 8px; color: #22c55e; font-weight: 900; margin-left: 2px; }
+.stage-tab-label { font-size: 0.65rem; }
+@media (max-width: 680px) { .stage-tab-label { display: none; } }
+@media (max-width: 480px) { .stage-tab { padding: 5px 7px; } }
+
+/* Row 2: View sub-tabs bar */
+.view-subtabs-bar {
+    height: 36px; padding: 0 16px;
+    display: flex; align-items: center; gap: 2px;
+    background: rgba(248,250,252,0.96);
+    border-top: 1px solid rgba(226,232,240,0.7);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.view-subtab {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 8px;
+    font-size: 0.7rem; font-weight: 600;
+    border: 1px solid transparent; background: transparent; color: #64748b;
+    cursor: pointer; transition: all 0.12s; white-space: nowrap;
+}
+.view-subtab:hover { background: white; color: #0f172a; border-color: #e2e8f0; }
+.view-subtab-active {
+    background: white; color: #0f172a; font-weight: 800;
+    border-color: #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+@media (max-width: 640px) { .view-subtabs-bar { overflow-x: auto; flex-wrap: nowrap; } }
+
+/* Mode segmented control */
+.mode-seg-control {
+    display: flex; align-items: center;
+    background: #f1f5f9; border-radius: 10px; padding: 2px; gap: 1px;
+}
+.mode-seg-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 8px; border-radius: 8px; border: none;
+    font-size: 0.65rem; font-weight: 700;
+    background: transparent; color: #64748b; cursor: pointer; transition: all 0.15s;
+}
+.mode-seg-btn:hover { color: #0f172a; }
+.mode-seg-active { background: white; color: #0f172a; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.mode-seg-label { font-size: 0.6rem; }
+@media (max-width: 480px) { .mode-seg-label { display: none; } }
+
+/* Dev user picker modal */
+.dev-user-modal-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(15,23,42,0.45); backdrop-filter: blur(4px);
+}
+.dev-user-modal-card {
+    background: white; border-radius: 20px; padding: 24px;
+    max-width: 380px; width: 90%; box-shadow: 0 24px 48px rgba(0,0,0,0.15);
+    animation: modalEnter 0.2s ease;
+}
+.dev-user-btn {
+    padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;
+    background: #f8fafc; border: 1px solid #e2e8f0; color: #374151;
+    cursor: pointer; transition: all 0.12s;
+}
+.dev-user-btn:hover { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+/* Unified button scale */
+.btn-xs { font-size: 0.65rem; padding: 3px 8px;   border-radius: 7px;  font-weight: 700; }
+.btn-sm { font-size: 0.75rem; padding: 5px 12px;  border-radius: 9px;  font-weight: 700; }
+.btn-md { font-size: 0.8rem;  padding: 7px 16px;  border-radius: 10px; font-weight: 700; }
+.btn-lg { font-size: 0.875rem;padding: 9px 20px;  border-radius: 12px; font-weight: 800; }
 
 /* ── Lifecycle Breadcrumb / Mini-Pipeline Pills ── */
 .lifecycle-stage-pill {
