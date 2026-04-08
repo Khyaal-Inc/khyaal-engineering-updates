@@ -2056,6 +2056,19 @@ summary::-webkit-details-marker {
 }
 .backlog-sprint-select:hover { background: #eef2ff; }
 
+/* Grooming session bar */
+.grooming-session-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; margin-bottom: 12px;
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    border: 1.5px solid #c7d2fe; border-radius: 14px;
+}
+/* Grooming readiness badges */
+.groom-badge { font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px; display: block; text-align: center; white-space: nowrap; }
+.groom-done  { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.groom-todo  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.groom-none  { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+
 .backlog-count-badge {
     background: #ef4444;
     color: white;
@@ -2134,8 +2147,8 @@ summary::-webkit-details-marker {
 }
 .item-action-btn.edit   { color: #3b82f6; }
 .item-action-btn.edit:hover   { background: #eff6ff; border-color: #bfdbfe; }
-.item-action-btn.delete { color: #ef4444; }
-.item-action-btn.delete:hover { background: #fef2f2; border-color: #fecaca; }
+.item-action-btn.delete { color: #94a3b8; opacity: 0.45; font-size: 0.65rem; padding: 3px 8px; }
+.item-action-btn.delete:hover { opacity: 1; color: #dc2626; background: #fff1f2; border-color: #fca5a5; }
 .item-action-btn.neutral { color: #64748b; }
 .item-action-btn.neutral:hover { background: #f1f5f9; border-color: #e2e8f0; }
 .item-action-btn.active { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
@@ -2804,9 +2817,16 @@ summary::-webkit-details-marker {
 
     .modal-inner {
         width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
+        max-width: 100vw;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        transform: none !important;
+        margin: 0;
     }
 }
 
@@ -4427,6 +4447,17 @@ summary::-webkit-details-marker {
 .qa-pill:hover { background: #e2e8f0; color: #0f172a; transform: translateY(-1px); border-color: #cbd5e1; }
 .qa-pill-warn { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 .qa-pill-warn:hover { background: #fee2e2; }
+/* Color-coded pill families */
+.qa-pill-transit { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.qa-pill-transit:hover { background: #dbeafe; border-color: #93c5fd; transform: translateY(-1px); }
+.qa-pill-qa { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+.qa-pill-qa:hover { background: #ede9fe; border-color: #c4b5fd; transform: translateY(-1px); }
+.qa-pill-review { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.qa-pill-review:hover { background: #fef3c7; border-color: #fcd34d; transform: translateY(-1px); }
+.qa-pill-done { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+.qa-pill-done:hover { background: #dcfce7; border-color: #86efac; transform: translateY(-1px); }
+.qa-pill-assign { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.qa-pill-assign:hover { background: #ffedd5; border-color: #fdba74; transform: translateY(-1px); }
 .qa-disabled { opacity: 0.4; cursor: not-allowed; }
 .qa-select {
     padding: 3px 8px; border-radius: 20px;

@@ -643,17 +643,17 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
         const linkedEpic = item.epicId ? (UPDATE_DATA.metadata?.epics || []).find(e => e.id === item.epicId) : null;
         let okrAction = '';
         if (linkedEpic && linkedEpic.linkedOKR) {
-            const okrIndex = (UPDATE_DATA.metadata?.okrs || []).findIndex(o => o.id === linkedEpic.linkedOKR);
-            if (okrIndex >= 0) {
-                okrAction = `<button onclick="event.stopPropagation(); if(typeof openOKREdit==='function') openOKREdit(${okrIndex})" class="item-action-btn okr">🎯 OKR</button>`;
+            const linkedOkr = (UPDATE_DATA.metadata?.okrs || []).find(o => o.id === linkedEpic.linkedOKR);
+            if (linkedOkr) {
+                okrAction = `<button onclick="event.stopPropagation(); switchView('okr'); showHandoffToast('Update KR progress in the OKR panel →', null, null, 3500)" class="item-action-btn okr" title="Jump to OKR: ${(linkedOkr.title || linkedOkr.objective || '').replace(/"/g, '&quot;')}">↗ ${(linkedEpic.name || 'Epic').replace(/</g,'&lt;')}</button>`;
             }
         }
 
         // Lifecycle-aware quick actions — show only what's relevant per stage
         // Stage is inferred from viewPrefix (which view is rendering this item)
         const viewStageMap = {
-            roadmap: 'definition', backlog: 'definition', sprint: 'definition', gantt: 'definition',
-            main: 'delivery', kanban: 'delivery', track: 'delivery', dependency: 'delivery',
+            roadmap: 'definition', backlog: 'definition', gantt: 'definition',
+            sprint: 'delivery', main: 'delivery', kanban: 'delivery', track: 'delivery', dependency: 'delivery',
             releases: 'review', analytics: 'review', status: 'review', priority: 'review', contributor: 'review',
             okr: 'vision', epics: 'vision',
             ideation: 'discovery', spikes: 'discovery', discovery: 'discovery'
@@ -664,12 +664,14 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
         const editBtn = `<button onclick="event.stopPropagation(); openItemEdit(undefined, undefined, undefined, '${item.id}')" class="item-action-btn edit">Edit</button>`
         const deleteBtn = `<button onclick="event.stopPropagation(); deleteItem(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn delete">Delete</button>`
 
-        // Stage-specific extra actions
-        const blockerBtn = (itemStage === 'delivery') ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>` : (item.blocker ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn active">🔓 Unblock</button>` : '')
-        
-        // Hide Backlog button if already in backlog View or status is Later
+        // Stage-specific extra actions — blocker hidden on done items
+        const isDone = item.status === 'done';
+        const blockerBtn = (itemStage === 'delivery' && !isDone) ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn ${item.blocker ? 'active' : 'neutral'}">${item.blocker ? '🔓 Unblock' : '🔒 Blocker'}</button>` : (item.blocker && !isDone ? `<button onclick="event.stopPropagation(); toggleBlocker(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn active">🔓 Unblock</button>` : '')
+
+        // Hide Backlog button if already in backlog, or item is actively in-flight
+        const activeStatuses = ['now', 'qa', 'review', 'blocked'];
         const isAlreadyBacklog = (viewPrefix === 'backlog' || item.status === 'later');
-        const backlogBtn = (itemStage === 'definition' || itemStage === 'delivery') && !isAlreadyBacklog ? `<button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>` : ''
+        const backlogBtn = (itemStage === 'definition' || itemStage === 'delivery') && !isAlreadyBacklog && !activeStatuses.includes(item.status) ? `<button onclick="event.stopPropagation(); sendToBacklog(undefined, undefined, undefined, '${item.id}', '${viewPrefix}')" class="item-action-btn neutral">→ Backlog</button>` : ''
 
         cmsControls = `
             <div class="cms-controls-row flex items-center gap-1.5 flex-wrap">
@@ -737,6 +739,13 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             <span class="status-pill ${status.class} py-0.5 w-full text-center min-w-[54px]">${status.label}</span>
                             <span class="status-pill ${priorityInfo.class} text-[10px] py-0 px-1 opacity-70 w-full text-center">${priorityLabel}</span>
                             ${personaHTML}
+                            ${(() => {
+                                if (!isGrooming) return '';
+                                const groomedScore = [item.epicId, item.sprintId, item.storyPoints, item.acceptanceCriteria?.length].filter(Boolean).length;
+                                const cls = groomedScore >= 4 ? 'groom-done' : groomedScore >= 2 ? 'groom-todo' : 'groom-none';
+                                const label = groomedScore >= 4 ? '✓ Ready' : `${groomedScore}/4`;
+                                return `<span class="groom-badge ${cls}">${label}</span>`;
+                            })()}
                         </div>
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
                             <div class="info-wrapper mb-1">
@@ -763,7 +772,7 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             </div>
 
                             ${isGrooming ? `
-                                <div class="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4" onclick="event.stopPropagation()">
+                                <div class="mt-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 shadow-sm grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4" onclick="event.stopPropagation()">
                                     <div>
                                         <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">Priority</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'priority', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
@@ -798,11 +807,14 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                                         <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">🎯 Horizon</label>
                                         <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'planningHorizon', this.value, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
                                             <option value="">None</option>
-                                            ${((UPDATE_DATA.metadata && UPDATE_DATA.metadata.roadmap) || [
-                { id: '1M', label: 'Now (Immediate / 1 Month)' },
-                { id: '3M', label: 'Next (Strategic / 3 Months)' },
-                { id: '6M', label: 'Later (Future / 6 Months)' }
-            ]).map(h => `<option value="${h.id}" ${item.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
+                                            ${[{id:'1M',label:'1M — Now'},{id:'3M',label:'3M — Next'},{id:'6M',label:'6M — Later'},{id:'1Y',label:'1Y — Future'}].map(h => `<option value="${h.id}" ${item.planningHorizon === h.id ? 'selected' : ''}>${h.label}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-indigo-400 mb-1.5">⚡ Points</label>
+                                        <select onchange="updateItemGrooming(${trackIndex}, ${subtrackIndex}, ${itemIndex}, 'storyPoints', parseInt(this.value)||0, '${item.id}')" class="w-full text-xs p-2 rounded-xl border border-indigo-100 bg-white focus:ring-2 focus:ring-indigo-200 outline-none transition-all">
+                                            <option value="">—</option>
+                                            ${[1,2,3,5,8,13,21].map(p => `<option value="${p}" ${item.storyPoints === p ? 'selected' : ''}>${p}</option>`).join('')}
                                         </select>
                                     </div>
                                 </div>
@@ -1131,6 +1143,34 @@ function renderBacklogView() {
         html += ribbonHtml;
     }
 
+    if (groomingMode) {
+        // Compute grooming stats across all backlog items
+        let totalBacklog = 0, needsGroomingCount = 0;
+        UPDATE_DATA.tracks.forEach(track => {
+            const bl = track.subtracks.find(s => s.name === 'Backlog');
+            if (!bl) return;
+            bl.items.forEach(i => {
+                totalBacklog++;
+                const score = [i.epicId, i.sprintId, i.storyPoints, i.acceptanceCriteria?.length].filter(Boolean).length;
+                if (score < 4) needsGroomingCount++;
+            });
+        });
+        const groomedCount = totalBacklog - needsGroomingCount;
+        html += `
+            <div class="grooming-session-bar">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">🔧</span>
+                    <span class="font-black text-indigo-800 text-xs">Grooming Session Active</span>
+                    <span class="text-xs text-indigo-500">${needsGroomingCount} item${needsGroomingCount !== 1 ? 's' : ''} need grooming</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-indigo-400">${groomedCount} sprint-ready</span>
+                    <button onclick="toggleGroomingMode()" class="text-[10px] font-black text-indigo-500 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50">✕ Exit</button>
+                </div>
+            </div>
+        `;
+    }
+
     let totalItems = 0;
     const activeTeam = getActiveTeam();
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
@@ -1150,7 +1190,7 @@ function renderBacklogView() {
         backlogSub.items.forEach((item, ii) => {
             html += `<div class="backlog-item-wrapper">`;
             html += renderItem(item, 'backlog', trackIndex, si, ii, groomingMode);
-            if (shouldShowManagement() && sprints.length > 0) {
+            if (shouldShowManagement() && sprints.length > 0 && !groomingMode) {
                 const assignedSprint = sprints.find(s => s.id === item.sprintId);
                 const sprintOptions = sprints.map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
                 html += `

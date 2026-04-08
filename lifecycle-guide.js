@@ -498,7 +498,7 @@ const QA_DEFS = {
     },
     'ship-to-release': {
         label: '📦 Ship to Release', type: 'dropdown',
-        opts: () => (window.UPDATE_DATA?.metadata?.releases||[]).filter(r=>r.status!=='published'),
+        opts: () => (window.UPDATE_DATA?.metadata?.releases||[]).filter(r=>r.status!=='completed'),
         optLabel: r => r.name,
         exec: (item, val) => {
             item.releasedIn = val;
@@ -511,6 +511,14 @@ const QA_DEFS = {
             item.status = 'done'; item.updatedAt = new Date().toISOString();
             _qaSave(); showHandoffToast('Done ✓ — ship it to a release so it counts in your metrics', 'Ship →', ()=>switchView('releases'));
         }
+    },
+    'move-to-qa': {
+        label: '🔬 Move to QA', type: 'action',
+        exec: (item) => { item.status = 'qa'; item.updatedAt = new Date().toISOString(); _qaSave(); showHandoffToast('Moved to QA ✓ — verify acceptance criteria pass', null, null, 2500); }
+    },
+    'send-to-review': {
+        label: '👁 Send to Review', type: 'action',
+        exec: (item) => { item.status = 'review'; item.updatedAt = new Date().toISOString(); _qaSave(); showHandoffToast('Sent to Review ✓ — awaiting sign-off', null, null, 2500); }
     },
     'start-working': {
         label: '▶ Start Working', type: 'action',
@@ -550,24 +558,48 @@ function getQuickActions(item, viewId) {
     const s = item.status || 'later';
     let acts = [];
     if (viewId === 'backlog' || viewId === 'roadmap') {
+        // Backlog: link to goal; sprint assignment handled by dedicated bar below item
         acts.push('link-epic');
-        acts.push('add-to-sprint');
     } else if (viewId === 'sprint') {
-        if (s !== 'done') acts.push('mark-done');
-        if (s === 'now')  acts.push('flag-blocker');
-        if (s === 'done') acts.push('ship-to-release');
+        // Sprint enforces the full QA chain: now → qa → review → done
+        if (s === 'now')   { acts.push('move-to-qa'); acts.push('flag-blocker'); }
+        if (s === 'qa')    { acts.push('send-to-review'); acts.push('mark-done'); }
+        if (s === 'review'){ acts.push('mark-done'); }
+        if (s === 'done')  acts.push('ship-to-release');
+        if (s === 'next' || s === 'later') acts.push('start-working');
+        if (s === 'blocked' || item.blocker) acts.push('resolve-blocker');
     } else if (viewId === 'kanban') {
+        // Kanban: fast individual flow, mark-done available for now as well
         if (s==='next'||s==='later') acts.push('start-working');
-        if (s==='now')  { acts.push('mark-done'); acts.push('flag-blocker'); }
+        if (s==='now')  { acts.push('mark-done'); acts.push('move-to-qa'); acts.push('flag-blocker'); }
+        if (s==='qa')   { acts.push('send-to-review'); acts.push('mark-done'); }
+        if (s==='review') acts.push('mark-done');
         if (s==='done') acts.push('ship-to-release');
-        if ((s==='blocked'||item.blocker) && mode==='pm') acts.push('resolve-blocker');
+        if (s==='blocked' || item.blocker) acts.push('resolve-blocker');
     } else if (viewId === 'track') {
         if (s==='next') acts.push('start-working');
-        if (s==='now')  acts.push('mark-done');
-        if ((s==='blocked'||item.blocker) && mode==='pm') acts.push('resolve-blocker');
+        if (s==='now')  { acts.push('mark-done'); acts.push('move-to-qa'); }
+        if (s==='qa')   { acts.push('send-to-review'); acts.push('mark-done'); }
+        if (s==='review') acts.push('mark-done');
+        if (s==='blocked' || item.blocker) acts.push('resolve-blocker');
     }
     return acts;
 }
+
+// Pill color class per action ID (semantic color families)
+const QA_PILL_CLASS = {
+    'mark-done':      'qa-pill-done',
+    'move-to-qa':     'qa-pill-qa',
+    'send-to-review': 'qa-pill-review',
+    'start-working':  'qa-pill-transit',
+    'resolve-blocker':'qa-pill-done',
+    'add-to-sprint':  'qa-pill-assign',
+    'ship-to-release':'qa-pill-assign',
+    'link-epic':      'qa-pill-transit',
+    'promote-to-roadmap': 'qa-pill-transit',
+    'clone-item':     'qa-pill-transit',
+    'update-kr-progress': 'qa-pill-transit',
+};
 
 function renderQuickActionBar(item, viewId, ti, si, ii) {
     const acts = getQuickActions(item, viewId);
@@ -575,12 +607,13 @@ function renderQuickActionBar(item, viewId, ti, si, ii) {
     const pills = acts.map(id => {
         const def = QA_DEFS[id]; if (!def) return '';
         const uid = `qa-${item.id}-${id}`.replace(/[^a-zA-Z0-9-]/g,'_');
+        const colorCls = QA_PILL_CLASS[id] || '';
         if (def.type === 'action') {
-            return `<button class="qa-pill" onclick="event.stopPropagation();window._qaExec('${id}','${item.id}',null,${ti},${si},${ii})">${def.label}</button>`;
+            return `<button class="qa-pill ${colorCls}" onclick="event.stopPropagation();window._qaExec('${id}','${item.id}',null,${ti},${si},${ii})">${def.label}</button>`;
         } else if (def.type === 'dropdown') {
             const opts = def.opts();
             if (!opts.length) return `<span class="qa-pill qa-disabled">${def.label} (none)</span>`;
-            return `<select class="qa-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();window._qaExec('${id}','${item.id}',this.value,${ti},${si},${ii});this.value=''">
+            return `<select class="qa-select ${colorCls}" onclick="event.stopPropagation()" onchange="event.stopPropagation();window._qaExec('${id}','${item.id}',this.value,${ti},${si},${ii});this.value=''">
                 <option value="">${def.label} ▾</option>
                 ${opts.map(o=>`<option value="${o.id}">${def.optLabel(o)}</option>`).join('')}
             </select>`;
@@ -591,6 +624,15 @@ function renderQuickActionBar(item, viewId, ti, si, ii) {
                     <input class="qa-text-input" placeholder="${def.placeholder}"
                         onkeydown="if(event.key==='Enter'){event.stopPropagation();window._qaText('${id}','${item.id}',this.value,${ti},${si},${ii});document.getElementById('${uid}').classList.remove('open')}">
                     <button class="qa-send" onclick="event.stopPropagation();const inp=document.getElementById('${uid}').querySelector('input');window._qaText('${id}','${item.id}',inp.value,${ti},${si},${ii});document.getElementById('${uid}').classList.remove('open')">Send</button>
+                </div>
+            </div>`;
+        } else if (def.type === 'inline-date') {
+            return `<div class="qa-inline-wrap" id="${uid}" onclick="event.stopPropagation()">
+                <button class="qa-pill ${colorCls}" onclick="event.stopPropagation();document.getElementById('${uid}').classList.toggle('open')">${def.label}</button>
+                <div class="qa-inline-input-wrap">
+                    <input type="date" class="qa-text-input" style="min-width:130px"
+                        onkeydown="if(event.key==='Enter'){event.stopPropagation();window._qaText('${id}','${item.id}',this.value,${ti},${si},${ii});document.getElementById('${uid}').classList.remove('open')}"
+                        onchange="event.stopPropagation();window._qaText('${id}','${item.id}',this.value,${ti},${si},${ii});document.getElementById('${uid}').classList.remove('open')">
                 </div>
             </div>`;
         }
@@ -1024,9 +1066,9 @@ Object.assign(QA_DEFS, {
         }
     },
     'set-due-date': {
-        label: '📅 Set Due Date', type: 'inline-text', placeholder: 'YYYY-MM-DD (e.g. 2025-06-30)',
+        label: '📅 Set Due Date', type: 'inline-date',
         exec: (item, val) => {
-            if (!val.match(/^\d{4}-\d{2}-\d{2}$/)) { showHandoffToast('Use format YYYY-MM-DD', null, null, 2500); return }
+            if (!val) { showHandoffToast('Please select a date', null, null, 2500); return }
             item.due = val; item.updatedAt = new Date().toISOString()
             _qaSave(); showHandoffToast(`Due date set: ${val} ✓`, null, null, 2500)
         }
@@ -1036,13 +1078,11 @@ Object.assign(QA_DEFS, {
         exec: (item) => {
             const linkedEpic = item.epicId ? (window.UPDATE_DATA?.metadata?.epics || []).find(e => e.id === item.epicId) : null;
             if (linkedEpic && linkedEpic.linkedOKR) {
-                const okrIndex = (window.UPDATE_DATA?.metadata?.okrs || []).findIndex(o => o.id === linkedEpic.linkedOKR);
-                if (okrIndex >= 0 && typeof openOKREdit === 'function') {
-                    openOKREdit(okrIndex);
-                    return;
-                }
+                switchView('okr');
+                showHandoffToast(`Update KR progress in the OKR panel →`, null, null, 3500);
+                return;
             }
-            showHandoffToast('Not linked to an OKR.', 'Strategy Hub →', () => switchView('okr'), 4000);
+            showHandoffToast('Not linked to an OKR. Open Strategy Hub to connect one.', 'Strategy Hub →', () => switchView('okr'), 4000);
         }
     },
     'create-spike': {
@@ -1079,7 +1119,8 @@ window._qaExec = function(id, itemId, val, ti, si, ii) {
     const check = runGatewayCheck(id, item)
     if (check.blocked) { showHandoffToast(`⚠️ ${check.msg}`, null, null, 5000); return }
     if (check.warn) {
-        if (!confirm(check.warn + '\n\nContinue anyway?')) return
+        showHandoffToast(`⚠️ ${check.warn}`, 'Continue anyway →', () => QA_DEFS[id]?.exec(item, val), 6000)
+        return
     }
     QA_DEFS[id]?.exec(item, val)
 }
