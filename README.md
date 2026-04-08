@@ -49,8 +49,6 @@ Browser
        ├── analytics.js    (Google Charts velocity/burndown)
        ├── capacity-planning.js (team workload)
        ├── dev-focus.js    (Developer "My Tasks" view)
-       ├── executive-dashboard.js (Exec KPI summary)
-       ├── workflow-nav.js (Engineering Playbook)
        └── styles.css      (full design system)
 ```
 
@@ -103,21 +101,12 @@ Switch with `Alt+1` / `Alt+2` / `Alt+3` or use the PM / Dev / Exec buttons in th
 
 ---
 
-## 🔄 Navigation: 5-Stage Lifecycle
-
-The app bar has two rows:
-- **Row 1**: `KP logo | Project selector | Stage tabs (center) | PM/Dev/Exec switcher | ⚙️ CMS`
-- **Row 2**: View sub-tabs for the active stage
-
-Stages and their views (PM mode):
-
-| Stage | Icon | Goal | Views |
-|-------|------|------|-------|
-| Discover | 🔍 | Ideation | Ideation, Spikes |
-| Vision | 🌟 | Strategy | OKRs, Epics |
-| Plan | 📐 | Tactical | Roadmap, Backlog, Sprints, Gantt, Capacity |
-| Build | ⚡ | Delivery | Kanban, Tracks, Dependencies, By Status, By Priority, By Contributor |
-| Ship | 🏁 | Outcomes | Releases, Analytics, Dashboard, Playbook |
+The platform uses a **Unified Strategic Ribbon** in the app bar to anchor the lifecycle:
+- **Discover**: 🔍 | Validation | Workflow, Ideation, Spikes
+- **Vision**: 🌟 | Strategic | OKRs, Epics
+- **Plan**: 📐 | Planning | Roadmap, Backlog, Sprints, Gantt, Capacity
+- **Build**: ⚡ | Execution | Kanban, Tracks, Links, Status, Priority, Team
+- **Ship**: 🏁 | Outcomes | Releases, Analytics, Pulse Dashboard
 
 ---
 
@@ -125,6 +114,7 @@ Stages and their views (PM mode):
 
 | View ID | Stage | Description |
 |---------|-------|-------------|
+| `workflow` | Discover | Engineering Playbook — High-level lifecycle guide. |
 | `ideation` | Discover | Capture any idea — even rough ones. Tag with #idea. |
 | `spikes` | Discover | Technical investigations. "Can we do X?" experiments. Tag with #spike. |
 | `okr` | Vision | OKRs with auto-calculated KR progress based on linked Epics. |
@@ -142,8 +132,7 @@ Stages and their views (PM mode):
 | `contributor` | Build | Per-person task breakdown. |
 | `releases` | Ship | Versioned milestones and shipped batch tracking. |
 | `analytics` | Ship | Velocity charts, burndown, and team performance. |
-| `dashboard` | Ship | One-page executive KPI and health summary. |
-| `workflow` | Ship | Engineering Playbook — 5-stage lifecycle guide. |
+| `dashboard` | Ship | Pulse Dashboard — Executive KPI summary. |
 | `my-tasks` | Build | Developer personal task view. |
 
 ---

@@ -17,6 +17,7 @@ Zero-deployment GitHub-backed engineering dashboard. Frontend-only SPA — no bu
 | `app.js` | `UPDATE_DATA` global, `renderDashboard()`, `switchView()`, `normalizeData()`, search, keyboard shortcuts |
 | `core.js` | Constants (`statusConfig`, `contributorColors`), `highlightSearch()`, `renderBlockerStrip()`, `isItemInSearch()`, `isItemInDateRange()` |
 | `views.js` | `renderTrackView()`, `renderStatusView()`, `renderPriorityView()`, `renderContributorView()`, `renderBacklogView()`, `renderSprintView()`, `renderReleasesView()`, `renderGanttView()`, `renderWorkflowView()`, `renderDiscoveryView()`, `renderRoadmapView()`, `renderEpicsView()` |
+| `workflow-nav.js` | **OWNER**: `switchWorkflowStage()`, `renderWorkflowNav()`, `updateCommandStripNav()`. Manaages the Unified Strategic Ribbon and lifecycle state. |
 | `cms.js` | CRUD modal (`openItemEdit`, `addItem`, `saveCms`, `deleteItem`), GitHub sync (`saveToGithub`), 4-pillar form, metadata editors |
 | `modes.js` | `switchMode()`, `getCurrentMode()`, `getCurrentUser()`, `getModeFilter()`, mode navigation, Alt+1/2/3 |
 | `okr-module.js` | `renderOkrView()`, OKR progress calculation |
@@ -43,6 +44,13 @@ UPDATE_DATA {
 **Story points**: Fibonacci only — `1, 2, 3, 5, 8, 13, 21` (enforced as select in CMS)  
 **Planning horizon**: `1M | 3M | 6M | 1Y`
 
+## Unified Strategic Navigation (`workflow-nav.js`)
+The platform uses a 5-stage **Strategic Ribbon** that anchors the "Platform-as-Coach" UX.
+- **Cycle**: `Discover → Vision → Plan → Build → Ship`
+- **Source of Truth**: `WORKFLOW_STAGES` object in `workflow-nav.js` defines view/stage mapping.
+- **State**: `currentWorkflowStage` persists in `localStorage['khyaal_workflow_stage']`.
+- **Dynamic Chips**: `renderViewSubtabs()` (in `modes.js`) dynamically syncs the "outside" chips with the active stage.
+
 ## Three Persona Modes (`modes.js`)
 | Mode | Key | Default View | Alt Shortcut | Theme |
 |------|-----|-------------|--------------|-------|
@@ -54,28 +62,28 @@ UPDATE_DATA {
 - **Exec mode**: filters to high-priority/blocked/now items; shows only 3 CMS pillars (no HOW)
 - Mode persists in `localStorage['khyaal_current_mode']`; user persists in `localStorage['khyaal_current_user']`
 
-## All Views & Render Functions
-| View ID | Renderer | Personas |
-|---------|----------|---------|
-| `okr` | `renderOkrView()` | PM, Exec |
-| `epics` | `renderEpicsView()` | PM, Exec |
-| `roadmap` | `renderRoadmapView()` | PM, Exec |
-| `backlog` | `renderBacklogView()` | PM |
-| `sprint` | `renderSprintView()` | PM, Dev |
-| `track` | `renderTrackView()` | PM, Dev |
-| `kanban` | `renderKanbanView()` | PM, Dev |
-| `dependency` | `renderDependencyView()` | PM, Dev |
-| `analytics` | `renderAnalyticsView()` | PM, Exec |
-| `capacity` | `renderCapacityView()` | PM |
-| `releases` | `renderReleasesView()` | PM, Exec |
-| `status` | `renderStatusView()` | PM |
-| `priority` | `renderPriorityView()` | PM |
-| `contributor` | `renderContributorView()` | PM |
-| `gantt` | `renderGanttView()` | PM |
-| `my-tasks` | `renderMyTasksView()` | Dev |
-| `dashboard` | `renderExecutiveDashboard()` | Exec |
-| `workflow` | `renderWorkflowView()` | PM, Dev |
-| `ideation`/`spikes` | `renderDiscoveryView()` | PM, Exec |
+| View ID | Renderer | Stage (Lifecycle) | Personas |
+|---------|----------|-------------------|----------|
+| `ideation` | `renderDiscoveryView()` | Discover | PM, Exec |
+| `spikes` | `renderDiscoveryView()` | Discover | PM, Exec |
+| `workflow` | `renderWorkflowView()` | Discover | PM, Dev |
+| `okr` | `renderOkrView()` | Vision | PM, Exec |
+| `epics` | `renderEpicsView()` | Vision | PM, Exec |
+| `roadmap` | `renderRoadmapView()` | Plan | PM, Exec |
+| `backlog` | `renderBacklogView()` | Plan | PM |
+| `sprint` | `renderSprintView()` | Plan | PM, Dev |
+| `gantt` | `renderGanttView()` | Plan | PM |
+| `capacity` | `renderCapacityView()` | Plan | PM |
+| `kanban` | `renderKanbanView()` | Build | PM, Dev |
+| `track` | `renderTrackView()` | Build | PM, Dev |
+| `dependency` | `renderDependencyView()` | Build | PM, Dev |
+| `status` | `renderStatusView()` | Build | PM |
+| `priority` | `renderPriorityView()` | Build | PM |
+| `contributor` | `renderContributorView()` | Build | PM |
+| `my-tasks` | `renderMyTasksView()` | Build (Dev only) | Dev |
+| `releases` | `renderReleasesView()` | Ship | PM, Exec |
+| `analytics` | `renderAnalyticsView()` | Ship | PM, Exec |
+| `dashboard` | `renderExecutiveDashboard()` | Ship | Exec |
 
 ## CMS Edit Modal — 4-Pillar System (`cms.js`)
 **Entry points**: `openItemEdit(ti,si,ii,itemId)` · `addItem(trackIndex,subtrackIndex,defaults)`

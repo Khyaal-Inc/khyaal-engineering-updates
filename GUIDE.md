@@ -58,11 +58,7 @@ The top bar has two rows:
 - **Stage tabs**: Click any stage to jump to its primary view. The active stage glows in its color.
 - **Mode buttons** (PM / Dev / Exec): Switch your perspective instantly.
 
-**Row 2 — View Sub-tabs:**
-```
-[OKRs]  [Epics]   ← changes based on which stage you're in
-```
-Once you're in a stage, these tabs let you switch between all the views within that stage — one click, no popover.
+Once you're in a stage, these tabs (the Unified Strategic Ribbon) let you switch between all the views within that stage — one click, no popover.
 
 ---
 
@@ -79,12 +75,13 @@ Every piece of work follows this journey. The stage tabs in the top bar map to t
 
 | View | Purpose |
 |------|---------|
+| **Workflow** | Low-fidelity mapping of your product lifecycle and ceremonies |
 | **Ideation** | Capture any idea — even rough ones. Tag with #idea. |
 | **Spikes** | Technical investigations. "Can we do X?" experiments. Tag with #spike. |
 
 **When to use**: Whenever a new idea comes up that's not ready for planning. Ideas here are safe to discard.
 
-**Who runs it**: Anyone. PM curates; engineers validate technical feasibility.
+**Who runs it**: Anyone. PM curates; engineers validate technical feasibility in Spikes.
 
 ---
 
@@ -105,15 +102,15 @@ Every piece of work follows this journey. The stage tabs in the top bar map to t
 ---
 
 ### 📐 Stage 3: Plan
-**What happens here**: Turn strategy into executable work. Decide what's happening when.
+**What happens here**: Turn strategy into executable work. Decide what's happening and when.
 
 | View | Purpose |
 |------|---------|
 | **Roadmap** | Strategic initiatives mapped to time horizons: Now (1M) / Next (3M) / Later (6M+) |
-| **Backlog** | Every task waiting to be picked up. Groom these before sprint planning. |
-| **Sprint** | 2-week commitments. Pull ready tasks here during sprint planning. |
-| **Gantt** | Timeline view of all Epics and sprints on a calendar. |
-| **Capacity** | Check if your team has enough time before committing to a sprint. |
+| **Gantt** | Timeline view of all Epics and roadmap horizons on a calendar |
+| **Capacity** | Check team bandwidth before committing to a sprint |
+| **Backlog** | Every task waiting for execution. Groom these before sprint planning. |
+| **Sprint** | Current commitment cycle. Focus on the next 2 weeks. |
 
 **When to use**: Weekly sprint planning; monthly roadmap review.
 
@@ -122,21 +119,21 @@ Every piece of work follows this journey. The stage tabs in the top bar map to t
 ---
 
 ### ⚡ Stage 4: Build
-**What happens here**: The team executes. Tasks move from "starting" to "done."
+**What happens here**: The team executes. Monitor health and unblock the engine.
 
 | View | Purpose |
 |------|---------|
-| **Kanban** | Daily drag-and-drop status board. Cards move left to right as work progresses. |
-| **My Tasks** | (Dev mode only) Your personal task list — Today / This Week / Upcoming / Blocked |
-| **Tracks** | All tasks grouped by project. PM's bird's-eye view in standup. |
-| **Dependencies** | Which tasks are blocked by other tasks or other teams. |
-| **By Status** | All tasks grouped by their status (Now / QA / Review / Blocked / Done) |
-| **By Priority** | All tasks grouped by priority (High / Medium / Low) |
-| **By Contributor** | All tasks grouped by who's assigned to them |
+| **Kanban** | Daily status board. Cards move left to right as work progresses. |
+| **My Tasks** | (Dev mode) Your personal cockpit — Today / This Week / Blocked |
+| **Tracks** | All tasks grouped by project. The bird's-eye view for standup. |
+| **Links** | Tactical dependencies. See exactly what is stalling your task. |
+| **State** | Unified view of all tasks grouped by status. |
+| **Risk** | High-priority and overdue items that need intervention. |
+| **Team** | Per-person task breakdown and loading. |
 
 **When to use**: Daily. The Kanban board should be updated every morning in standup.
 
-**Who runs it**: Developers update their own cards; PM monitors and resolves blockers.
+**Who runs it**: Developers update their own cards; PM monitors health and resolves blockers.
 
 **The 5-step delivery flow** (for sprint items):
 ```
@@ -146,17 +143,17 @@ Now → [Move to QA] → QA → [Send to Review] → Review → [Mark Done] → 
 ---
 
 ### 🏁 Stage 5: Ship
-**What happens here**: Review what you built, publish it, and close the loop on your goals.
+**What happens here**: Review what you built and close the loop on your OKRs.
 
 | View | Purpose |
 |------|---------|
-| **Releases** | Versioned batches of shipped work. Create before sprint; publish after. |
-| **Analytics** | Velocity trends, sprint burndown, team performance over time. |
-| **Dashboard** | (Exec mode) Strategic health cockpit — OKR progress, Epic health, blockers, release dates. |
+| **Releases** | Versioned batches of shipped work. |
+| **Analytics** | Velocity trends, sprint burndown, and performance reports. |
+| **Pulse** | (Exec mode) High-level health cockpit for leadership. |
 
-**When to use**: At sprint end for release publishing; monthly for analytics review; weekly for exec review.
+**When to use**: Sprint end for release day; monthly for analytics; weekly for exec review.
 
-**Who runs it**: PM publishes releases; Exec reviews dashboard; team reviews analytics together.
+**Who runs it**: PM publishes releases; Exec reviews Pulse dashboard.
 
 ---
 

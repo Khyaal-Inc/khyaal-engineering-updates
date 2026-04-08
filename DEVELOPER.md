@@ -413,48 +413,49 @@ Comment = {
 
 ---
 
-## File Map & Ownership
-
-| File | Owns |
-|------|------|
-| `index.html` | HTML shell, auth gatekeeper, script tags, view containers |
-| `app.js` | `UPDATE_DATA`, `renderDashboard()`, `switchView()`, `normalizeData()`, search |
-| `core.js` | `statusConfig`, `contributorColors`, `themeColors`, `getActiveTeam()`, `updateTabCounts()`, `renderBlockerStrip()`, `switchView()` |
-| `modes.js` | Personas, `STAGE_TO_VIEWS`, `STAGE_METADATA`, `VIEW_METADATA`, `renderStageTabs()`, `renderViewSubtabs()`, `renderModeSwitcher()`, `switchStage()`, `getStageForView()`, mode filter logic |
-| `views.js` | All primary view renderers, `renderItem()`, `renderPrimaryStageAction()`, grooming mode, `shouldShowManagement()` |
-| `cms.js` | `openItemEdit()`, `addItem()`, `saveCms()`, `saveToGithub()`, `deleteItem()`, 4-pillar form, metadata editors, ceremony modals, `synthesizeAudit()`, `renderCeremonySuccess()`, `logChange()` |
-| `lifecycle-guide.js` | `QA_DEFS` quick actions, `getQuickActions()`, `renderQuickActionBar()`, `VIEW_INFO_CARDS`, `showHandoffToast()`, `runGatewayCheck()`, sprint HUD, cadence nudge, `checkStageCompletion()` |
-| `workflow-nav.js` | Engineering Playbook popover, `WORKFLOW_STAGES` |
-
----
-
 ## Navigation System
 
-The app bar has two rows rendered by `modes.js`:
+The platform uses a **Unified Strategic Ribbon** rendered by `workflow-nav.js`. This ribbon acts as the primary lifecycle anchor.
 
-### Stage Tabs (`renderStageTabs(activeView)`)
-Renders into `#stage-tabs`. Each tab:
-- Highlights with stage color when active (uses `--tab-color` CSS variable + `color-mix()`)
-- Shows ✓ when `checkStageCompletion(stageId)` returns true
-- Calls `switchStage(stageKey)` → switches to stage's `primaryView`
+### Unified Strategic Ribbon (`renderWorkflowNav()`)
+Owned by `workflow-nav.js`. It renders the 5-stage strategic lifecycle into the app bar.
+- **Cycle**: `Discover → Vision → Plan → Build → Ship`
+- **Source of Truth**: `WORKFLOW_STAGES` object in `workflow-nav.js`.
+- **State**: `currentWorkflowStage` persists in `localStorage['khyaal_workflow_stage']`.
+- **Sync**: Switching a stage calls `switchWorkflowStage(stageKey)` which updates the ribbon and renders the appropriate sub-navigation chips.
 
+### Tactical Sub-navigation Chips (`renderViewSubtabs(activeView)`)
+Owned by `modes.js`. Renders the "outside" view chips that dynamically sync with the active strategic stage.
+- **Logic**: Filters views based on `WORKFLOW_STAGES[stageId].views` and the user's `MODE_CONFIG`.
+- **Aesthetic**: Matches the rounded, high-density chip style of the popover.
+
+### Stage-to-View Mapping (`WORKFLOW_STAGES`)
+The canonical mapping in `workflow-nav.js`:
 ```js
-// STAGE_TO_VIEWS maps views to stages per mode:
-STAGE_TO_VIEWS.pm = {
-  discovery: ['ideation', 'spikes'],
-  vision:    ['okr', 'epics'],
-  plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
-  build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-  review:    ['releases', 'analytics', 'dashboard', 'workflow']
+window.WORKFLOW_STAGES = {
+  discover: {
+    name: 'Discover',
+    views: ['workflow', 'ideation', 'spikes']
+  },
+  vision: {
+    name: 'Vision',
+    views: ['okr', 'epics']
+  },
+  plan: {
+    name: 'Plan',
+    views: ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity']
+  },
+  build: {
+    name: 'Build',
+    views: ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor', 'my-tasks']
+  },
+  review: {
+    name: 'Ship',
+    views: ['releases', 'analytics', 'dashboard']
+  }
 }
-// dev: discovery, plan (sprint only), build (my-tasks/kanban/track/dependency), review (workflow)
-// exec: discovery, vision, plan (roadmap only), review (releases/analytics/dashboard)
 ```
-
-### View Sub-tabs (`renderViewSubtabs(activeView)`)
-Renders into `#view-subtabs`. Hidden when a stage has ≤1 view. Each button calls `switchView(viewId)`.
-
-### Both update on every `switchView()` call
+*Note: Key `review` maps to public name `Ship`.*
 Override in `lifecycle-guide.js` (~line 1171):
 ```js
 if (typeof renderStageTabs === 'function') renderStageTabs(viewId);
@@ -500,9 +501,7 @@ if (view === 'my-view') renderMyView();
 STAGE_TO_VIEWS.pm.build.push('my-view')
 ```
 
-7. **Add to `MODE_CONFIG.availableViews`** for relevant modes.
-
-8. **Register render function** in `renderDashboard()` in `app.js`:
+7. **Register render function** in `renderDashboard()` in `app.js`:
 ```js
 runSafe(renderMyView, 'MyView');
 ```
