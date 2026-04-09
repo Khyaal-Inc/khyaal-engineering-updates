@@ -241,6 +241,17 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F16 — Contributor View (Sprint Health, Persona-Gated) ✅ Shipped
+
+- `renderContributorView()` fully rewritten in `views.js` with three persona modes
+- **PM**: full card grid — each contributor card shows active sprint progress bar, pts committed/done, blocked count, overdue count, and sprint items grouped by status with click-through to edit
+- **Dev**: own card first (full detail with "You" badge), other contributors shown as compact collapsed cards (stats only, no task lists)
+- **Exec**: aggregate table — one row per contributor, columns: sprint items, completion %, blocked count, overdue count; no individual task details
+- `buildContributorMap()` — pure data builder respecting team/tag/date/search filters
+- `buildContributorStats(items)` — computes sprint-scoped health metrics (pts, done%, blocked, overdue) against the active sprint
+- `buildContributorCard()` / `buildContributorExecRow()` — separate HTML builders per persona (ui-rules compliant)
+- Fixed broken `statusConfig[status].color` inline style (config has no `.color` field — was rendering `undefined`); replaced with semantic CSS class binding from `statusConfig[status].class`
+
 #### F15 — Gantt View (Persona-Gated) ✅ Shipped
 
 - `renderGanttView()` + `drawGanttChart(mode)` in `views.js` — rewritten with full persona gating
@@ -374,6 +385,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | OKR auto-progress from task completion | High | High | High | S | ✅ Shipped |
 | Capacity Planner (live from item data) | High | Med | High | S | ✅ Shipped |
 | Gantt View (persona-gated, sprint date fallback) | Med | Med | High | S | ✅ Shipped |
+| Contributor View (sprint health, persona-gated) | High | Med | High | S | ✅ Shipped |
 
 ---
 

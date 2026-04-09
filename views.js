@@ -1001,91 +1001,262 @@ function renderPriorityView() {
 }
 
 // ------ Contributor View ------
-function renderContributorView() {
-    const container = document.getElementById('contributor-view');
-    const contributors = {};
-    const activeTeam = getActiveTeam();
 
-    let ribbonHtml = `
+/**
+ * Collects all items per contributor, with track/subtrack/item indices attached.
+ * Respects team filter, tag filter, date range, and search.
+ */
+function buildContributorMap() {
+    const map = {} // name → [enriched items]
+    const activeTeam = getActiveTeam()
+    UPDATE_DATA.tracks.forEach((track, ti) => {
+        if (activeTeam && activeTeam !== track.name) return
+        track.subtracks.forEach((subtrack, si) => {
+            subtrack.items.forEach((item, ii) => {
+                if (!isItemMatchingTagFilter(item) || !isItemInDateRange(item) || !isItemInSearch(item)) return
+                ;(item.contributors || []).forEach(name => {
+                    if (!map[name]) map[name] = []
+                    map[name].push({ ...item, trackIndex: ti, subtrackIndex: si, itemIndex: ii })
+                })
+            })
+        })
+    })
+    return map
+}
+
+/**
+ * Computes health stats for a single contributor's item list.
+ * active = items in the currently active sprint
+ */
+function buildContributorStats(items) {
+    const activeSprint = (UPDATE_DATA.metadata?.sprints || []).find(s => s.status === 'active')
+    const activeItems = activeSprint ? items.filter(i => i.sprintId === activeSprint.id) : []
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+
+    const pts       = activeItems.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const donePts   = activeItems.filter(i => i.status === 'done').reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const blocked   = activeItems.filter(i => i.status === 'blocked' || i.blocker).length
+    const overdue   = activeItems.filter(i => {
+        if (!i.due || i.status === 'done') return false
+        return new Date(i.due) < today
+    }).length
+    const pct = pts > 0 ? Math.round((donePts / pts) * 100) : 0
+
+    return { activeSprint, activeItems, pts, donePts, pct, blocked, overdue, total: items.length }
+}
+
+/**
+ * Builds a full contributor card (PM/Dev view).
+ */
+function buildContributorCard(name, items, stats, isOwn, canEdit) {
+    const colorClass = contributorColors[name] || 'bg-slate-100 text-slate-700'
+    const barColor   = stats.pct >= 80 ? 'bg-emerald-500' : stats.pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+    const statusOrder = ['blocked', 'now', 'qa', 'review', 'next', 'done', 'later']
+
+    // Sprint-scoped items grouped by status
+    const sprintGroups = statusOrder
+        .map(status => {
+            const bucket = stats.activeItems.filter(i => i.status === status)
+            if (!bucket.length) return ''
+            const badgeClass = statusConfig[status]?.class || 'bg-slate-100 text-slate-600'
+            const rows = bucket.map(item => `
+                <div class="group flex items-start gap-2 p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 transition-all cursor-pointer"
+                     onclick="${canEdit ? `openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex}, '${item.id}')` : ''}">
+                    <div class="flex-1 text-[11px] font-medium text-slate-600 group-hover:text-slate-900 leading-tight truncate" title="${item.text}">
+                        ${highlightSearch(item.text)}
+                    </div>
+                    ${item.storyPoints ? `<span class="text-[9px] font-black text-slate-400 shrink-0">${item.storyPoints}p</span>` : ''}
+                    ${item.priority === 'high' ? `<span class="text-[9px] font-black text-rose-500 shrink-0" title="High priority">!</span>` : ''}
+                    ${item.due && new Date(item.due) < new Date() && item.status !== 'done' ? `<span class="text-[9px] font-black text-orange-500 shrink-0" title="Overdue">⚠</span>` : ''}
+                </div>`).join('')
+            return `
+                <div class="mb-2">
+                    <div class="mb-1"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${badgeClass}">${status}</span></div>
+                    <div class="space-y-0.5 pl-1">${rows}</div>
+                </div>`
+        }).join('')
+
+    const ownRing = isOwn ? 'ring-2 ring-indigo-400 ring-offset-1' : ''
+
+    return `
+        <div class="contributor-compact-card bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${ownRing}">
+            <!-- Header -->
+            <div class="${colorClass} px-4 py-2.5 flex items-center justify-between border-b border-black/5">
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center text-[10px] font-black">${name.charAt(0)}</div>
+                    <span class="font-black text-sm">${name}</span>
+                    ${isOwn ? `<span class="text-[9px] font-black bg-black/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider">You</span>` : ''}
+                </div>
+                <span class="text-[10px] font-bold opacity-70">${stats.total} total</span>
+            </div>
+
+            <!-- Sprint stats bar -->
+            <div class="px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
+                ${stats.activeSprint ? `
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Active Sprint</span>
+                        <span class="text-[10px] font-black text-slate-700">${stats.donePts}/${stats.pts} pts · ${stats.pct}%</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden mb-2">
+                        <div class="${barColor} h-full rounded-full transition-all" style="width:${stats.pct}%"></div>
+                    </div>
+                    <div class="flex items-center gap-3 text-[9px] font-bold">
+                        <span class="text-slate-500">${stats.activeItems.length} items</span>
+                        ${stats.blocked > 0  ? `<span class="text-rose-600">⛔ ${stats.blocked} blocked</span>` : ''}
+                        ${stats.overdue > 0  ? `<span class="text-orange-600">⚠ ${stats.overdue} overdue</span>` : ''}
+                        ${stats.blocked === 0 && stats.overdue === 0 ? `<span class="text-emerald-600">✓ On track</span>` : ''}
+                    </div>
+                ` : `<div class="text-[10px] text-slate-400 italic">No active sprint</div>`}
+            </div>
+
+            <!-- Sprint items by status -->
+            <div class="p-3 space-y-0.5 bg-white max-h-72 overflow-y-auto">
+                ${sprintGroups || `<div class="text-[10px] text-slate-400 italic py-2 text-center">No items in active sprint</div>`}
+            </div>
+        </div>`
+}
+
+/**
+ * Builds a compact aggregate row for Exec view — no task details.
+ */
+function buildContributorExecRow(name, items, stats) {
+    const colorClass = contributorColors[name] || 'bg-slate-100 text-slate-700'
+    const barColor   = stats.pct >= 80 ? 'bg-emerald-500' : stats.pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+    return `
+        <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+            <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${colorClass}">
+                    <span class="w-4 h-4 rounded-full bg-black/10 flex items-center justify-center text-[9px] font-black">${name.charAt(0)}</span>
+                    ${name}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-center text-xs font-bold text-slate-700">${stats.activeItems.length}</td>
+            <td class="px-4 py-3">
+                <div class="flex items-center gap-2 justify-center">
+                    <div class="h-1.5 w-20 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="${barColor} h-full rounded-full" style="width:${stats.pct}%"></div>
+                    </div>
+                    <span class="text-xs font-black text-slate-700">${stats.pct}%</span>
+                </div>
+            </td>
+            <td class="px-4 py-3 text-center">
+                ${stats.blocked > 0
+                    ? `<span class="text-xs font-black text-rose-600">⛔ ${stats.blocked}</span>`
+                    : `<span class="text-xs text-emerald-600 font-bold">—</span>`}
+            </td>
+            <td class="px-4 py-3 text-center">
+                ${stats.overdue > 0
+                    ? `<span class="text-xs font-black text-orange-600">⚠ ${stats.overdue}</span>`
+                    : `<span class="text-xs text-emerald-600 font-bold">—</span>`}
+            </td>
+        </tr>`
+}
+
+function renderContributorView() {
+    const container = document.getElementById('contributor-view')
+    if (!container) return
+
+    const mode     = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const canEdit  = shouldShowManagement()
+    const map      = buildContributorMap()
+    const names    = Object.keys(map).sort((a, b) => map[b].length - map[a].length)
+
+    // Current user name for Dev persona "you" badge
+    const currentUser = (typeof window.CURRENT_USER !== 'undefined' && window.CURRENT_USER?.name)
+        ? window.CURRENT_USER.name
+        : null
+
+    const ribbon = `
         <div id="contributor-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">👥</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-medium text-slate-400">Delivery · Work distribution across team members</span>
+                    <span class="text-[10px] font-medium text-slate-400">Build · Team health — sprint workload &amp; blockers</span>
                     <h2 class="text-sm font-black text-slate-800">Contributor Workload</h2>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <div id="contributor-next-action-mount">
-                    ${renderPrimaryStageAction('contributor')}
+                    ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('contributor') : ''}
                 </div>
             </div>
-        </div>
-    `;
+        </div>`
 
-    UPDATE_DATA.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return;
-        track.subtracks.forEach((subtrack, si) => {
-            subtrack.items.forEach((item, ii) => {
-                if (!isItemMatchingTagFilter(item) || !isItemInDateRange(item) || !isItemInSearch(item)) return;
-                (item.contributors || []).forEach(name => {
-                    if (!contributors[name]) contributors[name] = [];
-                    contributors[name].push({ ...item, trackName: track.name, trackTheme: track.theme, trackIndex: ti, subtrackIndex: si, itemIndex: ii });
-                });
-            });
-        });
-    });
-
-    const sortedNames = Object.keys(contributors).sort((a, b) => contributors[b].length - contributors[a].length);
-    let html = ribbonHtml + '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">';
-
-    if (sortedNames.length === 0) {
-        container.innerHTML = ribbonHtml + '<div class="text-center py-20 text-slate-400">No contributors found for current filters.</div>';
-        return;
+    if (names.length === 0) {
+        container.innerHTML = ribbon + `<div class="text-center py-20 text-slate-400 text-sm">No contributors found for current filters.</div>`
+        return
     }
 
-    sortedNames.forEach(name => {
-        const items = contributors[name];
-        const statusOrder = ['done', 'now', 'next', 'later'];
-        const colorClass = contributorColors[name] || 'bg-slate-600';
-        const textColor = contributorColors[name] ? '' : 'text-white';
+    // ---- Exec: aggregate table only ----
+    if (mode === 'exec') {
+        const rows = names.map(name => {
+            const stats = buildContributorStats(map[name])
+            return buildContributorExecRow(name, map[name], stats)
+        }).join('')
 
-        html += `
-            <div class="contributor-compact-card bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div class="${colorClass} ${textColor} px-4 py-2.5 font-black text-sm flex items-center justify-between border-b">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">${name.charAt(0)}</div>
-                        ${name}
-                    </div>
-                    <span class="text-[10px] bg-white/10 px-1.5 py-0.5 rounded opacity-80 uppercase tracking-widest">${items.length} tasks</span>
-                </div>
-                <div class="p-2 space-y-3 bg-slate-50/30">`;
+        container.innerHTML = ribbon + `
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Contributor</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Sprint Items</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Completion</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Blocked</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Overdue</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>`
+        return
+    }
 
-        statusOrder.forEach(status => {
-            const statusItems = items.filter(i => i.status === status);
-            if (statusItems.length === 0) return;
+    // ---- Dev: own card first, others collapsed summary ----
+    // ---- PM:  all cards, full detail ----
+    let visibleNames = names
+    if (mode === 'dev' && currentUser) {
+        // Own card first, others after
+        visibleNames = [
+            ...(names.includes(currentUser) ? [currentUser] : []),
+            ...names.filter(n => n !== currentUser)
+        ]
+    }
 
-            const statusCfg = statusConfig[status] || { icon: '•', color: '#64748b' };
-            html += `
-                <div class="status-group mb-2 last:mb-0">
-                    <div class="text-[10px] font-semibold mb-2 px-2 py-0.5 flex items-center gap-2 w-fit -ml-2 border-l-4 rounded-r" style="color: ${statusCfg.color}; background: ${statusCfg.color}10; border-color: ${statusCfg.color};">
-                        ${status}
+    const cards = visibleNames.map(name => {
+        const stats = buildContributorStats(map[name])
+        const isOwn = name === currentUser
+
+        // Dev: render other contributors as compact read-only summary (no task list)
+        if (mode === 'dev' && !isOwn) {
+            const colorClass = contributorColors[name] || 'bg-slate-100 text-slate-700'
+            const barColor   = stats.pct >= 80 ? 'bg-emerald-500' : stats.pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+            return `
+                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm opacity-70">
+                    <div class="${colorClass} px-4 py-2.5 flex items-center justify-between border-b border-black/5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center text-[9px] font-black">${name.charAt(0)}</div>
+                            <span class="font-bold text-sm">${name}</span>
+                        </div>
+                        <span class="text-[9px] font-bold opacity-60">${stats.activeItems.length} items · ${stats.pct}%</span>
                     </div>
-                    <div class="space-y-0.5 px-1">
-                        ${statusItems.map(item => `
-                            <div oncontextmenu="window.currentContextItem={ti:${item.trackIndex},si:${item.subtrackIndex},ii:${item.itemIndex}}; return false;" class="group relative flex items-center gap-2 p-1.5 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white transition-all cursor-pointer" onclick="${shouldShowManagement() ? `openItemEdit(${item.trackIndex}, ${item.subtrackIndex}, ${item.itemIndex}, '${item.id}')` : ''}">
-                                <div class="flex-1 text-[11px] font-medium text-slate-600 group-hover:text-slate-900 truncate" title="${item.text}">
-                                    ${highlightSearch(item.text)}
-                                </div>
-                                ${item.priority === 'high' ? '<span class="text-[8px] text-red-500 font-black" title="High Priority">!</span>' : ''}
-                            </div>
-                        `).join('')}
+                    <div class="px-4 py-3 bg-slate-50/60">
+                        <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                            <div class="${barColor} h-full rounded-full" style="width:${stats.pct}%"></div>
+                        </div>
+                        <div class="flex gap-3 mt-1.5 text-[9px] font-bold">
+                            ${stats.blocked > 0 ? `<span class="text-rose-600">⛔ ${stats.blocked} blocked</span>` : ''}
+                            ${stats.overdue > 0 ? `<span class="text-orange-600">⚠ ${stats.overdue} overdue</span>` : ''}
+                            ${stats.blocked === 0 && stats.overdue === 0 ? `<span class="text-emerald-600">✓ On track</span>` : ''}
+                        </div>
                     </div>
-                </div>`;
-        });
-        html += `</div></div>`;
-    });
-    container.innerHTML = html + '</div>';
+                </div>`
+        }
+
+        return buildContributorCard(name, map[name], stats, isOwn, canEdit)
+    }).join('')
+
+    container.innerHTML = ribbon + `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${cards}</div>`
 }
 
 // ------ Backlog View ------
