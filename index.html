@@ -145,6 +145,23 @@
             <span style="font-size:16px">🧭</span> Guide Me
         </button>
 
+        <!-- Admin Panel Modal -->
+        <div id="admin-panel-modal" role="dialog" aria-label="Admin Panel"
+            onclick="if(event.target===this) closeAdminPanel()">
+            <div class="modal-inner" style="max-width:760px">
+                <div class="modal-header">
+                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">User & Grant Management</h2>
+                    <button onclick="closeAdminPanel()" aria-label="Close admin panel"
+                        class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <span class="text-2xl">&times;</span>
+                    </button>
+                </div>
+                <div id="admin-panel-body" class="modal-body" style="min-height:200px">
+                    <!-- Populated by openAdminPanel() -->
+                </div>
+            </div>
+        </div>
+
         <!-- CMS Modal -->
         <!-- CMS Modal -->
         <div id="cms-modal" role="dialog" class="hidden">
@@ -229,6 +246,8 @@
                                 <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
                                 <button onclick="openMetadataEdit()"
                                     class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Settings</button>
+                                <button id="admin-panel-btn" onclick="openAdminPanel()" style="display:none"
+                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-indigo-700 transition-all shadow-md">Admin</button>
                                 <button onclick="logoutCms()"
                                     class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Logout</button>
                             </div>

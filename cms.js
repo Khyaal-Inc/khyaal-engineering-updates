@@ -1274,6 +1274,11 @@ function authenticateCms() {
     document.getElementById('cms-auth-section').classList.add('hidden');
     document.getElementById('cms-actions-section').classList.remove('hidden');
 
+    // Show Admin button only if user has PM grant on any project
+    const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
+    const adminBtn = document.getElementById('admin-panel-btn')
+    if (adminBtn) adminBtn.style.display = isPm ? '' : 'none'
+
     initArchiveFilter();
 
     const currentView = document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'track';
@@ -4896,4 +4901,224 @@ function saveToLocalStorage() {
     const cacheKey = `khyaal_data_${window.ACTIVE_PROJECT_ID || 'default'}`
     localStorage.setItem(cacheKey, JSON.stringify(UPDATE_DATA));
     console.log('✅ Changes persisted silently to LocalStorage');
+}
+
+// ------ ADMIN PANEL (User & Grant Management) ------
+
+let _adminUsersData = null   // in-memory copy of users.json while panel is open
+let _adminUsersSha = null    // last-known SHA for optimistic lock
+
+async function openAdminPanel() {
+    const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
+    if (!isPm) { showToast('Admin access requires PM grant', 'error'); return }
+
+    const modal = document.getElementById('admin-panel-modal')
+    if (!modal) { console.error('❌ [admin] #admin-panel-modal not found'); return }
+
+    modal.classList.add('active')
+    document.body.style.overflow = 'hidden'
+    renderAdminPanel('<div class="text-slate-400 text-sm text-center py-8">Loading users…</div>')
+
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const res = await fetch(`${LAMBDA_URL}?action=read&projectId=default&filePath=users.json`, {
+            headers: { 'Authorization': `Bearer ${jwt}` }
+        })
+        if (!res.ok) throw new Error(`Read failed: ${res.status}`)
+        const { data, sha } = await res.json()
+        _adminUsersData = data
+        _adminUsersSha = sha || null
+        renderAdminPanel(buildAdminUsersTable())
+    } catch (err) {
+        console.error('❌ [admin] load users:', err)
+        renderAdminPanel(`<div class="text-red-500 text-sm text-center py-8">Failed to load users: ${err.message}</div>`)
+    }
+}
+
+function closeAdminPanel() {
+    const modal = document.getElementById('admin-panel-modal')
+    if (modal) modal.classList.remove('active')
+    document.body.style.overflow = ''
+    _adminUsersData = null
+    _adminUsersSha = null
+}
+
+function renderAdminPanel(bodyHtml) {
+    const el = document.getElementById('admin-panel-body')
+    if (el) el.innerHTML = bodyHtml
+}
+
+function buildAdminUsersTable() {
+    if (!_adminUsersData?.users?.length) {
+        return '<p class="text-slate-400 text-sm text-center py-8">No users found in users.json</p>'
+    }
+
+    const modeOptions = (currentMode) => ['pm', 'dev', 'exec'].map(m =>
+        `<option value="${m}" ${m === currentMode ? 'selected' : ''}>${m.toUpperCase()}</option>`
+    ).join('')
+
+    const projectOptions = (currentId) => (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering' }]).map(p =>
+        `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.name} (${p.id})</option>`
+    ).join('')
+
+    let html = `
+    <div class="overflow-x-auto">
+        <table class="w-full text-xs border-collapse">
+            <thead>
+                <tr class="border-b-2 border-slate-200">
+                    <th class="text-left py-2 px-3 font-black text-slate-600 uppercase tracking-wide">User</th>
+                    <th class="text-left py-2 px-3 font-black text-slate-600 uppercase tracking-wide">ID</th>
+                    <th class="text-left py-2 px-3 font-black text-slate-600 uppercase tracking-wide">Grants</th>
+                    <th class="text-left py-2 px-3 font-black text-slate-600 uppercase tracking-wide">Actions</th>
+                </tr>
+            </thead>
+            <tbody>`
+
+    _adminUsersData.users.forEach((user, ui) => {
+        const grantsHtml = user.grants.map((g, gi) => `
+            <div class="flex items-center gap-2 mb-1">
+                <select onchange="adminUpdateGrant(${ui}, ${gi}, 'projectId', this.value)"
+                    class="border border-slate-200 rounded px-1 py-0.5 text-xs bg-white">
+                    ${projectOptions(g.projectId)}
+                </select>
+                <select onchange="adminUpdateGrant(${ui}, ${gi}, 'mode', this.value)"
+                    class="border border-slate-200 rounded px-1 py-0.5 text-xs bg-white">
+                    ${modeOptions(g.mode)}
+                </select>
+                <button onclick="adminRemoveGrant(${ui}, ${gi})"
+                    aria-label="Remove grant"
+                    class="text-red-400 hover:text-red-600 font-black leading-none">✕</button>
+            </div>`
+        ).join('')
+
+        html += `
+            <tr class="border-b border-slate-100 align-top hover:bg-slate-50">
+                <td class="py-3 px-3 font-bold text-slate-800">${user.name || user.id}</td>
+                <td class="py-3 px-3 text-slate-500 font-mono">${user.id}</td>
+                <td class="py-3 px-3">
+                    ${grantsHtml || '<span class="text-slate-400 italic">No grants</span>'}
+                    <button onclick="adminAddGrant(${ui})"
+                        class="mt-1 text-indigo-600 hover:text-indigo-800 font-black text-xs">+ Add grant</button>
+                </td>
+                <td class="py-3 px-3">
+                    <button onclick="adminSetPassword(${ui})"
+                        class="text-slate-600 hover:text-slate-900 font-bold mr-2">Set PW</button>
+                    <button onclick="adminRemoveUser(${ui})"
+                        aria-label="Remove user ${user.id}"
+                        class="text-red-400 hover:text-red-600 font-bold">Remove</button>
+                </td>
+            </tr>`
+    })
+
+    html += `
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+        <button onclick="adminAddUser()"
+            class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all">
+            + Add User
+        </button>
+        <button onclick="adminSaveUsers()"
+            class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-indigo-700 transition-all shadow-md">
+            Save to GitHub
+        </button>
+    </div>`
+
+    return html
+}
+
+function adminUpdateGrant(userIndex, grantIndex, field, value) {
+    if (!_adminUsersData?.users[userIndex]?.grants[grantIndex]) return
+    _adminUsersData.users[userIndex].grants[grantIndex][field] = value
+}
+
+function adminRemoveGrant(userIndex, grantIndex) {
+    if (!_adminUsersData?.users[userIndex]) return
+    _adminUsersData.users[userIndex].grants.splice(grantIndex, 1)
+    renderAdminPanel(buildAdminUsersTable())
+}
+
+function adminAddGrant(userIndex) {
+    if (!_adminUsersData?.users[userIndex]) return
+    const firstProject = (window.PROJECT_REGISTRY || [])[0]?.id || 'default'
+    _adminUsersData.users[userIndex].grants.push({
+        projectId: firstProject,
+        name: (window.PROJECT_REGISTRY || [])[0]?.name || 'Khyaal Engineering',
+        mode: 'exec'
+    })
+    renderAdminPanel(buildAdminUsersTable())
+}
+
+function adminRemoveUser(userIndex) {
+    if (!_adminUsersData?.users[userIndex]) return
+    const user = _adminUsersData.users[userIndex]
+    if (!confirm(`Remove user "${user.name || user.id}"? This will revoke all their access.`)) return
+    _adminUsersData.users.splice(userIndex, 1)
+    renderAdminPanel(buildAdminUsersTable())
+}
+
+function adminAddUser() {
+    const id = prompt('Username (alphanumeric, no spaces):')?.trim().toLowerCase()
+    if (!id || !/^[a-z0-9_-]+$/.test(id)) { showToast('Invalid username', 'error'); return }
+    if (_adminUsersData.users.find(u => u.id === id)) { showToast('Username already exists', 'error'); return }
+
+    const name = prompt('Display name:')?.trim()
+    if (!name) return
+
+    const password = prompt('Initial password (will be SHA-256 hashed):')?.trim()
+    if (!password) return
+
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(password)).then(buf => {
+        const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+        _adminUsersData.users.push({ id, name, passwordHash: hash, grants: [] })
+        renderAdminPanel(buildAdminUsersTable())
+        showToast(`User "${name}" added — save to GitHub to persist`, 'info')
+    })
+}
+
+function adminSetPassword(userIndex) {
+    const user = _adminUsersData?.users[userIndex]
+    if (!user) return
+    const password = prompt(`New password for "${user.name || user.id}":`)?.trim()
+    if (!password) return
+
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(password)).then(buf => {
+        const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+        _adminUsersData.users[userIndex].passwordHash = hash
+        showToast('Password updated — save to GitHub to persist', 'info')
+    })
+}
+
+async function adminSaveUsers() {
+    if (!_adminUsersData) return
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    if (!jwt) { showToast('Not authenticated', 'error'); return }
+
+    window.isActionLockActive = true
+    try {
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(_adminUsersData, null, 2))))
+        const res = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                filePath: 'users.json',
+                content,
+                sha: _adminUsersSha || null,
+                message: 'chore: update users and grants via admin panel'
+            })
+        })
+        if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || `Save failed: ${res.status}`)
+        }
+        const { sha } = await res.json()
+        _adminUsersSha = sha
+        showToast('Users saved to GitHub', 'success')
+    } catch (err) {
+        console.error('❌ [admin] save users:', err)
+        showToast(`Save failed: ${err.message}`, 'error')
+    } finally {
+        window.isActionLockActive = false
+    }
 }

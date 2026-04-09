@@ -52,12 +52,21 @@ exports.handler = async (event) => {
             const claims = verifyJWT(getBearer(event))
             const projectId = qs.projectId || 'default'
             assertGrant(claims, projectId)
-            // Optional filePath for raw directory listings (e.g. archive/)
+            // Optional filePath: directory listings use raw helper (returns array);
+            // regular files use fetchFileWithSha to also return the blob SHA for optimistic locking
             if (qs.filePath) {
-                const listing = await fetchRawFromGitHub(token, qs.filePath)
+                const isDirectory = !qs.filePath.includes('.')
+                if (isDirectory) {
+                    const data = await fetchRawFromGitHub(token, qs.filePath)
+                    return {
+                        statusCode: 200, headers: resHeaders,
+                        body: JSON.stringify({ ok: true, data })
+                    }
+                }
+                const { data, sha } = await fetchFileWithSha(token, qs.filePath)
                 return {
                     statusCode: 200, headers: resHeaders,
-                    body: JSON.stringify({ ok: true, data: listing })
+                    body: JSON.stringify({ ok: true, data, sha })
                 }
             }
             const dataFile = projectId !== 'default' ? `data-${projectId}.json` : 'data.json'
@@ -71,19 +80,38 @@ exports.handler = async (event) => {
         // ── Action: write ────────────────────────────────────────────────
         if (action === 'write') {
             const claims = verifyJWT(getBearer(event))
-            const projectId = body.projectId || 'default'
+            const { content, sha, message, filePath: bodyFilePath, projectId: bodyProjectId } = body
+            if (!content || !message) {
+                return {
+                    statusCode: 400, headers: resHeaders,
+                    body: JSON.stringify({ error: 'content and message are required' })
+                }
+            }
+
+            // Admin file writes (users.json) require PM on any project — not scoped to projectId
+            const ADMIN_FILES = ['users.json']
+            if (bodyFilePath && ADMIN_FILES.includes(bodyFilePath)) {
+                const isPm = (claims.grants || []).some(g => g.mode === 'pm')
+                if (!isPm) {
+                    return {
+                        statusCode: 403, headers: resHeaders,
+                        body: JSON.stringify({ error: 'Admin file writes require PM grant' })
+                    }
+                }
+                const newSha = await writeToGitHub(token, bodyFilePath, content, message, sha || null)
+                return {
+                    statusCode: 200, headers: resHeaders,
+                    body: JSON.stringify({ ok: true, sha: newSha })
+                }
+            }
+
+            // Regular project data writes
+            const projectId = bodyProjectId || 'default'
             const grant = assertGrant(claims, projectId)
             if (grant.mode === 'exec') {
                 return {
                     statusCode: 403, headers: resHeaders,
                     body: JSON.stringify({ error: 'Exec mode cannot write' })
-                }
-            }
-            const { content, sha, message, filePath: bodyFilePath } = body
-            if (!content || !message) {
-                return {
-                    statusCode: 400, headers: resHeaders,
-                    body: JSON.stringify({ error: 'content and message are required' })
                 }
             }
             // filePath override allows archive writes; default to project data file
@@ -198,6 +226,38 @@ function fetchFromGitHub(token, path) {
             })
         })
 
+        req.on('error', (e) => reject(e))
+        req.end()
+    })
+}
+
+// Like fetchFromGitHub but also returns the blob SHA (needed for optimistic-lock writes)
+function fetchFileWithSha(token, path) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: 'api.github.com',
+            path: `/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+            method: 'GET',
+            headers: {
+                'Authorization': `token ${token}`,
+                'User-Agent': 'Khyaal-Auth-Proxy-Lambda',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        }
+        const req = https.request(options, (res) => {
+            let raw = ''
+            res.on('data', (chunk) => raw += chunk)
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(raw)
+                    if (res.statusCode !== 200) return reject(new Error(json.message || 'GitHub API returned ' + res.statusCode))
+                    const data = JSON.parse(Buffer.from(json.content, 'base64').toString('utf-8'))
+                    resolve({ data, sha: json.sha })
+                } catch (e) {
+                    reject(new Error('Failed to parse GitHub response: ' + e.message))
+                }
+            })
+        })
         req.on('error', (e) => reject(e))
         req.end()
     })
