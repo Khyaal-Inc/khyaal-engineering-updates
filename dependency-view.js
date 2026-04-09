@@ -2,7 +2,41 @@
 // SYSTEM O — Dependency Risk Radar
 // Enhanced dependency graph with critical path algorithm
 // ============================================================
-console.log('🕸️ dependency-view.js — System O loading...');
+console.log('🕸️ dependency-view.js — System O loading...')
+
+// ---- Cycle Detection ----
+// Returns array of cycles found (each cycle is an array of item IDs).
+// Uses DFS with colour-marking (white=unvisited, grey=in-stack, black=done).
+function detectCycles(itemMap, edges) {
+    const adj = {}
+    Object.keys(itemMap).forEach(id => { adj[id] = [] })
+    edges.forEach(e => { if (adj[e.from]) adj[e.from].push(e.to) })
+
+    const color = {}   // 0=white, 1=grey, 2=black
+    Object.keys(itemMap).forEach(id => { color[id] = 0 })
+    const cycles = []
+
+    function dfs(u, stack) {
+        color[u] = 1
+        stack.push(u)
+        ;(adj[u] || []).forEach(v => {
+            if (color[v] === 1) {
+                // Found back-edge u→v: extract cycle from stack
+                const idx = stack.indexOf(v)
+                if (idx !== -1) cycles.push(stack.slice(idx))
+            } else if (color[v] === 0) {
+                dfs(v, stack)
+            }
+        })
+        stack.pop()
+        color[u] = 2
+    }
+
+    Object.keys(itemMap).forEach(id => {
+        if (color[id] === 0) dfs(id, [])
+    })
+    return cycles
+}
 
 // ---- Critical Path Algorithm ----
 // Finds the longest dependency chain (most items in sequence)
@@ -98,27 +132,30 @@ function renderDependencyView() {
     if (!container) return
     _depNodeMap = {}
 
-    // Collect all items
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : ''
+
+    // Collect all items with track context
     const items = []
     const itemMap = {}
+    const itemTrackMap = {}   // itemId → trackName
 
-    UPDATE_DATA.tracks.forEach(track => {
+    ;(window.UPDATE_DATA?.tracks || []).forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 if (item.id) {
                     items.push(item)
                     itemMap[item.id] = item
+                    itemTrackMap[item.id] = track.name
                     _depNodeMap[toMermaidId(item.id)] = item.id
                 }
             })
         })
     })
 
-    // Build dependency graph
-    const edges = []
+    // Build full dependency graph
+    const allEdges = []
     const hasConnections = new Set()
-
-    // Collect blocker node IDs first so edge colouring covers all adjacent edges
     const blockerIds = new Set(items.filter(i => i.blocker || i.status === 'blocked').map(i => i.id))
 
     items.forEach(item => {
@@ -128,50 +165,88 @@ function renderDependencyView() {
                 if (itemMap[depId]) {
                     hasConnections.add(item.id)
                     hasConnections.add(depId)
-                    // Flag edge as blocker if either endpoint is a blocked item
-                    edges.push({
+                    allEdges.push({
                         from: depId,
                         to: item.id,
-                        isBlocker: blockerIds.has(item.id) || blockerIds.has(depId)
+                        isBlocker: blockerIds.has(item.id) || blockerIds.has(depId),
+                        fromTrack: itemTrackMap[depId],
+                        toTrack: itemTrackMap[item.id]
                     })
                 }
             })
         }
     })
 
-    const connectedItems = items.filter(i => hasConnections.has(i.id))
+    // Orphan blockers: blocker=true but no dependency edges (invisible to graph)
+    const orphanBlockers = items.filter(i =>
+        (i.blocker || i.status === 'blocked') && !hasConnections.has(i.id)
+    )
 
-    if (connectedItems.length === 0) {
-        container.innerHTML = `
-            <div id="dependency-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-3 px-2">
-                    <span class="text-xl">🕸️</span>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Visualize blockers and dependency chains</span>
-                        <h2 class="text-sm font-black text-slate-800">Dependency Risk Radar</h2>
-                    </div>
+    // ---- Persona filtering ----
+    let edges = allEdges
+    let connectedItems = items.filter(i => hasConnections.has(i.id))
+
+    if (mode === 'exec') {
+        // Exec: cross-team blockers only — edges where from and to are in different tracks
+        edges = allEdges.filter(e => e.fromTrack !== e.toTrack)
+        const crossIds = new Set(edges.flatMap(e => [e.from, e.to]))
+        connectedItems = items.filter(i => crossIds.has(i.id))
+    } else if (mode === 'dev' && currentUser) {
+        // Dev: items the current user contributed to, or is directly blocked by
+        const myItemIds = new Set(
+            items.filter(i => (i.contributors || []).includes(currentUser)).map(i => i.id)
+        )
+        // Include dependency neighbours of my items
+        const relevantIds = new Set(myItemIds)
+        allEdges.forEach(e => {
+            if (myItemIds.has(e.from)) relevantIds.add(e.to)
+            if (myItemIds.has(e.to))   relevantIds.add(e.from)
+        })
+        edges = allEdges.filter(e => relevantIds.has(e.from) && relevantIds.has(e.to))
+        connectedItems = items.filter(i => relevantIds.has(i.id) && hasConnections.has(i.id))
+    }
+
+    // ---- Ribbon ----
+    const ribbonHtml = `
+        <div id="dependency-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">🕸️</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · ${mode === 'exec' ? 'Cross-team blockers' : mode === 'dev' ? 'Your dependency chains' : 'Dependency Risk Radar — critical path analysis'}</span>
+                    <h2 class="text-sm font-black text-slate-800">Dependency Risk Radar</h2>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div id="dependency-next-action-mount">
-                        ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('dependency') : ''}
-                    </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('dependency') : ''}
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="dependency-next-action-mount">
+                    ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('dependency') : ''}
                 </div>
             </div>
-            ${typeof renderSmartEmptyState === 'function' ? renderSmartEmptyState('dependency') : `
+        </div>
+    `
+
+    if (connectedItems.length === 0 && orphanBlockers.length === 0) {
+        container.innerHTML = ribbonHtml + (typeof renderSmartEmptyState === 'function' ? renderSmartEmptyState('dependency') : `
             <div class="bg-white p-12 rounded-xl border border-slate-200 shadow-sm text-center">
                 <div class="text-6xl mb-4">🕸️</div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">No Dependencies Found</h3>
-                <p class="text-slate-600 mb-2">Add dependencies to items to see the dependency graph.</p>
-                <p class="text-sm text-slate-500">Tip: Open any item's edit modal and use the Dependencies field.</p>
-            </div>`}`;
+                <h3 class="text-xl font-bold text-slate-900 mb-2">${mode === 'dev' ? 'No dependency chains involve your tasks' : mode === 'exec' ? 'No cross-team blockers' : 'No Dependencies Found'}</h3>
+                <p class="text-slate-600 mb-2">${mode === 'pm' ? 'Add dependencies to items to see the dependency graph.' : ''}</p>
+            </div>`)
         return
     }
 
-    // ---- Compute critical path & risk metrics ----
-    const criticalPathIds = computeCriticalPath(
+    // ---- Cycle detection ----
+    const cycles = detectCycles(
         Object.fromEntries(connectedItems.map(i => [i.id, i])),
         edges
     )
+    const cycleNodeIds = new Set(cycles.flatMap(c => c))
+
+    // ---- Compute critical path & risk metrics ----
+    // Critical path is only meaningful on a DAG — skip if cycles exist
+    const criticalPathIds = cycles.length === 0
+        ? computeCriticalPath(Object.fromEntries(connectedItems.map(i => [i.id, i])), edges)
+        : []
     const criticalPathSet = new Set(criticalPathIds)
 
     const blockerEdges = edges.filter(e => e.isBlocker)
@@ -181,6 +256,23 @@ function renderDependencyView() {
     const riskScore = computeRiskScore(blockerEdges.length, criticalPathIds.length, edges.length)
     const riskColor = riskScore >= 60 ? '#ef4444' : riskScore >= 30 ? '#f59e0b' : '#22c55e'
     const riskLabel = riskScore >= 60 ? 'High Risk' : riskScore >= 30 ? 'Moderate' : 'Low Risk'
+
+    // ---- Cycle warning banner ----
+    const cycleWarningHtml = cycles.length > 0 ? `
+        <div style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;border-radius:12px;display:flex;align-items:flex-start;gap:10px;">
+            <span style="font-size:18px;flex-shrink:0;">⚠️</span>
+            <div>
+                <div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:4px;">${cycles.length} Circular Dependenc${cycles.length === 1 ? 'y' : 'ies'} Detected</div>
+                <div style="font-size:11px;color:#78350f;margin-bottom:6px;">Critical path analysis is disabled until cycles are resolved. Affected items:</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    ${[...cycleNodeIds].map(id => {
+                        const it = itemMap[id]
+                        return it ? `<span style="padding:2px 8px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:10px;font-weight:700;color:#92400e;">${it.text.substring(0,24)}${it.text.length>24?'…':''}</span>` : ''
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+    ` : ''
 
     // ---- Build Mermaid diagram ----
     let mermaidCode = 'graph TD\n'
@@ -275,23 +367,60 @@ function renderDependencyView() {
                 </div>`).join('')}
         </div>` : ''
 
+    // ---- Orphan blockers panel (blocker=true but no dependency edges) ----
+    const relevantOrphans = mode === 'dev' && currentUser
+        ? orphanBlockers.filter(i => (i.contributors || []).includes(currentUser))
+        : orphanBlockers
+    const orphanBlockerPanel = relevantOrphans.length > 0 ? `
+        <div style="margin-top:20px;">
+            <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+                Standalone Blockers <span style="font-weight:400;text-transform:none;letter-spacing:0;">(flagged blocked, no dependency edge)</span>
+            </div>
+            ${relevantOrphans.map(item => `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f97316;border-radius:8px;margin-bottom:6px;">
+                    <span style="font-size:16px;flex-shrink:0;">🟠</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:12px;font-weight:700;color:#7c2d12;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.text}</div>
+                        ${item.blockerNote ? `<div style="font-size:10px;color:#9a3412;margin-top:2px;font-style:italic;">"${item.blockerNote.substring(0,80)}"</div>` : ''}
+                        <div style="font-size:10px;color:#c2410c;margin-top:2px;">Track: ${itemTrackMap[item.id] || '—'}</div>
+                    </div>
+                    <button onclick="typeof resolveBlocker==='function'&&resolveBlocker('${item.id}')"
+                        style="flex-shrink:0;padding:4px 10px;background:#f97316;color:white;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;"
+                        aria-label="Resolve blocker: ${item.text}">
+                        Resolve
+                    </button>
+                </div>`).join('')}
+        </div>` : ''
+
+    // ---- Persona label in ribbon subtitle ----
+    const personaSubtitle = mode === 'exec'
+        ? 'Cross-team blockers only'
+        : mode === 'dev'
+            ? `Your dependency chains${currentUser ? ' · ' + currentUser : ''}`
+            : 'Dependency Risk Radar — critical path analysis'
+
     // ---- Final HTML ----
     container.innerHTML = `
         <div id="dependency-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🕸️</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · Dependency Risk Radar — critical path analysis</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery · ${personaSubtitle}</span>
                     <h2 class="text-sm font-black text-slate-800">Dependency Risk Radar</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('dependency') : ''}
             </div>
             <div class="flex items-center gap-3">
                 <!-- Risk Score Pill -->
+                ${connectedItems.length > 0 ? `
                 <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:${riskColor}15;border:1px solid ${riskColor}40;font-size:11px;font-weight:800;color:${riskColor};">
                     <span style="width:8px;height:8px;border-radius:50%;background:${riskColor};display:inline-block;"></span>
                     Risk Score ${riskScore} · ${riskLabel}
-                </div>
+                </div>` : ''}
+                ${cycles.length > 0 ? `
+                <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:#fffbeb;border:1px solid #fcd34d;font-size:11px;font-weight:800;color:#92400e;">
+                    ⚠️ ${cycles.length} Cycle${cycles.length !== 1 ? 's' : ''}
+                </div>` : ''}
                 <button onclick="exportDependencyGraph()" class="cms-btn cms-btn-secondary text-xs">📥 Export</button>
                 <div id="dependency-next-action-mount">
                     ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('dependency') : ''}
@@ -299,6 +428,9 @@ function renderDependencyView() {
             </div>
         </div>
 
+        ${cycleWarningHtml}
+
+        ${connectedItems.length > 0 ? `
         <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;">
             <!-- Left: Graph -->
             <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -315,7 +447,7 @@ function renderDependencyView() {
                         <span>···▶ blocker</span>
                     </div>
                 </div>
-                <p style="font-size:11px;color:#94a3b8;margin-bottom:12px;">${connectedItems.length} connected items · ${edges.length} dependencies · ${criticalPathIds.length} in critical chain</p>
+                <p style="font-size:11px;color:#94a3b8;margin-bottom:12px;">${connectedItems.length} connected items · ${edges.length} dependencies${cycles.length === 0 ? ` · ${criticalPathIds.length} in critical chain` : ' · ⚠️ cycles detected'}</p>
                 <style>
                     .mermaid svg { width: 100%; height: auto; min-width: 600px; max-width: none !important; }
                     #dependency-view svg g.node { cursor: pointer; }
@@ -336,11 +468,11 @@ function renderDependencyView() {
                     <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:8px;">Radar Summary</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
                         <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:8px;">
-                            <div style="font-size:22px;font-weight:900;color:${riskColor};">${riskScore}</div>
-                            <div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Risk Score</div>
+                            <div style="font-size:22px;font-weight:900;color:${riskColor};">${cycles.length > 0 ? '—' : riskScore}</div>
+                            <div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">${cycles.length > 0 ? 'Has Cycles' : 'Risk Score'}</div>
                         </div>
                         <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:8px;">
-                            <div style="font-size:22px;font-weight:900;color:#4f46e5;">${criticalPathIds.length}</div>
+                            <div style="font-size:22px;font-weight:900;color:#4f46e5;">${cycles.length > 0 ? '—' : criticalPathIds.length}</div>
                             <div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Chain Length</div>
                         </div>
                         <div style="text-align:center;padding:10px;background:#f8fafc;border-radius:8px;">
@@ -389,7 +521,9 @@ function renderDependencyView() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>` : ''}
+
+        ${orphanBlockerPanel}
     `
 
     // Initialize Mermaid then wire node click-through
@@ -471,6 +605,7 @@ function exportDependencyGraph() {
 
 // Expose computeCriticalPath as global helper (used by spec's data helpers)
 window.computeCriticalPath    = computeCriticalPath
+window.detectCycles           = detectCycles
 window.renderDependencyView   = renderDependencyView
 window.exportDependencyGraph  = exportDependencyGraph
 console.log('✅ dependency-view.js — System O (Dependency Risk Radar) active')

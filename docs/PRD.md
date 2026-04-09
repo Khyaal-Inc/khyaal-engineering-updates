@@ -241,6 +241,18 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F21 — Dependency View Enhancement (Cycle Detection, Persona Gating, Orphan Blockers) ✅ Shipped
+
+- `dependency-view.js` — 1 new algorithm function added; `renderDependencyView()` updated with persona branching
+- **Cycle detection** (`detectCycles`): DFS colour-marking (white/grey/black) finds all circular dependency chains. If any cycle is found: a yellow warning banner lists all affected items, critical path analysis is suppressed (showing `—` in summary cards rather than misleading data), and an amber "N Cycles" pill appears in the ribbon
+- **Persona gating** — three distinct views from the same data:
+  - **PM** (unchanged): full graph, all connected items, full risk score + critical chain
+  - **Dev**: graph scoped to items the current user contributed to, plus their immediate dependency neighbours; ribbon subtitle shows dev's name
+  - **Exec**: cross-team blockers only — edges where `fromTrack !== toTrack`; ribbon subtitle reads "Cross-team blockers only"; empty state shows "No cross-team blockers"
+- **Orphan blockers panel**: items with `blocker: true` but no dependency edges were previously invisible (graph only shows connected items). A new "Standalone Blockers" section below the graph shows these with a Resolve button; Dev persona filters this list to their own orphan blockers; each card shows track name + blocker note
+- Risk score pill in ribbon hidden when no connected items exist (avoids showing "0 · Low Risk" when only orphan blockers are present)
+- `detectCycles` exported as `window.detectCycles`
+
 #### F20 — Roadmap View Enhancement (Epic-Centric, OKR Trace, Horizon Reassignment) ✅ Shipped
 
 - `renderRoadmapView()` in `views.js` fully rewritten — epic-centric layout replaces flat item list
