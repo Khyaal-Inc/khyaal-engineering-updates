@@ -1274,6 +1274,8 @@ function authenticateCms() {
     document.getElementById('cms-auth-section').classList.add('hidden');
     document.getElementById('cms-actions-section').classList.remove('hidden');
 
+    initArchiveFilter();
+
     const currentView = document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'track';
     if (typeof switchView === 'function') switchView(currentView);
 }
