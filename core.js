@@ -555,9 +555,75 @@ function cmdScore(text, query) {
     return 100 - idx + wordStart
 }
 
+// Score an item across multiple fields; returns best score across all fields
+function cmdScoreItem(item, query) {
+    if (!query) return 1
+    const fields = [
+        item.text || '',
+        item.usecase || '',
+        item.acceptanceCriteria || '',
+        ...(Array.isArray(item.tags) ? item.tags : []),
+        ...(Array.isArray(item.contributors) ? item.contributors : [])
+    ]
+    const scores = fields.map(f => cmdScore(f, query)).filter(s => s >= 0)
+    return scores.length > 0 ? Math.max(...scores) : -1
+}
+
+// ---- Recent items (last 5 item IDs opened via palette) ----
+const _RECENT_KEY = 'khyaal_cmd_recent'
+
+function getCmdRecent() {
+    try { return JSON.parse(localStorage.getItem(_RECENT_KEY) || '[]') } catch { return [] }
+}
+
+function pushCmdRecent(itemId) {
+    const prev = getCmdRecent().filter(id => id !== itemId)
+    localStorage.setItem(_RECENT_KEY, JSON.stringify([itemId, ...prev].slice(0, 5)))
+}
+
+// ---- Action command corpus (triggered by leading '>') ----
+function buildActionCorpus(actionQuery) {
+    const data = window.UPDATE_DATA
+    const actions = [
+        { label: 'New Epic',          sub: 'Open the create-epic form',          icon: '🌟', action: () => { if (typeof openEpicEdit === 'function') openEpicEdit(null); switchView('epics') } },
+        { label: 'New Sprint',        sub: 'Open the create-sprint form',         icon: '⚡', action: () => { if (typeof openSprintEdit === 'function') openSprintEdit(); switchView('sprint') } },
+        { label: 'New Release',       sub: 'Open the create-release form',        icon: '🚀', action: () => { if (typeof openReleaseEdit === 'function') openReleaseEdit(); switchView('releases') } },
+        { label: 'New Roadmap Item',  sub: 'Open the create-roadmap-item form',   icon: '🗺️', action: () => { if (typeof openRoadmapEdit === 'function') openRoadmapEdit(); switchView('roadmap') } },
+        { label: 'Advance Horizons',  sub: 'Shift all roadmap horizons forward',  icon: '⏩', action: () => { if (typeof advanceRoadmapHorizons === 'function') advanceRoadmapHorizons() } },
+        { label: 'Switch to PM',      sub: 'Change persona to Product Manager',   icon: '📋', action: () => { if (typeof switchMode === 'function') switchMode('pm') } },
+        { label: 'Switch to Dev',     sub: 'Change persona to Developer',         icon: '💻', action: () => { if (typeof switchMode === 'function') switchMode('dev') } },
+        { label: 'Switch to Exec',    sub: 'Change persona to Executive',         icon: '📊', action: () => { if (typeof switchMode === 'function') switchMode('exec') } },
+        { label: 'Refresh Data',      sub: 'Clear cache and reload from GitHub',  icon: '🔄', action: () => { localStorage.removeItem('khyaal_data'); location.reload() } },
+    ]
+
+    // Dynamic: active sprint close
+    if (data) {
+        const activeSprint = (data.metadata?.sprints || []).find(s => s.status === 'active')
+        if (activeSprint) {
+            actions.push({
+                label: `Close Sprint: ${activeSprint.name || activeSprint.id}`,
+                sub: 'Open sprint close ceremony',
+                icon: '🏁',
+                action: () => { if (typeof renderSprintCloseModal === 'function') renderSprintCloseModal(activeSprint.id); switchView('sprint') }
+            })
+        }
+    }
+
+    return actions
+        .map(a => ({ ...a, score: cmdScore(a.label, actionQuery) }))
+        .filter(a => !actionQuery || a.score >= 0)
+        .sort((a, b) => b.score - a.score)
+        .map(a => ({ type: 'action', icon: a.icon, title: a.label, sub: a.sub, badge: 'Action', action: a.action }))
+}
+
 function buildCmdCorpus(query) {
     const results = []
-    const q = query.toLowerCase()
+
+    // ── Action mode: leading '>' ───────────────────────────────────────────
+    if (query.startsWith('>')) {
+        const actionQuery = query.slice(1).trim()
+        return buildActionCorpus(actionQuery)
+    }
 
     // ── Views ─────────────────────────────────────────────────────────────
     const matchedViews = CMD_VIEWS
@@ -577,13 +643,38 @@ function buildCmdCorpus(query) {
 
     if (!window.UPDATE_DATA) return results
 
+    // ── Recent items (shown on empty query) ────────────────────────────────
+    if (!query) {
+        const recentIds = getCmdRecent()
+        const allItems = (UPDATE_DATA.tracks || []).flatMap(track =>
+            track.subtracks.flatMap(sub => sub.items.map(item => ({ item, track, sub })))
+        )
+        recentIds.forEach(id => {
+            const found = allItems.find(({ item }) => item.id === id)
+            if (!found) return
+            const { item, track, sub } = found
+            results.push({
+                type: 'recent',
+                icon: '🕐',
+                title: item.text || item.id,
+                sub: `${track.name} › ${sub.name}  ·  ${item.status || ''}`,
+                badge: item.priority || '',
+                action: () => {
+                    pushCmdRecent(item.id)
+                    if (typeof openItemEdit === 'function') openItemEdit(null, null, null, item.id)
+                }
+            })
+        })
+        return results
+    }
+
     // ── Items ──────────────────────────────────────────────────────────────
     if (query) {
         const itemMatches = []
         ;(UPDATE_DATA.tracks || []).forEach(track => {
             track.subtracks.forEach(sub => {
                 sub.items.forEach(item => {
-                    const score = cmdScore(item.text || '', query)
+                    const score = cmdScoreItem(item, query)
                     if (score >= 0) itemMatches.push({ item, track, sub, score })
                 })
             })
@@ -596,6 +687,7 @@ function buildCmdCorpus(query) {
                 sub: `${track.name} › ${sub.name}  ·  ${item.status || ''}`,
                 badge: item.priority || '',
                 action: () => {
+                    pushCmdRecent(item.id)
                     if (typeof openItemEdit === 'function') openItemEdit(null, null, null, item.id)
                 }
             })
@@ -686,7 +778,12 @@ function buildCmdCorpus(query) {
 function renderCmdPaletteResults(query) {
     _cmdPaletteResults = buildCmdCorpus(query)
     const container = document.getElementById('cmd-palette-results')
+    const icon = document.getElementById('cmd-palette-icon')
     if (!container) return
+
+    // Update search icon to signal mode
+    const isActionMode = query.startsWith('>')
+    if (icon) icon.textContent = isActionMode ? '⚡' : '⌘'
 
     if (!_cmdPaletteResults.length) {
         container.innerHTML = ''  // :empty pseudo triggers "No results"
@@ -694,9 +791,9 @@ function renderCmdPaletteResults(query) {
     }
 
     // Group by type for visual separation
-    const typeOrder = ['view', 'item', 'epic', 'okr', 'sprint', 'release']
-    const typeLabel = { view: 'Views', item: 'Items', epic: 'Epics', okr: 'OKRs', sprint: 'Sprints', release: 'Releases' }
-    const iconClass = { view: 'cp-icon-view', item: 'cp-icon-item', epic: 'cp-icon-epic', okr: 'cp-icon-okr', sprint: 'cp-icon-sprint', release: 'cp-icon-release' }
+    const typeOrder = ['action', 'recent', 'view', 'item', 'epic', 'okr', 'sprint', 'release']
+    const typeLabel  = { action: 'Actions', recent: 'Recently Opened', view: 'Views', item: 'Items', epic: 'Epics', okr: 'OKRs', sprint: 'Sprints', release: 'Releases' }
+    const iconClass  = { action: 'cp-icon-action', recent: 'cp-icon-recent', view: 'cp-icon-view', item: 'cp-icon-item', epic: 'cp-icon-epic', okr: 'cp-icon-okr', sprint: 'cp-icon-sprint', release: 'cp-icon-release' }
 
     let html = ''
     let flatIndex = 0
@@ -721,7 +818,10 @@ function renderCmdPaletteResults(query) {
         })
     })
 
-    html += `<div class="cp-kbd">↑↓ navigate &nbsp;·&nbsp; ↵ open &nbsp;·&nbsp; esc close</div>`
+    const hint = isActionMode
+        ? `↑↓ navigate &nbsp;·&nbsp; ↵ execute &nbsp;·&nbsp; esc close`
+        : `↑↓ navigate &nbsp;·&nbsp; ↵ open &nbsp;·&nbsp; esc close &nbsp;·&nbsp; <kbd>&gt;</kbd> for actions`
+    html += `<div class="cp-kbd">${hint}</div>`
     container.innerHTML = html
 }
 

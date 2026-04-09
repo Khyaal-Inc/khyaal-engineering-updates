@@ -1093,6 +1093,8 @@ summary::-webkit-details-marker {
 .cp-result-icon.cp-icon-okr     { background: #dcfce7; border-color: #86efac; }
 .cp-result-icon.cp-icon-sprint  { background: #fef9c3; border-color: #fde047; }
 .cp-result-icon.cp-icon-release { background: #ffedd5; border-color: #fdba74; }
+.cp-result-icon.cp-icon-action  { background: #fef3c7; border-color: #fbbf24; }
+.cp-result-icon.cp-icon-recent  { background: #f0f9ff; border-color: #7dd3fc; }
 .cp-result-body { flex: 1; min-width: 0; }
 .cp-result-title {
     font-size: 0.82rem;

@@ -241,6 +241,24 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F22 — Command Palette Enhancement (Action Mode, Recent Items, Broad Search) ✅ Shipped
+
+- `core.js` — 3 new functions added; `buildCmdCorpus`, `renderCmdPaletteResults`, `onCmdPaletteInput` updated; no new files
+- `index.html` — placeholder text updated to advertise `>` shortcut
+- `styles.css` — 2 new icon colour classes (`cp-icon-action`, `cp-icon-recent`)
+
+**`>` action command mode**: typing `>` as the first character switches the palette into action mode (icon changes from `⌘` to `⚡`). The action corpus (`buildActionCorpus`) contains:
+  - Static commands: New Epic, New Sprint, New Release, New Roadmap Item, Advance Horizons, Switch to PM/Dev/Exec, Refresh Data
+  - Dynamic command: "Close Sprint: `<name>`" — only shown if an active sprint exists
+  - All commands fuzzy-filtered by the text after `>` (e.g. `> sprint` shows New Sprint + Close Sprint)
+  - Footer hint reads "↵ execute" instead of "↵ open" in action mode
+
+**Recent items**: opening the palette with an empty query now shows a "Recently Opened" section (last 5 items opened via the palette, stored in `localStorage['khyaal_cmd_recent']`). Every item result execution calls `pushCmdRecent(itemId)` to update the list. On empty query, `buildCmdCorpus` returns early after views + recents — no spurious empty-query item searches.
+
+**Broader item search** (`cmdScoreItem`): item matches now score against `text`, `usecase`, `acceptanceCriteria`, all `tags[]`, and all `contributors[]`. Best score across all fields is used — a search for a contributor name or tag now surfaces matching items.
+
+**Type ordering in results**: `action → recent → view → item → epic → okr → sprint → release`
+
 #### F21 — Dependency View Enhancement (Cycle Detection, Persona Gating, Orphan Blockers) ✅ Shipped
 
 - `dependency-view.js` — 1 new algorithm function added; `renderDependencyView()` updated with persona branching
