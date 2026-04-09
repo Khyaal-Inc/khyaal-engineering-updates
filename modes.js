@@ -259,6 +259,21 @@ function switchMode(mode, stayInModal = false) {
         return;
     }
 
+    // Grant ceiling: block if user lacks permission for this mode on the active project
+    if (window.CURRENT_USER && window.ACTIVE_PROJECT_ID) {
+        const grant = (window.CURRENT_USER.grants || []).find(g => g.projectId === window.ACTIVE_PROJECT_ID)
+        if (grant) {
+            const modeOrder = { pm: 3, dev: 2, exec: 1 }
+            const grantLevel = modeOrder[grant.mode] || 0
+            const requestedLevel = modeOrder[mode] || 0
+            if (requestedLevel > grantLevel) {
+                if (typeof showToast === 'function')
+                    showToast(`Access limited to ${grant.mode.toUpperCase()} mode for this project`, 'error')
+                return
+            }
+        }
+    }
+
     currentMode = mode;
     localStorage.setItem('khyaal_mode', mode);
 
@@ -338,13 +353,22 @@ function renderModeSwitcher() {
         { key: 'exec', label: 'Exec', icon: '👔',  title: 'Executive — OKRs, metrics, release health' }
     ];
 
+    const grant = (window.CURRENT_USER && window.ACTIVE_PROJECT_ID)
+        ? (window.CURRENT_USER.grants || []).find(g => g.projectId === window.ACTIVE_PROJECT_ID)
+        : null
+    const modeOrder = { pm: 3, dev: 2, exec: 1 }
+    const grantLevel = grant ? (modeOrder[grant.mode] || 3) : 3  // no restriction if no user yet
+
     container.innerHTML = `<div class="mode-seg-control" role="group" aria-label="Persona mode">
-        ${modes.map(m => `<button onclick="switchMode('${m.key}')"
-            class="mode-seg-btn ${currentMode === m.key ? 'mode-seg-active' : ''}"
-            title="${m.title}"
-            aria-pressed="${currentMode === m.key}">
-            <span>${m.icon}</span><span class="mode-seg-label">${m.label}</span>
-        </button>`).join('')}
+        ${modes.map(m => {
+            const allowed = (modeOrder[m.key] || 0) <= grantLevel
+            return `<button ${allowed ? `onclick="switchMode('${m.key}')"` : 'disabled'}
+                class="mode-seg-btn ${currentMode === m.key ? 'mode-seg-active' : ''} ${!allowed ? 'opacity-40 cursor-not-allowed' : ''}"
+                title="${allowed ? m.title : `Requires ${m.key.toUpperCase()} grant for this project`}"
+                aria-pressed="${currentMode === m.key}">
+                <span>${m.icon}</span><span class="mode-seg-label">${m.label}</span>
+            </button>`
+        }).join('')}
     </div>`;
 }
 

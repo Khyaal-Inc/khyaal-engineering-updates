@@ -58,56 +58,129 @@ The backend (Lambda) adopts a serverless routing model, extended to accept `proj
 
 ---
 
-## 4. Multi-Project Architecture (Primary Decision)
+## 4. Multi-Project + Role-Based Auth Architecture (Primary Decision)
+
+### Confirmed organisational model
+
+**Hierarchy: Team (Org) → Projects → Tracks (view filters)**
+
+Tracks remain view-level filters within a Project — no separate data files per Track. Each Project has full data isolation via its own `data-{projectId}.json` file on GitHub.
 
 ### Current state
 
-All data is global. Tracks are a flat filter layer — they label items but do not isolate them. `data.json` is the single source of truth for all views, all personas, all teams.
+All data is global. One shared password grants full access. No user identity. `data.json` is the single source of truth for every view, every persona.
 
 ### Target state
 
 ```
-Project Switcher (header dropdown)
-    ├── Project A  →  data-proj-a.json  →  Tracks: iOS / Android
-    └── Project B  →  data-proj-b.json  →  Tracks: Frontend / Backend
-                             ↓
-                  All 19 views filtered by active Project + Track
+Khyaal (Team / Org)
+├── Platform Project       → data-platform.json
+│   ├── Track: Website     ─┐
+│   ├── Track: Mobile       ├── view filters only (no data isolation)
+│   └── Track: Backend     ─┘
+└── AI Agent Project       → data-ai-agent.json
+    ├── Track: Sales Agent ─┐
+    └── Track: Rec Engine  ─┘ view filters only
+
+User "Gautam"  → grants: [{ projectId: 'platform', mode: 'pm' }, { projectId: 'ai-agent', mode: 'exec' }]
+User "Priya"   → grants: [{ projectId: 'platform', mode: 'dev' }]
+User "CEO"     → grants: [{ projectId: 'platform', mode: 'exec' }, { projectId: 'ai-agent', mode: 'exec' }]
 ```
 
-### Data model
+### Data files on GitHub
+
+```
+data.json                ← legacy (projectId: 'default') — kept for backward compatibility
+data-platform.json       ← Platform Project
+data-ai-agent.json       ← AI Agent Project
+users.json               ← User registry (admin-managed, never in browser localStorage)
+```
+
+### User and grant data model
 
 ```json
-Project {
-  "id": "proj-a",
-  "name": "iOS Platform",
-  "tracks": ["iOS", "Android"],
-  "members": ["gautam", "priya"],
-  "createdAt": "2026-04-09"
+// users.json — stored on GitHub, read by Lambda on every auth request
+{
+  "users": [
+    {
+      "id": "gautam",
+      "name": "Gautam",
+      "passwordHash": "<sha256 of their password>",
+      "grants": [
+        { "projectId": "platform", "mode": "pm" },
+        { "projectId": "ai-agent", "mode": "exec" }
+      ]
+    },
+    {
+      "id": "priya",
+      "name": "Priya",
+      "passwordHash": "<sha256>",
+      "grants": [
+        { "projectId": "platform", "mode": "dev" }
+      ]
+    }
+  ]
 }
 ```
 
-All entities (`items`, `epics`, `sprints`, `okrs`, `releases`) gain a `projectId` field. Lambda resolves `data-{projectId}.json` from the `projectId` query param on every read/write request.
+**Grant semantics:**
+- A grant gives access to exactly one project at exactly one maximum mode
+- The persona switcher in the UI disables modes above the user's grant level for the active project
+- A user with no grant for a project cannot see it in the Project Switcher
+- The admin (any user with `mode: 'pm'` on the admin-designated project) can edit `users.json` via a dedicated admin CMS panel
 
-### Lambda routing change (pseudocode)
+### JWT payload (issued by Lambda on successful auth)
 
-```javascript
-// auth_gatekeeper.js — additive change only
-const projectId = event.queryStringParameters?.projectId || 'default'
-const dataFile = `data-${projectId}.json`
-// read: GET /repos/{owner}/{repo}/contents/{dataFile}
-// write: PUT /repos/{owner}/{repo}/contents/{dataFile}
+```json
+{
+  "userId": "gautam",
+  "name": "Gautam",
+  "grants": [
+    { "projectId": "platform", "mode": "pm" },
+    { "projectId": "ai-agent", "mode": "exec" }
+  ],
+  "iat": 1712620800,
+  "exp": 1712707200
+}
 ```
 
-### File ownership post-multi-project
+Lambda validates the JWT on every request and checks `grants[]` before touching any data file.
 
-| File | Change required | Scope |
-|------|----------------|-------|
-| `auth_gatekeeper.js` (Lambda) | Accept `projectId` param; resolve correct JSON file | Backend |
-| `app.js` — `normalizeData()` | Scope all entity IDs to active project; add `projectId` field on load | Data layer |
-| `cms.js` | Include `projectId` in all read/write payloads; route Lambda calls with `?projectId=` | CMS layer |
-| `workflow-nav.js` | Store active `projectId` in state; persist across view changes; render project switcher | Navigation |
-| `modes.js` | Per-project persona state (PM for Project A may be Dev for Project B) | Persona layer |
-| `core.js` | Add `ACTIVE_PROJECT_ID` constant; expose `switchProject()` helper | Constants |
+### Lambda routing (updated auth_gatekeeper.js)
+
+```javascript
+// Action: 'auth' — validate user, issue JWT with grants
+const { username, passwordHash } = body
+const users = await fetchFromGitHub(token, 'users.json')
+const user = users.users.find(u => u.id === username && u.passwordHash === passwordHash)
+if (!user) return { statusCode: 401, ... }
+const jwt = signJWT({ userId: user.id, name: user.name, grants: user.grants })
+return { authenticated: true, token: jwt }
+
+// Action: 'read' — validate grant then fetch project file
+const projectId = queryParams.projectId || 'default'
+const grant = jwt.grants.find(g => g.projectId === projectId)
+if (!grant) return { statusCode: 403, body: 'No access to this project' }
+const dataFile = projectId === 'default' ? 'data.json' : `data-${projectId}.json`
+return fetchFromGitHub(token, dataFile)
+
+// Action: 'write' — validate grant + assert pm/dev mode, then write
+if (!grant || grant.mode === 'exec') return { statusCode: 403, body: 'Write not permitted' }
+// ... write data-{projectId}.json
+```
+
+### File ownership changes
+
+| File | Change required | Scope | Phase |
+|------|----------------|-------|-------|
+| `auth_gatekeeper.js` | User lookup in `users.json`; JWT with `grants[]`; per-request grant validation | Backend | ✅ |
+| `core.js` | `ACTIVE_PROJECT_ID`, `PROJECT_REGISTRY`, `CURRENT_USER` globals; `switchProject()` | Constants | ✅ |
+| `app.js` — `normalizeData()` | Stamp `projectId` on all entities; enforce max-mode from JWT grant | Data layer | ✅ |
+| `cms.js` | All reads/writes include `?projectId=`; localStorage scoped by projectId | CMS layer | ✅ |
+| `workflow-nav.js` | Project Switcher shows only granted projects; enforce mode on switch | Navigation | ✅ |
+| `modes.js` | Disable persona switcher options above grant's `mode` for active project | Persona layer | ✅ |
+| `users.json` | User registry with `name` on each grant for human-readable project switcher labels | Data | ✅ |
+| `index.html` — `initLocalLoad()` | Guard pre-auth fast-render to default project only; fix non-default project boot path | Boot | ✅ |
 
 ---
 
@@ -116,35 +189,42 @@ const dataFile = `data-${projectId}.json`
 ### Positive
 
 - **Zero infra overhead** — no new AWS services; Lambda free tier handles the load
-- **Auditability by default** — every project's data is a separate git-tracked file; full history without extra tooling
+- **Auditability by default** — every project's data and `users.json` are git-tracked; full history without extra tooling
 - **Reversible isolation** — projects can be merged, archived, or forked via git; no database migrations
 - **Team velocity preserved** — no framework migration, no new language, no CI/CD pipeline required
 - **Cost predictability** — GitHub Pages ($0) + Lambda ($0 at internal scale) + GitHub API (free for private repos within rate limits)
+- **Role enforcement at JWT level** — Lambda validates grants on every request; frontend persona enforcement is defence-in-depth on top
 
 ### Negative
 
-- **Last-write-wins conflict model** — two users editing the same project simultaneously will overwrite each other's changes. No merge strategy exists. Mitigation: document the constraint; add optimistic lock warning toast (check last-commit timestamp before write).
-- **No real-time collaboration** — not a push-based system; data is stale between page loads. Acceptable for internal async PM workflow.
-- **No per-project auth today** — the Lambda password gate is global; all users who know the password can access all projects. Per-project access control requires a more complex auth model (ADR for future sprint).
-- **GitHub API rate limits** — 5,000 req/hr for authenticated requests. At internal scale with ~5 users, this is not a concern today. Monitor if team grows beyond 20 active users.
-- **Data grows linearly with projects** — each project adds one JSON file to the repo. No pagination or archival strategy exists. Acceptable up to ~50 projects; beyond that, a separate data store should be evaluated.
+- **`users.json` is a single point of auth failure** — if corrupted or deleted, no one can log in. Mitigation: keep a local backup of `users.json`; Lambda returns a clear 500 with a diagnostic message if the file is missing.
+- **Last-write-wins conflict model** — two users editing the same project simultaneously overwrite each other. Mitigation: optimistic lock (SHA check before write); show warning toast if SHA changed.
+- **No real-time collaboration** — pull-based system; data is stale between page loads. Acceptable for internal async PM workflow.
+- **GitHub API rate limits** — 5,000 req/hr for authenticated requests. Not a concern at ≤20 users. Each auth call reads `users.json` + the project data file = 2 requests per login. Monitor if team grows.
+- **Data grows linearly with projects** — each project adds one JSON file. Acceptable up to ~50 projects.
+- **Admin user management requires `users.json` edit or admin CMS panel** — no self-serve password reset today.
 
 ---
 
 ## 6. Risks & Mitigations
 
-| # | Risk | Severity | Likelihood | Mitigation | Effort |
-|---|------|----------|-----------|------------|--------|
-| 1 | **Concurrent edit collision** — two users save simultaneously, one overwrites the other | High | Medium | Add optimistic lock: compare `last-commit SHA` before write; show warning toast if SHA has changed since page load | M |
-| 2 | **Lambda cold start latency** — first request after idle takes 1–3s | Low | High | Acceptable at internal scale; add CloudWatch alarm if P95 > 5s; consider provisioned concurrency if UX degrades | S |
-| 3 | **GitHub API rate limit hit** — automated or bulk operations exhaust 5k req/hr | Medium | Low | Add rate limit header check in Lambda response; surface remaining quota in CMS debug mode | S |
-| 4 | **`normalizeData()` scope creep** — adding `projectId` to all entities without migration breaks existing `data.json` | High | High | Write a one-time migration script to add `projectId: 'default'` to all existing entities before deploying multi-project Lambda; test on a data.json snapshot | M |
-| 5 | **Accidental cross-project data bleed** — a bug in `cms.js` writes an item to the wrong project file | High | Low | Add `projectId` assertion in Lambda before every write: reject if payload `projectId` !== URL param `projectId` | S |
-| 6 | **No per-project access control** — global password grants access to all projects | Medium | Medium | Short-term: document constraint; warn in project switcher UI. Long-term: add per-project token or JWT claim. ADR for future sprint | L |
-| 7 | **Stale data after project switch** — `UPDATE_DATA` in memory reflects previous project | Medium | High | Clear `UPDATE_DATA` on `switchProject()`; force `normalizeData()` + `renderDashboard()` call; show loading state during fetch | S |
-| 8 | **CDN version drift** — unpinned Tailwind CDN (`cdn.tailwindcss.com`) ships a breaking change | Low | Low | Pin to a specific Tailwind CDN version (e.g., `cdn.tailwindcss.com/3.4.1`); add to TECH_STACK.md as a maintenance reminder | S |
+| # | Risk | Severity | Likelihood | Mitigation | Effort | Phase |
+|---|------|----------|-----------|------------|--------|-------|
+| 1 | **Concurrent edit collision** — two users save simultaneously, one overwrites the other | High | Medium | Optimistic lock: compare `last-commit SHA` before write; show warning toast if SHA changed | M | 1 |
+| 2 | **`users.json` corruption or deletion** — no one can log in | High | Low | Keep a local backup; Lambda returns `503` with a clear diagnostic if file is missing; add CloudWatch alarm on 5xx spike | S | 2 |
+| 3 | **JWT grant bypass from client** — a user manually upgrades their JWT mode in localStorage | High | Low | Lambda validates grants on every request server-side; client persona state is display-only | S | 2 |
+| 4 | **Accidental cross-project data bleed** — `cms.js` writes an item to the wrong project file | High | Low | Lambda asserts: `payload.projectId === queryParam.projectId`; reject with 400 if mismatch | S | 2 |
+| 5 | **`normalizeData()` migration** — adding `projectId` without migrating existing `data.json` breaks entity lookups | High | High | `normalizeData()` stamps `projectId: 'default'` on entities that lack it (idempotent, already implemented in Phase 1) | ✅ done | 1 |
+| 6 | **Stale data after project switch** — `UPDATE_DATA` reflects the previous project | Medium | High | `switchProject()` clears `UPDATE_DATA` and calls `initDashboard()` (implemented in Phase 1) | ✅ done | 1 |
+| 7 | **Persona escalation** — user granted `dev` switches to `pm` via keyboard shortcut | Medium | Medium | `switchProject()` enforces max-mode from JWT grant; persona switcher greys out modes above grant | ✅ done | ✅ |
+| 8 | **GitHub API rate limit** — 5k req/hr shared across all users | Medium | Low | 2 req per login × 20 users × 10 logins/day = 400 req/day — well within limit. Add header check if team grows | S | 2 |
+| 9 | **`users.json` admin UX** — raw JSON editing is error-prone; a typo locks someone out | Medium | Medium | Build a PM-only admin panel in CMS (list users, add/remove grants) — edits go through the same Lambda write proxy | L | 3 |
+| 10 | **Lambda cold start on auth** — first login after idle reads `users.json` + project file (2 GitHub calls) | Low | High | Acceptable at internal scale (<3s total); add provisioned concurrency if P95 > 5s in CloudWatch | S | 2 |
+| 11 | **CDN version drift** — unpinned Tailwind CDN ships a breaking change | Low | Low | Pin to `cdn.tailwindcss.com/3.4.1` in `index.html` | S | 1 |
+| 12 | **SaaS path breaks `users.json` model** — per-org user management needs more than a flat file | Low | Low (now) | When productizing: move user/grant store to a managed DB (DynamoDB or Supabase); JWT structure stays identical | L | future |
 
 **Effort key**: S = hours, M = 1–2 days, L = 1 week
+**Phase key**: 1 = in progress, 2 = next sprint, 3 = backlog, future = productization
 
 ---
 

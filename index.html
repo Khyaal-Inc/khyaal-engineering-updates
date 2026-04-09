@@ -52,14 +52,21 @@
                         }
                     }
 
-                    fetch('./data.json?v=' + Date.now())
-                        .then(r => r.json())
-                        .then(data => {
-                            window.UPDATE_DATA = data;
-                            console.log('✅ Server Synced: Initializing from data.json');
-                            initDashboardOrWait();
-                        })
-                        .catch(e => console.log('Critical load error:', e));
+                    // Only attempt the direct file fetch for the legacy default project.
+                    // Non-default projects must load via Lambda (requires auth), so we
+                    // defer to the full auth path rather than loading wrong project data.
+                    const activeProject = window.ACTIVE_PROJECT_ID || 'default'
+                    if (activeProject === 'default') {
+                        fetch('./data.json?v=' + Date.now())
+                            .then(r => r.json())
+                            .then(data => {
+                                window.UPDATE_DATA = data;
+                                console.log('✅ Server Synced: Initializing from data.json');
+                                initDashboardOrWait();
+                            })
+                            .catch(e => console.log('Critical load error:', e));
+                    }
+                    // else: non-default project — full auth path in checkBasicAuth() will load correct data
                 };
 
                 // Early boot: try local cache for instant render while full auth proceeds
@@ -348,7 +355,7 @@
                                 window.CURRENT_USER = { name: claims.name, grants: claims.grants || [] };
                                 window.PROJECT_REGISTRY = (claims.grants || []).map(g => ({
                                     id: g.projectId,
-                                    name: g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId,
+                                    name: g.name || (g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId),
                                     filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
                                     maxMode: g.mode
                                 }));
@@ -422,7 +429,7 @@
                     window.CURRENT_USER = { name: authResult.name, grants: authResult.grants || [] };
                     window.PROJECT_REGISTRY = (authResult.grants || []).map(g => ({
                         id: g.projectId,
-                        name: g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId,
+                        name: g.name || (g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId),
                         filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
                         maxMode: g.mode
                     }));

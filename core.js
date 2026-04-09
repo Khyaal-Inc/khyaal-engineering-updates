@@ -1,4 +1,32 @@
 // UPDATE_DATA is global, provided by index.html initialization
+
+// Multi-project state — 'default' maps to the legacy data.json file
+window.ACTIVE_PROJECT_ID = window.ACTIVE_PROJECT_ID || 'default'
+window.PROJECT_REGISTRY = window.PROJECT_REGISTRY || [
+    { id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }
+]
+
+function switchProject(projectId) {
+    if (window.ACTIVE_PROJECT_ID === projectId) return
+    window.ACTIVE_PROJECT_ID = projectId
+    const project = window.PROJECT_REGISTRY.find(p => p.id === projectId)
+    if (project && typeof CMS_CONFIG !== 'undefined') {
+        CMS_CONFIG.filePath = project.filePath
+    }
+    const cacheKey = `khyaal_data_${projectId}`
+    localStorage.removeItem(cacheKey)
+    window.UPDATE_DATA = null
+    // Enforce max-mode from grant — auto-switch persona to the ceiling for this project
+    if (window.CURRENT_USER) {
+        const grant = (window.CURRENT_USER.grants || []).find(g => g.projectId === projectId)
+        if (grant && typeof switchMode === 'function') {
+            switchMode(grant.mode, true)  // stayInModal=true: switch mode without switching view
+        }
+    }
+    if (typeof showToast === 'function') showToast(`Switching to ${project?.name || projectId}…`, 'info')
+    if (typeof initDashboard === 'function') initDashboard()
+}
+
 let globalSearchQuery = '';
 let isAuthenticated = false; // Will be set by auth logic
 

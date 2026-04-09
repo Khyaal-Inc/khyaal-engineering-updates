@@ -33,6 +33,9 @@ function normalizeData() {
                     item.id = `${safeTrackId}-${safeSubtrackName}-${index}`;
                 }
 
+                // Stamp projectId for multi-project scoping
+                if (!item.projectId) item.projectId = window.ACTIVE_PROJECT_ID || 'default'
+
                 // Clean up default dates for next/later if they are from a previous session's template
                 if (['next', 'later'].includes(item.status)) {
                     if (item.startDate === '2026-03-20') delete item.startDate;
@@ -62,23 +65,27 @@ function normalizeData() {
             UPDATE_DATA.metadata.epics.forEach(epic => {
                 if (!epic.status) epic.status = 'active';
                 if (epic.kickedOffAt === undefined) epic.kickedOffAt = null;
+                if (!epic.projectId) epic.projectId = window.ACTIVE_PROJECT_ID || 'default'
             });
         }
         if (UPDATE_DATA.metadata.okrs) {
             UPDATE_DATA.metadata.okrs.forEach(okr => {
                 if (!okr.status) okr.status = 'active';
                 if (okr.launchedAt === undefined) okr.launchedAt = null;
+                if (!okr.projectId) okr.projectId = window.ACTIVE_PROJECT_ID || 'default'
             });
         }
         if (UPDATE_DATA.metadata.releases) {
             UPDATE_DATA.metadata.releases.forEach(release => {
                 if (!release.status) release.status = 'planned';
                 if (release.lockedAt === undefined) release.lockedAt = null;
+                if (!release.projectId) release.projectId = window.ACTIVE_PROJECT_ID || 'default'
             });
         }
         if (UPDATE_DATA.metadata.sprints) {
             UPDATE_DATA.metadata.sprints.forEach(sprint => {
                 if (sprint.kickedOffAt === undefined) sprint.kickedOffAt = null;
+                if (!sprint.projectId) sprint.projectId = window.ACTIVE_PROJECT_ID || 'default'
             });
         }
         if (!UPDATE_DATA.metadata.ceremonyAudits) UPDATE_DATA.metadata.ceremonyAudits = [];

@@ -315,6 +315,17 @@ function renderWorkflowNav() {
                      </div>
                 </div>
 
+                ${(window.PROJECT_REGISTRY && window.PROJECT_REGISTRY.length > 1) ? `
+                <div class="flex items-center gap-2">
+                    <select
+                        onchange="switchProject(this.value)"
+                        aria-label="Switch project"
+                        class="text-xs font-bold bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2 text-slate-700 cursor-pointer hover:border-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    >${(window.PROJECT_REGISTRY || []).map(p => `
+                        <option value="${p.id}" ${p.id === window.ACTIVE_PROJECT_ID ? 'selected' : ''}>${p.name}</option>
+                    `).join('')}</select>
+                </div>` : ''}
+
                 <div class="flex flex-col items-center gap-1">
                     <div class="persona-segmented-control">
                         <div class="persona-slider" style="transform: translateX(${activeMode === 'pm' ? '0' : activeMode === 'dev' ? '100.5%' : '201%'});"></div>
