@@ -298,12 +298,7 @@ function switchView(viewId, targetId = null) {
 
 function toggleCmsDrawer() {
     const drawer = document.getElementById('cms-drawer');
-    if (drawer) {
-        const isHidden = drawer.classList.toggle('hidden');
-        if (!isHidden) {
-            setTimeout(() => document.getElementById('github-token')?.focus(), 100);
-        }
-    }
+    if (drawer) drawer.classList.toggle('hidden');
 }
 
 // ========================================
@@ -1284,7 +1279,6 @@ function authenticateCms() {
 }
 
 function logoutCms() {
-    localStorage.removeItem('gh_pat');
     window.isGithubAuthenticated = false;
     location.reload();
 }
@@ -4411,9 +4405,12 @@ async function initArchiveFilter() {
 
     // Add Physical Archives Section
     try {
-        const response = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/archive`);
+        const jwt = localStorage.getItem('khyaal_site_auth');
+        const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID || 'default'}&filePath=archive`, {
+            headers: { 'Authorization': `Bearer ${jwt}` }
+        });
         if (response.ok) {
-            const files = await response.json();
+            const { data: files } = await response.json();
             const archives = files.filter(f => f.name.endsWith('.json'));
 
             if (archives.length > 0) {
@@ -4875,9 +4872,7 @@ function deleteRoadmap(id) {
 
 // System logout
 function logoutAll() {
-    localStorage.removeItem('gh_pat');
     localStorage.removeItem('khyaal_site_auth');
-    localStorage.removeItem('GITHUB_CMS_TOKEN');
     location.reload();
 }
 

@@ -52,8 +52,16 @@ exports.handler = async (event) => {
             const claims = verifyJWT(getBearer(event))
             const projectId = qs.projectId || 'default'
             assertGrant(claims, projectId)
-            const filePath = projectId !== 'default' ? `data-${projectId}.json` : 'data.json'
-            const data = await fetchFromGitHub(token, filePath)
+            // Optional filePath for raw directory listings (e.g. archive/)
+            if (qs.filePath) {
+                const listing = await fetchRawFromGitHub(token, qs.filePath)
+                return {
+                    statusCode: 200, headers: resHeaders,
+                    body: JSON.stringify({ ok: true, data: listing })
+                }
+            }
+            const dataFile = projectId !== 'default' ? `data-${projectId}.json` : 'data.json'
+            const data = await fetchFromGitHub(token, dataFile)
             return {
                 statusCode: 200, headers: resHeaders,
                 body: JSON.stringify({ authenticated: true, data })
@@ -186,6 +194,40 @@ function fetchFromGitHub(token, path) {
                     resolve(JSON.parse(content))
                 } catch (e) {
                     reject(new Error('Failed to parse GitHub response or content: ' + e.message))
+                }
+            })
+        })
+
+        req.on('error', (e) => reject(e))
+        req.end()
+    })
+}
+
+function fetchRawFromGitHub(token, path) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: 'api.github.com',
+            path: `/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+            method: 'GET',
+            headers: {
+                'Authorization': `token ${token}`,
+                'User-Agent': 'Khyaal-Auth-Proxy-Lambda',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        }
+
+        const req = https.request(options, (res) => {
+            let data = ''
+            res.on('data', (chunk) => data += chunk)
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data)
+                    if (res.statusCode !== 200) {
+                        return reject(new Error(json.message || 'GitHub API returned ' + res.statusCode))
+                    }
+                    resolve(json)  // raw parsed JSON — directory listing is an array
+                } catch (e) {
+                    reject(new Error('Failed to parse GitHub response: ' + e.message))
                 }
             })
         })

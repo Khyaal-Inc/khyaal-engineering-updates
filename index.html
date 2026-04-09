@@ -39,7 +39,7 @@
                     // If viewing an archive, ignore LocalStorage to ensure historical accuracy
                     const params = new URLSearchParams(window.location.search);
                     const isArchive = params.get('archive');
-                    const cachedData = !isArchive ? localStorage.getItem('khyaal_data') : null;
+                    const cachedData = !isArchive ? localStorage.getItem(`khyaal_data_${window.ACTIVE_PROJECT_ID || 'default'}`) : null;
 
                     if (cachedData) {
                         try {
@@ -62,6 +62,7 @@
                         .catch(e => console.log('Critical load error:', e));
                 };
 
+                // Early boot: try local cache for instant render while full auth proceeds
                 if (localStorage.getItem(SITE_AUTH_KEY)) {
                     initLocalLoad();
                 }
@@ -80,15 +81,17 @@
                         </svg>
                     </div>
                     <h1 class="text-2xl font-bold text-slate-900">Protected Page</h1>
-                    <p class="text-slate-500 text-sm mt-1">Please enter password to view updates</p>
+                    <p class="text-slate-500 text-sm mt-1">Sign in to view updates</p>
                 </div>
                 <div class="space-y-4 text-left">
-                    <input type="password" id="site-password" placeholder="Site Password" class="cms-input"
-                        style="padding: 0.75rem;">
-                    <button onclick="checkBasicAuth()" class="cms-btn cms-btn-primary w-full py-3">Unlock
-                        Content</button>
+                    <input type="text" id="site-username" placeholder="Username" class="cms-input"
+                        style="padding: 0.75rem;" autocomplete="username">
+                    <input type="password" id="site-password" placeholder="Password" class="cms-input"
+                        style="padding: 0.75rem;" autocomplete="current-password"
+                        onkeydown="if(event.key==='Enter') checkBasicAuth()">
+                    <button onclick="checkBasicAuth()" class="cms-btn cms-btn-primary w-full py-3">Sign In</button>
                 </div>
-                <div id="auth-message" class="text-red-500 text-xs mt-4">Please enter password to view updates</div>
+                <div id="auth-message" class="text-red-500 text-xs mt-4"></div>
             </div>
         </div>
 
@@ -202,13 +205,7 @@
                                     class="text-slate-400 hover:text-slate-600">✕</button>
                             </div>
 
-                            <!-- Token Entry -->
-                            <div id="cms-auth-section" class="flex gap-3">
-                                <input type="password" id="github-token" placeholder="Enter GitHub PAT..."
-                                    class="cms-input !mb-0 text-xs py-2 h-9 shadow-sm" style="max-width: 300px;">
-                                <button onclick="authenticateCms()"
-                                    class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Authenticate</button>
-                            </div>
+                            <div id="cms-auth-section" class="hidden"></div>
 
                             <!-- Authenticated Actions -->
                             <div id="cms-actions-section" class="hidden flex flex-wrap items-center gap-3">
@@ -327,20 +324,10 @@
                 return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             }
 
-            async function checkBasicAuth(cachedHash = null) {
+            async function checkBasicAuth(cachedSession = null) {
                 const passwordInput = document.getElementById('site-password');
+                const usernameInput = document.getElementById('site-username');
                 const authMessage = document.getElementById('auth-message');
-                let hashedInput;
-
-                if (cachedHash) {
-                    hashedInput = cachedHash;
-                } else {
-                    const password = passwordInput.value.trim();
-                    if (!password) return;
-                    hashedInput = await sha256(password);
-                }
-
-                const githubToken = localStorage.getItem('GITHUB_CMS_TOKEN') || '';
 
                 if (!LAMBDA_URL) {
                     console.error('LAMBDA_URL is not set. Please run deploy_auth.sh and update the URL.');
@@ -348,50 +335,115 @@
                     return;
                 }
 
-                try {
-                    if (!cachedHash) authMessage.innerText = 'Authenticating...';
+                // ── Fast path: restore from cached JWT ───────────────────
+                if (cachedSession) {
+                    // cachedSession is a stored JWT string
+                    try {
+                        // Decode payload (no verify here — Lambda verifies on read)
+                        const parts = cachedSession.split('.');
+                        if (parts.length === 3) {
+                            const claims = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+                            if (claims.exp > Math.floor(Date.now() / 1000)) {
+                                // Token still valid — restore session from claims
+                                window.CURRENT_USER = { name: claims.name, grants: claims.grants || [] };
+                                window.PROJECT_REGISTRY = (claims.grants || []).map(g => ({
+                                    id: g.projectId,
+                                    name: g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId,
+                                    filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
+                                    maxMode: g.mode
+                                }));
+                                window.ACTIVE_PROJECT_ID = (claims.grants || [])[0]?.projectId || 'default';
 
-                    const response = await fetch(`${LAMBDA_URL}?cb=${Date.now()}`, {
+                                // Fetch fresh data using the cached JWT
+                                const readResp = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID}&cb=${Date.now()}`, {
+                                    headers: { 'Authorization': `Bearer ${cachedSession}` }
+                                });
+                                if (readResp.ok) {
+                                    const { data } = await readResp.json();
+                                    // Prefer local edits over server if cached data exists
+                                    const urlParams = new URL(window.location.href).searchParams;
+                                    const isArchive = urlParams.get('archive');
+                                    const localKey = `khyaal_data_${window.ACTIVE_PROJECT_ID}`;
+                                    const cachedData = !isArchive ? localStorage.getItem(localKey) : null;
+                                    if (cachedData) {
+                                        try {
+                                            window.UPDATE_DATA = JSON.parse(cachedData);
+                                            console.log('✅ Auth Reconciled: Prioritizing local edits over server data');
+                                        } catch (e) {
+                                            window.UPDATE_DATA = data;
+                                        }
+                                    } else {
+                                        window.UPDATE_DATA = data;
+                                    }
+                                    showProtectedContent();
+                                    return;
+                                }
+                                // If read fails (403/401), fall through to full re-auth
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Cached session invalid, re-authenticating...', e);
+                    }
+                    // Cached token invalid or expired — clear and show login form
+                    localStorage.removeItem(SITE_AUTH_KEY);
+                    document.getElementById('auth-loading').style.display = 'none';
+                    document.getElementById('auth-gatekeeper').classList.remove('hidden');
+                    return;
+                }
+
+                // ── Full auth: username + password → JWT ─────────────────
+                const username = usernameInput ? usernameInput.value.trim() : '';
+                const password = passwordInput ? passwordInput.value.trim() : '';
+                if (!username || !password) {
+                    authMessage.innerText = 'Please enter your username and password.';
+                    return;
+                }
+                const passwordHash = await sha256(password);
+
+                try {
+                    authMessage.innerText = 'Authenticating...';
+
+                    const authResp = await fetch(`${LAMBDA_URL}?action=auth&cb=${Date.now()}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            passwordHash: hashedInput,
-                            githubToken: githubToken,
-                            filePath: window.loadingArchive || 'data.json'
-                        })
+                        body: JSON.stringify({ username, passwordHash })
                     });
+                    const authResult = await authResp.json();
 
-                    const result = await response.json();
-
-                    if (result.authenticated && result.data) {
-                        // 🏆 Phase 33 & 34: Archive Context Isolation in Auth
-                        // If viewing an archive, strictly ignore LocalStorage to ensure historical accuracy
-                        const urlParams = new URL(window.location.href).searchParams;
-                        const isArchive = urlParams.get('archive');
-                        const cachedData = !isArchive ? localStorage.getItem('khyaal_data') : null;
-
-                        if (cachedData) {
-                            try {
-                                window.UPDATE_DATA = JSON.parse(cachedData);
-                                console.log('✅ Auth Reconciled: Prioritizing local edits over server data');
-                            } catch (e) {
-                                window.UPDATE_DATA = result.data;
-                            }
-                        } else {
-                            window.UPDATE_DATA = result.data;
-                        }
-
-                        localStorage.setItem(SITE_AUTH_KEY, hashedInput); 
-                        showProtectedContent();
-                    } else if (result.authenticated && result.error) {
-                        authMessage.innerText = result.error + ' (Please set token in CMS settings)';
-                    } else {
-                        authMessage.innerText = 'Invalid password. Please try again.';
+                    if (!authResult.authenticated) {
+                        authMessage.innerText = authResult.error || 'Invalid credentials. Please try again.';
                         localStorage.removeItem(SITE_AUTH_KEY);
+                        return;
                     }
+
+                    // Store JWT + restore user state
+                    const jwt = authResult.token;
+                    localStorage.setItem(SITE_AUTH_KEY, jwt);
+                    window.CURRENT_USER = { name: authResult.name, grants: authResult.grants || [] };
+                    window.PROJECT_REGISTRY = (authResult.grants || []).map(g => ({
+                        id: g.projectId,
+                        name: g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId,
+                        filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
+                        maxMode: g.mode
+                    }));
+                    window.ACTIVE_PROJECT_ID = (authResult.grants || [])[0]?.projectId || 'default';
+
+                    // Fetch project data
+                    const readResp = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID}&cb=${Date.now()}`, {
+                        headers: { 'Authorization': `Bearer ${jwt}` }
+                    });
+                    if (!readResp.ok) {
+                        authMessage.innerText = 'Auth succeeded but data fetch failed. Please reload.';
+                        return;
+                    }
+                    const { data } = await readResp.json();
+                    window.UPDATE_DATA = data;
+                    authMessage.innerText = '';
+                    showProtectedContent();
+
                 } catch (error) {
                     console.error('Error during authentication:', error);
-                    if (!cachedHash) alert('An error occurred during authentication. Please try again.');
+                    authMessage.innerText = 'An error occurred during authentication. Please try again.';
                 }
             }
 
@@ -406,27 +458,19 @@
 
             function logoutAll() {
                 localStorage.removeItem(SITE_AUTH_KEY);
-                localStorage.removeItem('gh_pat');
+                window.CURRENT_USER = null;
                 location.reload();
             }
 
-            // Auto-login if hash is cached (starts immediately for speed)
-            const cachedHash = localStorage.getItem(SITE_AUTH_KEY);
-            if (cachedHash) {
-                checkBasicAuth(cachedHash);
+            // Auto-login if JWT is cached (starts immediately for speed)
+            const cachedSession = localStorage.getItem(SITE_AUTH_KEY);
+            if (cachedSession) {
+                checkBasicAuth(cachedSession);
+            } else {
+                // No session — show login form
+                document.getElementById('auth-loading').style.display = 'none';
+                document.getElementById('auth-gatekeeper').classList.remove('hidden');
             }
-
-            // Standard initialization for other elements
-            window.onload = () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const archiveFile = urlParams.get('archive');
-
-                if (archiveFile) {
-                    window.loadingArchive = archiveFile;
-                    // If archive was specified in URL, we need to re-auth with it
-                    if (cachedHash) checkBasicAuth(cachedHash);
-                }
-            };
         </script>
         <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
         <script>
