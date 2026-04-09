@@ -241,6 +241,16 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F14 — Capacity Planner ✅ Shipped
+
+- `renderCapacityView()` in `capacity-planning.js` — fully rewritten; derives all data from actual item assignments, no static `teamMembers` config required
+- Per-contributor × per-sprint matrix: committed points, done points, % complete, item count
+- Summary cards: active sprint name, team progress %, top load contributor, over-committed count
+- Persona gates: PM sees full matrix; Dev sees own row only with notice banner; Exec gets aggregate sprint delivery trend table (no per-person data)
+- Points split proportionally when an item has multiple contributors
+- Tab count in `core.js` updated to count unique contributors in active sprint from actual item data
+- Covers last 3 closed sprints + active sprint for trend context
+
 #### F12 — Post-Release Learning Loop ✅ Shipped (retro template)
 - Sprint retrospective template auto-populated from velocity + ceremony data ✅
   - Pre-fills "What went well" from velocity score, blocker count, rollover count, OKR alignment
@@ -306,7 +316,7 @@ The primary journey follows the PM persona through one full 2-week sprint cycle.
 OPPORTUNITY PRIORITY (Frequency × Severity × Solvability):
   🔴 HIGH:  Blocker visibility for PM during Build  (5 × 5 × 5 = 125)
   🔴 HIGH:  OKR progress auto-calculation from task completion (5 × 4 × 5 = 100) ✅ Shipped
-  🟠 MED:   Capacity calculation from team data  (4 × 4 × 4 = 64)
+  🟠 MED:   Capacity calculation from team data  (4 × 4 × 4 = 64) ✅ Shipped
   🟡 LOW:   Sprint retro template from velocity  (3 × 3 × 4 = 36)
 ```
 
@@ -351,6 +361,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Multi-tenant config abstraction | Low | High | High | L | **🟡 P2** |
 | Sprint retro template auto-generation | Med | Med | High | S | ✅ Shipped |
 | OKR auto-progress from task completion | High | High | High | S | ✅ Shipped |
+| Capacity Planner (live from item data) | High | Med | High | S | ✅ Shipped |
 
 ---
 

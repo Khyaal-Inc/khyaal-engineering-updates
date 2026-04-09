@@ -260,7 +260,7 @@ function updateTabCounts() {
         okr: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.okrs ? UPDATE_DATA.metadata.okrs.length : 0),
         kanban: allItems.length,
         analytics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.velocityHistory ? UPDATE_DATA.metadata.velocityHistory.length : 0),
-        capacity: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.capacity && UPDATE_DATA.metadata.capacity.teamMembers ? UPDATE_DATA.metadata.capacity.teamMembers.length : 0),
+        capacity: (() => { const s = (UPDATE_DATA.metadata?.sprints || []).find(s => s.status === 'active'); if (!s) return 0; const names = new Set(); (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => { if (i.sprintId === s.id) (i.contributors || []).forEach(c => names.add(c)) }))); return names.size })(),
         'my-tasks': myTasksCount,
         dashboard: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.epics ? UPDATE_DATA.metadata.epics.length : 0)
     };
