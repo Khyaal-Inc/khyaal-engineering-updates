@@ -8,6 +8,8 @@
 
 Claude Code (Recommended)
 ```bash
+/plugin install frontend-design@claude-plugins-official
+
 # Add the marketplace
 /plugin marketplace add alirezarezvani/claude-skills
 
@@ -210,7 +212,7 @@ Using engineering-skills and pm-skills, rewrite my CLAUDE.md and create .claude/
 ## 💻 Phase 4: Code Generation & Refactoring
 **Goal:** Produce high‑quality, tested code that follows all the rules.
 
-### 4.1 Pick the First Module
+### 4.1 Pick the next module (Claude suggests, you confirm)
 ```text
 Following CLAUDE.md and PRODUCT_STRATEGY.md, identify the most critical module (e.g., /src/auth, /src/api/users, /src/components/dashboard).
 
@@ -222,7 +224,28 @@ Create a migration plan for that module:
 Ask me for confirmation before you start writing code.
 ```
 
-### 4.2 Implement with Quality & Tests
+### 4.2 – Implement that module (skip tests if you prefer)
+```text
+Following CLAUDE.md and PRODUCT_STRATEGY.md, refactor/implement the next module: [module name].
+
+For this module only:
+- Do NOT write tests (skip ra-qm-skills for now).
+- Focus on clean, working code that matches the architecture rules in CLAUDE.md.
+- Update any relevant documentation in ./docs/ (e.g., API changes, new functions).
+
+After implementation, summarise what changed and suggest which module should be next.
+```
+
+```text
+Proceed with the module you just suggested as next. Follow the same rules as before:
+
+- Do NOT write tests (skip ra-qm-skills for now)
+- Focus on clean, working code that matches CLAUDE.md architecture rules
+- Update relevant documentation in ./docs/
+- After implementation, summarise what changed and suggest the next module
+```
+
+### 4.3 Implement with Quality & Tests
 ```text
 Using engineering-skills and ra-qm-skills (regulatory/quality management), rewrite the selected module:
 
@@ -234,7 +257,7 @@ Using engineering-skills and ra-qm-skills (regulatory/quality management), rewri
 After finishing, run /stats to check token usage and report a summary of changes.
 ```
 
-### 4.3 Iterative Expansion
+### 4.4 Iterative Expansion
 For each subsequent module, repeat Phase 4.2. Use:
 ```text
 Focus only on the ./src/next-module directory. Follow the same quality rules. Update any cross‑cutting concerns (e.g., shared types, config).

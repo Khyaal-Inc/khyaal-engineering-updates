@@ -313,6 +313,48 @@ a:not(.btn) {
 
 These patterns are specifically valuable for the PM/Dev/Exec team that uses this tool daily.
 
+### 5.0 Project Switcher + Role-Aware UX
+
+The Project Switcher is the top-level context control. Every other UX decision (persona mode, visible views, CMS access) flows from the active project + the user's grant for it.
+
+#### Project Switcher placement
+
+```
+[KP logo]  [▼ Platform ▾]  [pm | dev | exec]  ...  [Engineering Playbook]  [✕]
+```
+
+- Sits between the KP logo and the persona segmented control in the Strategic Ribbon header
+- Renders as a `<select>` (native, accessible, no JS required for interaction)
+- Only shows projects the current user has a grant for
+- **Hidden entirely when the user has exactly one accessible project** — zero noise for single-project users
+
+#### Role enforcement UX
+
+When a user switches to a project where their grant mode is `dev` or `exec`:
+- The persona segmented control greys out options above the grant level
+- The greyed segments get `disabled` attribute + `title="Your access to this project is limited to [mode]"`
+- The active persona auto-switches to the grant mode if the current persona exceeds it
+- A one-time toast: `"Switched to Platform — you have Dev access on this project"`
+
+```javascript
+// Pattern for greying out persona options above grant level
+const grant = getCurrentUserGrant(window.ACTIVE_PROJECT_ID)
+['pm', 'dev', 'exec'].forEach(mode => {
+    const btn = document.querySelector(`.persona-tab[data-mode="${mode}"]`)
+    const isAboveGrant = modeRank[mode] < modeRank[grant.mode]  // pm=0, dev=1, exec=2
+    btn.disabled = isAboveGrant
+    btn.title = isAboveGrant ? `Your access to this project is limited to ${grant.mode}` : ''
+})
+```
+
+#### Admin panel UX (Phase 3)
+
+- Accessible only to users with `mode: 'pm'` on the admin-designated project
+- A new CMS view: "Team Access" — lists all users + their grants as editable rows
+- Each row: `[Name]  [Project ▾]  [Mode ▾]  [Remove]`
+- Saving writes to `users.json` via the Lambda write proxy (same path as data writes)
+- No raw JSON editing required
+
 ### 5.1 Information Density Toggle
 
 Power users want compact tables; new users prefer spacious cards. Implement a density switch.

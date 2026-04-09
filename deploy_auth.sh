@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Configuration
 FUNCTION_NAME="khyaal-auth-gatekeeper"
@@ -132,11 +133,75 @@ aws lambda add-permission --function-name $FUNCTION_NAME \
     --source-arn "arn:aws:execute-api:$REGION:$ACCOUNT_ID:$API_ID/*" \
     --region $REGION > /dev/null 2>&1
 
+LAMBDA_URL="https://$API_ID.execute-api.$REGION.amazonaws.com"
+
+# 10. Set Lambda environment variables (GITHUB_TOKEN, EXPECTED_PASSWORD_HASH, JWT_SECRET)
+echo ""
+echo "🔐 Configuring Lambda environment variables..."
+
+# Read existing env vars to preserve any not managed here
+EXISTING_VARS=$(aws lambda get-function-configuration \
+    --function-name $FUNCTION_NAME \
+    --region $REGION \
+    --query 'Environment.Variables' \
+    --output json 2>/dev/null || echo '{}')
+
+# Require GITHUB_TOKEN — fail fast if not in environment
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+    echo "❌ GITHUB_TOKEN environment variable is not set."
+    echo "   Export it before running this script:"
+    echo "   export GITHUB_TOKEN=<your-github-pat>"
+    exit 1
+fi
+
+# EXPECTED_PASSWORD_HASH no longer required — auth is handled via users.json + JWT
+
+# Generate JWT_SECRET if not already set
+if [ -z "${JWT_SECRET:-}" ]; then
+    # Check if it's already set in Lambda (preserve the existing secret across deploys)
+    EXISTING_JWT_SECRET=$(echo "$EXISTING_VARS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('JWT_SECRET',''))" 2>/dev/null || echo "")
+    if [ -n "$EXISTING_JWT_SECRET" ]; then
+        JWT_SECRET="$EXISTING_JWT_SECRET"
+        echo "   Preserving existing JWT_SECRET from Lambda config"
+    else
+        JWT_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+        echo "   Generated new JWT_SECRET (32-byte random)"
+    fi
+fi
+
+aws lambda update-function-configuration \
+    --function-name $FUNCTION_NAME \
+    --region $REGION \
+    --environment "Variables={GITHUB_TOKEN=$GITHUB_TOKEN,JWT_SECRET=$JWT_SECRET}" \
+    > /dev/null
+
+echo "   ✅ GITHUB_TOKEN set"
+echo "   ✅ JWT_SECRET set"
+
+# 11. Wait for Lambda to finish updating before deploying code
+echo ""
+echo "⏳ Waiting for Lambda to finish updating configuration..."
+aws lambda wait function-updated --function-name $FUNCTION_NAME --region $REGION
+
+# 12. Update LAMBDA_URL constant in index.html
+echo ""
+echo "📝 Updating LAMBDA_URL in index.html..."
+# Replace the const LAMBDA_URL = '...' line with the new URL (handles any existing URL value)
+sed -i '' "s|const LAMBDA_URL = '.*';|const LAMBDA_URL = '$LAMBDA_URL';|" index.html
+
+# Verify the replacement worked
+if grep -q "const LAMBDA_URL = '$LAMBDA_URL';" index.html; then
+    echo "   ✅ LAMBDA_URL updated to: $LAMBDA_URL"
+else
+    echo "   ⚠️  Could not auto-update LAMBDA_URL — update manually in index.html:"
+    echo "   const LAMBDA_URL = '$LAMBDA_URL';"
+fi
+
+echo ""
 echo "✅ Deployment complete!"
 echo "-----------------------------------"
-echo "Endpoint URL: https://$API_ID.execute-api.$REGION.amazonaws.com"
+echo "Endpoint URL: $LAMBDA_URL"
 echo "-----------------------------------"
-echo "Next step: Update the LAMBDA_URL in index.html with the URL above."
 
 # Cleanup
 rm function.zip

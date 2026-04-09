@@ -140,26 +140,117 @@ flowchart TD
 
 ---
 
-## 5. Multi-Project Architecture (Planned)
+## 5. Multi-Project Architecture (Confirmed Design)
 
-> Current state: all data is global; Tracks are a flat filter layer.
-> Target state: **Projects wrap Tracks** — full data isolation per project.
+> **Hierarchy:** Team (Org) → Projects → Tracks (filters only)
+> **Auth boundary:** Role-based per user — each user has a configured set of `{ projectId, mode }` grants
+> **Data isolation:** One `data-{projectId}.json` per Project on GitHub
+> **Tracks:** View-level filters within a Project — no separate data files per Track
+
+### 5.1 Organisational Hierarchy
 
 ```mermaid
 flowchart TD
-    PS[Project Switcher\nheader dropdown] --> PA[Project A\ndata-proj-a.json]
-    PS --> PB[Project B\ndata-proj-b.json]
-    PA --> TA[Tracks: iOS / Android]
-    PB --> TB[Tracks: Frontend / Backend]
-    TA & TB --> VIEWS[All 19 views\nfiltered by active Project + Track]
+    ORG[Khyaal\nTeam / Org]
+    ORG --> P1[Platform Project\ndata-platform.json]
+    ORG --> P2[AI Agent Project\ndata-ai-agent.json]
+    P1 --> T1A[Track: Website]
+    P1 --> T1B[Track: Mobile]
+    P1 --> T1C[Track: Backend]
+    P2 --> T2A[Track: Sales Agent]
+    P2 --> T2B[Track: Rec Engine]
+    T1A & T1B & T1C --> V1[19 views\nfiltered by active Track]
+    T2A & T2B --> V2[19 views\nfiltered by active Track]
 ```
 
-**Proposed data model:**
+### 5.2 Role-Based Access Model
+
+Each user has a list of Project grants. Each grant specifies the Project and the permitted mode:
+
 ```
-Project { id, name, tracks[], members[], createdAt }
-Items, Epics, Sprints, OKRs, Releases → all scoped to projectId
-Lambda routes CRUD to data-{projectId}.json on GitHub
+User {
+  id, name, email (optional)
+  grants: [
+    { projectId: 'platform', mode: 'pm'   },   // PM access to Platform
+    { projectId: 'ai-agent', mode: 'exec' }    // Exec-only view of AI Agent
+  ]
+}
 ```
+
+**Rules:**
+- A user with no grant for a Project cannot see it in the Project Switcher
+- The mode in the grant is the *maximum* mode — the user cannot elevate to PM if granted `dev`
+- An admin user (configured in `users.json`) can manage grants without a code deploy
+- If a user has only one accessible Project, the switcher is hidden (no noise for single-project users)
+
+### 5.3 Data Files per Project
+
+```
+GitHub repo
+├── data.json              ← legacy single-project file (projectId: 'default')
+├── data-platform.json     ← Platform Project
+├── data-ai-agent.json     ← AI Agent Project
+└── users.json             ← User registry with grants (admin-managed)
+```
+
+Lambda resolves the correct file:
+```
+GET  ?action=read&projectId=platform   → reads data-platform.json
+POST ?action=write&projectId=platform  → writes data-platform.json
+GET  ?action=read-users                → reads users.json (admin only)
+```
+
+### 5.4 Auth + Session Flow (Role-Based)
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant L as Lambda
+    participant GH as GitHub (users.json)
+
+    U->>L: POST /auth { username, password }
+    L->>GH: GET users.json
+    GH-->>L: User record + grants[]
+    L-->>U: JWT { userId, grants: [{projectId, mode}] }
+    U->>U: Project Switcher shows only\ngranteed projects
+    U->>L: GET ?action=read&projectId=X\nAuthorization: Bearer JWT
+    L->>L: Verify JWT grant for projectId X
+    L->>GH: GET data-X.json
+    GH-->>L: file content + sha
+    L-->>U: { content, sha }
+```
+
+**JWT payload:**
+```json
+{
+  "userId": "gautam",
+  "grants": [
+    { "projectId": "platform", "mode": "pm" },
+    { "projectId": "ai-agent", "mode": "exec" }
+  ],
+  "exp": 1234567890
+}
+```
+
+Lambda validates the JWT on every request and asserts the grant before touching the file.
+
+### 5.5 Project Switcher UX
+
+- Lives in the Strategic Ribbon header (between the KP logo and persona control)
+- Shows only projects the current user has a grant for
+- On switch: clears `UPDATE_DATA`, updates `CMS_CONFIG.filePath`, forces persona mode to the grant's `mode` if current mode exceeds the grant, calls `initDashboard()`
+- Hidden when user has exactly one project grant (zero cognitive overhead for single-project users)
+
+### 5.6 SaaS Path (Future)
+
+When productized, the Org boundary becomes a separate GitHub repo + Lambda deployment per customer:
+
+```
+Customer Org A  →  GitHub repo A  +  Lambda A  →  data-{projectId}.json files
+Customer Org B  →  GitHub repo B  +  Lambda B  →  data-{projectId}.json files
+```
+
+The internal data model (Team → Projects → Tracks, users.json grants) is identical. SaaS provisioning is an operational layer, not a schema change. The `deploy_auth.sh` script becomes a customer onboarding script.
 
 ---
 
@@ -167,15 +258,16 @@ Lambda routes CRUD to data-{projectId}.json on GitHub
 
 | # | Stage | Friction | Proposed Mitigation | Effort |
 |---|-------|----------|---------------------|--------|
-| 1 | Auth | No self-serve password reset | Add forgot-password flow via Lambda (email OTP) | M |
+| 1 | Auth | Shared password — no per-user identity | Role-based users.json: each user has `{ projectId, mode }` grants; Lambda issues user-scoped JWT | L |
 | 2 | Onboarding | No empty-state guidance on first load | Guided empty state per lifecycle stage with CTA | S |
 | 3 | Discover → Vision | No "promote idea to Epic" quick action | Quick-action button in Ideation CMS modal | S |
-| 4 | Plan | Data conflict on concurrent CMS edits | Optimistic lock warning toast (check last-commit timestamp) | M |
-| 5 | Build | No blocker escalation path | Blocker strip with `B` shortcut (from UX recommendation) | M |
+| 4 | Plan | Data conflict on concurrent CMS edits | Optimistic lock warning toast (check last-commit SHA before write) | M |
+| 5 | Build | No blocker escalation path | Blocker strip with `B` shortcut | M |
 | 6 | Ship | Analytics not linked to OKR progress | Auto-update OKR % when release is published | M |
 | 7 | Retention | No notification / digest system (pure pull) | Weekly email digest via Lambda cron + SES | L |
-| 8 | Navigation | No project context switcher — views are global | Project switcher in app header; Lambda routes by projectId | L |
-| 9 | Data model | Tracks are flat filters, not isolated containers | Projects wrap Tracks; per-project data.json on GitHub | XL |
+| 8 | Navigation | No project context switcher — all data is global | Project Switcher in Strategic Ribbon; shows only user-granted projects | M |
+| 9 | Auth | User granted `dev` mode can switch to PM in UI | Enforce max-mode from JWT grant — persona switcher disables modes above grant level | M |
+| 10 | Data model | users.json needs admin UI — editing JSON is error-prone | Admin panel (PM-only CMS section) to manage user grants without raw JSON edits | L |
 
 **Effort key**: S = hours, M = 1–2 days, L = 1 week, XL = multi-sprint
 
@@ -196,12 +288,17 @@ Lambda routes CRUD to data-{projectId}.json on GitHub
 
 ## 8. Architectural Note for ADR
 
-The multi-project decision (§5) is the highest-leverage architectural change. It drives:
+The confirmed multi-project model (§5) drives changes across every layer:
 
-- **Lambda**: must accept `projectId` param and resolve `data-{projectId}.json`
-- **app.js `normalizeData()`**: must scope all entity IDs to the active project
-- **CMS (`cms.js`)**: all reads/writes must include projectId in the payload
-- **workflow-nav.js**: project switcher state must persist across view changes
-- **Auth**: per-project access control (who can see/edit which project)
+| Layer | Change |
+|-------|--------|
+| **Lambda** | Accept `projectId` query param; resolve `data-{projectId}.json`; read `users.json`; validate JWT grant per request |
+| **auth_gatekeeper.js** | Replace shared-password auth with user lookup in `users.json`; issue JWT with `{ userId, grants[] }` payload |
+| **app.js `normalizeData()`** | Stamp `projectId` on all entities; enforce max-mode from JWT if grant is stricter than current persona |
+| **cms.js** | All reads/writes include `?projectId=`; localStorage cache key scoped to `projectId` |
+| **workflow-nav.js** | Project Switcher renders only user-granted projects; on switch — enforce grant mode, reload data |
+| **modes.js** | Persona switcher disables modes above the user's grant level for the active project |
+| **core.js** | `ACTIVE_PROJECT_ID`, `PROJECT_REGISTRY`, `CURRENT_USER` globals; `switchProject()` enforces grant |
+| **users.json (new)** | User registry on GitHub; admin-managed; Lambda reads on every auth |
 
-This is the primary input to `./docs/ARCHITECTURE_DECISION_RECORD.md`.
+See `./docs/ARCHITECTURE_DECISION_RECORD.md` for the full ADR with risk mitigations.
