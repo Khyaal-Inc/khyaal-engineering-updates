@@ -1224,9 +1224,9 @@ function renderBacklogView() {
 function renderEpicLifecycle(currentStage) {
     const stages = [
         { id: 'vision', label: 'Vision', icon: '🎯' },
-        { id: 'definition', label: 'Definition', icon: '📂' },
-        { id: 'delivery', label: 'Delivery', icon: '⚡' },
-        { id: 'review', label: 'Review', icon: '📊' }
+        { id: 'definition', label: 'Plan', icon: '📂' },
+        { id: 'delivery', label: 'Build', icon: '⚡' },
+        { id: 'review', label: 'Ship', icon: '📊' }
     ];
 
     const currentIdx = stages.findIndex(s => s.id === currentStage);
@@ -1264,8 +1264,8 @@ function renderEpicsView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🚀</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-medium text-slate-400">Vision / Strategic Epics</span>
-                    <h2 class="text-sm font-black text-slate-800">Engineering Epics</h2>
+                    <span class="text-[10px] font-medium text-slate-400">Stage 2 · Vision — High-level strategic containers for tactical execution</span>
+                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Engineering Epics</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('epics') : ''}
             </div>
@@ -1453,8 +1453,8 @@ function renderRoadmapView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🗺️</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-medium text-slate-400">Future Product Horizons</span>
-                    <h2 class="text-sm font-black text-slate-800">Strategic Roadmap</h2>
+                    <span class="text-[10px] font-medium text-slate-400">Stage 3 · Plan — Predictive alignment of initiatives into future horizons</span>
+                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Strategic Roadmap</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton('roadmap') : ''}
             </div>
@@ -1929,8 +1929,8 @@ function renderGanttView() {
                     <div class="flex items-center gap-3 px-2">
                         <span class="text-xl">📅</span>
                         <div class="flex flex-col">
-                            <span class="text-[10px] font-medium text-slate-400">Delivery · Timeline of epics and milestones</span>
-                            <h2 class="text-sm font-black text-slate-800">Gantt Timeline</h2>
+                            <span class="text-[10px] font-medium text-slate-400">Stage 3 · Plan — Visual timeline of strategic initiatives and dependencies</span>
+                            <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Gantt Timeline</h2>
                         </div>
                         ${typeof renderInfoButton === 'function' ? renderInfoButton('gantt') : ''}
                     </div>
@@ -2221,7 +2221,7 @@ function renderWorkflowView() {
                         <!-- Consolidated Meta Row -->
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
-                                <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">Phase ${step.phase}</span>
+                                <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">Stage ${step.phase}</span>
                                 <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">${step.cadence}</span>
                             </div>
                             <button onclick="switchView('${step.view}')" class="btn-ghost-v3">
@@ -2291,13 +2291,13 @@ function renderWorkflowView() {
  */
 function renderPrimaryStageAction(currentView) {
     const viewActions = {
-        'okr': { text: 'Build Epics 🚀', target: 'epics' },
-        'epics': { text: 'Plan Roadmap 🗺️', target: 'roadmap' },
+        'okr': { text: 'Refine Epics 🚀', target: 'epics' },
+        'epics': { text: 'Map Roadmap 🗺️', target: 'roadmap' },
         'roadmap': { text: 'Groom Backlog 📚', target: 'backlog' },
         'backlog': { text: 'Scope Sprints 🏃', target: 'sprint' },
-        'sprint': { text: 'Execute Tasks ⚡', target: 'track' },
-        'track': { text: 'Plan Next Sprint 🏃', target: 'sprint' },
-        'kanban': { text: 'Ship to Release 📦', target: 'releases' },
+        'sprint': { text: 'Execute Work ⚡', target: 'track' },
+        'track': { text: 'Ship Release 📦', target: 'releases' },
+        'kanban': { text: 'Ship Release 📦', target: 'releases' },
         'my-tasks': { text: 'Review Pulse 📊', target: 'dashboard' },
         'dashboard': { text: 'Plan Next Quarter 🎯', target: 'okr' },
         'analytics': { text: 'Plan Next Quarter 🎯', target: 'okr' },
@@ -2340,7 +2340,7 @@ function renderDiscoveryView() {
             <div class="flex items-center gap-3 px-2">
                 <span class="text-xl">🔍</span>
                 <div class="flex flex-col">
-                    <span class="text-[10px] font-medium text-slate-400">Discovery / Exploration & Ideation</span>
+                    <span class="text-[10px] font-medium text-slate-400">Stage 1 · Discover — Ideation sandbox for capturing raw requests and explorations</span>
                     <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">${title}</h2>
                 </div>
                 ${typeof renderInfoButton === 'function' ? renderInfoButton(currentView) : ''}
