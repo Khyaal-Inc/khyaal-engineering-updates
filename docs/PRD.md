@@ -241,6 +241,19 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F17 — Analytics View Enhancement (Persona-Gated + OKR Intelligence) ✅ Shipped
+
+- `renderAnalyticsView()` in `analytics.js` now branches on persona before rendering
+- **PM**: full view — all existing panels (strategic banner, KPI cards, sprint progress, velocity chart) + 3 new panels below
+- **Dev**: personal contribution panel (my sprint items by status, my pts done/total, blocked count) + sprint progress donut only
+- **Exec**: strategic outcome view — OKR trend table + epic health + sprint forecast; no raw velocity chart or task-level data
+
+New panels added (`analytics.js`):
+- `renderOKRTrendPanel()` — table of OKRs: progress bar, sprints run count, "forecast to 100%" (sprint count estimate based on historical rate per OKR)
+- `renderEpicHealthPanel()` — classifies each epic as **On Track / At Risk / Slipping** by comparing `% done` vs `% time elapsed` between `epic.startDate` and `epic.endDate`
+- `renderSprintForecastPanel()` — 3-card summary (rolling avg velocity, commitment rate, velocity trend ↑/↓/→) + per-OKR completion forecast rows
+- `renderDevContributionPanel()` — current user's sprint items grouped by status; uses `window.CURRENT_USER.name` with graceful fallback showing all items if no user resolved
+
 #### F16 — Contributor View (Sprint Health, Persona-Gated) ✅ Shipped
 
 - `renderContributorView()` fully rewritten in `views.js` with three persona modes
@@ -386,6 +399,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Capacity Planner (live from item data) | High | Med | High | S | ✅ Shipped |
 | Gantt View (persona-gated, sprint date fallback) | Med | Med | High | S | ✅ Shipped |
 | Contributor View (sprint health, persona-gated) | High | Med | High | S | ✅ Shipped |
+| Analytics enhancement (OKR trend, epic health, forecast) | High | High | High | M | ✅ Shipped |
 
 ---
 

@@ -4,69 +4,66 @@
 // Sprint velocity, burndown, cycle time, and KPI tracking
 
 function renderAnalyticsView() {
-    const container = document.getElementById('analytics-view');
-    if (!container) {
-        const mainContent = document.querySelector('#main-content');
-        if (mainContent) {
-            const newView = document.createElement('div');
-            newView.id = 'analytics-view';
-            newView.className = 'view-section';
-            mainContent.appendChild(newView);
-        } else {
-            return;
-        }
-    }
+    const container = document.getElementById('analytics-view')
+    if (!container) return
 
-    const velocityData = UPDATE_DATA.metadata?.velocityHistory || [];
-    const sprints = UPDATE_DATA.metadata?.sprints || [];
+    const mode         = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+    const velocityData = UPDATE_DATA.metadata?.velocityHistory || []
 
-    container.innerHTML = `
-        <div class="space-y-6">
-            <!-- Unified Pulse Ribbon -->
-            <div id="analytics-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-                <!-- Group 1: Navigation/Breadcrumb -->
-                <div class="flex items-center gap-3 px-2">
-                    <span class="text-xl">📈</span>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-medium text-slate-400">Review / Engineering Analytics</span>
-                        <h2 class="text-sm font-bold text-slate-800">Velocity & Retrospective</h2>
-                    </div>
-                    ${typeof renderInfoButton === 'function' ? renderInfoButton('analytics') : ''}
+    const ribbon = `
+        <div id="analytics-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <span class="text-xl">📈</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-medium text-slate-400">Ship · Analytics — ${mode === 'exec' ? 'Outcome & OKR trends' : mode === 'dev' ? 'Your sprint contribution' : 'Velocity & retrospective'}</span>
+                    <h2 class="text-sm font-bold text-slate-800">Engineering Analytics</h2>
                 </div>
-
-                <!-- Group 2: Actions -->
-                <div class="flex items-center gap-2">
-                    <div id="analytics-next-action-mount">
-                        ${(typeof renderPrimaryStageAction === 'function') ? renderPrimaryStageAction('analytics') : ''}
-                    </div>
+                ${typeof renderInfoButton === 'function' ? renderInfoButton('analytics') : ''}
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="analytics-next-action-mount">
+                    ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('analytics') : ''}
                 </div>
             </div>
-            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('analytics') : ''}
-
-            <!-- Strategic Pulse Banner -->
-            ${renderStrategicAnalyticsBanner()}
-
-            <!-- KPI Cards (Outcome Focused) -->
-            ${renderKPICards()}
-
-            <!-- Sprint Progress (real data) -->
-            ${renderSprintProgress()}
-
-            <!-- Velocity Chart -->
-            ${renderVelocityChart(velocityData)}
-
-            <!-- Metrics Table -->
-            ${renderMetricsTable(velocityData)}
         </div>
-    `;
+        ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('analytics') : ''}`
 
-    // Load Google Charts if available
+    // ---- Exec: OKR outcome view only ----
+    if (mode === 'exec') {
+        container.innerHTML = `<div class="space-y-6">${ribbon}${renderStrategicAnalyticsBanner()}${renderOKRTrendPanel()}${renderEpicHealthPanel()}${renderSprintForecastPanel()}</div>`
+        return
+    }
+
+    // ---- Dev: personal sprint contribution ----
+    if (mode === 'dev') {
+        container.innerHTML = `<div class="space-y-6">${ribbon}${renderDevContributionPanel()}${renderSprintProgress()}</div>`
+        if (typeof google !== 'undefined' && google.charts) {
+            google.charts.load('current', { packages: ['corechart'] })
+            google.charts.setOnLoadCallback(() => drawBurndownChart())
+        }
+        return
+    }
+
+    // ---- PM: full analytics ----
+    container.innerHTML = `
+        <div class="space-y-6">
+            ${ribbon}
+            ${renderStrategicAnalyticsBanner()}
+            ${renderKPICards()}
+            ${renderSprintProgress()}
+            ${renderVelocityChart(velocityData)}
+            ${renderOKRTrendPanel()}
+            ${renderEpicHealthPanel()}
+            ${renderSprintForecastPanel()}
+            ${renderMetricsTable(velocityData)}
+        </div>`
+
     if (typeof google !== 'undefined' && google.charts) {
-        google.charts.load('current', { packages: ['corechart', 'line'] });
+        google.charts.load('current', { packages: ['corechart', 'line'] })
         google.charts.setOnLoadCallback(() => {
-            drawVelocityChart(velocityData);
-            drawBurndownChart();
-        });
+            drawVelocityChart(velocityData)
+            drawBurndownChart()
+        })
     }
 }
 
@@ -415,6 +412,348 @@ function drawBurndownChart() {
 
     const chart = new google.visualization.PieChart(chartContainer)
     chart.draw(chartData, options)
+}
+
+// ---- OKR Trend Panel ----
+// Shows each OKR's overallProgress alongside the sprint count that touched it,
+// and a simple "sprints to completion" forecast.
+function renderOKRTrendPanel() {
+    const okrs     = UPDATE_DATA.metadata?.okrs || []
+    const velocity = UPDATE_DATA.metadata?.velocityHistory || []
+    const sprints  = UPDATE_DATA.metadata?.sprints || []
+
+    if (okrs.length === 0) return ''
+
+    // Average velocity (completed pts) over last 3 sprints
+    const recent = velocity.slice(-3)
+    const avgPts = recent.length > 0
+        ? Math.round(recent.reduce((s, h) => s + (h.completed || 0), 0) / recent.length)
+        : 0
+
+    const rows = okrs.map(okr => {
+        const pct        = okr.overallProgress || 0
+        const remaining  = 100 - pct
+        const barColor   = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+
+        // Count closed sprints that were linked to this OKR
+        const linkedSprints = sprints.filter(s => s.linkedOKR === okr.id && (s.status === 'completed' || s.status === 'closed')).length
+
+        // Forecast: if avgPts > 0 and we know remaining progress, estimate sprints
+        // Heuristic: each sprint advances OKR by (pct / linkedSprints) on average
+        let forecastLabel = '—'
+        if (linkedSprints > 0 && pct > 0 && pct < 100) {
+            const ptsPerSprint = pct / linkedSprints
+            const sprintsNeeded = Math.ceil(remaining / ptsPerSprint)
+            forecastLabel = `~${sprintsNeeded} sprint${sprintsNeeded !== 1 ? 's' : ''}`
+        } else if (pct >= 100) {
+            forecastLabel = '✓ Complete'
+        }
+
+        const krsTotal = okr.keyResults?.length || 0
+        const krsDone  = (okr.keyResults || []).filter(kr => (kr.progress || 0) >= 100).length
+
+        return `
+            <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                <td class="px-4 py-3">
+                    <div class="text-xs font-bold text-slate-800 truncate max-w-[220px]">${okr.objective || okr.title || okr.id}</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">${okr.quarter || ''} · ${krsTotal} KRs (${krsDone} complete)</div>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                        <div class="h-2 w-32 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                            <div class="${barColor} h-full rounded-full transition-all" style="width:${pct}%"></div>
+                        </div>
+                        <span class="text-xs font-black text-slate-700">${pct}%</span>
+                    </div>
+                </td>
+                <td class="px-4 py-3 text-center text-xs text-slate-600">${linkedSprints}</td>
+                <td class="px-4 py-3 text-center text-xs font-bold ${pct >= 100 ? 'text-emerald-600' : 'text-indigo-600'}">${forecastLabel}</td>
+            </tr>`
+    }).join('')
+
+    return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-black text-slate-800">OKR Progress Trend</h3>
+                ${avgPts > 0 ? `<span class="text-[10px] font-bold text-slate-400">Avg velocity: ${avgPts} pts / sprint (last 3)</span>` : ''}
+            </div>
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-200">
+                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Objective</th>
+                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Progress</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Sprints Run</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Forecast to 100%</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`
+}
+
+// ---- Epic Health Panel ----
+// Classifies each epic as On Track / At Risk / Slipping based on
+// % done vs % of time elapsed to its end date.
+function renderEpicHealthPanel() {
+    const epics  = UPDATE_DATA.metadata?.epics || []
+    const today  = new Date(); today.setHours(0, 0, 0, 0)
+
+    // Build epic → item completion map
+    const epicStats = {}
+    ;(UPDATE_DATA.tracks || []).forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (!item.epicId) return
+                if (!epicStats[item.epicId]) epicStats[item.epicId] = { total: 0, done: 0 }
+                epicStats[item.epicId].total++
+                if (item.status === 'done') epicStats[item.epicId].done++
+            })
+        })
+    })
+
+    const rows = epics.map(epic => {
+        const stats   = epicStats[epic.id] || { total: 0, done: 0 }
+        const donePct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0
+
+        // Time elapsed %
+        let timePct   = null
+        let timeLabel = '—'
+        if (epic.startDate && epic.endDate) {
+            const start    = new Date(epic.startDate)
+            const end      = new Date(epic.endDate)
+            const total    = end - start
+            const elapsed  = Math.min(today - start, total)
+            timePct  = total > 0 ? Math.round((elapsed / total) * 100) : 0
+            const daysLeft = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+            timeLabel = daysLeft > 0 ? `${daysLeft}d left` : `${Math.abs(daysLeft)}d overdue`
+        }
+
+        // Health classification
+        let health, healthClass
+        if (timePct === null) {
+            health = 'No dates'; healthClass = 'text-slate-400'
+        } else if (donePct >= timePct) {
+            health = '✓ On Track'; healthClass = 'text-emerald-600'
+        } else if (donePct >= timePct - 20) {
+            health = '⚠ At Risk'; healthClass = 'text-amber-600'
+        } else {
+            health = '⛔ Slipping'; healthClass = 'text-rose-600'
+        }
+
+        const barColor = donePct >= 80 ? 'bg-emerald-500' : donePct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+
+        return `
+            <tr class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                <td class="px-4 py-3">
+                    <div class="text-xs font-bold text-slate-800 truncate max-w-[200px]">${epic.name}</div>
+                    <div class="text-[10px] text-slate-400">${epic.track || ''}</div>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                        <div class="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                            <div class="${barColor} h-full rounded-full" style="width:${donePct}%"></div>
+                        </div>
+                        <span class="text-xs font-black text-slate-700">${donePct}%</span>
+                    </div>
+                    <div class="text-[9px] text-slate-400 mt-0.5">${stats.done}/${stats.total} items</div>
+                </td>
+                <td class="px-4 py-3 text-center text-xs text-slate-500">${timeLabel}</td>
+                <td class="px-4 py-3 text-center">
+                    <span class="text-xs font-black ${healthClass}">${health}</span>
+                </td>
+            </tr>`
+    }).join('')
+
+    if (!epics.length) return ''
+
+    return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-black text-slate-800">Epic Health — On Track vs Slipping</h3>
+            </div>
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-slate-200">
+                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Epic</th>
+                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Completion</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Time Left</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Health</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`
+}
+
+// ---- Sprint Forecast Panel ----
+// Projects future sprint velocity using a simple 3-sprint rolling average.
+// Shows "sprints to current OKR completion" per linked OKR.
+function renderSprintForecastPanel() {
+    const velocity = UPDATE_DATA.metadata?.velocityHistory || []
+    const sprints  = UPDATE_DATA.metadata?.sprints || []
+    const okrs     = UPDATE_DATA.metadata?.okrs || []
+
+    if (velocity.length < 2) return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-6 py-8 text-center">
+            <div class="text-slate-400 text-sm">Need at least 2 closed sprints for forecasting.</div>
+        </div>`
+
+    const recent  = velocity.slice(-3)
+    const avgPts  = Math.round(recent.reduce((s, h) => s + (h.completed || 0), 0) / recent.length)
+    const avgRate = recent.length > 0
+        ? Math.round(recent.reduce((s, h) => s + Math.round((h.completed / (h.planned || 1)) * 100), 0) / recent.length)
+        : 0
+
+    // Trend: is velocity improving, stable, declining?
+    const trend = recent.length >= 2
+        ? (recent[recent.length - 1].completed > recent[0].completed ? '↑ Improving' : recent[recent.length - 1].completed < recent[0].completed ? '↓ Declining' : '→ Stable')
+        : '→ Stable'
+    const trendColor = trend.startsWith('↑') ? 'text-emerald-600' : trend.startsWith('↓') ? 'text-rose-600' : 'text-slate-600'
+
+    // Next sprint forecast
+    const futureSprints = sprints.filter(s => s.status !== 'completed' && s.status !== 'closed')
+    const nextSprint    = futureSprints[0]
+
+    const forecastCards = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                <div class="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">Rolling Avg Velocity</div>
+                <div class="text-2xl font-black text-indigo-900">${avgPts}<span class="text-sm font-bold ml-1">pts</span></div>
+                <div class="text-[10px] text-indigo-600 mt-1">per sprint (last ${recent.length})</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Commitment Rate</div>
+                <div class="text-2xl font-black ${avgRate >= 85 ? 'text-emerald-700' : avgRate >= 70 ? 'text-amber-700' : 'text-rose-700'}">${avgRate}%</div>
+                <div class="text-[10px] text-slate-500 mt-1">planned → delivered avg</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Velocity Trend</div>
+                <div class="text-2xl font-black ${trendColor}">${trend}</div>
+                <div class="text-[10px] text-slate-500 mt-1">${nextSprint ? `Next: ${nextSprint.name}` : 'No upcoming sprint'}</div>
+            </div>
+        </div>`
+
+    // OKR forecast rows
+    const okrRows = okrs.map(okr => {
+        const pct      = okr.overallProgress || 0
+        if (pct >= 100) return `
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                <span class="text-xs font-bold text-slate-700 truncate max-w-[60%]">${okr.objective || okr.id}</span>
+                <span class="text-xs font-black text-emerald-600">✓ Complete</span>
+            </div>`
+
+        const linkedSprints = sprints.filter(s => s.linkedOKR === okr.id && (s.status === 'completed' || s.status === 'closed')).length
+        const ptsPerSprint  = linkedSprints > 0 ? pct / linkedSprints : null
+        const remaining     = 100 - pct
+
+        let forecast = 'Insufficient data'
+        if (ptsPerSprint && ptsPerSprint > 0) {
+            const n = Math.ceil(remaining / ptsPerSprint)
+            forecast = `~${n} sprint${n !== 1 ? 's' : ''} (${Math.round(ptsPerSprint)}%/sprint)`
+        }
+
+        return `
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                <span class="text-xs font-bold text-slate-700 truncate max-w-[60%]">${okr.objective || okr.id}</span>
+                <div class="flex items-center gap-3">
+                    <div class="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="${pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'} h-full rounded-full" style="width:${pct}%"></div>
+                    </div>
+                    <span class="text-[10px] font-black text-indigo-600 whitespace-nowrap">${forecast}</span>
+                </div>
+            </div>`
+    }).join('')
+
+    return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-black text-slate-800">Sprint Forecast</h3>
+            </div>
+            <div class="p-6">
+                ${forecastCards}
+                ${okrRows ? `
+                    <div>
+                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-3">OKR Completion Forecast</div>
+                        ${okrRows}
+                    </div>` : ''}
+            </div>
+        </div>`
+}
+
+// ---- Dev Contribution Panel ----
+// Shows the current user's sprint items + personal velocity (pts done this sprint).
+function renderDevContributionPanel() {
+    const currentUser = (typeof window.CURRENT_USER !== 'undefined' && window.CURRENT_USER?.name)
+        ? window.CURRENT_USER.name : null
+
+    const activeSprint = (UPDATE_DATA.metadata?.sprints || []).find(s => s.status === 'active')
+    const velocity     = UPDATE_DATA.metadata?.velocityHistory || []
+
+    if (!activeSprint) return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-6 py-8 text-center">
+            <div class="text-slate-400 text-sm">No active sprint found.</div>
+        </div>`
+
+    // Collect this user's items in the active sprint
+    const myItems = []
+    ;(UPDATE_DATA.tracks || []).forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (item.sprintId !== activeSprint.id) return
+                if (!currentUser || (item.contributors || []).includes(currentUser)) {
+                    myItems.push(item)
+                }
+            })
+        })
+    })
+
+    const myPts    = myItems.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const myDone   = myItems.filter(i => i.status === 'done').reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const myPct    = myPts > 0 ? Math.round((myDone / myPts) * 100) : 0
+    const blocked  = myItems.filter(i => i.status === 'blocked' || i.blocker).length
+    const barColor = myPct >= 80 ? 'bg-emerald-500' : myPct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+
+    const statusOrder = ['blocked', 'now', 'qa', 'review', 'next', 'done', 'later']
+    const itemRows = statusOrder.flatMap(status => {
+        const bucket = myItems.filter(i => i.status === status)
+        if (!bucket.length) return []
+        const badgeClass = (typeof statusConfig !== 'undefined' && statusConfig[status]?.class) || 'bg-slate-100 text-slate-600'
+        return [`
+            <div class="mb-3">
+                <div class="mb-1"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${badgeClass}">${status}</span></div>
+                ${bucket.map(item => `
+                    <div class="flex items-center gap-2 py-1.5 pl-2 text-[11px] text-slate-700 border-b border-slate-50 last:border-0">
+                        <span class="flex-1 truncate">${item.text}</span>
+                        ${item.storyPoints ? `<span class="text-[10px] font-black text-slate-400 shrink-0">${item.storyPoints}p</span>` : ''}
+                    </div>`).join('')}
+            </div>`]
+    }).join('')
+
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5">
+                <div class="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-1">My Sprint Progress</div>
+                <div class="text-3xl font-black text-indigo-900">${myPct}%</div>
+                <div class="h-1.5 w-full bg-indigo-100 rounded-full overflow-hidden mt-2">
+                    <div class="${barColor} h-full rounded-full" style="width:${myPct}%"></div>
+                </div>
+                <div class="text-[10px] text-indigo-600 mt-1.5">${myDone}/${myPts} pts done</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">My Items</div>
+                <div class="text-3xl font-black text-slate-900">${myItems.length}</div>
+                <div class="text-[10px] text-slate-500 mt-1">in ${activeSprint.name}</div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-5">
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Blocked</div>
+                <div class="text-3xl font-black ${blocked > 0 ? 'text-rose-600' : 'text-emerald-600'}">${blocked}</div>
+                <div class="text-[10px] text-slate-500 mt-1">${blocked > 0 ? 'needs attention' : 'all clear'}</div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h3 class="text-sm font-black text-slate-800 mb-4">My Sprint Items — ${activeSprint.name}</h3>
+            ${itemRows || `<div class="text-slate-400 text-sm text-center py-4">No items assigned to you in this sprint.</div>`}
+        </div>`
 }
 
 // Export
