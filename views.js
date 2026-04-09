@@ -734,10 +734,10 @@ function renderItem(item, viewPrefix = 'main', trackIndex, subtrackIndex, itemIn
                             ${personaHTML}
                             ${(() => {
                                 if (!isGrooming) return '';
-                                const groomedScore = [item.epicId, item.sprintId, item.storyPoints, item.acceptanceCriteria?.length].filter(Boolean).length;
-                                const cls = groomedScore >= 4 ? 'groom-done' : groomedScore >= 2 ? 'groom-todo' : 'groom-none';
-                                const label = groomedScore >= 4 ? '✓ Ready' : `${groomedScore}/4`;
-                                return `<span class="groom-badge ${cls}">${label}</span>`;
+                                const gs = computeGroomScore(item);
+                                const cls = gs >= 70 ? 'groom-done' : gs >= 40 ? 'groom-todo' : 'groom-none';
+                                const label = gs >= 70 ? `✓ ${gs}` : `${gs}pts`;
+                                return `<span class="groom-badge ${cls}" title="Grooming score: epicId(25)+storyPoints(25)+AC(25)+priority(15)+sprintId(10)">${label}</span>`;
                             })()}
                         </div>
                         <div class="text-sm text-slate-800 font-semibold leading-tight flex-1">
@@ -1260,9 +1260,43 @@ function renderContributorView() {
 }
 
 // ------ Backlog View ------
+// ---- Grooming score (0-100, weighted) ----
+// epicId(25) + storyPoints(25) + acceptanceCriteria(25) + priority≠none(15) + sprintId(10)
+function computeGroomScore(item) {
+    let s = 0
+    if (item.epicId)  s += 25
+    if (item.storyPoints > 0) s += 25
+    if (item.acceptanceCriteria && String(item.acceptanceCriteria).trim().length > 0) s += 25
+    if (item.priority && item.priority !== 'none' && item.priority !== '') s += 15
+    if (item.sprintId) s += 10
+    return s
+}
+
+// ---- Bulk-select state for grooming mode ----
+// Exposed on window so cms.js bulkAssignBacklog can read it
+const _backlogSelected = new Set()
+window._backlogSelected = _backlogSelected
+
+function toggleBacklogSelect(itemId) {
+    if (_backlogSelected.has(itemId)) {
+        _backlogSelected.delete(itemId)
+    } else {
+        _backlogSelected.add(itemId)
+    }
+    renderBacklogView()
+}
+window.toggleBacklogSelect = toggleBacklogSelect
+
+function clearBacklogSelection() {
+    _backlogSelected.clear()
+    renderBacklogView()
+}
+window.clearBacklogSelection = clearBacklogSelection
+
 let groomingMode = false;
 function toggleGroomingMode() {
     groomingMode = !groomingMode;
+    _backlogSelected.clear()
     renderTrackView(); // from views.js
     updateBacklogBadge(); // from cms.js
     buildTagFilterBar(); // from core.js
@@ -1273,12 +1307,36 @@ function toggleGroomingMode() {
 
 function renderBacklogView() {
     const container = document.getElementById('backlog-view');
-    let html = '';
-    if (shouldShowManagement()) {
-        const ribbonHtml = `
-            <div style="position:relative;margin-bottom:24px;">
+    const sprints = (UPDATE_DATA.metadata?.sprints || [])
+    const showMgmt = shouldShowManagement()
+    const activeTeam = getActiveTeam()
+    const sprintReadyFilter = sessionStorage.getItem('backlog_sprint_ready_filter') === 'true'
+
+    // ---- Gather all backlog items and compute stats ----
+    const allBacklogItems = []
+    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+        const bl = track.subtracks.find(s => s.name === 'Backlog')
+        if (!bl) return
+        const si = track.subtracks.indexOf(bl)
+        bl.items.forEach((item, ii) => {
+            allBacklogItems.push({ item, track, trackIndex, si, ii, score: computeGroomScore(item) })
+        })
+    })
+
+    const totalCount   = allBacklogItems.length
+    const readyCount   = allBacklogItems.filter(r => r.score >= 70).length
+    const unpointedCount = allBacklogItems.filter(r => !r.item.storyPoints || r.item.storyPoints <= 0).length
+    const unepicedCount  = allBacklogItems.filter(r => !r.item.epicId).length
+    const readyPct = totalCount > 0 ? Math.round((readyCount / totalCount) * 100) : 0
+    const barColor = readyPct >= 70 ? 'bg-emerald-500' : readyPct >= 40 ? 'bg-amber-400' : 'bg-red-400'
+
+    let html = ''
+
+    // ---- Ribbon ----
+    if (showMgmt) {
+        html += `
+            <div style="position:relative;margin-bottom:16px;">
                 <div id="backlog-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-                    <!-- Group 1: Navigation/Breadcrumb -->
                     <div class="flex items-center gap-3 px-2">
                         <span class="text-xl">📚</span>
                         <div class="flex flex-col">
@@ -1287,15 +1345,12 @@ function renderBacklogView() {
                         </div>
                         ${typeof renderInfoButton === 'function' ? renderInfoButton('backlog') : ''}
                     </div>
-
-                    <!-- Group 2: Actions -->
                     <div class="flex items-center gap-2">
                         <div id="backlog-next-action-mount">
                             ${renderPrimaryStageAction('backlog')}
                         </div>
-                        
                         <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                        <button onclick="toggleGroomingMode()" 
+                        <button onclick="toggleGroomingMode()"
                             class="px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg flex items-center gap-2 active:scale-95 ${groomingMode ? 'bg-emerald-600 text-white hover:bg-emerald-700 ring-4 ring-emerald-500/10' : 'bg-slate-900 text-white hover:bg-slate-800'}">
                             ${groomingMode ? '✅ Grooming Active' : '🔧 Enter Grooming Mode'}
                         </button>
@@ -1303,60 +1358,119 @@ function renderBacklogView() {
                 </div>
                 ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('backlog') : ''}
             </div>
-        `;
-        html += ribbonHtml;
+        `
     }
 
+    // ---- Grooming summary header (always visible when there are items) ----
+    if (totalCount > 0) {
+        const filterBtnClass = sprintReadyFilter
+            ? 'bg-emerald-600 text-white border-emerald-600'
+            : 'bg-white text-slate-600 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
+        html += `
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-4 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Grooming Health</span>
+                        <span class="text-xs font-black ${readyPct >= 70 ? 'text-emerald-600' : readyPct >= 40 ? 'text-amber-600' : 'text-red-500'}">${readyCount} / ${totalCount} sprint-ready (≥70pts)</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[10px] text-slate-400 px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">⚡ ${unpointedCount} unpointed</span>
+                        <span class="text-[10px] text-slate-400 px-2 py-1 bg-slate-50 rounded-lg border border-slate-100">🌟 ${unepicedCount} no epic</span>
+                        <button onclick="sessionStorage.setItem('backlog_sprint_ready_filter', '${!sprintReadyFilter}'); renderBacklogView()"
+                            class="text-[10px] font-black px-3 py-1.5 rounded-lg border transition-all ${filterBtnClass}">
+                            ${sprintReadyFilter ? '✅ Sprint-Ready Only' : '🎯 Show Sprint-Ready'}
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="${barColor} h-full rounded-full transition-all" style="width:${readyPct}%"></div>
+                    </div>
+                    <span class="text-[10px] font-black text-slate-500 w-8 text-right">${readyPct}%</span>
+                </div>
+            </div>
+        `
+    }
+
+    // ---- Grooming session banner ----
     if (groomingMode) {
-        // Compute grooming stats across all backlog items
-        let totalBacklog = 0, needsGroomingCount = 0;
-        UPDATE_DATA.tracks.forEach(track => {
-            const bl = track.subtracks.find(s => s.name === 'Backlog');
-            if (!bl) return;
-            bl.items.forEach(i => {
-                totalBacklog++;
-                const score = [i.epicId, i.sprintId, i.storyPoints, i.acceptanceCriteria?.length].filter(Boolean).length;
-                if (score < 4) needsGroomingCount++;
-            });
-        });
-        const groomedCount = totalBacklog - needsGroomingCount;
+        const selCount = _backlogSelected.size
         html += `
             <div class="grooming-session-bar">
                 <div class="flex items-center gap-2">
                     <span class="text-sm">🔧</span>
                     <span class="font-black text-indigo-800 text-xs">Grooming Session Active</span>
-                    <span class="text-xs text-indigo-500">${needsGroomingCount} item${needsGroomingCount !== 1 ? 's' : ''} need grooming</span>
+                    <span class="text-xs text-indigo-500">${totalCount - readyCount} item${(totalCount - readyCount) !== 1 ? 's' : ''} need grooming</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-bold text-indigo-400">${groomedCount} sprint-ready</span>
+                    ${selCount > 0 ? `<span class="text-xs font-black text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">${selCount} selected</span>` : ''}
+                    <span class="text-xs font-bold text-indigo-400">${readyCount} sprint-ready</span>
                     <button onclick="toggleGroomingMode()" class="text-[10px] font-black text-indigo-500 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50">✕ Exit</button>
                 </div>
             </div>
-        `;
+        `
     }
 
-    let totalItems = 0;
-    const activeTeam = getActiveTeam();
-    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-        if (activeTeam && activeTeam !== track.name) return;
-        const backlogSub = track.subtracks.find(s => s.name === 'Backlog');
-        if (!backlogSub || !backlogSub.items.length) return;
-        totalItems += backlogSub.items.length;
+    // ---- Floating bulk-action bar ----
+    if (groomingMode && _backlogSelected.size > 0) {
+        const sprintOpts = sprints.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
+        const horizonOpts = [
+            {id:'1M',label:'1M — Now'},{id:'3M',label:'3M — Next'},
+            {id:'6M',label:'6M — Later'},{id:'1Y',label:'1Y — Future'}
+        ].map(h => `<option value="${h.id}">${h.label}</option>`).join('')
+        html += `
+            <div class="groom-bulk-bar">
+                <span class="groom-bulk-count">${_backlogSelected.size} selected</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                    ${sprints.length > 0 ? `
+                    <select class="groom-bulk-select" onchange="if(this.value) bulkAssignBacklog('sprintId', this.value); this.value=''">
+                        <option value="">→ Assign Sprint…</option>
+                        ${sprintOpts}
+                    </select>` : ''}
+                    <select class="groom-bulk-select" onchange="if(this.value) bulkAssignBacklog('planningHorizon', this.value); this.value=''">
+                        <option value="">→ Assign Horizon…</option>
+                        ${horizonOpts}
+                    </select>
+                    <button onclick="clearBacklogSelection()" class="groom-bulk-clear">✕ Clear</button>
+                </div>
+            </div>
+        `
+    }
 
-        const si = track.subtracks.indexOf(backlogSub);
+    // ---- Item list ----
+    let totalItems = 0
+    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+        if (activeTeam && activeTeam !== track.name) return
+        const backlogSub = track.subtracks.find(s => s.name === 'Backlog')
+        if (!backlogSub || !backlogSub.items.length) return
+
+        // Apply sprint-ready filter
+        const visibleItems = backlogSub.items.map((item, ii) => ({ item, ii }))
+            .filter(({ item }) => !sprintReadyFilter || computeGroomScore(item) >= 70)
+
+        if (!visibleItems.length) return
+        totalItems += visibleItems.length
+
+        const si = track.subtracks.indexOf(backlogSub)
         html += `<div class="backlog-track-card mb-6 overflow-hidden ${groomingMode ? 'border-2 border-indigo-400 shadow-xl scale-[1.01] transform transition-all' : ''}">
             <div class="p-4 bg-slate-100 font-extrabold border-b flex justify-between items-center text-slate-700">
-                <span class="flex items-center gap-2">🏗️ ${track.name} Backlog <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">${backlogSub.items.length}</span></span>
-                ${shouldShowManagement() ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
+                <span class="flex items-center gap-2">🏗️ ${track.name} Backlog <span class="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">${visibleItems.length}</span></span>
+                ${showMgmt ? `<button onclick="addItem(${trackIndex}, ${si})" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm flex items-center gap-1.5 transition-all"><span>+</span> Add Item</button>` : ''}
             </div>
-            <div class="p-3 space-y-3 bg-white">`;
-        const sprints = (UPDATE_DATA.metadata?.sprints || []);
-        backlogSub.items.forEach((item, ii) => {
-            html += `<div class="backlog-item-wrapper">`;
-            html += renderItem(item, 'backlog', trackIndex, si, ii, groomingMode);
-            if (shouldShowManagement() && sprints.length > 0 && !groomingMode) {
-                const assignedSprint = sprints.find(s => s.id === item.sprintId);
-                const sprintOptions = sprints.map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
+            <div class="p-3 space-y-3 bg-white">`
+
+        visibleItems.forEach(({ item, ii }) => {
+            const isSelected = _backlogSelected.has(item.id)
+            html += `<div class="backlog-item-wrapper${isSelected ? ' groom-item-selected' : ''}">`
+            if (groomingMode && showMgmt) {
+                html += `<label class="groom-checkbox-label">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBacklogSelect('${item.id}')" class="groom-checkbox">
+                </label>`
+            }
+            html += renderItem(item, 'backlog', trackIndex, si, ii, groomingMode)
+            if (showMgmt && sprints.length > 0 && !groomingMode) {
+                const assignedSprint = sprints.find(s => s.id === item.sprintId)
+                const sprintOptions = sprints.map(s => `<option value="${s.id}" ${item.sprintId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')
                 html += `
                     <div class="backlog-sprint-assign">
                         ${assignedSprint
@@ -1368,27 +1482,27 @@ function renderBacklogView() {
                             ${sprintOptions}
                         </select>
                     </div>
-                `;
+                `
             }
-            html += `</div>`;
-        });
-        html += `</div></div>`;
-    });
+            html += `</div>`
+        })
+        html += `</div></div>`
+    })
+
     if (!totalItems) {
-        const showMgmt = shouldShowManagement()
         container.innerHTML = (html || '') + `
             <div class="bg-white p-12 rounded-xl border border-dashed border-slate-300 text-center mt-4">
-                <div class="text-6xl mb-4">📋</div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2">No backlog items yet</h3>
-                <p class="text-slate-500 text-sm mb-6">Start by capturing ideas in Ideation or breaking down your Epics into actionable tasks.</p>
+                <div class="text-6xl mb-4">${sprintReadyFilter ? '🎯' : '📋'}</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">${sprintReadyFilter ? 'No sprint-ready items' : 'No backlog items yet'}</h3>
+                <p class="text-slate-500 text-sm mb-6">${sprintReadyFilter ? 'Items need a score ≥70 to appear here. Groom more items to prepare them.' : 'Start by capturing ideas in Ideation or breaking down your Epics into actionable tasks.'}</p>
                 <div class="flex gap-3 justify-center">
-                    <button onclick="switchView('ideation')" class="cms-btn cms-btn-secondary">Browse Ideation →</button>
-                    ${showMgmt ? `<button onclick="addItem(0,0)" class="cms-btn cms-btn-primary">+ Add First Item</button>` : ''}
+                    ${sprintReadyFilter ? `<button onclick="sessionStorage.removeItem('backlog_sprint_ready_filter'); renderBacklogView()" class="cms-btn cms-btn-secondary">← Show all items</button>` : `<button onclick="switchView('ideation')" class="cms-btn cms-btn-secondary">Browse Ideation →</button>`}
+                    ${showMgmt && !sprintReadyFilter ? `<button onclick="addItem(0,0)" class="cms-btn cms-btn-primary">+ Add First Item</button>` : ''}
                 </div>
-            </div>`;
+            </div>`
         return
     }
-    container.innerHTML = html;
+    container.innerHTML = html
 }
 
 // ------ Epics View ------

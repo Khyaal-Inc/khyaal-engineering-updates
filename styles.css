@@ -2189,10 +2189,6 @@ summary::-webkit-details-marker {
 }
 
 /* Backlog inline sprint assignment */
-.backlog-item-wrapper {
-    border-bottom: 1px solid #f1f5f9;
-}
-.backlog-item-wrapper:last-child { border-bottom: none; }
 .backlog-sprint-assign {
     display: flex;
     align-items: center;
@@ -2242,6 +2238,57 @@ summary::-webkit-details-marker {
 .groom-done  { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .groom-todo  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 .groom-none  { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+
+/* Bulk-select checkbox */
+.groom-checkbox-label {
+    display: flex; align-items: flex-start;
+    padding: 12px 4px 0 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.groom-checkbox {
+    width: 16px; height: 16px;
+    cursor: pointer;
+    accent-color: #4f46e5;
+}
+.backlog-item-wrapper.groom-item-selected {
+    background: #eef2ff;
+    border-left: 3px solid #4f46e5;
+}
+.backlog-item-wrapper { display: flex; align-items: stretch; border-bottom: 1px solid #f1f5f9; }
+.backlog-item-wrapper:last-child { border-bottom: none; }
+.backlog-item-wrapper > .item-row { flex: 1; min-width: 0; }
+
+/* Floating bulk-action bar */
+.groom-bulk-bar {
+    position: sticky; bottom: 16px; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    background: #1e1b4b;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px -4px rgba(79,70,229,0.4);
+    color: white;
+}
+.groom-bulk-count {
+    font-size: 11px; font-weight: 900; color: #a5b4fc; white-space: nowrap;
+}
+.groom-bulk-select {
+    font-size: 11px; font-weight: 700;
+    padding: 5px 10px;
+    background: #312e81; color: #e0e7ff;
+    border: 1px solid #4338ca; border-radius: 8px;
+    cursor: pointer; outline: none;
+}
+.groom-bulk-select:hover { background: #3730a3; }
+.groom-bulk-clear {
+    font-size: 11px; font-weight: 900;
+    padding: 5px 10px;
+    background: transparent; color: #94a3b8;
+    border: 1px solid #334155; border-radius: 8px;
+    cursor: pointer;
+}
+.groom-bulk-clear:hover { background: #1e293b; color: #e2e8f0; }
 
 .backlog-count-badge {
     background: #ef4444;

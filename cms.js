@@ -1419,6 +1419,24 @@ function quickAssignEpicHorizon(epicIdx, horizonId) {
 }
 window.quickAssignEpicHorizon = quickAssignEpicHorizon
 
+function bulkAssignBacklog(field, value) {
+    const selected = window._backlogSelected
+    if (!selected || selected.size === 0) return
+    let changed = 0
+    selected.forEach(itemId => {
+        const found = findItemById(itemId)
+        if (!found) return
+        found.item[field] = value
+        changed++
+    })
+    if (changed > 0) {
+        logChange('bulk-assign', `${changed} items → ${field}=${value}`)
+        saveToLocalStorage()
+    }
+    if (typeof clearBacklogSelection === 'function') clearBacklogSelection()
+}
+window.bulkAssignBacklog = bulkAssignBacklog
+
 function quickChangeStatus(itemId, newStatus) {
     const found = findItemById(itemId)
     if (!found) return

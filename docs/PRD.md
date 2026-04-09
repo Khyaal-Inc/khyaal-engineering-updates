@@ -241,6 +241,33 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F23 — Grooming View Enhancement (Weighted Score, Sprint-Ready Filter, Bulk Assign) ✅ Shipped
+
+- `views.js` — `computeGroomScore()` added; `renderBacklogView()` rewritten; `_backlogSelected` Set + helpers added; `renderItem()` groom-badge updated
+- `cms.js` — `bulkAssignBacklog(field, value)` added
+- `styles.css` — bulk-action bar, checkbox, selected-item highlight; `.backlog-item-wrapper` consolidated to flex layout
+
+**`computeGroomScore(item)` — weighted 0–100 score:**
+| Field | Points | Rationale |
+|-------|--------|-----------|
+| `epicId` set | 25 | Links task to strategic goal |
+| `storyPoints > 0` | 25 | Sized for capacity planning |
+| `acceptanceCriteria` non-empty | 25 | Definition of done exists |
+| `priority` ≠ none/empty | 15 | Ranked for sprint ordering |
+| `sprintId` set | 10 | Already scheduled |
+
+**Grooming summary header** (always visible): shows `X / Y sprint-ready (≥70pts)`, unpointed count, no-epic count, and a CSS health bar. Replaces the old session-only stats bar.
+
+**Sprint-ready filter**: one-click toggle (`sessionStorage`-backed) hides all items with score < 70; button changes to active state with "✅ Sprint-Ready Only" label; empty state explains the filter and offers a back link.
+
+**Bulk-select in grooming mode**: each item shows a checkbox (left of card). Selecting any item shows a sticky floating action bar at screen bottom with:
+- "→ Assign Sprint…" dropdown (only when sprints exist)
+- "→ Assign Horizon…" dropdown
+- "✕ Clear" to deselect all
+- `bulkAssignBacklog(field, value)` in `cms.js` mutates all selected items, calls `saveToLocalStorage()`, then `clearBacklogSelection()` which re-renders
+
+**groom-badge update**: now shows actual score (`75pts`, `✓ 90`) instead of `3/4` count; thresholds are ≥70 (green), ≥40 (amber), <40 (red).
+
 #### F22 — Command Palette Enhancement (Action Mode, Recent Items, Broad Search) ✅ Shipped
 
 - `core.js` — 3 new functions added; `buildCmdCorpus`, `renderCmdPaletteResults`, `onCmdPaletteInput` updated; no new files
