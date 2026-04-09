@@ -83,10 +83,20 @@ function computeRiskScore(blockerCount, criticalPathLength, totalEdges) {
     return Math.round((blockerRatio * 0.6 + pathRisk * 0.4) * 100)
 }
 
+// ---- Node ID helpers ----
+// Mermaid node IDs: 'node_' + item.id with non-alphanumeric chars → '_'
+function toMermaidId(itemId) {
+    return 'node_' + itemId.replace(/[^a-zA-Z0-9]/g, '_')
+}
+
+// Reverse map: mermaid safe ID → original item ID (built per render)
+let _depNodeMap = {}   // mermaidSafeId → itemId
+
 // ---- Main View Renderer ----
 function renderDependencyView() {
     const container = document.getElementById('dependency-view')
     if (!container) return
+    _depNodeMap = {}
 
     // Collect all items
     const items = []
@@ -98,6 +108,7 @@ function renderDependencyView() {
                 if (item.id) {
                     items.push(item)
                     itemMap[item.id] = item
+                    _depNodeMap[toMermaidId(item.id)] = item.id
                 }
             })
         })
@@ -107,6 +118,9 @@ function renderDependencyView() {
     const edges = []
     const hasConnections = new Set()
 
+    // Collect blocker node IDs first so edge colouring covers all adjacent edges
+    const blockerIds = new Set(items.filter(i => i.blocker || i.status === 'blocked').map(i => i.id))
+
     items.forEach(item => {
         if (item.dependencies) {
             const deps = Array.isArray(item.dependencies) ? item.dependencies : [item.dependencies]
@@ -114,10 +128,11 @@ function renderDependencyView() {
                 if (itemMap[depId]) {
                     hasConnections.add(item.id)
                     hasConnections.add(depId)
+                    // Flag edge as blocker if either endpoint is a blocked item
                     edges.push({
                         from: depId,
                         to: item.id,
-                        isBlocker: !!(item.blocker || item.status === 'blocked')
+                        isBlocker: blockerIds.has(item.id) || blockerIds.has(depId)
                     })
                 }
             })
@@ -301,7 +316,13 @@ function renderDependencyView() {
                     </div>
                 </div>
                 <p style="font-size:11px;color:#94a3b8;margin-bottom:12px;">${connectedItems.length} connected items · ${edges.length} dependencies · ${criticalPathIds.length} in critical chain</p>
-                <style>.mermaid svg { width: 100%; height: auto; min-width: 600px; max-width: none !important; }</style>
+                <style>
+                    .mermaid svg { width: 100%; height: auto; min-width: 600px; max-width: none !important; }
+                    #dependency-view svg g.node { cursor: pointer; }
+                    #dependency-view svg g.node:hover rect,
+                    #dependency-view svg g.node:hover polygon,
+                    #dependency-view svg g.node:hover circle { filter: brightness(0.88); }
+                </style>
                 <div class="mermaid-container overflow-x-auto bg-slate-50 border border-slate-200 rounded-lg p-4" style="min-height:360px;">
                     <div class="mermaid w-full">${mermaidCode}</div>
                 </div>
@@ -371,20 +392,57 @@ function renderDependencyView() {
         </div>
     `
 
-    // Initialize Mermaid with IntersectionObserver
+    // Initialize Mermaid then wire node click-through
     if (window.mermaid) {
         const targetNode = container.querySelector('.mermaid')
         if (!targetNode) return
         const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
                 observer.disconnect()
-                mermaid.run({ nodes: container.querySelectorAll('.mermaid') }).catch(err => {
-                    console.warn('Mermaid render error:', err)
-                })
+                mermaid.run({ nodes: container.querySelectorAll('.mermaid') })
+                    .then(() => attachDepGraphClicks(container))
+                    .catch(err => console.warn('Mermaid render error:', err))
             }
         }, { threshold: 0.01 })
         observer.observe(container)
     }
+}
+
+// ---- Node click-through ----
+// After Mermaid renders, find each <g class="node"> in the SVG and attach
+// a click handler that opens the item edit modal for that node's item.
+// Mermaid 10 sets id="flowchart-<safeId>-<n>" on node <g> elements.
+function attachDepGraphClicks(container) {
+    const svg = container.querySelector('svg')
+    if (!svg) return
+
+    // Style cursor on all node groups so the affordance is clear
+    svg.querySelectorAll('g.node').forEach(nodeEl => {
+        // Mermaid 10 id format: "flowchart-node_xxx_yyy-0"
+        const rawId = nodeEl.id || ''                          // e.g. "flowchart-node_platform_website_auth_0-0"
+        const match = rawId.match(/^flowchart-(.+?)-\d+$/)    // capture the safeId part
+        if (!match) return
+
+        const safeId = match[1]                                // e.g. "node_platform_website_auth_0"
+        const itemId = _depNodeMap[safeId]
+        if (!itemId) return
+
+        nodeEl.style.cursor = 'pointer'
+
+        // Tooltip: show item title on hover
+        const item = (window.UPDATE_DATA?.tracks || [])
+            .flatMap(t => t.subtracks.flatMap(s => s.items))
+            .find(i => i.id === itemId)
+        if (item) {
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title')
+            title.textContent = item.text + ' — click to edit'
+            nodeEl.prepend(title)
+        }
+
+        nodeEl.addEventListener('click', () => {
+            if (typeof openItemEdit === 'function') openItemEdit(null, null, null, itemId)
+        })
+    })
 }
 
 function getStatusColor(status) {

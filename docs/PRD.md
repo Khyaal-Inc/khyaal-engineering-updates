@@ -206,9 +206,12 @@ Existing tools solve parts of the problem:
 - Live-scores results by position + word-boundary bonus; no external library
 - Opens from any context; Escape / backdrop click closes; `Cmd+K` toggles
 
-#### F10 — Dependency Graph Enhancement
-- Mermaid.js graph with interactive click-through to linked items
-- Blocker path highlighting (red edges for blocked chains)
+#### F10 — Dependency Graph Enhancement ✅ Shipped
+- Mermaid.js graph with interactive click-through: click any node → opens item edit modal directly
+- Blocker path highlighting: all edges adjacent to a blocked node render red/dashed (not just the blocked item's own edges)
+- Live re-render: resolving a blocker from the dependency view's panel instantly re-renders the graph without a page reload
+- SVG hover affordance: cursor + brightness filter on node hover signals interactivity
+- Reverse node map (`_depNodeMap`) bridges Mermaid's sanitised SVG IDs back to original item IDs
 
 #### F11 — Multi-Project + Role-Based Access *(Confirmed design — internal vNext)*
 

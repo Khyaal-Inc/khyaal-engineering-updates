@@ -1437,6 +1437,11 @@ function resolveBlocker(itemId) {
     logChange('Blocker Resolved', found.item.text)
     saveToLocalStorage()
     renderDashboard()
+    // Live re-render the dependency graph if it's currently visible
+    const depView = document.getElementById('dependency-view')
+    if (depView && depView.classList.contains('active') && typeof renderDependencyView === 'function') {
+        renderDependencyView()
+    }
 }
 window.resolveBlocker = resolveBlocker
 
