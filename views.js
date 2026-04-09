@@ -1611,12 +1611,109 @@ function renderEpicsView() {
 }
 
 // ------ Roadmap View ------
+// ------ Roadmap helpers ------
+
+function buildRoadmapEpicCard(epic, epicIdx, horizons, mode, showManagement) {
+    const epics = (window.UPDATE_DATA?.metadata?.epics || [])
+    const okrs  = (window.UPDATE_DATA?.metadata?.okrs  || [])
+    const epicItems = findItemsByMetadataId('epicId', epic.id)
+    const total = epicItems.length
+    const done  = epicItems.filter(i => i.status === 'done').length
+    const pct   = total > 0 ? Math.round((done / total) * 100) : 0
+    const linkedOKR = okrs.find(o => o.id === epic.linkedOKR)
+
+    const statusColors = { completed: 'bg-emerald-100 text-emerald-800', delivery: 'bg-blue-100 text-blue-800', active: 'bg-indigo-100 text-indigo-800' }
+    const statusLabel  = epic.status === 'completed' ? 'Done' : (epic.stage || epic.status || 'planned')
+    const statusClass  = statusColors[epic.status] || statusColors[epic.stage] || 'bg-slate-100 text-slate-600'
+
+    const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-400' : 'bg-red-400'
+
+    const horizonSelect = showManagement && mode !== 'exec' ? `
+        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Horizon:</span>
+            <select class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white focus:ring-2 focus:ring-indigo-200 outline-none"
+                onchange="quickAssignEpicHorizon(${epicIdx}, this.value)">
+                <option value="">— Unassigned —</option>
+                ${horizons.map(h => `<option value="${h.id}" ${epic.planningHorizon === h.id ? 'selected' : ''}>${h.label || h.name}</option>`).join('')}
+            </select>
+        </div>
+    ` : ''
+
+    const editActions = showManagement && mode !== 'exec' ? `
+        <div class="flex gap-1.5 mt-2">
+            <button onclick="openEpicEdit(${epicIdx})" class="item-action-btn edit">Edit</button>
+        </div>
+    ` : ''
+
+    return `
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex-1 min-w-0">
+                    <span class="text-xs font-black text-slate-800 leading-snug">${epic.name}</span>
+                    ${epic.description ? `<p class="text-[10px] text-slate-500 mt-0.5 line-clamp-2">${epic.description}</p>` : ''}
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${statusClass}">${statusLabel}</span>
+            </div>
+
+            ${linkedOKR ? `
+                <div class="flex items-center gap-1.5 mb-2 px-2 py-1 bg-indigo-50 rounded-lg">
+                    <span class="text-[9px] text-indigo-400 font-black uppercase tracking-widest">OKR</span>
+                    <span class="text-[10px] text-indigo-700 font-bold truncate">${linkedOKR.objective}</span>
+                </div>
+            ` : `
+                <div class="flex items-center gap-1.5 mb-2 px-2 py-1 bg-slate-50 rounded-lg">
+                    <span class="text-[10px] text-slate-400 italic">No OKR linked</span>
+                </div>
+            `}
+
+            <div class="space-y-1">
+                <div class="flex items-center justify-between text-[10px] text-slate-500">
+                    <span>${done} / ${total} tasks done</span>
+                    <span class="font-black ${pct >= 80 ? 'text-emerald-600' : pct >= 40 ? 'text-amber-600' : 'text-red-500'}">${pct}%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="${barColor} h-full rounded-full transition-all" style="width:${pct}%"></div>
+                </div>
+            </div>
+
+            ${horizonSelect}
+            ${editActions}
+        </div>
+    `
+}
+
+function buildRoadmapHorizonBar(epics, horizonId) {
+    const horizonEpics = epics.filter(e => e.planningHorizon === horizonId)
+    const total = horizonEpics.length
+    if (total === 0) return ''
+    const onTrack = horizonEpics.filter(e => {
+        const items = findItemsByMetadataId('epicId', e.id)
+        if (items.length === 0) return false
+        const pct = Math.round((items.filter(i => i.status === 'done').length / items.length) * 100)
+        return pct >= 40
+    }).length
+    const pct = Math.round((onTrack / total) * 100)
+    const barColor = pct >= 70 ? 'bg-emerald-400' : pct >= 40 ? 'bg-amber-400' : 'bg-red-400'
+    return `
+        <div class="w-full flex items-center gap-3 mb-3">
+            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="${barColor} h-full rounded-full" style="width:${pct}%"></div>
+            </div>
+            <span class="text-[10px] font-black text-slate-500 whitespace-nowrap">${onTrack}/${total} epics on track</span>
+        </div>
+    `
+}
+
 function renderRoadmapView() {
     const container = document.getElementById('roadmap-view');
     if (!container) return;
     const data = window.UPDATE_DATA || {};
     const horizons = data.metadata?.roadmap || [];
+    const allEpics = data.metadata?.epics || [];
+    const allOKRs  = data.metadata?.okrs  || [];
     const showManagement = shouldShowManagement();
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : ''
 
     let ribbonHtml = `
         <div id="roadmap-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -1635,15 +1732,15 @@ function renderRoadmapView() {
                 <div id="roadmap-next-action-mount">
                     ${renderPrimaryStageAction('roadmap')}
                 </div>
-                
+
                 ${showManagement ? `
                 <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                <button onclick="advanceRoadmapHorizons()" 
+                <button onclick="advanceRoadmapHorizons()"
                     class="px-4 py-2.5 rounded-xl text-xs font-black text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-100 shadow-sm flex items-center gap-2">
                     <span>⏩</span> Advance Horizons
                 </button>
                 <div class="h-6 w-[1px] bg-slate-200 mx-1"></div>
-                <button onclick="openRoadmapEdit()" 
+                <button onclick="openRoadmapEdit()"
                     class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
                     🗺️ Add Roadmap Item
                 </button>
@@ -1665,13 +1762,44 @@ function renderRoadmapView() {
         return;
     }
 
+    // Persona filtering for epics
+    const activeOKRIds = new Set(allOKRs.filter(o => o.status === 'active' || !o.status).map(o => o.id))
+    let visibleEpics = allEpics
+    if (mode === 'exec') {
+        // Exec: only epics linked to active OKRs
+        visibleEpics = allEpics.filter(e => e.linkedOKR && activeOKRIds.has(e.linkedOKR))
+    } else if (mode === 'dev' && currentUser) {
+        // Dev: only epics that contain the dev's items
+        const myEpicIds = new Set()
+        ;(data.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if ((item.contributors || []).includes(currentUser) && item.epicId) {
+                        myEpicIds.add(item.epicId)
+                    }
+                })
+            })
+        })
+        visibleEpics = allEpics.filter(e => myEpicIds.has(e.id))
+    }
+
+    const epicIndexMap = new Map(allEpics.map((e, i) => [e.id, i]))
+
     const _allRoadmapItems = horizons.flatMap(h => findItemsByMetadataId('planningHorizon', h.id));
     const _filteredRoadmapItems = applyExecFilter(_allRoadmapItems, 'roadmap');
     let html = ribbonHtml + renderExecFilterBanner(_filteredRoadmapItems.length, _allRoadmapItems.length, 'roadmap') + `<div class="grid grid-cols-1 gap-12">`;
 
+    if (mode === 'dev' && currentUser && visibleEpics.length === 0) {
+        html += `<div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-sm italic">No roadmap epics contain your tasks yet.</div>`
+    }
+
     horizons.forEach(h => {
-        const horizonItems = applyExecFilter(findItemsByMetadataId('planningHorizon', h.id), 'roadmap');
         const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
+        const horizonEpics = visibleEpics.filter(e => e.planningHorizon === h.id)
+        const horizonItems = applyExecFilter(findItemsByMetadataId('planningHorizon', h.id), 'roadmap');
+
+        // Exec: skip horizons with no visible epics
+        if (mode === 'exec' && horizonEpics.length === 0) return
 
         const cmsActions = shouldShowManagement() ? `
             <div class="flex gap-1.5 ml-4">
@@ -1682,22 +1810,22 @@ function renderRoadmapView() {
 
         html += `
             <div class="roadmap-section mb-16">
-                <div class="flex flex-col items-center mb-8">
-                    <div class="flex items-center w-full gap-4 mb-4">
+                <div class="flex flex-col items-center mb-6">
+                    <div class="flex items-center w-full gap-4 mb-3">
                         <div class="h-[2px] flex-1 bg-slate-200"></div>
                         <div class="px-6 py-3 bg-${h.color || 'slate'}-100 text-${h.color || 'slate'}-800 rounded-2xl font-black text-sm uppercase tracking-[0.2em] border-2 border-current flex items-center gap-4 shadow-md bg-white">
                             ${h.label || h.name}
                             ${cmsActions}
-                            ${shouldShowManagement() ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="item-action-btn okr" title="Add Task to this Horizon">+ Task</button>` : ''}
+                            ${shouldShowManagement() && mode !== 'exec' ? `<button onclick="addItem(0, 0, { planningHorizon: '${h.id}' })" class="item-action-btn okr" title="Add Task to this Horizon">+ Task</button>` : ''}
                         </div>
                         <div class="h-[2px] flex-1 bg-slate-200"></div>
                     </div>
-                    
+
+                    ${buildRoadmapHorizonBar(allEpics, h.id)}
+
                     ${horizonOKR ? `
                         <div class="w-full max-w-4xl px-8 py-6 bg-indigo-600 text-white rounded-3xl shadow-2xl relative overflow-hidden group">
-                            <!-- Background Decoration -->
                             <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                            
                             <div class="relative z-10 flex flex-col gap-2">
                                 <div class="flex items-center gap-3">
                                     <span class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200">Primary Strategic Alignment</span>
@@ -1709,7 +1837,7 @@ function renderRoadmapView() {
                                 </h3>
                                 ${horizonOKR.keyResults ? `
                                     <div class="mt-4 pt-4 border-t border-indigo-400/30 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        ${Array.isArray(horizonOKR.keyResults) 
+                                        ${Array.isArray(horizonOKR.keyResults)
                                             ? horizonOKR.keyResults.map(kr => `
                                                 <div class="flex items-start gap-2 text-xs font-medium text-indigo-100">
                                                     <span class="text-indigo-300">↳</span>
@@ -1734,25 +1862,38 @@ function renderRoadmapView() {
                     `}
                 </div>
 
-                <div class="grid grid-cols-1 gap-6">
-                    ${horizonItems.length > 0 ? renderGroupedItems(horizonItems, 'roadmap') : '<div class="text-center py-16 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 italic text-sm">No strategic initiatives mapped to this horizon.</div>'}
-                </div>
+                ${horizonEpics.length > 0 ? `
+                    <div class="mb-4">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Epics</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            ${horizonEpics.map(e => buildRoadmapEpicCard(e, epicIndexMap.get(e.id), horizons, mode, showManagement)).join('')}
+                        </div>
+                    </div>
+                ` : mode !== 'exec' ? `
+                    <div class="text-center py-8 bg-indigo-50/30 rounded-2xl border border-dashed border-indigo-100 text-slate-400 italic text-sm mb-4">No epics assigned to this horizon yet.</div>
+                ` : ''}
+
+                ${mode !== 'exec' && horizonItems.length > 0 ? `
+                    <div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tasks (no epic)</div>
+                        <div class="grid grid-cols-1 gap-4">
+                            ${renderGroupedItems(horizonItems, 'roadmap')}
+                        </div>
+                    </div>
+                ` : ''}
             </div>`;
     });
 
     html += '</div>';
 
     // Add backlog navigation footer — single authoritative entry point for unplanned items
-    if (showManagement) {
-        const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
-        if (mode !== 'exec') {
-            html += `
-                <div class="roadmap-backlog-footer">
-                    <span class="roadmap-backlog-label">📚 Backlog <span class="roadmap-backlog-sub">(items not yet assigned to a planning horizon)</span></span>
-                    <button onclick="switchView('backlog')" class="roadmap-backlog-link">→ Open full Backlog view</button>
-                </div>
-            `;
-        }
+    if (showManagement && mode !== 'exec') {
+        html += `
+            <div class="roadmap-backlog-footer">
+                <span class="roadmap-backlog-label">📚 Backlog <span class="roadmap-backlog-sub">(items not yet assigned to a planning horizon)</span></span>
+                <button onclick="switchView('backlog')" class="roadmap-backlog-link">→ Open full Backlog view</button>
+            </div>
+        `;
     }
 
     container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use the button to add your first planning category.</div>';

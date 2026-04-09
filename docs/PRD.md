@@ -241,6 +241,18 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F20 — Roadmap View Enhancement (Epic-Centric, OKR Trace, Horizon Reassignment) ✅ Shipped
+
+- `renderRoadmapView()` in `views.js` fully rewritten — epic-centric layout replaces flat item list
+- **Epic cards per horizon**: each epic renders as a card with name, description, status badge, OKR trace pill, live task completion % bar (done/total tasks), and a horizon-reassign select for PM (hidden for Exec)
+- **Horizon completion bar**: above each horizon's OKR banner, a CSS progress bar shows `X / Y epics on track` (on track = ≥40% tasks done); colour-coded green/amber/red
+- **Horizon reassignment**: PM users see a `<select>` dropdown on each epic card to move it between horizons inline; calls `quickAssignEpicHorizon(epicIdx, horizonId)` → `saveToLocalStorage()` → `renderRoadmapView()` — no Lambda needed
+- **Dev persona filter**: Dev sees only epics that contain at least one of their assigned tasks (via `item.contributors` walk); empty state shown if none found
+- **Exec persona filter**: Exec sees only epics linked to active OKRs; entire horizon section is skipped if no visible epics exist within it
+- **Tasks (no epic) section**: for PM/Dev, horizon tasks not attached to any epic still render via `renderGroupedItems` below the epic grid, labelled "Tasks (no epic)"
+- **Two new pure functions added**: `buildRoadmapEpicCard(epic, epicIdx, horizons, mode, showManagement)` and `buildRoadmapHorizonBar(epics, horizonId)`
+- `quickAssignEpicHorizon(epicIdx, horizonId)` added to `cms.js` — same pattern as `quickAssignSprint` / `quickAssignRelease`
+
 #### F19 — Executive Dashboard Enhancement ✅ Shipped
 
 - `executive-dashboard.js` — 5 functions updated, 2 new helpers added; no new files

@@ -1409,6 +1409,16 @@ function quickAssignRelease(itemId, releaseId) {
 }
 window.quickAssignRelease = quickAssignRelease
 
+function quickAssignEpicHorizon(epicIdx, horizonId) {
+    const epic = (window.UPDATE_DATA?.metadata?.epics || [])[epicIdx]
+    if (!epic) return
+    epic.planningHorizon = horizonId || ''
+    logChange('epic-horizon-assign', epic.name)
+    saveToLocalStorage()
+    renderRoadmapView()
+}
+window.quickAssignEpicHorizon = quickAssignEpicHorizon
+
 function quickChangeStatus(itemId, newStatus) {
     const found = findItemById(itemId)
     if (!found) return
