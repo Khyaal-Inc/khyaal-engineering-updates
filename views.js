@@ -1921,174 +1921,229 @@ function renderGroupedItemsWithReleaseAssign(items, allReleases, currentReleaseI
 
 // ------ Gantt View ------
 function renderGanttView() {
-    const container = document.getElementById('gantt-view');
-    if (container) {
-        const ribbonHtml = `
-            <div style="position:relative;margin-bottom:24px;">
-                <div id="gantt-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center gap-3 px-2">
-                        <span class="text-xl">📅</span>
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-medium text-slate-400">Stage 3 · Plan — Visual timeline of strategic initiatives and dependencies</span>
-                            <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Gantt Timeline</h2>
-                        </div>
-                        ${typeof renderInfoButton === 'function' ? renderInfoButton('gantt') : ''}
+    const container = document.getElementById('gantt-view')
+    if (!container) return
+
+    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
+
+    const personaLabel = mode === 'exec'
+        ? 'OKR-linked epics only'
+        : mode === 'dev'
+            ? 'your epics & tasks'
+            : 'all epics & tasks'
+
+    container.innerHTML = `
+        <div style="position:relative;margin-bottom:24px;">
+            <div id="gantt-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📅</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-medium text-slate-400">Plan · Timeline — ${personaLabel}</span>
+                        <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Gantt Timeline</h2>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div id="gantt-next-action-mount">
-                            ${renderPrimaryStageAction('gantt')}
-                        </div>
+                    ${typeof renderInfoButton === 'function' ? renderInfoButton('gantt') : ''}
+                </div>
+                <div class="flex items-center gap-2">
+                    <div id="gantt-next-action-mount">
+                        ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('gantt') : ''}
                     </div>
                 </div>
-                ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('gantt') : ''}
             </div>
-            <div class="overflow-x-auto w-full bg-white rounded-xl border border-slate-200">
-                <div id="gantt-chart-container" style="min-height:400px; min-width: 1200px;"></div>
-            </div>
-        `;
-        container.innerHTML = ribbonHtml;
+            ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('gantt') : ''}
+        </div>
+        <div class="overflow-x-auto w-full bg-white rounded-xl border border-slate-200">
+            <div id="gantt-chart-container" style="min-height:400px; min-width: 1200px;"></div>
+        </div>
+    `
+
+    // Guard: Google Charts CDN may not be available
+    if (typeof google === 'undefined' || typeof google.charts === 'undefined') {
+        document.getElementById('gantt-chart-container').innerHTML = `
+            <div class="p-12 text-center">
+                <div class="text-4xl mb-3">⚠️</div>
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Charts library unavailable</h3>
+                <p class="text-xs text-slate-500 mt-2">Google Charts CDN could not be reached. Check your network connection.</p>
+            </div>`
+        return
     }
-    // Use setTimeout to ensure container innerHTML is committed to DOM before Google Charts callback fires
+
+    // Capture mode for use inside the async callback
+    const _mode = mode
     setTimeout(() => {
-        google.charts.load('current', { 'packages': ['gantt'] });
-        google.charts.setOnLoadCallback(drawGanttChart);
-    }, 0);
+        google.charts.load('current', { packages: ['gantt'] })
+        google.charts.setOnLoadCallback(() => drawGanttChart(_mode))
+    }, 0)
 }
 
-function drawGanttChart() {
-    const container = document.getElementById('gantt-chart-container');
-    if (!container) return;
+function drawGanttChart(mode) {
+    const container = document.getElementById('gantt-chart-container')
+    if (!container) return
 
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Task ID');
-    data.addColumn('string', 'Task Name');
-    data.addColumn('string', 'Resource');
-    data.addColumn('date', 'Start Date');
-    data.addColumn('date', 'End Date');
-    data.addColumn('number', 'Duration');
-    data.addColumn('number', 'Percent Complete');
-    data.addColumn('string', 'Dependencies');
+    const allEpics   = UPDATE_DATA.metadata?.epics    || []
+    const allSprints = UPDATE_DATA.metadata?.sprints   || []
+    const allOkrs    = UPDATE_DATA.metadata?.okrs      || []
 
-    const rows = [];
-    const epics = UPDATE_DATA.metadata?.epics || [];
+    // Build sprint lookup for start-date fallback on items that have no startDate
+    const sprintById = {}
+    allSprints.forEach(s => { sprintById[s.id] = s })
 
-    epics.forEach(epic => {
-        // Find date range from items in this epic if not explicitly set
-        let startDate = epic.startDate ? new Date(epic.startDate) : null;
-        let endDate = epic.endDate ? new Date(epic.endDate) : null;
+    // Resolve current user name for Dev persona
+    const currentUser = (typeof window.CURRENT_USER !== 'undefined' && window.CURRENT_USER?.name)
+        ? window.CURRENT_USER.name
+        : null
 
-        let totalItems = 0;
-        let doneItems = 0;
+    // Determine which epic IDs are visible for this persona
+    let visibleEpicIds = null // null = all
+    if (mode === 'exec') {
+        // Exec: only epics linked to an active/in-flight OKR
+        const activeOkrIds = new Set(allOkrs.map(o => o.id))
+        visibleEpicIds = new Set(allEpics.filter(e => activeOkrIds.has(e.linkedOKR)).map(e => e.id))
+    } else if (mode === 'dev' && currentUser) {
+        // Dev: only epics where the contributor has at least one item
+        const devEpicIds = new Set()
+        ;(UPDATE_DATA.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if ((item.contributors || []).includes(currentUser) && item.epicId) {
+                        devEpicIds.add(item.epicId)
+                    }
+                })
+            })
+        })
+        visibleEpicIds = devEpicIds
+    }
 
-        if (!startDate || !endDate) {
-            // Scan items for dates if epic dates missing
-            UPDATE_DATA.tracks.forEach(track => {
-                track.subtracks.forEach(subtrack => {
-                    subtrack.items.forEach(item => {
-                        if (item.epicId === epic.id) {
-                            totalItems++;
-                            if (item.status === 'done') doneItems++;
+    // --- Build epic rows ---
+    const rows = []
+    const epicDates = {} // epic.id → { start, end, total, done }
 
-                            if (item.startDate) {
-                                const s = new Date(item.startDate);
-                                if (!startDate || s < startDate) startDate = s;
-                            }
-                            if (item.due) {
-                                const d = new Date(item.due);
-                                if (!endDate || d > endDate) endDate = d;
-                            }
-                        }
-                    });
-                });
-            });
-        }
+    allEpics.forEach(epic => {
+        if (visibleEpicIds !== null && !visibleEpicIds.has(epic.id)) return
 
-        if (startDate && endDate && startDate < endDate) {
-            const percent = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
-            // Map epic.dependencies (array) into comma-separated string for Google Gantt Links
-            const depString = (epic.dependencies && epic.dependencies.length > 0) ? epic.dependencies.join(',') : null;
-            
-            rows.push([
-                epic.id,
-                epic.name,
-                epic.track || 'Strategy',
-                startDate,
-                endDate,
-                null,
-                percent,
-                depString
-            ]);
-        }
-    });
+        let start = epic.startDate ? new Date(epic.startDate) : null
+        let end   = epic.endDate   ? new Date(epic.endDate)   : null
+        let total = 0, done = 0
 
-    const validRowIds = new Set(rows.map(r => r[0]));
-    const itemRowsPendingDeps = [];
+        // Scan items to fill missing dates and compute progress
+        ;(UPDATE_DATA.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if (item.epicId !== epic.id) return
+                    // Persona filter on items
+                    if (mode === 'dev' && currentUser && !(item.contributors || []).includes(currentUser)) return
+                    total++
+                    if (item.status === 'done') done++
 
-    // Map Items to Gantt
-    UPDATE_DATA.tracks.forEach(track => {
-        track.subtracks.forEach(subtrack => {
-            subtrack.items.forEach(item => {
-                let startDate = item.startDate ? new Date(item.startDate) : null;
-                let endDate = item.due ? new Date(item.due) : null;
-                
-                if (startDate && endDate && startDate < endDate) {
-                    const percent = item.status === 'done' ? 100 : item.status === 'now' ? 50 : 0;
-                    const resource = item.epicId ? (epics.find(e => e.id === item.epicId)?.name || 'Task') : 'Orphan Task';
-                    
-                    validRowIds.add(item.id);
+                    // Start: item.startDate → sprint start → skip
+                    let itemStart = null
+                    if (item.startDate) {
+                        itemStart = new Date(item.startDate)
+                    } else if (item.sprintId && sprintById[item.sprintId]?.startDate) {
+                        itemStart = new Date(sprintById[item.sprintId].startDate)
+                    }
+                    if (itemStart && (!start || itemStart < start)) start = itemStart
+
+                    // End: item.due → sprint end → skip
+                    let itemEnd = null
+                    if (item.due) {
+                        itemEnd = new Date(item.due)
+                    } else if (item.sprintId && sprintById[item.sprintId]?.endDate) {
+                        itemEnd = new Date(sprintById[item.sprintId].endDate)
+                    }
+                    if (itemEnd && (!end || itemEnd > end)) end = itemEnd
+                })
+            })
+        })
+
+        if (!start || !end || start >= end) return
+
+        epicDates[epic.id] = { start, end }
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0
+        const depString = (epic.dependencies?.length > 0) ? epic.dependencies.join(',') : null
+
+        rows.push([epic.id, epic.name, epic.track || 'Strategy', start, end, null, pct, depString])
+    })
+
+    // --- Build item rows (PM mode only — too granular for Dev/Exec) ---
+    const validRowIds = new Set(rows.map(r => r[0]))
+    const itemRowsPendingDeps = []
+
+    if (mode === 'pm') {
+        ;(UPDATE_DATA.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    // Item must belong to a visible epic that has a row
+                    if (item.epicId && !validRowIds.has(item.epicId)) return
+
+                    let start = item.startDate ? new Date(item.startDate) : null
+                    if (!start && item.sprintId && sprintById[item.sprintId]?.startDate) {
+                        start = new Date(sprintById[item.sprintId].startDate)
+                    }
+                    const end = item.due ? new Date(item.due) : null
+                    if (!start || !end || start >= end) return
+
+                    const pct = item.status === 'done' ? 100 : item.status === 'now' ? 50 : 0
+                    const resource = item.epicId
+                        ? (allEpics.find(e => e.id === item.epicId)?.name || 'Task')
+                        : 'Orphan Task'
+
+                    validRowIds.add(item.id)
                     itemRowsPendingDeps.push({
-                        row: [
-                            item.id,
-                            item.text.substring(0, 30),
-                            resource,
-                            startDate,
-                            endDate,
-                            null,
-                            percent,
-                            '' // Placeholder for filtered deps
-                        ],
+                        row: [item.id, item.text.substring(0, 35), resource, start, end, null, pct, ''],
                         deps: item.dependencies || []
-                    });
-                }
-            });
-        });
-    });
+                    })
+                })
+            })
+        })
 
-    // Safely rebuild dependencies string using only valid rows
-    itemRowsPendingDeps.forEach(itemInfo => {
-        const safeDeps = itemInfo.deps.filter(dId => validRowIds.has(dId));
-        itemInfo.row[7] = safeDeps.length > 0 ? safeDeps.join(',') : null;
-        rows.push(itemInfo.row);
-    });
+        itemRowsPendingDeps.forEach(info => {
+            const safeDeps = info.deps.filter(id => validRowIds.has(id))
+            info.row[7] = safeDeps.length > 0 ? safeDeps.join(',') : null
+            rows.push(info.row)
+        })
+    }
 
+    // --- Empty state ---
     if (!rows.length) {
-        document.getElementById('gantt-chart-container').innerHTML = `
+        const hint = mode === 'exec'
+            ? 'No OKR-linked epics with date ranges found.'
+            : mode === 'dev'
+                ? 'No epics with your contributor tag have date ranges yet.'
+                : 'Add dates to Epics (or to sprint items) to generate the timeline.'
+        container.innerHTML = `
             <div class="p-12 text-center bg-slate-50 border border-dashed border-slate-300 rounded-xl">
                 <div class="text-4xl mb-3">📅</div>
-                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">No Strategic Timeline</h3>
-                <p class="text-xs text-slate-500 mt-2">Add dates to your Epics or Tasks to generate the strategic roadmap view.</p>
-            </div>
-        `;
-        return;
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">No Timeline Data</h3>
+                <p class="text-xs text-slate-500 mt-2">${hint}</p>
+            </div>`
+        return
     }
 
-    // Calculate dynamic width based on timeline spread to prevent tasks from being squished
-    let minDate = null, maxDate = null;
+    // --- Dynamic width ---
+    let minDate = null, maxDate = null
     rows.forEach(r => {
-        if (r[3] && (!minDate || r[3] < minDate)) minDate = r[3];
-        if (r[4] && (!maxDate || r[4] > maxDate)) maxDate = r[4];
-    });
-    
-    let chartWidth = 1200; // minimum
+        if (r[3] && (!minDate || r[3] < minDate)) minDate = r[3]
+        if (r[4] && (!maxDate || r[4] > maxDate)) maxDate = r[4]
+    })
+    let chartWidth = 1200
     if (minDate && maxDate) {
-        const days = (maxDate - minDate) / (1000 * 60 * 60 * 24);
-        chartWidth = Math.max(1200, Math.round(days * 15)); // 15px per day ensures 7-day sprints are readable
+        const days = (maxDate - minDate) / (1000 * 60 * 60 * 24)
+        chartWidth = Math.max(1200, Math.round(days * 15))
     }
+    container.style.width = chartWidth + 'px'
 
-    const containerEl = document.getElementById('gantt-chart-container');
-    containerEl.style.width = chartWidth + 'px';
+    // --- Draw ---
+    const data = new google.visualization.DataTable()
+    data.addColumn('string', 'Task ID')
+    data.addColumn('string', 'Task Name')
+    data.addColumn('string', 'Resource')
+    data.addColumn('date',   'Start Date')
+    data.addColumn('date',   'End Date')
+    data.addColumn('number', 'Duration')
+    data.addColumn('number', 'Percent Complete')
+    data.addColumn('string', 'Dependencies')
+    data.addRows(rows)
 
-    data.addRows(rows);
     const options = {
         height: rows.length * 45 + 50,
         width: chartWidth,
@@ -2097,50 +2152,31 @@ function drawGanttChart() {
             labelStyle: { fontName: 'Inter', fontSize: 11, color: '#1e293b' },
             barCornerRadius: 4
         }
-    };
-    const chart = new google.visualization.Gantt(container);
+    }
+    const chart = new google.visualization.Gantt(container)
 
-    // Phase 9 Reset: High-fidelity action mapping
-    window.openAddItemModal = function (type) {
-        if (typeof addItem === 'function') {
-            // Default to first track/subtrack for discovery items
-            addItem(0, 0, {
-                tags: [type],
-                status: 'later',
-                text: type === 'spike' ? '[SPIKE] ' : '[IDEA] '
-            });
-        } else {
-            console.error('❌ CMS addItem handler not found!');
-        }
-    };
-
+    // Click-through: epic → openEpicEdit, item → openItemEdit
     google.visualization.events.addListener(chart, 'select', function () {
-        const selection = chart.getSelection();
-        if (selection.length > 0) {
-            const row = selection[0].row;
-            const rowId = data.getValue(row, 0);
-            
-            // Check if clicked row is an Epic
-            const epics = UPDATE_DATA.metadata?.epics || [];
-            const epicIndex = epics.findIndex(e => e.id === rowId);
-            
-            if (epicIndex !== -1) {
-                if (typeof openEpicEdit === 'function') openEpicEdit(epicIndex);
-            } else {
-                // Otherwise it's a task/item
-                UPDATE_DATA.tracks.forEach((track, tIdx) => {
-                    track.subtracks.forEach((subtrack, sIdx) => {
-                        const itemIndex = subtrack.items.findIndex(i => i.id === rowId);
-                        if (itemIndex !== -1 && typeof openItemEdit === 'function') {
-                            openItemEdit(tIdx, sIdx, itemIndex);
-                        }
-                    });
-                });
-            }
+        const selection = chart.getSelection()
+        if (!selection.length) return
+        const rowId = data.getValue(selection[0].row, 0)
+        const epics = UPDATE_DATA.metadata?.epics || []
+        const epicIndex = epics.findIndex(e => e.id === rowId)
+        if (epicIndex !== -1) {
+            if (typeof openEpicEdit === 'function') openEpicEdit(epicIndex)
+            return
         }
-    });
+        ;(UPDATE_DATA.tracks || []).forEach((track, tIdx) => {
+            track.subtracks.forEach((subtrack, sIdx) => {
+                const itemIndex = subtrack.items.findIndex(i => i.id === rowId)
+                if (itemIndex !== -1 && typeof openItemEdit === 'function') {
+                    openItemEdit(tIdx, sIdx, itemIndex)
+                }
+            })
+        })
+    })
 
-    chart.draw(data, options);
+    chart.draw(data, options)
 }
 
 // Duplicate Epics view removed

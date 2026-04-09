@@ -241,6 +241,17 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F15 — Gantt View (Persona-Gated) ✅ Shipped
+
+- `renderGanttView()` + `drawGanttChart(mode)` in `views.js` — rewritten with full persona gating
+- **PM**: all epics + item-level rows; start date falls back to sprint start when `item.startDate` is absent
+- **Dev**: only epics/items where the current user is a contributor; no item-level rows from other contributors
+- **Exec**: only OKR-linked epics, no task-level rows — reduces noise for strategic review
+- Google Charts CDN guard: renders a friendly error state if `google` global is undefined
+- Empty states are persona-aware (different hint text per persona)
+- Click-through preserved: epic row → `openEpicEdit`; item row → `openItemEdit`
+- `openAddItemModal` side-effect removed from chart draw path (was unrelated to Gantt)
+
 #### F14 — Capacity Planner ✅ Shipped
 
 - `renderCapacityView()` in `capacity-planning.js` — fully rewritten; derives all data from actual item assignments, no static `teamMembers` config required
@@ -362,6 +373,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Sprint retro template auto-generation | Med | Med | High | S | ✅ Shipped |
 | OKR auto-progress from task completion | High | High | High | S | ✅ Shipped |
 | Capacity Planner (live from item data) | High | Med | High | S | ✅ Shipped |
+| Gantt View (persona-gated, sprint date fallback) | Med | Med | High | S | ✅ Shipped |
 
 ---
 
