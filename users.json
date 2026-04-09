@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "id": "gautam",
+      "name": "Gautam",
+      "passwordHash": "a3377e9d5cf5fef520cdcd102f4107afc1bb7fb281b63ab92dabb1d5b9e80004",
+      "grants": [
+        { "projectId": "default", "mode": "pm" }
+      ]
+    }
+  ]
+}
