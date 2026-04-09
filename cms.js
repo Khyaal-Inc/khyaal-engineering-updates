@@ -1927,6 +1927,18 @@ function openSprintEdit(sprintId) {
                 <label class="cms-label">Core Sprint Goal</label>
                 <textarea id="edit-sprint-goal" class="cms-input shadow-sm focus:shadow-md" rows="2" placeholder="What is the primary mission of this cycle?">${sprint.goal || ''}</textarea>
             </div>
+
+            ${sprint.retro ? buildRetroReadonlySection(sprint) : (sprintId && sprint.status === 'completed' ? `
+            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                <div>
+                    <div class="text-xs font-black text-amber-800">No retrospective written yet</div>
+                    <div class="text-[10px] text-amber-600 mt-0.5">Document learnings while they're fresh</div>
+                </div>
+                <button onclick="openRetroModal('${sprintId}')"
+                    class="shrink-0 bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-amber-700 transition-all">
+                    📝 Write Retro
+                </button>
+            </div>` : '')}
         </div>
     `;
 
@@ -1940,6 +1952,10 @@ function openSprintEdit(sprintId) {
                 <span>🗑️</span> Delete Sprint
             </button>
         ` : ''}
+        ${sprintId && sprint.status === 'completed' ? `
+            <button onclick="openRetroModal('${sprintId}')" class="cms-btn cms-btn-secondary flex items-center gap-2">
+                <span>📝</span> ${sprint.retro ? 'Edit Retro' : 'Write Retro'}
+            </button>` : ''}
         <button onclick="saveCms()" class="cms-btn cms-btn-primary flex items-center gap-2">
             <span>✓</span> ${sprintId ? 'Save Changes' : 'Create Sprint'}
         </button>
@@ -2196,7 +2212,7 @@ async function saveSprintClose(sprintId) {
             destination: i.status === 'done' ? 'Shipped' : (movements.find(m => m.item.id === i.id)?.resolution || 'next').toUpperCase()
         })),
         actions: [
-            { label: 'Review Retrospective', fn: () => switchView('analytics') },
+            { label: '📝 Write Retro', fn: () => openRetroModal('${sprintId}') },
             { label: 'Go to Kanban', fn: () => switchView('kanban') }
         ]
     };
@@ -2206,6 +2222,158 @@ async function saveSprintClose(sprintId) {
 
     if (typeof renderSprintView === 'function') renderSprintView();
     if (typeof renderAnalyticsView === 'function') renderAnalyticsView();
+}
+
+// ------ Sprint Retro Template ------
+
+/**
+ * Opens the retrospective form inside the already-open CMS modal.
+ * Pre-populates sections from closed sprint data so the PM only
+ * needs to fill in qualitative observations.
+ */
+function openRetroModal(sprintId) {
+    const sprint = (UPDATE_DATA.metadata.sprints || []).find(s => s.id === sprintId)
+    if (!sprint) return
+
+    const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : []
+    const doneItems   = items.filter(i => i.status === 'done')
+    const blockedItems = items.filter(i => i.blocker || i.status === 'blocked')
+    const rolledItems = items.filter(i => i.status !== 'done')
+
+    const plannedPts   = items.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const completedPts = doneItems.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const velocityPct  = Math.round((completedPts / (plannedPts || 1)) * 100)
+
+    const history = (UPDATE_DATA.metadata.velocityHistory || []).filter(h => h.sprintId !== sprintId).slice(-3)
+    const avgVelocity = history.length
+        ? Math.round(history.reduce((s, h) => s + h.completed, 0) / history.length)
+        : null
+
+    const sprintOKR = (UPDATE_DATA.metadata.okrs || []).find(o => o.id === sprint.linkedOKR)
+
+    // Build suggested "What went well" bullets from data
+    const wellSuggestions = []
+    if (velocityPct >= 80) wellSuggestions.push(`✅ Strong delivery — ${velocityPct}% commitment met (${completedPts}/${plannedPts} pts)`)
+    if (blockedItems.length === 0) wellSuggestions.push('✅ Sprint ran blocker-free')
+    if (rolledItems.length === 0) wellSuggestions.push('✅ Full sprint closure — zero rollover')
+    if (sprintOKR) wellSuggestions.push(`✅ Aligned to OKR: "${(sprintOKR.objective || '').substring(0, 60)}"`)
+    const wellDefault = wellSuggestions.join('\n') || '(add observations here)'
+
+    // Build suggested "What didn't go well" bullets
+    const didntSuggestions = []
+    if (velocityPct < 70) didntSuggestions.push(`⚠️ Velocity below target — ${velocityPct}% (${completedPts}/${plannedPts} pts)`)
+    if (avgVelocity !== null && completedPts < avgVelocity) didntSuggestions.push(`⚠️ Below 3-sprint avg of ${avgVelocity} pts`)
+    if (blockedItems.length > 0) didntSuggestions.push(`⚠️ ${blockedItems.length} blocker${blockedItems.length > 1 ? 's' : ''} during sprint: ${blockedItems.map(i => i.text.substring(0,30)).join('; ')}`)
+    if (rolledItems.length > 0) didntSuggestions.push(`⚠️ ${rolledItems.length} item${rolledItems.length > 1 ? 's' : ''} rolled over`)
+    const didntDefault = didntSuggestions.join('\n') || '(add observations here)'
+
+    // Existing retro if already written
+    const existing = sprint.retro || {}
+
+    document.getElementById('modal-title').innerHTML = `
+        <div class="flex items-center gap-3 text-slate-900">
+            <span class="text-2xl">📝</span>
+            <span class="font-black tracking-tight">Sprint Retrospective — ${sprint.name}</span>
+        </div>`
+
+    document.getElementById('modal-banner').innerHTML = `
+        <div class="flex flex-wrap gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            <span class="font-bold text-slate-500">Velocity: <strong class="text-slate-900">${velocityPct}%</strong></span>
+            <span class="text-slate-300">|</span>
+            <span class="font-bold text-slate-500">Done: <strong class="text-slate-900">${doneItems.length}/${items.length} tasks</strong></span>
+            <span class="text-slate-300">|</span>
+            <span class="font-bold text-slate-500">Blockers: <strong class="${blockedItems.length ? 'text-red-600' : 'text-slate-900'}">${blockedItems.length}</strong></span>
+            ${avgVelocity !== null ? `<span class="text-slate-300">|</span><span class="font-bold text-slate-500">3-sprint avg: <strong class="text-slate-900">${avgVelocity} pts</strong></span>` : ''}
+        </div>`
+
+    document.getElementById('modal-form').innerHTML = `
+        <div class="space-y-5">
+
+            <div>
+                <label class="cms-label">🟢 What went well?</label>
+                <textarea id="retro-well" class="cms-input font-mono text-xs" rows="5"
+                    placeholder="Observations about what worked…">${existing.well || wellDefault}</textarea>
+            </div>
+
+            <div>
+                <label class="cms-label">🔴 What didn't go well?</label>
+                <textarea id="retro-didnt" class="cms-input font-mono text-xs" rows="5"
+                    placeholder="Friction points, surprises, or misses…">${existing.didnt || didntDefault}</textarea>
+            </div>
+
+            <div>
+                <label class="cms-label">⚡ Action items for next sprint</label>
+                <textarea id="retro-actions" class="cms-input font-mono text-xs" rows="4"
+                    placeholder="Concrete improvements to act on…">${existing.actions || ''}</textarea>
+            </div>
+
+            <div>
+                <label class="cms-label">😊 Team morale (1 – 5)</label>
+                <div class="flex gap-3" id="retro-morale-picker">
+                    ${[1,2,3,4,5].map(n => `
+                        <button type="button"
+                            onclick="document.querySelectorAll('.retro-morale-btn').forEach(b=>b.classList.remove('ring-2','ring-indigo-500','bg-indigo-50')); this.classList.add('ring-2','ring-indigo-500','bg-indigo-50'); document.getElementById('retro-morale-value').value='${n}'"
+                            class="retro-morale-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-lg font-black text-slate-700 hover:border-indigo-300 transition-all ${(existing.morale || 0) == n ? 'ring-2 ring-indigo-500 bg-indigo-50' : ''}">
+                            ${['😞','😐','🙂','😊','🚀'][n-1]}
+                        </button>`).join('')}
+                </div>
+                <input type="hidden" id="retro-morale-value" value="${existing.morale || ''}">
+            </div>
+
+        </div>`
+
+    document.getElementById('modal-footer').innerHTML = `
+        <button onclick="closeCmsModal()" class="cms-btn cms-btn-secondary">Cancel</button>
+        <button onclick="saveRetro('${sprintId}')" class="cms-btn cms-btn-primary">💾 Save Retro</button>`
+
+    // Ensure modal is open (it should already be from ceremony success)
+    const modal = document.getElementById('cms-modal')
+    if (!modal.classList.contains('active')) {
+        modal.classList.add('active')
+        document.body.style.overflow = 'hidden'
+    }
+}
+
+function buildRetroReadonlySection(sprint) {
+    const r = sprint.retro
+    const moraleEmoji = ['😞','😐','🙂','😊','🚀'][r.morale - 1] || ''
+    const savedDate = r.savedAt ? new Date(r.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
+
+    const section = (label, value) => value ? `
+        <div>
+            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">${label}</div>
+            <div class="text-xs text-slate-700 whitespace-pre-wrap bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono">${value}</div>
+        </div>` : ''
+
+    return `
+        <div class="border-t border-slate-200 pt-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    📝 Retrospective ${savedDate ? `· Saved ${savedDate}` : ''}
+                </div>
+                ${moraleEmoji ? `<span class="text-lg" title="Team morale: ${r.morale}/5">${moraleEmoji}</span>` : ''}
+            </div>
+            ${section('🟢 What went well', r.well)}
+            ${section('🔴 What didn\'t go well', r.didnt)}
+            ${section('⚡ Action items', r.actions)}
+        </div>`
+}
+
+function saveRetro(sprintId) {
+    const sprint = (UPDATE_DATA.metadata.sprints || []).find(s => s.id === sprintId)
+    if (!sprint) return
+
+    sprint.retro = {
+        well:    document.getElementById('retro-well')?.value.trim() || '',
+        didnt:   document.getElementById('retro-didnt')?.value.trim() || '',
+        actions: document.getElementById('retro-actions')?.value.trim() || '',
+        morale:  parseInt(document.getElementById('retro-morale-value')?.value) || null,
+        savedAt: new Date().toISOString()
+    }
+
+    saveToLocalStorage()
+    if (typeof showToast === 'function') showToast('Retrospective saved — push to GitHub to persist', 'success')
+    closeCmsModal()
 }
 
 /**

@@ -233,10 +233,16 @@ Existing tools solve parts of the problem:
 - `deploy_auth.sh` becomes a customer provisioning script
 - User/grant store moves from `users.json` to a managed DB (DynamoDB or Supabase) when the flat-file model hits its limits (~100 users per org)
 
-#### F12 — Post-Release Learning Loop
-- Release outcomes feed back into next OKR planning (Discover stage)
-- Automated "what changed since last sprint" diff in Ship stage
-- Sprint retrospective template auto-populated from velocity + ceremony data
+#### F12 — Post-Release Learning Loop ✅ Shipped (retro template)
+- Sprint retrospective template auto-populated from velocity + ceremony data ✅
+  - Pre-fills "What went well" from velocity score, blocker count, rollover count, OKR alignment
+  - Pre-fills "What didn't go well" from velocity delta vs 3-sprint avg, blocker list, rollover list
+  - Morale picker (1–5 emoji scale), free-text action items field
+  - Accessible from ceremony success screen ("📝 Write Retro" button) and sprint edit modal
+  - Retro stored on `sprint.retro` — persisted to localStorage, pushed to GitHub on next save
+  - Read-only retro section renders inside sprint edit modal for completed sprints
+- Release outcomes → OKR planning feedback loop (future scope)
+- Automated "what changed since last sprint" diff (future scope)
 
 ---
 
@@ -333,9 +339,9 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | AI Sales Agent (0→15% conversion tracking) | Med | Massive | Med | XL | **🔴 P0** |
 | Recommendation engine (0→85% accuracy) | Med | High | Med | XL | **🟠 P1** |
 | Command Palette (`Cmd+K`) | High | Med | High | S | ✅ Shipped |
-| Post-release learning loop | Med | High | High | M | **🟠 P1** |
+| Post-release learning loop (retro template) | Med | High | High | M | ✅ Shipped (partial) |
 | Multi-tenant config abstraction | Low | High | High | L | **🟡 P2** |
-| Sprint retro template auto-generation | Med | Med | High | S | **🟡 P2** |
+| Sprint retro template auto-generation | Med | Med | High | S | ✅ Shipped |
 
 ---
 
