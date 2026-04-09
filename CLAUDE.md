@@ -105,9 +105,10 @@ Ceremonies generate permanent `ceremonyAudit` records — **never delete them**,
 
 ## Lambda & Env
 
-- `deploy_auth.sh` — one-shot Lambda deploy to AWS `ap-south-1`
-- After deploy: set `GITHUB_TOKEN` and `EXPECTED_PASSWORD_HASH` in Lambda env vars
-- Update `LAMBDA_URL` constant in `index.html`
+- `deploy_auth.sh` — one-shot Lambda deploy to AWS `ap-south-1`; auto-sets `GITHUB_TOKEN` + `JWT_SECRET` and patches `LAMBDA_URL` in `index.html`
+- Lambda env vars: `GITHUB_TOKEN` (GitHub PAT with `repo` scope) + `JWT_SECRET` (auto-generated on first deploy, preserved on re-deploys)
+- User registry: `users.json` in repo root — `id`, `passwordHash` (SHA-256), `grants[]` (`{ projectId, mode }`)
+- CMS mode no longer requires a GitHub PAT in the browser — writes go through Lambda using its own `GITHUB_TOKEN`
 
 ## Data Conflicts
 

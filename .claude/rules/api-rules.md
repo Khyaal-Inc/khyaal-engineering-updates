@@ -113,25 +113,30 @@ try {
 - Always show a toast for user-visible failures (save, load, auth)
 - Never swallow errors on write operations silently
 
-## Multi-Project Extension (Planned)
+## Multi-Project Extension
 
-When the multi-project model is implemented, all Lambda calls must include `?projectId=`:
+All Lambda calls include `?projectId=` (implemented in Phase 2):
 
 ```javascript
-// Future pattern — add projectId to every call
 const projectId = window.ACTIVE_PROJECT_ID || 'default'
-const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${projectId}`, ...)
+const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${projectId}`, {
+    headers: { Authorization: `Bearer ${jwt}` }
+})
 ```
 
-Do not implement this now. When you see `?action=read` or `?action=write` in existing code, leave it as-is. The `projectId` param will be added as a coordinated change across `cms.js`, `app.js`, `workflow-nav.js`, and `auth_gatekeeper.js` (ADR §4).
+For writes, `projectId` goes in the POST body:
+
+```javascript
+body: JSON.stringify({ projectId, content, message })
+```
 
 ## Lambda Environment Variables
 
-Set in AWS Console → Lambda → Configuration → Environment variables. Never hardcode these in source:
+Set automatically by `deploy_auth.sh`. Never hardcode these in source:
 
 | Variable | Purpose |
 |----------|---------|
-| `GITHUB_TOKEN` | GitHub PAT with `repo` scope — used for all data reads/writes |
-| `EXPECTED_PASSWORD_HASH` | SHA-256 hex of the app password |
+| `GITHUB_TOKEN` | GitHub PAT with `repo` scope — used for all data reads and writes |
+| `JWT_SECRET` | HMAC-SHA256 signing secret — auto-generated on first deploy, preserved on re-deploys |
 
-After running `sh deploy_auth.sh`, update `LAMBDA_URL` in `index.html` — the URL changes on each deploy.
+`LAMBDA_URL` is auto-patched in `index.html` by `deploy_auth.sh` after each deploy.

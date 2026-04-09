@@ -1259,9 +1259,9 @@ function initCms() {
     if (params.get('cms') === 'true') {
         isCmsMode = true;
         document.getElementById('cms-controls').classList.add('active');
-        const token = localStorage.getItem('gh_pat') || '';
-        if (token) {
-            document.getElementById('github-token').value = token;
+        // Auto-authenticate CMS if a JWT session exists — no PAT required
+        const jwt = localStorage.getItem('khyaal_site_auth');
+        if (jwt) {
             authenticateCms();
         }
     } else {
@@ -1272,9 +1272,8 @@ function initCms() {
 }
 
 function authenticateCms() {
-    const token = document.getElementById('github-token').value;
-    if (!token) return;
-    localStorage.setItem('gh_pat', token);
+    const jwt = localStorage.getItem('khyaal_site_auth');
+    if (!jwt) return;
     window.isGithubAuthenticated = true;
 
     document.getElementById('cms-auth-section').classList.add('hidden');
@@ -4188,30 +4187,29 @@ function updateMoveSubtrackOpts(ti) {
 
 async function saveToGithub() {
     const btn = document.getElementById('save-to-github-btn');
-    const token = localStorage.getItem('gh_pat');
-    if (!token) { alert('Unauthorized'); return; }
+    const jwt = localStorage.getItem('khyaal_site_auth');
+    if (!jwt) { alert('Unauthorized'); return; }
 
     btn.disabled = true; btn.innerText = 'Saving...';
+    window.isActionLockActive = true;
     try {
-        const getRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
-            headers: { 'Authorization': `token ${token}` }
+        const projectId = window.ACTIVE_PROJECT_ID || 'default';
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4))));
+        const res = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectId, content, message: 'CMS: Update dashboard data' })
         });
-        const fileData = await getRes.json();
-
-        const putRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: 'CMS: Update dashboard data',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4)))),
-                sha: fileData.sha
-            })
-        });
-        if (putRes.ok) { alert('Saved successfully!'); location.reload(); }
-        else throw new Error('GitHub push failed');
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Save failed');
+        alert('Saved successfully!');
+        location.reload();
     } catch (e) {
+        console.error('❌ saveToGithub:', e);
         alert('Save error: ' + e.message);
         btn.disabled = false; btn.innerText = 'Save to GitHub';
+    } finally {
+        window.isActionLockActive = false;
     }
 }
 
@@ -4471,56 +4469,64 @@ async function archiveAndClear() {
     }
 
     const btn = document.getElementById('archive-btn');
-    const token = localStorage.getItem('gh_pat');
-    if (!token) { alert('Unauthorized'); return; }
+    const jwt = localStorage.getItem('khyaal_site_auth');
+    if (!jwt) { alert('Unauthorized'); return; }
 
     btn.disabled = true; btn.innerText = 'Archiving...';
+    window.isActionLockActive = true;
     try {
-        // 1. Generate archive data
-        const archiveContent = JSON.stringify(UPDATE_DATA, null, 4);
+        const projectId = window.ACTIVE_PROJECT_ID || 'default';
         const fileName = `archive_${new Date().toISOString().split('T')[0]}.json`;
 
-        // 2. Put to Archive folder
-        await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/archive/${fileName}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        // 1. Write snapshot to archive folder (no sha needed — new file)
+        const archiveRes = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                message: `Archive: ${UPDATE_DATA.metadata.dateRange}`,
-                content: btoa(unescape(encodeURIComponent(archiveContent)))
+                projectId,
+                filePath: `archive/${fileName}`,
+                content: btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4)))),
+                message: `Archive: ${UPDATE_DATA.metadata.dateRange}`
             })
         });
+        if (!archiveRes.ok) {
+            const err = await archiveRes.json();
+            throw new Error(err.error || 'Archive write failed');
+        }
 
-        // 3. Clear done items; keep everything else (now/qa/review/next/later/blocked/onhold)
+        // 2. Clear done items; keep everything else (now/qa/review/next/later/blocked/onhold)
         UPDATE_DATA.tracks.forEach(track => {
             track.subtracks.forEach(sub => {
                 sub.items = sub.items.filter(item => item.status !== 'done');
             });
         });
 
-        // 4. Update Main Data
-        const getRes = await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
-            headers: { 'Authorization': `token ${token}` }
-        });
-        const fileData = await getRes.json();
-
-        await fetch(`https://api.github.com/repos/${CMS_CONFIG.repoOwner}/${CMS_CONFIG.repoName}/contents/${CMS_CONFIG.filePath}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        // 3. Write cleared data back to main data file
+        const resetRes = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                message: 'CMS: post-archive data reset',
+                projectId,
                 content: btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4)))),
-                sha: fileData.sha
+                message: 'CMS: post-archive data reset'
             })
         });
+        if (!resetRes.ok) {
+            const err = await resetRes.json();
+            throw new Error(err.error || 'Data reset failed');
+        }
 
-        // 5. Hard-Sync Local Browser State
+        // 4. Hard-Sync Local Browser State
         saveToLocalStorage();
-        
+
         alert('Archive successful!');
         location.reload();
     } catch (e) {
+        console.error('❌ archiveAndClear:', e);
         alert('Archive error: ' + e.message);
         btn.disabled = false; btn.innerText = 'Archive & Clear';
+    } finally {
+        window.isActionLockActive = false;
     }
 }
 
@@ -4890,6 +4896,7 @@ function toggleEpicBacklog(epicId, isOpen) {
  */
 function saveToLocalStorage() {
     if (!UPDATE_DATA) return;
-    localStorage.setItem('khyaal_data', JSON.stringify(UPDATE_DATA));
+    const cacheKey = `khyaal_data_${window.ACTIVE_PROJECT_ID || 'default'}`
+    localStorage.setItem(cacheKey, JSON.stringify(UPDATE_DATA));
     console.log('✅ Changes persisted silently to LocalStorage');
 }
