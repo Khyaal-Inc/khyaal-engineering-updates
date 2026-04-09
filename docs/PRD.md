@@ -241,6 +241,17 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F18 — My Tasks View (Sprint-Grouped, Quick-Mark-Done, OKR Context) ✅ Shipped
+
+- `renderMyTasksView()` in `dev-focus.js` fully rewritten — all prior logic replaced
+- **Sprint-based grouping**: Blocked → This Sprint (active sprint name) → Up Next (next sprint / backlog) → Other; replaces previous date-based "Today / This Week / Upcoming" split
+- **Quick-mark-done**: `☐` / `☑` checkbox button on every card cycles status (`now→done`, `next→now`, `later→now`, `done→now`); calls `saveToLocalStorage()` + `renderMyTasksView()` — no Lambda needed for this common action; registered as `window.quickCycleStatus`
+- **OKR context strip**: each card shows `epic name → OKR objective (truncated) · 1 of N tasks` so developers see outcome context without switching views
+- **Summary bar**: avatar, sprint progress bar (pts done/total), blocked/sprint/up-next counts; replaces previous "Welcome back, X!" gradient banner
+- **Visual status signals**: left border accent (rose = blocked, orange = overdue, amber = due today, emerald = done), status badge from `statusConfig.class`, priority badge, due date badge
+- **Accessible markup**: `aria-label` on all icon-only buttons; `<button>` elements throughout (no `div onclick` for actions)
+- Pure builders: `collectMyItems`, `bucketMyItems`, `resolveTaskOKRContext`, `buildMyTaskCard`, `buildMyTaskSection`, `buildMyTasksSummaryBar` — all pure functions following ui-rules
+
 #### F17 — Analytics View Enhancement (Persona-Gated + OKR Intelligence) ✅ Shipped
 
 - `renderAnalyticsView()` in `analytics.js` now branches on persona before rendering
@@ -400,6 +411,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Gantt View (persona-gated, sprint date fallback) | Med | Med | High | S | ✅ Shipped |
 | Contributor View (sprint health, persona-gated) | High | Med | High | S | ✅ Shipped |
 | Analytics enhancement (OKR trend, epic health, forecast) | High | High | High | M | ✅ Shipped |
+| My Tasks (sprint-grouped, quick-mark-done, OKR context) | High | High | High | S | ✅ Shipped |
 
 ---
 
