@@ -1,18 +1,97 @@
-Here’s your **Claude Code Ultimate SDLC Cheatsheet** – a single, repeatable workflow that takes you from zero config to a production‑ready, fully documented product. It integrates all your installed skills, asks clarifying questions, recommends modern UX/architecture, writes code, tests, and documents everything step by step.
-
-```markdown
 # 🚀 Claude Code Ultimate SDLC Cheatsheet
 *One workflow to configure, discover, design, architect, code, test, and document.*
 
 ## Prerequisites
 - Claude Code installed and authenticated
 - Marketplace added: `/plugin marketplace add alirezarezvani/claude-skills`
-- All skills installed (see your list)
+- All skills installed
+
+Claude Code (Recommended)
+```bash
+# Add the marketplace
+/plugin marketplace add alirezarezvani/claude-skills
+
+# Install by domain
+/plugin install engineering-skills@claude-code-skills          # 24 core engineering
+/plugin install engineering-advanced-skills@claude-code-skills  # 25 POWERFUL-tier
+/plugin install product-skills@claude-code-skills               # 12 product skills
+/plugin install marketing-skills@claude-code-skills             # 43 marketing skills
+/plugin install ra-qm-skills@claude-code-skills                 # 12 regulatory/quality
+/plugin install pm-skills@claude-code-skills                    # 6 project management
+/plugin install c-level-skills@claude-code-skills               # 28 C-level advisory (full C-suite)
+/plugin install business-growth-skills@claude-code-skills       # 4 business & growth
+/plugin install finance-skills@claude-code-skills               # 2 finance (analyst + SaaS metrics)
+
+# Or install individual skills
+/plugin install skill-security-auditor@claude-code-skills       # Security scanner
+/plugin install playwright-pro@claude-code-skills                  # Playwright testing toolkit
+/plugin install self-improving-agent@claude-code-skills         # Auto-memory curation
+/plugin install content-creator@claude-code-skills              # Single skill
+```
+
+---
+
+## Global user memory (~/.claude/CLAUDE.md) – optional but helpful for your own preferences, e.g.:
+
+```bash
+# Claude Code Global Preferences – Gautam (Engineering Lead)
+
+## Communication Style
+- Keep explanations brief and to the point.
+- Put the primary answer or code block at the very beginning of responses.
+- Skip pleasantries, greetings, and filler text – go straight to value.
+- Use tables and bullet points for easy scanning.
+- When explaining complex decisions, provide 2–3 categorized options with a clear recommendation.
+
+## Proactive Advisory
+- Act as a proactive expert advisor, not a passive assistant.
+- If you see a better approach (architecture, code pattern, UX, or tool), propose best‑in‑class alternatives with a brief justification and trade‑offs.
+- Briefly explain the “why” behind your logic using first principles (1‑3 sentences).
+
+## Clarification & Learning
+- Before giving a detailed answer on ambiguous topics, ask clarifying questions.
+- When introducing new concepts, use analogies from software or systems engineering.
+
+## Code & Technical Output
+- Assume I am an engineering lead working on production systems – prioritise correctness, testability, and maintainability.
+- Provide runnable code snippets or concrete commands whenever possible.
+- Prefer modern, best‑practice patterns for the detected stack (e.g., async/await over callbacks, type safety).
+
+## What NOT to include here
+- Any project‑specific names, paths, or tech stack details – those go in `./CLAUDE.md` (project memory) or `.claude/rules/`.
+```
+
+You can edit this with /memory → option 1.
+/memory
+  Memory
+    Auto-memory: on
+  ❯ 1. User memory              Saved in ~/.claude/CLAUDE.md
+    2. Project memory           Checked in at ./CLAUDE.md
+    3. Open auto-memory folder
 
 ---
 
 ## ⚡ Phase 0: Clean Slate & Auto‑Memory
 **Goal:** Ensure Claude remembers everything across sessions.
+
+Cleanup Steps (Before Phase 0 - If required to start fresh)
+
+```bash
+# 1. Backup (optional but safe)
+mkdir -p ~/claude_backup
+cp CLAUDE.md ~/claude_backup/ 2>/dev/null
+cp -r .claude ~/claude_backup/ 2>/dev/null
+
+# 2. Remove old configs from your project root
+rm -f CLAUDE.md
+rm -rf .claude
+
+# 3. Clear Claude Code’s memory for this project
+# (Run inside Claude Code)
+/memory
+# → Type "clear all" or manually delete project‑specific memory entries
+```
+
 
 ```bash
 # 1. Verify active skills
