@@ -148,6 +148,7 @@ Rules going forward:
 
 Shortcuts are registered once in `setupKeyboardShortcuts()` in `core.js`. Rules:
 - Never register `document.addEventListener('keydown')` outside `core.js`
-- Always guard: skip when a modal is active (`#cms-modal.active`) or when focus is in `INPUT`/`TEXTAREA`
+- Always guard: skip when a modal is active (`#cms-modal.active`, `#admin-panel-modal.active`, `#cmd-palette.open`) or when focus is in `INPUT`/`TEXTAREA` — except `Cmd+K` which fires from any context
 - Number keys `1–9`, `0` are reserved for view navigation — do not override them for other actions
 - `/` is reserved for global search focus
+- `Cmd+K` / `Ctrl+K` is reserved for the Command Palette — toggles open/close from any context (including inputs)

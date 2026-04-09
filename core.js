@@ -427,9 +427,27 @@ if (typeof addItem === 'function') {
 // ------ Keyboard Shortcuts ------
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', e => {
-        const modal = document.getElementById('cms-modal');
-        if (modal && modal.classList.contains('active')) return;
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        // Cmd+K / Ctrl+K — open command palette (works even from inputs)
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault()
+            const palette = document.getElementById('cmd-palette')
+            if (palette && palette.classList.contains('open')) {
+                closeCmdPalette()
+            } else {
+                openCmdPalette()
+            }
+            return
+        }
+
+        // Block all other shortcuts when any modal or the palette is open
+        const cmsModal = document.getElementById('cms-modal')
+        const adminModal = document.getElementById('admin-panel-modal')
+        const cmdPalette = document.getElementById('cmd-palette')
+        if (cmsModal && cmsModal.classList.contains('active')) return
+        if (adminModal && adminModal.classList.contains('active')) return
+        if (cmdPalette && cmdPalette.classList.contains('open')) return
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
         const viewMap = {
             '1': 'epics',
             '2': 'roadmap',
@@ -441,8 +459,273 @@ function setupKeyboardShortcuts() {
             '8': 'priority',
             '9': 'contributor',
             '0': 'dependency'
-        };
-        if (viewMap[e.key]) { e.preventDefault(); switchView(viewMap[e.key]); return; }
+        }
+        if (viewMap[e.key]) { e.preventDefault(); switchView(viewMap[e.key]); return }
         if (e.key === '/') { e.preventDefault(); const s = document.querySelector('.search-input'); if (s) { s.focus(); s.select(); } }
-    });
+    })
+}
+
+// ------ Command Palette ------
+
+let _cmdPaletteIndex = 0    // currently highlighted result index
+let _cmdPaletteResults = [] // flat array of result objects built on each query
+
+// View shortcuts surfaced in the palette regardless of search query
+const CMD_VIEWS = [
+    { id: 'epics',       label: 'Epics',        icon: '🌟', stage: 'Vision' },
+    { id: 'okr',         label: 'OKRs',          icon: '🎯', stage: 'Vision' },
+    { id: 'roadmap',     label: 'Roadmap',       icon: '🗺️', stage: 'Plan' },
+    { id: 'backlog',     label: 'Backlog',        icon: '📋', stage: 'Plan' },
+    { id: 'sprint',      label: 'Sprint',         icon: '⚡', stage: 'Plan' },
+    { id: 'kanban',      label: 'Kanban',         icon: '📌', stage: 'Build' },
+    { id: 'track',       label: 'Track',          icon: '📊', stage: 'Build' },
+    { id: 'releases',    label: 'Releases',       icon: '🚀', stage: 'Ship' },
+    { id: 'analytics',   label: 'Analytics',      icon: '📈', stage: 'Ship' },
+    { id: 'dashboard',   label: 'Dashboard',      icon: '🏠', stage: 'Ship' },
+    { id: 'dependency',  label: 'Dependencies',   icon: '🔗', stage: 'Build' },
+    { id: 'status',      label: 'By Status',      icon: '🔵', stage: 'Build' },
+    { id: 'priority',    label: 'By Priority',    icon: '🔴', stage: 'Build' },
+    { id: 'contributor', label: 'By Contributor', icon: '👤', stage: 'Build' },
+    { id: 'ideation',    label: 'Ideation',       icon: '💡', stage: 'Discover' },
+    { id: 'workflow',    label: 'Workflow',        icon: '🔍', stage: 'Discover' },
+]
+
+function openCmdPalette() {
+    const palette = document.getElementById('cmd-palette')
+    const input = document.getElementById('cmd-palette-input')
+    if (!palette || !input) return
+    palette.classList.add('open')
+    document.body.style.overflow = 'hidden'
+    input.value = ''
+    _cmdPaletteIndex = 0
+    renderCmdPaletteResults('')
+    // Use rAF so the element is visible before focus
+    requestAnimationFrame(() => input.focus())
+}
+
+function closeCmdPalette() {
+    const palette = document.getElementById('cmd-palette')
+    if (palette) palette.classList.remove('open')
+    document.body.style.overflow = ''
+    _cmdPaletteResults = []
+    _cmdPaletteIndex = 0
+}
+
+function onCmdPaletteInput(value) {
+    _cmdPaletteIndex = 0
+    renderCmdPaletteResults(value.trim())
+}
+
+function onCmdPaletteKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); closeCmdPalette(); return }
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveCmdPaletteIndex(1); return }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); moveCmdPaletteIndex(-1); return }
+    if (e.key === 'Enter')     { e.preventDefault(); executeCmdPaletteResult(_cmdPaletteIndex); return }
+}
+
+function moveCmdPaletteIndex(delta) {
+    const len = _cmdPaletteResults.length
+    if (!len) return
+    _cmdPaletteIndex = (_cmdPaletteIndex + delta + len) % len
+    highlightCmdPaletteResult()
+}
+
+function highlightCmdPaletteResult() {
+    const items = document.querySelectorAll('#cmd-palette-results .cp-result')
+    items.forEach((el, i) => el.classList.toggle('cp-active', i === _cmdPaletteIndex))
+    items[_cmdPaletteIndex]?.scrollIntoView({ block: 'nearest' })
+}
+
+function executeCmdPaletteResult(index) {
+    const result = _cmdPaletteResults[index]
+    if (!result) return
+    closeCmdPalette()
+    result.action()
+}
+
+// Fuzzy score: higher is better. Returns -1 if no match.
+function cmdScore(text, query) {
+    if (!query) return 1
+    const t = text.toLowerCase()
+    const q = query.toLowerCase()
+    const idx = t.indexOf(q)
+    if (idx === -1) return -1
+    // Bonus for word-start match, penalty for position
+    const wordStart = idx === 0 || /\W/.test(t[idx - 1]) ? 20 : 0
+    return 100 - idx + wordStart
+}
+
+function buildCmdCorpus(query) {
+    const results = []
+    const q = query.toLowerCase()
+
+    // ── Views ─────────────────────────────────────────────────────────────
+    const matchedViews = CMD_VIEWS
+        .map(v => ({ ...v, score: cmdScore(v.label, query) }))
+        .filter(v => v.score >= 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, query ? 3 : 5)
+
+    matchedViews.forEach(v => results.push({
+        type: 'view',
+        icon: v.icon,
+        title: v.label,
+        sub: `${v.stage} stage`,
+        badge: 'View',
+        action: () => switchView(v.id)
+    }))
+
+    if (!window.UPDATE_DATA) return results
+
+    // ── Items ──────────────────────────────────────────────────────────────
+    if (query) {
+        const itemMatches = []
+        ;(UPDATE_DATA.tracks || []).forEach(track => {
+            track.subtracks.forEach(sub => {
+                sub.items.forEach(item => {
+                    const score = cmdScore(item.text || '', query)
+                    if (score >= 0) itemMatches.push({ item, track, sub, score })
+                })
+            })
+        })
+        itemMatches.sort((a, b) => b.score - a.score).slice(0, 5).forEach(({ item, track, sub }) => {
+            results.push({
+                type: 'item',
+                icon: '📝',
+                title: item.text || item.id,
+                sub: `${track.name} › ${sub.name}  ·  ${item.status || ''}`,
+                badge: item.priority || '',
+                action: () => {
+                    if (typeof openItemEdit === 'function') openItemEdit(null, null, null, item.id)
+                }
+            })
+        })
+    }
+
+    // ── Epics ──────────────────────────────────────────────────────────────
+    if (query) {
+        const epics = (UPDATE_DATA.metadata?.epics || [])
+        epics
+            .map((ep, i) => ({ ep, i, score: cmdScore(ep.name || ep.id || '', query) }))
+            .filter(x => x.score >= 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .forEach(({ ep, i }) => results.push({
+                type: 'epic',
+                icon: '🌟',
+                title: ep.name || ep.id,
+                sub: `Epic  ·  ${ep.status || 'active'}`,
+                badge: 'Epic',
+                action: () => {
+                    if (typeof openEpicEdit === 'function') openEpicEdit(i)
+                    switchView('epics')
+                }
+            }))
+    }
+
+    // ── OKRs ───────────────────────────────────────────────────────────────
+    if (query) {
+        ;(UPDATE_DATA.metadata?.okrs || [])
+            .map(okr => ({ okr, score: cmdScore(okr.objective || '', query) }))
+            .filter(x => x.score >= 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .forEach(({ okr }) => results.push({
+                type: 'okr',
+                icon: '🎯',
+                title: okr.objective,
+                sub: `OKR  ·  ${okr.status || 'active'}`,
+                badge: 'OKR',
+                action: () => switchView('okr')
+            }))
+    }
+
+    // ── Sprints ────────────────────────────────────────────────────────────
+    if (query) {
+        ;(UPDATE_DATA.metadata?.sprints || [])
+            .map(sp => ({ sp, score: cmdScore(sp.name || sp.id || '', query) }))
+            .filter(x => x.score >= 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2)
+            .forEach(({ sp }) => results.push({
+                type: 'sprint',
+                icon: '⚡',
+                title: sp.name || sp.id,
+                sub: `Sprint  ·  ${sp.status || ''}`,
+                badge: 'Sprint',
+                action: () => {
+                    if (typeof openSprintEdit === 'function') openSprintEdit(sp.id)
+                    switchView('sprint')
+                }
+            }))
+    }
+
+    // ── Releases ───────────────────────────────────────────────────────────
+    if (query) {
+        ;(UPDATE_DATA.metadata?.releases || [])
+            .map(r => ({ r, score: cmdScore(r.name || r.id || '', query) }))
+            .filter(x => x.score >= 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2)
+            .forEach(({ r }) => results.push({
+                type: 'release',
+                icon: '🚀',
+                title: r.name || r.id,
+                sub: `Release  ·  ${r.status || 'planned'}`,
+                badge: 'Release',
+                action: () => {
+                    if (typeof openReleaseEdit === 'function') openReleaseEdit(r.id)
+                    switchView('releases')
+                }
+            }))
+    }
+
+    return results
+}
+
+function renderCmdPaletteResults(query) {
+    _cmdPaletteResults = buildCmdCorpus(query)
+    const container = document.getElementById('cmd-palette-results')
+    if (!container) return
+
+    if (!_cmdPaletteResults.length) {
+        container.innerHTML = ''  // :empty pseudo triggers "No results"
+        return
+    }
+
+    // Group by type for visual separation
+    const typeOrder = ['view', 'item', 'epic', 'okr', 'sprint', 'release']
+    const typeLabel = { view: 'Views', item: 'Items', epic: 'Epics', okr: 'OKRs', sprint: 'Sprints', release: 'Releases' }
+    const iconClass = { view: 'cp-icon-view', item: 'cp-icon-item', epic: 'cp-icon-epic', okr: 'cp-icon-okr', sprint: 'cp-icon-sprint', release: 'cp-icon-release' }
+
+    let html = ''
+    let flatIndex = 0
+    const grouped = {}
+    _cmdPaletteResults.forEach(r => { (grouped[r.type] = grouped[r.type] || []).push(r) })
+
+    typeOrder.forEach(type => {
+        if (!grouped[type]?.length) return
+        html += `<div class="cp-group-label">${typeLabel[type]}</div>`
+        grouped[type].forEach(r => {
+            const active = flatIndex === _cmdPaletteIndex ? ' cp-active' : ''
+            const idx = flatIndex++
+            html += `<div class="cp-result${active}" role="option" onclick="executeCmdPaletteResult(${idx})"
+                onmouseenter="setCmdPaletteIndex(${idx})">
+                <span class="cp-result-icon ${iconClass[r.type] || ''}">${r.icon}</span>
+                <div class="cp-result-body">
+                    <div class="cp-result-title">${r.title}</div>
+                    ${r.sub ? `<div class="cp-result-sub">${r.sub}</div>` : ''}
+                </div>
+                ${r.badge ? `<span class="cp-result-badge">${r.badge}</span>` : ''}
+            </div>`
+        })
+    })
+
+    html += `<div class="cp-kbd">↑↓ navigate &nbsp;·&nbsp; ↵ open &nbsp;·&nbsp; esc close</div>`
+    container.innerHTML = html
+}
+
+function setCmdPaletteIndex(index) {
+    _cmdPaletteIndex = index
+    highlightCmdPaletteResult()
 }

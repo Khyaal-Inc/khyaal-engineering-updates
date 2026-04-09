@@ -199,18 +199,36 @@ Existing tools solve parts of the problem:
 - Recommendation engine accuracy dashboard (target: 85%)
 - Gold Tier analytics dashboards for subscribers
 
-#### F9 — Command Palette
+#### F9 — Command Palette ✅ Shipped
 - `Cmd/Ctrl+K` global search and action palette
-- Quick-jump to any view, item, sprint, or ceremony
+- Fuzzy search across all views, items, epics, OKRs, sprints, releases
+- Keyboard navigation (↑↓ + Enter), grouped results by entity type
+- Live-scores results by position + word-boundary bonus; no external library
+- Opens from any context; Escape / backdrop click closes; `Cmd+K` toggles
 
 #### F10 — Dependency Graph Enhancement
 - Mermaid.js graph with interactive click-through to linked items
 - Blocker path highlighting (red edges for blocked chains)
 
-#### F11 — Multi-Team / Multi-Tenant Support *(Productization)*
-- Separate `data.json` per team or organization
-- Team-scoped auth (Lambda per org, or shared Lambda with org routing)
-- Configurable stages, ceremonies, and status vocabulary per team
+#### F11 — Multi-Project + Role-Based Access *(Confirmed design — internal vNext)*
+
+**Hierarchy:** Team (Org) → Projects → Tracks (view filters)
+
+- Each Project has a dedicated `data-{projectId}.json` file on GitHub (full data isolation)
+- Tracks remain view-level filters within a Project — no sub-file isolation
+- `users.json` on GitHub stores the user registry: `{ id, name, passwordHash, grants[] }`
+- Each grant: `{ projectId, mode }` — controls which projects a user can see and at what max persona level
+- Lambda issues a user-scoped JWT containing `grants[]`; validates grants on every read/write request
+- Project Switcher in the Strategic Ribbon shows only the user's accessible projects
+- Persona switcher disables modes above the user's grant level for the active project
+
+**Admin surface:** A PM-only admin CMS panel to manage users and grants without raw JSON edits.
+
+#### F11b — Multi-Tenant SaaS *(Productization — future)*
+- Each customer org gets a dedicated GitHub repo + Lambda deployment
+- The internal data model (Team → Projects → Tracks, `users.json` grants) is identical — no schema change
+- `deploy_auth.sh` becomes a customer provisioning script
+- User/grant store moves from `users.json` to a managed DB (DynamoDB or Supabase) when the flat-file model hits its limits (~100 users per org)
 
 #### F12 — Post-Release Learning Loop
 - Release outcomes feed back into next OKR planning (Discover stage)
@@ -225,7 +243,7 @@ Existing tools solve parts of the problem:
 |----------|-------------|
 | **Performance** | Dashboard loads in <3s on 4G mobile; Kanban renders <500ms per drag |
 | **Uptime** | GitHub Pages + Lambda: target 99.9%+ (matches KR in data.json) |
-| **Security** | SHA-256 auth; GitHub PAT stored in localStorage (not transmitted); Lambda env vars for secrets |
+| **Security** | Per-user role-based auth: SHA-256 password → Lambda validates against `users.json` → JWT with `grants[]`; JWT validated on every Lambda request; GitHub PAT stored in localStorage (not transmitted); Lambda env vars for secrets; no grant = no project visibility |
 | **Offline** | Core views render from `localStorage` cache if GitHub fetch fails |
 | **Accessibility** | Keyboard navigation for all primary views; ARIA labels on interactive elements |
 | **Browser support** | Modern Chromium, Firefox, Safari (no IE, no polyfills) |
@@ -311,7 +329,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Grow $99 subscription (Gold Tier analytics) | High | Massive | High | M | **🔴 P0** |
 | AI Sales Agent (0→15% conversion tracking) | Med | Massive | Med | XL | **🔴 P0** |
 | Recommendation engine (0→85% accuracy) | Med | High | Med | XL | **🟠 P1** |
-| Command Palette (`Cmd+K`) | High | Med | High | S | **🟠 P1** |
+| Command Palette (`Cmd+K`) | High | Med | High | S | ✅ Shipped |
 | Post-release learning loop | Med | High | High | M | **🟠 P1** |
 | Multi-tenant config abstraction | Low | High | High | L | **🟡 P2** |
 | Sprint retro template auto-generation | Med | Med | High | S | **🟡 P2** |

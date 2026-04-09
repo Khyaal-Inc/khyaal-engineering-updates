@@ -145,6 +145,21 @@
             <span style="font-size:16px">🧭</span> Guide Me
         </button>
 
+        <!-- Command Palette -->
+        <div id="cmd-palette" role="dialog" aria-label="Command Palette" aria-modal="true"
+            onclick="if(event.target===this) closeCmdPalette()">
+            <div id="cmd-palette-inner">
+                <div id="cmd-palette-search-wrap">
+                    <span id="cmd-palette-icon" aria-hidden="true">⌘</span>
+                    <input id="cmd-palette-input" type="text" placeholder="Search views, items, epics, OKRs…"
+                        autocomplete="off" spellcheck="false"
+                        oninput="onCmdPaletteInput(this.value)"
+                        onkeydown="onCmdPaletteKey(event)">
+                </div>
+                <div id="cmd-palette-results" role="listbox" aria-label="Results"></div>
+            </div>
+        </div>
+
         <!-- Admin Panel Modal -->
         <div id="admin-panel-modal" role="dialog" aria-label="Admin Panel"
             onclick="if(event.target===this) closeAdminPanel()">
