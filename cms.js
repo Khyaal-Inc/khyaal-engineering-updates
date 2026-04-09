@@ -2131,7 +2131,15 @@ async function saveSprintClose(sprintId) {
     UPDATE_DATA.metadata.sprints[sprintIndex].status = 'completed';
     UPDATE_DATA.metadata.sprints[sprintIndex].completedPoints = completedPoints;
 
-    // 5. Notify and Save
+    // 5. Auto-recalc OKR progress for the linked OKR (if any)
+    if (sprint.linkedOKR && typeof recalcOKRProgress === 'function') {
+        const newOKRProgress = recalcOKRProgress(sprint.linkedOKR)
+        if (newOKRProgress !== null) {
+            logChange('okr-recalc', `OKR ${sprint.linkedOKR} → ${newOKRProgress}% (via sprint close)`)
+        }
+    }
+
+    // 6. Notify and Save
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
     
     // High-Fidelity Stats
@@ -2922,6 +2930,23 @@ function shipRelease(releaseId) {
 
     UPDATE_DATA.metadata.releases[releaseIdx].status = 'completed';
     UPDATE_DATA.metadata.releases[releaseIdx].updatedAt = new Date().toISOString();
+
+    // Auto-recalc OKR progress: collect OKR IDs via release.linkedOKR + epics in scope
+    if (typeof recalcOKRProgress === 'function') {
+        const okrIds = new Set()
+        if (release.linkedOKR) okrIds.add(release.linkedOKR)
+        // Also pick up OKRs linked through the epics this release covers
+        const epicIds = new Set(items.filter(i => i.epicId).map(i => i.epicId))
+        ;(UPDATE_DATA.metadata?.epics || []).forEach(e => {
+            if (epicIds.has(e.id) && e.linkedOKR) okrIds.add(e.linkedOKR)
+        })
+        okrIds.forEach(okrId => {
+            const newProgress = recalcOKRProgress(okrId)
+            if (newProgress !== null) {
+                logChange('okr-recalc', `OKR ${okrId} → ${newProgress}% (via release ship)`)
+            }
+        })
+    }
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
 

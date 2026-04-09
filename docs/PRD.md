@@ -233,6 +233,14 @@ Existing tools solve parts of the problem:
 - `deploy_auth.sh` becomes a customer provisioning script
 - User/grant store moves from `users.json` to a managed DB (DynamoDB or Supabase) when the flat-file model hits its limits (~100 users per org)
 
+#### F13 — OKR Auto-Progress Calculation ✅ Shipped
+
+- `recalcOKRProgress(okrId)` in `okr-module.js` walks `epic.linkedOKR → item.epicId → item.status === 'done'`
+- Writes `okr.overallProgress` (0–100) from actual done-task percentage — no more manual entry
+- Nudges `kr.current` and `kr.progress` for any Key Result that has a `linkedEpic`
+- Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
+- `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
+
 #### F12 — Post-Release Learning Loop ✅ Shipped (retro template)
 - Sprint retrospective template auto-populated from velocity + ceremony data ✅
   - Pre-fills "What went well" from velocity score, blocker count, rollover count, OKR alignment
@@ -297,7 +305,7 @@ The primary journey follows the PM persona through one full 2-week sprint cycle.
 
 OPPORTUNITY PRIORITY (Frequency × Severity × Solvability):
   🔴 HIGH:  Blocker visibility for PM during Build  (5 × 5 × 5 = 125)
-  🔴 HIGH:  OKR progress auto-calculation from task completion (5 × 4 × 5 = 100)
+  🔴 HIGH:  OKR progress auto-calculation from task completion (5 × 4 × 5 = 100) ✅ Shipped
   🟠 MED:   Capacity calculation from team data  (4 × 4 × 4 = 64)
   🟡 LOW:   Sprint retro template from velocity  (3 × 3 × 4 = 36)
 ```
@@ -342,6 +350,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Post-release learning loop (retro template) | Med | High | High | M | ✅ Shipped (partial) |
 | Multi-tenant config abstraction | Low | High | High | L | **🟡 P2** |
 | Sprint retro template auto-generation | Med | Med | High | S | ✅ Shipped |
+| OKR auto-progress from task completion | High | High | High | S | ✅ Shipped |
 
 ---
 

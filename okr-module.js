@@ -479,6 +479,69 @@ function calculateOKRProgress(okr) {
     return Math.round(totalProgress / okr.keyResults.length);
 }
 
+/**
+ * Recalculates overallProgress for a given OKR from actual task completion.
+ * Walks: epic.linkedOKR → item.epicId → item.status === 'done'
+ * Also nudges kr.current for any KR that has a linkedEpic.
+ *
+ * Returns the new progress value (0–100), or null if OKR not found.
+ * Mutates UPDATE_DATA in-place — caller must call saveToLocalStorage() / saveToGithub().
+ */
+function recalcOKRProgress(okrId) {
+    const data = window.UPDATE_DATA
+    const okr = (data.metadata?.okrs || []).find(o => o.id === okrId)
+    if (!okr) return null
+
+    // Collect all epics that point to this OKR
+    const linkedEpicIds = new Set(
+        (data.metadata?.epics || [])
+            .filter(e => e.linkedOKR === okrId)
+            .map(e => e.id)
+    )
+    if (linkedEpicIds.size === 0) return null
+
+    // Collect all tasks under those epics
+    let totalTasks = 0
+    let doneTasks = 0
+    ;(data.tracks || []).forEach(track => {
+        track.subtracks.forEach(subtrack => {
+            subtrack.items.forEach(item => {
+                if (!linkedEpicIds.has(item.epicId)) return
+                totalTasks++
+                if (item.status === 'done') doneTasks++
+            })
+        })
+    })
+
+    if (totalTasks === 0) return null
+
+    const newProgress = Math.round((doneTasks / totalTasks) * 100)
+    okr.overallProgress = newProgress
+
+    // Nudge kr.current for KRs that have a linkedEpic within scope
+    ;(okr.keyResults || []).forEach(kr => {
+        if (!kr.linkedEpic || !linkedEpicIds.has(kr.linkedEpic)) return
+        // Count done tasks for the specific epic this KR tracks
+        let krTotal = 0
+        let krDone = 0
+        ;(data.tracks || []).forEach(track => {
+            track.subtracks.forEach(subtrack => {
+                subtrack.items.forEach(item => {
+                    if (item.epicId !== kr.linkedEpic) return
+                    krTotal++
+                    if (item.status === 'done') krDone++
+                })
+            })
+        })
+        if (krTotal > 0 && typeof kr.target === 'number') {
+            kr.current = Math.round((krDone / krTotal) * kr.target)
+            kr.progress = Math.round((krDone / krTotal) * 100)
+        }
+    })
+
+    return newProgress
+}
+
 // Vision Management Function
 function editVision() {
     const vision = UPDATE_DATA.metadata?.vision || '';
@@ -511,3 +574,4 @@ function editVision() {
 window.renderOkrView = renderOkrView;
 window.editVision = editVision;
 window.toggleExecDetail = toggleExecDetail;
+window.recalcOKRProgress = recalcOKRProgress;
