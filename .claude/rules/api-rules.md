@@ -1,0 +1,137 @@
+---
+description: Lambda call patterns, auth flow, write safety, error handling, and multi-project extension rules for the Khyaal SPA
+---
+
+# API Rules
+
+## Lambda Is the Only API Surface
+
+Never call the GitHub API directly from the browser. All reads and writes go through the Lambda proxy at `LAMBDA_URL` (hardcoded constant in `index.html`).
+
+```javascript
+// Correct — goes through Lambda
+const response = await fetch(`${LAMBDA_URL}?action=read`, {
+    headers: { Authorization: `Bearer ${jwt}` }
+})
+
+// Wrong — never do this
+const response = await fetch('https://api.github.com/repos/...', {
+    headers: { Authorization: `token ${pat}` }
+})
+```
+
+## Auth Flow
+
+| Storage key | Value | Used for |
+|-------------|-------|----------|
+| `localStorage['khyaal_site_auth']` | JWT string | All Lambda API calls |
+| `localStorage['gh_pat']` | GitHub PAT | CMS write commits (passed to Lambda) |
+
+Every Lambda call must include the JWT:
+
+```javascript
+const jwt = localStorage.getItem('khyaal_site_auth')
+const response = await fetch(`${LAMBDA_URL}?action=read`, {
+    headers: { Authorization: `Bearer ${jwt}` }
+})
+```
+
+If the JWT is missing or expired, Lambda returns 401. Redirect to the login screen — do not retry silently.
+
+## Read Pattern
+
+```javascript
+async function loadData() {
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    const response = await fetch(`${LAMBDA_URL}?action=read`, {
+        headers: { Authorization: `Bearer ${jwt}` }
+    })
+    if (!response.ok) throw new Error(`Read failed: ${response.status}`)
+    const { content, sha } = await response.json()
+    window.UPDATE_DATA = JSON.parse(atob(content))
+    window._lastDataSha = sha   // store SHA for optimistic lock check on write
+}
+```
+
+Always store the `sha` returned from the read response. It is required for the write.
+
+## Write Pattern
+
+```javascript
+async function saveToGithub(updatedData) {
+    window.isActionLockActive = true
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const content = btoa(JSON.stringify(updatedData, null, 2))
+        const response = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${jwt}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content,
+                sha: window._lastDataSha,   // last known SHA
+                message: 'chore: update data via CMS'
+            })
+        })
+        if (!response.ok) throw new Error(`Write failed: ${response.status}`)
+        const { sha } = await response.json()
+        window._lastDataSha = sha           // update SHA after successful write
+    } catch (err) {
+        console.error('❌ saveToGithub:', err)
+        showToast('Save failed — check your connection and try again', 'error')
+        throw err   // re-throw so the caller can reset UI state
+    } finally {
+        window.isActionLockActive = false
+    }
+}
+```
+
+## Write Safety Rules
+
+1. **Set `window.isActionLockActive = true` before any write** — this prevents concurrent UI re-renders during save
+2. **Always release in `finally`** — never leave the lock set on error
+3. **Never mutate `UPDATE_DATA` before the write resolves** — mutate only after `await saveToGithub()` succeeds
+4. **Include the last-known SHA** — prevents silent overwrites when another user has saved since your last read (optimistic lock)
+5. **Re-throw on error** — callers need to know the save failed so they can reset UI state
+
+## Error Handling
+
+```javascript
+// Standard pattern for all Lambda calls
+try {
+    const result = await someApiCall()
+    // success path
+} catch (err) {
+    console.error('❌ [operation context]:', err)
+    showToast('Friendly message for user', 'error')
+}
+```
+
+- Log format: `console.error('❌ <context>:', error)` — the `❌` prefix makes errors scannable in browser DevTools
+- Always show a toast for user-visible failures (save, load, auth)
+- Never swallow errors on write operations silently
+
+## Multi-Project Extension (Planned)
+
+When the multi-project model is implemented, all Lambda calls must include `?projectId=`:
+
+```javascript
+// Future pattern — add projectId to every call
+const projectId = window.ACTIVE_PROJECT_ID || 'default'
+const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${projectId}`, ...)
+```
+
+Do not implement this now. When you see `?action=read` or `?action=write` in existing code, leave it as-is. The `projectId` param will be added as a coordinated change across `cms.js`, `app.js`, `workflow-nav.js`, and `auth_gatekeeper.js` (ADR §4).
+
+## Lambda Environment Variables
+
+Set in AWS Console → Lambda → Configuration → Environment variables. Never hardcode these in source:
+
+| Variable | Purpose |
+|----------|---------|
+| `GITHUB_TOKEN` | GitHub PAT with `repo` scope — used for all data reads/writes |
+| `EXPECTED_PASSWORD_HASH` | SHA-256 hex of the app password |
+
+After running `sh deploy_auth.sh`, update `LAMBDA_URL` in `index.html` — the URL changes on each deploy.
