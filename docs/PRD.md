@@ -241,6 +241,18 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F19 — Executive Dashboard Enhancement ✅ Shipped
+
+- `executive-dashboard.js` — 5 functions updated, 2 new helpers added; no new files
+- **`renderExecutiveSummary`**: summary bar now has 5 cards — OKR Progress, Epics On Track (live-computed), **Shipped This Quarter** (items where `status=done` and `updatedAt` within current quarter), Sprints Closed (all time), Blockers
+- **`renderOKRSummary`**: each OKR card now has an **SVG ring chart** (`buildOKRRing`) showing progress with traffic-light colour (green/amber/red); per-KR micro-progress bars beneath; portfolio health label (On Track/At Risk/Behind) computed from actual avg progress — not hardcoded
+- **`renderEpicHealth`**: completely rewritten to use `computeEpicHealth(epic)` — compares `% done` vs `% time elapsed` (same algorithm as analytics view); shows OKR linkage per epic; summary counts (on track / at risk / slipping / no dates) in header
+- **`renderTopRisks`**: blocker rows now include OKR name in the meta line (via `epic.linkedOKR` chain)
+- **`renderVelocitySummary`**: replaced plain text rows with **CSS spark-bars** scaled to max sprint points; sprint name resolved from `sprints[]` (not raw ID); trend arrow (↑/↓/→) with colour; no chart library dependency
+- **`computeEpicHealth(epic)`**: shared helper (also usable by analytics view) — computes live On Track/At Risk/Slipping signal
+- **`countShippedThisQuarter()`**: counts `done` items updated since quarter start (Jan/Apr/Jul/Oct boundary)
+- **`buildOKRRing(progress, size)`**: pure SVG ring builder — no external library
+
 #### F18 — My Tasks View (Sprint-Grouped, Quick-Mark-Done, OKR Context) ✅ Shipped
 
 - `renderMyTasksView()` in `dev-focus.js` fully rewritten — all prior logic replaced
@@ -412,6 +424,7 @@ Based on stated Q2 focus: Grow paid subscribers + AI features + stability + mark
 | Contributor View (sprint health, persona-gated) | High | Med | High | S | ✅ Shipped |
 | Analytics enhancement (OKR trend, epic health, forecast) | High | High | High | M | ✅ Shipped |
 | My Tasks (sprint-grouped, quick-mark-done, OKR context) | High | High | High | S | ✅ Shipped |
+| Executive Dashboard (OKR rings, live epic health, spark-bars) | High | High | High | M | ✅ Shipped |
 
 ---
 
