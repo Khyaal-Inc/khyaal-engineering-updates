@@ -4468,6 +4468,24 @@ summary::-webkit-details-marker {
     border-color: #6ee7b7;
 }
 
+/* WIP limit input in column header (PM only) */
+.kanban-wip-input {
+    width: 44px;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #64748b;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.kanban-wip-input:focus { border-color: #6366f1; color: #4f46e5; }
+.kanban-wip-input::placeholder { color: #cbd5e1; font-weight: 500; }
+.kanban-wip-input.kanban-wip-over { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
+
 /* Release epic pills */
 .release-epic-pill {
     display: inline-flex;

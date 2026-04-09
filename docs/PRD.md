@@ -241,6 +241,21 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F24 — Kanban View Enhancement (WIP Limits, Exec Persona Filter, Persist on Drop) ✅ Shipped
+
+- `kanban-view.js` — WIP limit system added; Exec persona filter added; `handleKanbanDrop` fixed to persist
+- `styles.css` — `.kanban-wip-input` and `.kanban-wip-over` added
+
+**WIP limits** (`sessionStorage`-backed, per column status key):
+- PM mode: each column header gets a small number `<input>` (`placeholder="WIP"`) — typing a value and blurring calls `setWipLimit(status, value)` → `renderKanbanView()`
+- Column header shows `N / max` count when a limit is set; over-limit columns get red border + red count badge + "OVER" chip; column background shifts to `bg-red-50/30`
+- Ribbon shows "⚠️ N columns over WIP limit" warning pill when any column exceeds its limit
+- `getWipLimits()` / `setWipLimit()` use `sessionStorage['khyaal_kanban_wip']` (JSON map of `status → limit`); limits persist for the browser session
+
+**Exec persona filter**: Exec sees only items where `item.epicId` maps to an epic with `epic.linkedOKR` in the active OKR set (`okr.status === 'active'` or status absent). Ribbon subtitle reads "OKR-linked items only"; "Quick Task" button hidden; OKR-filtered badge shown; empty state reads "No items linked to active OKRs".
+
+**Bug fix — drag-and-drop persistence**: `handleKanbanDrop` now calls `saveToLocalStorage()` after updating `item.status`. Previously, status changes made by dragging were in-memory only and lost on reload.
+
 #### F23 — Grooming View Enhancement (Weighted Score, Sprint-Ready Filter, Bulk Assign) ✅ Shipped
 
 - `views.js` — `computeGroomScore()` added; `renderBacklogView()` rewritten; `_backlogSelected` Set + helpers added; `renderItem()` groom-badge updated

@@ -12,12 +12,30 @@ function toggleKanbanMyItems() {
 }
 window.toggleKanbanMyItems = toggleKanbanMyItems
 
+// ---- WIP limit helpers ----
+const _WIP_KEY = 'khyaal_kanban_wip'
+
+function getWipLimits() {
+    try { return JSON.parse(sessionStorage.getItem(_WIP_KEY) || '{}') } catch { return {} }
+}
+
+function setWipLimit(status, value) {
+    const limits = getWipLimits()
+    const n = parseInt(value)
+    if (n > 0) limits[status] = n
+    else delete limits[status]
+    sessionStorage.setItem(_WIP_KEY, JSON.stringify(limits))
+    renderKanbanView()
+}
+window.setWipLimit = setWipLimit
+
 function renderKanbanView() {
     const container = document.getElementById('kanban-view');
     if (!container) return;
 
     const swimlane = document.getElementById('kanban-swimlane')?.value || 'none';
     const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm';
+    const wipLimits = getWipLimits()
 
     // Collect all items with source context
     const items = [];
@@ -29,14 +47,29 @@ function renderKanbanView() {
         });
     });
 
-    // Filter by mode — in dev mode, optionally filter to current user only
+    // ---- Persona filtering ----
     const modeFilter = typeof getModeFilter === 'function' ? getModeFilter() : null;
     const myItemsActive = mode === 'dev' && window.kanbanMyItemsOnly
-    // When myItemsActive: always apply modeFilter (user's items only)
-    // When not active in dev mode: no automatic filter (show all items on kanban)
-    const filteredItems = myItemsActive && modeFilter
-        ? items.filter(modeFilter)
-        : items
+
+    let filteredItems
+    if (mode === 'exec') {
+        // Exec: only items reachable via active OKR → epic chain
+        const activeOKRIds = new Set(
+            (UPDATE_DATA.metadata?.okrs || [])
+                .filter(o => o.status === 'active' || !o.status)
+                .map(o => o.id)
+        )
+        const okrEpicIds = new Set(
+            (UPDATE_DATA.metadata?.epics || [])
+                .filter(e => e.linkedOKR && activeOKRIds.has(e.linkedOKR))
+                .map(e => e.id)
+        )
+        filteredItems = items.filter(i => i.epicId && okrEpicIds.has(i.epicId))
+    } else if (myItemsActive && modeFilter) {
+        filteredItems = items.filter(modeFilter)
+    } else {
+        filteredItems = items
+    }
 
     // Status columns definition: Full Engineering & Product Lifecycle
     const statusCols = [
@@ -87,6 +120,14 @@ function renderKanbanView() {
     const columnMaxHeight = isFlatView ? 'calc(100vh - 120px)' : '650px';
     const columnHeightClass = isFlatView ? '' : 'h-fit';
 
+    // Count over-limit columns for ribbon summary
+    const overLimitCols = statusCols.filter(col => {
+        const limit = wipLimits[col.status]
+        if (!limit) return false
+        const total = filteredItems.filter(i => (i.status || 'later') === col.status).length
+        return total > limit
+    }).length
+
     // Render Kanban board
     container.innerHTML = `
         <div class="bg-white p-3 rounded-3xl border border-slate-200 shadow-xl">
@@ -97,13 +138,18 @@ function renderKanbanView() {
                         <span class="text-white text-xl">📋</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] font-medium text-slate-400">Stage 4 · Build — Drag cards to update live status</span>
+                        <span class="text-[10px] font-medium text-slate-400">Stage 4 · Build — ${mode === 'exec' ? 'OKR-linked items only' : 'Drag cards to update live status'}</span>
                         <h2 class="text-base font-bold text-slate-800">Unified Kanban</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('kanban') : ''}
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 flex-wrap">
+                    ${overLimitCols > 0 ? `
+                    <div class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 rounded-xl text-xs font-black text-red-700">
+                        ⚠️ ${overLimitCols} column${overLimitCols !== 1 ? 's' : ''} over WIP limit
+                    </div>` : ''}
+
                     <div class="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                         <span class="text-[10px] font-medium text-slate-400 px-3">Swimlanes:</span>
                         <select id="kanban-swimlane" onchange="renderKanbanView()"
@@ -114,25 +160,34 @@ function renderKanbanView() {
                             <option value="contributor" ${swimlane === 'contributor' ? 'selected' : ''}>By Contributor</option>
                         </select>
                     </div>
-                    
+
                     ${mode === 'dev' ? `
                     <button onclick="toggleKanbanMyItems()" class="kanban-my-items-toggle ${myItemsActive ? 'active' : ''}">
                         ${myItemsActive ? '👤 My Items' : '👥 All Items'}
                     </button>
                     ` : ''}
 
+                    ${mode === 'exec' ? `
+                    <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-lg">🎯 OKR-filtered</span>
+                    ` : ''}
+
                     <div id="kanban-next-action-mount">
                         ${typeof renderPrimaryStageAction === 'function' ? renderPrimaryStageAction('kanban') : ''}
                     </div>
 
+                    ${mode !== 'exec' ? `
                     <button onclick="openAddItemModal('kanban')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
                         <span>+</span> Quick Task
-                    </button>
+                    </button>` : ''}
                 </div>
             </div>
             ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('kanban') : ''}
 
-            ${filteredItems.length === 0 ? (typeof renderSmartEmptyState === 'function' ? renderSmartEmptyState('kanban') : '<div class="text-center py-20 text-slate-400">No items available</div>') : `
+            ${filteredItems.length === 0 ? `
+            <div class="text-center py-20 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200 mt-4">
+                <div class="text-5xl mb-4">${mode === 'exec' ? '🎯' : '📋'}</div>
+                <div class="text-sm font-bold text-slate-600">${mode === 'exec' ? 'No items linked to active OKRs' : 'No items available'}</div>
+            </div>` : `
             <div class="kanban-board flex flex-col gap-12 overflow-x-auto pb-4 custom-scrollbar px-2">
                 ${swimlaneGroups.map((group, groupIdx) => `
                     <div class="kanban-row ${groupIdx > 0 ? 'pt-2' : ''}">
@@ -144,29 +199,44 @@ function renderKanbanView() {
                                 <div class="flex-1 h-[2px] bg-slate-200/60 ml-1 rounded-full"></div>
                             </div>
                         ` : ''}
-                        
+
                         <div class="flex gap-6 min-w-max pr-4">
                             ${statusCols.map(col => {
-                                const columnItems = group.items.filter(i => (i.status || 'later') === col.status);
+                                const columnItems = group.items.filter(i => (i.status || 'later') === col.status)
+                                const wipLimit = wipLimits[col.status]
+                                const overLimit = wipLimit && columnItems.length > wipLimit
+                                const colBorderClass = overLimit
+                                    ? 'border-red-400 bg-red-50/30'
+                                    : col.color
                                 return `
-                                    <div class="kanban-column ${col.color} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col ${columnHeightClass} w-[310px] flex-shrink-0 shadow-sm"
+                                    <div class="kanban-column ${colBorderClass} rounded-2xl p-2.5 border border-dashed transition-all duration-300 flex flex-col ${columnHeightClass} w-[310px] flex-shrink-0 shadow-sm"
                                          style="max-height: ${columnMaxHeight};"
                                          data-status="${col.status}"
                                          data-group-id="${group.id}"
                                          ondrop="handleKanbanDrop(event)"
                                          ondragover="handleKanbanDragOver(event)"
                                          ondragleave="handleKanbanDragLeave(event)">
-                                        <div class="flex justify-between items-center mb-3 px-1 flex-shrink-0">
+                                        <div class="flex justify-between items-center mb-2 px-1 flex-shrink-0">
                                             <div class="flex items-center gap-1.5">
-                                                <h4 class="text-xs font-semibold text-slate-700">${col.title}</h4>
-                                                <span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">${columnItems.length}</span>
+                                                <h4 class="text-xs font-semibold ${overLimit ? 'text-red-700' : 'text-slate-700'}">${col.title}</h4>
+                                                <span class="text-[10px] font-black px-1.5 py-0.5 rounded border ${overLimit ? 'bg-red-100 text-red-700 border-red-300' : 'bg-slate-100 text-slate-600 border-slate-200'}">
+                                                    ${columnItems.length}${wipLimit ? ` / ${wipLimit}` : ''}
+                                                </span>
+                                                ${overLimit ? '<span class="text-[9px] font-black text-red-600 bg-red-100 px-1 rounded">OVER</span>' : ''}
                                             </div>
+                                            ${mode === 'pm' ? `
+                                            <input type="number" min="0" max="99" placeholder="WIP"
+                                                value="${wipLimit || ''}"
+                                                title="Set WIP limit for this column (0 to clear)"
+                                                onchange="setWipLimit('${col.status}', this.value)"
+                                                class="kanban-wip-input ${overLimit ? 'kanban-wip-over' : ''}">
+                                            ` : ''}
                                         </div>
                                         <div class="space-y-3 kanban-cards flex-1 overflow-y-auto pr-1 min-h-[120px] custom-scrollbar">
                                             ${columnItems.map(item => renderKanbanCard(item)).join('')}
                                         </div>
                                     </div>
-                                `;
+                                `
                             }).join('')}
                         </div>
                     </div>
@@ -345,11 +415,12 @@ function handleKanbanDrop(event) {
         logChange('Updated Status (Kanban)', `${itemReference.text}: ${oldStatus.toUpperCase()} ➔ ${finalStatus.toUpperCase()}`);
     }
 
-    // 4. Synchronization and Refresh
+    // 4. Persist + Refresh
+    if (typeof saveToLocalStorage === 'function') saveToLocalStorage()
     renderKanbanView();
     updateTabCounts();
     if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
-    
+
     showToast(`"${itemReference.text}" updated successfully`, 'success');
     draggedItem = null;
 }
