@@ -13,7 +13,7 @@ const MODE_CONFIG = {
         availableViews: [
             'epics', 'roadmap', 'backlog', 'sprint', 'kanban',
             'dependency', 'okr', 'capacity', 'analytics',
-            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard', 'ideation', 'spikes'
+            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard', 'ideation', 'spikes', 'activity'
         ],
         description: 'Strategic planning, backlog grooming, sprint management',
         primaryNavOrder: ['okr', 'roadmap', 'epics', 'releases', 'backlog', 'sprint', 'my-tasks', 'kanban', 'track', 'dashboard', 'analytics', 'capacity']
@@ -24,7 +24,7 @@ const MODE_CONFIG = {
         color: 'green',
         defaultView: 'my-tasks',
         availableViews: [
-            'my-tasks', 'kanban', 'track', 'dependency', 'sprint', 'workflow', 'ideation', 'spikes'
+            'my-tasks', 'kanban', 'track', 'dependency', 'sprint', 'workflow', 'ideation', 'spikes', 'activity'
         ],
         description: 'Task execution, blocker resolution, sprint focus',
         primaryNavOrder: ['my-tasks', 'kanban', 'track', 'sprint', 'dependency']
@@ -35,7 +35,7 @@ const MODE_CONFIG = {
         color: 'purple',
         defaultView: 'dashboard',
         availableViews: [
-            'dashboard', 'epics', 'okr', 'analytics', 'roadmap', 'releases', 'ideation', 'spikes'
+            'dashboard', 'epics', 'okr', 'analytics', 'roadmap', 'releases', 'ideation', 'spikes', 'activity'
         ],
         description: 'High-level health, strategic alignment, reporting',
         primaryNavOrder: ['dashboard', 'okr', 'epics', 'roadmap', 'releases', 'analytics']
@@ -63,7 +63,8 @@ const VIEW_METADATA = {
     'contributor': { label: '👤 By Contributor', category: 'primary' },
     'dependency': { label: '🕸️ Dependencies', category: 'primary' },
     'gantt': { label: '📅 Gantt', category: 'primary' },
-    'workflow': { label: '🛠️ Playbook', category: 'primary' }
+    'workflow': { label: '🛠️ Playbook', category: 'primary' },
+    'activity': { label: '📋 Activity', category: 'primary' }
 };
 
 // ============================================================
@@ -75,21 +76,21 @@ const STAGE_TO_VIEWS = {
         vision:    ['okr', 'epics'],
         plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
         build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        review:    ['releases', 'analytics', 'dashboard', 'workflow']
+        review:    ['releases', 'analytics', 'dashboard', 'workflow', 'activity']
     },
     dev: {
         discovery: ['ideation', 'spikes'],
         vision:    [],
         plan:      ['sprint'],
         build:     ['my-tasks', 'kanban', 'track', 'dependency'],
-        review:    ['workflow']
+        review:    ['workflow', 'activity']
     },
     exec: {
         discovery: ['ideation'],
         vision:    ['okr', 'epics'],
         plan:      ['roadmap'],
         build:     [],
-        review:    ['releases', 'analytics', 'dashboard']
+        review:    ['releases', 'analytics', 'dashboard', 'activity']
     }
 };
 

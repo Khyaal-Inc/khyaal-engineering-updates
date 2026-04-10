@@ -335,6 +335,7 @@ function switchView(view) {
         if (view === 'capacity') renderCapacityView();
         if (view === 'my-tasks') renderMyTasksView();
         if (view === 'dashboard') renderExecutiveDashboard();
+        if (view === 'activity') renderActivityView();
         if (view === 'ideation' || view === 'spikes') {
             if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
         }

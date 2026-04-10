@@ -3255,4 +3255,258 @@ function renderDiscoveryView() {
 
 // Export
 window.renderDiscoveryView = renderDiscoveryView;
+
+// ------ Activity Feed View (F27) ------
+
+// Action type config: icon + colour class
+const ACTIVITY_ACTION_CONFIG = {
+    // Item-level
+    'Edit Item':          { icon: '✏️', group: 'item',     label: 'Item edited' },
+    'Add Item':           { icon: '➕', group: 'item',     label: 'Item added' },
+    'Delete Item':        { icon: '🗑️', group: 'item',     label: 'Item deleted' },
+    'status-change':      { icon: '🔄', group: 'item',     label: 'Status changed' },
+    'priority-change':    { icon: '⚡', group: 'item',     label: 'Priority changed' },
+    'sprint-assign':      { icon: '🏃', group: 'item',     label: 'Assigned to sprint' },
+    'release-assign':     { icon: '📦', group: 'item',     label: 'Assigned to release' },
+    'bulk-assign':        { icon: '📋', group: 'item',     label: 'Bulk assigned' },
+    'Groom Item (storyPoints)': { icon: '🎯', group: 'item', label: 'Story points set' },
+    'Groom Item (epicId)':      { icon: '🔗', group: 'item', label: 'Epic linked' },
+    'Groom Item (priority)':    { icon: '⚡', group: 'item', label: 'Priority groomed' },
+    'Groom Item (acceptanceCriteria)': { icon: '📝', group: 'item', label: 'AC updated' },
+    'Move to Backlog':    { icon: '📚', group: 'item',     label: 'Moved to backlog' },
+    'Flag Blocker':       { icon: '🚫', group: 'item',     label: 'Blocker flagged' },
+    'Blocker Resolved':   { icon: '✅', group: 'item',     label: 'Blocker resolved' },
+    'Unblock Item':       { icon: '✅', group: 'item',     label: 'Item unblocked' },
+    // Sprint-level
+    'Add Sprint':         { icon: '🏁', group: 'sprint',   label: 'Sprint created' },
+    'Edit Sprint':        { icon: '✏️', group: 'sprint',   label: 'Sprint edited' },
+    'Delete Sprint':      { icon: '🗑️', group: 'sprint',   label: 'Sprint deleted' },
+    'sprint-goal-update': { icon: '🎯', group: 'sprint',   label: 'Sprint goal updated' },
+    // Release-level
+    'Add Release':        { icon: '🚀', group: 'release',  label: 'Release created' },
+    'Edit Release':       { icon: '✏️', group: 'release',  label: 'Release edited' },
+    'Delete Release':     { icon: '🗑️', group: 'release',  label: 'Release deleted' },
+    'Release Builder':    { icon: '📦', group: 'release',  label: 'Items promoted to release' },
+    // Epic/OKR-level
+    'Add Epic':           { icon: '🌟', group: 'strategic', label: 'Epic created' },
+    'Edit Epic':          { icon: '✏️', group: 'strategic', label: 'Epic edited' },
+    'Delete Epic':        { icon: '🗑️', group: 'strategic', label: 'Epic deleted' },
+    'epic-horizon-assign':{ icon: '🗺️', group: 'strategic', label: 'Horizon assigned' },
+    'Add OKR':            { icon: '🎯', group: 'strategic', label: 'OKR created' },
+    'Edit OKR':           { icon: '✏️', group: 'strategic', label: 'OKR edited' },
+    'Delete OKR':         { icon: '🗑️', group: 'strategic', label: 'OKR deleted' },
+    'okr-recalc':         { icon: '📊', group: 'strategic', label: 'OKR progress updated' },
+    // Other
+    'Edit Metadata':      { icon: '⚙️', group: 'system',   label: 'Metadata updated' },
+    'Add Track':          { icon: '🏗️', group: 'system',   label: 'Track added' },
+    'Edit Track':         { icon: '✏️', group: 'system',   label: 'Track edited' },
+    'Edit Roadmap':       { icon: '🗺️', group: 'system',   label: 'Roadmap updated' },
+    'Add Roadmap':        { icon: '🗺️', group: 'system',   label: 'Roadmap created' },
+    'Edit Vision':        { icon: '🌟', group: 'system',   label: 'Vision updated' },
+    'Edit Subtrack':      { icon: '✏️', group: 'system',   label: 'Subtrack edited' },
+    'Add Subtrack':       { icon: '➕', group: 'system',   label: 'Subtrack added' }
+}
+
+const ACTIVITY_GROUP_COLORS = {
+    item:      { bg: '#f0f9ff', border: '#bae6fd', text: '#0369a1' },
+    sprint:    { bg: '#eef2ff', border: '#c7d2fe', text: '#4338ca' },
+    release:   { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c' },
+    strategic: { bg: '#f5f3ff', border: '#ddd6fe', text: '#6d28d9' },
+    system:    { bg: '#f8fafc', border: '#e2e8f0', text: '#475569' }
+}
+
+function getActivityConfig(action) {
+    if (ACTIVITY_ACTION_CONFIG[action]) return ACTIVITY_ACTION_CONFIG[action]
+    // Fuzzy match for groom variants
+    const groomMatch = Object.keys(ACTIVITY_ACTION_CONFIG).find(k => action.startsWith(k))
+    if (groomMatch) return ACTIVITY_ACTION_CONFIG[groomMatch]
+    return { icon: '📝', group: 'system', label: action }
+}
+
+function formatActivityTimestamp(isoString) {
+    if (!isoString) return ''
+    const ts = new Date(isoString)
+    const now = new Date()
+    const diffMs = now - ts
+    const diffMin = Math.floor(diffMs / 60000)
+    const diffHr  = Math.floor(diffMs / 3600000)
+    const diffDay = Math.floor(diffMs / 86400000)
+    if (diffMin < 2)  return 'just now'
+    if (diffMin < 60) return `${diffMin}m ago`
+    if (diffHr  < 24) return `${diffHr}h ago`
+    if (diffDay === 1) return 'yesterday'
+    if (diffDay < 7)  return `${diffDay}d ago`
+    return ts.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+}
+
+function getActivityDayLabel(isoString) {
+    if (!isoString) return 'Unknown'
+    const ts = new Date(isoString)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const tsDay = new Date(ts.getFullYear(), ts.getMonth(), ts.getDate())
+    const diffDay = Math.floor((today - tsDay) / 86400000)
+    if (diffDay === 0) return 'Today'
+    if (diffDay === 1) return 'Yesterday'
+    if (diffDay < 7)  return ts.toLocaleDateString('en-IN', { weekday: 'long' })
+    return ts.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function buildActivityLinkOut(action, target) {
+    const meta = UPDATE_DATA.metadata || {}
+    // Sprint match
+    const sprint = (meta.sprints || []).find(s => s.name === target || s.id === target)
+    if (sprint) return `<button onclick="switchView('sprint')" class="activity-link-out">→ Sprint</button>`
+    // Release match
+    const release = (meta.releases || []).find(r => r.name === target || r.id === target)
+    if (release) return `<button onclick="switchView('releases')" class="activity-link-out">→ Release</button>`
+    // Epic match
+    const epic = (meta.epics || []).find(e => e.name === target || e.id === target)
+    if (epic) return `<button onclick="switchView('epics')" class="activity-link-out">→ Epic</button>`
+    // OKR match (objective text is usually the target)
+    const okr = (meta.okrs || []).find(o => o.objective === target || o.id === target)
+    if (okr) return `<button onclick="switchView('okr')" class="activity-link-out">→ OKR</button>`
+    // Item match — scan tracks
+    let foundItem = null
+    ;(UPDATE_DATA.tracks || []).forEach(track => {
+        track.subtracks.forEach(sub => {
+            sub.items.forEach(item => {
+                if (item.text === target) foundItem = item
+            })
+        })
+    })
+    if (foundItem) return `<button onclick="switchView('kanban')" class="activity-link-out">→ Kanban</button>`
+    return ''
+}
+
+// Exec-visible action groups
+const EXEC_VISIBLE_GROUPS = new Set(['release', 'strategic'])
+// Dev-visible action groups
+const DEV_VISIBLE_GROUPS = new Set(['item', 'sprint'])
+
+function renderActivityView() {
+    const container = document.getElementById('activity-view')
+    if (!container) return
+
+    const mode = getCurrentMode()
+    const activity = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.activity) || []
+
+    // Persona filter
+    const filtered = activity.filter(entry => {
+        const cfg = getActivityConfig(entry.action)
+        if (mode === 'exec') return EXEC_VISIBLE_GROUPS.has(cfg.group)
+        if (mode === 'dev')  return DEV_VISIBLE_GROUPS.has(cfg.group)
+        return true // PM sees all
+    })
+
+    // Type filter (stored in sessionStorage)
+    const typeFilter = sessionStorage.getItem('activity_type_filter') || 'all'
+    const visibleEntries = typeFilter === 'all'
+        ? filtered
+        : filtered.filter(e => getActivityConfig(e.action).group === typeFilter)
+
+    // Summary counts for ribbon filter chips
+    const groupCounts = {}
+    filtered.forEach(e => {
+        const g = getActivityConfig(e.action).group
+        groupCounts[g] = (groupCounts[g] || 0) + 1
+    })
+
+    const filterGroups = [
+        { key: 'all',      label: 'All',      count: filtered.length },
+        { key: 'item',     label: 'Items',    count: groupCounts.item || 0 },
+        { key: 'sprint',   label: 'Sprints',  count: groupCounts.sprint || 0 },
+        { key: 'release',  label: 'Releases', count: groupCounts.release || 0 },
+        { key: 'strategic',label: 'Strategic',count: groupCounts.strategic || 0 },
+        { key: 'system',   label: 'System',   count: groupCounts.system || 0 }
+    ].filter(g => g.key === 'all' || g.count > 0)
+
+    const filterChips = filterGroups.map(g => `
+        <button onclick="setActivityFilter('${g.key}')"
+            class="activity-filter-chip ${typeFilter === g.key ? 'active' : ''}">
+            ${g.label}${g.count > 0 && g.key !== 'all' ? ` <span class="activity-filter-count">${g.count}</span>` : ''}
+        </button>
+    `).join('')
+
+    const ribbonHtml = `
+        <div style="position:relative;margin-bottom:24px;">
+            <div id="activity-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 px-2">
+                    <span class="text-xl">📋</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-medium text-slate-400">Stage 5 · Ship — Audit trail of all CMS operations</span>
+                        <h2 class="text-sm font-black text-slate-800">Activity Feed</h2>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap px-2">
+                    ${filterChips}
+                </div>
+            </div>
+        </div>
+    `
+
+    if (filtered.length === 0) {
+        container.innerHTML = ribbonHtml + `
+            <div class="text-center py-20 text-slate-400">
+                <div class="text-4xl mb-4">📋</div>
+                <div class="font-bold text-slate-500 mb-1">No activity yet</div>
+                <div class="text-sm">Activity is recorded when items are created, edited, or moved through CMS.</div>
+            </div>`
+        return
+    }
+
+    // Group visible entries by day
+    const byDay = {}
+    visibleEntries.forEach(entry => {
+        const day = getActivityDayLabel(entry.timestamp)
+        if (!byDay[day]) byDay[day] = []
+        byDay[day].push(entry)
+    })
+
+    let feedHtml = ''
+    Object.entries(byDay).forEach(([day, entries]) => {
+        feedHtml += `<div class="activity-day-header">${day}</div>`
+        entries.forEach(entry => {
+            const cfg = getActivityConfig(entry.action)
+            const colors = ACTIVITY_GROUP_COLORS[cfg.group] || ACTIVITY_GROUP_COLORS.system
+            const linkOut = buildActivityLinkOut(entry.action, entry.target)
+            const relTime = formatActivityTimestamp(entry.timestamp)
+            const fullTime = entry.timestamp ? new Date(entry.timestamp).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : ''
+            feedHtml += `
+                <div class="activity-entry" style="border-left-color:${colors.border}">
+                    <div class="activity-entry-icon" style="background:${colors.bg};color:${colors.text};border-color:${colors.border}">
+                        ${cfg.icon}
+                    </div>
+                    <div class="activity-entry-body">
+                        <div class="activity-entry-label">${cfg.label}</div>
+                        <div class="activity-entry-target" title="${(entry.target || '').replace(/"/g, '&quot;')}">
+                            ${entry.target || '—'}
+                        </div>
+                    </div>
+                    <div class="activity-entry-meta">
+                        <span class="activity-group-pill" style="background:${colors.bg};color:${colors.text};border-color:${colors.border}">
+                            ${cfg.group}
+                        </span>
+                        <span class="activity-rel-time" title="${fullTime}">${relTime}</span>
+                        ${linkOut}
+                    </div>
+                </div>
+            `
+        })
+    })
+
+    if (visibleEntries.length === 0) {
+        feedHtml = `<div class="text-center py-12 text-slate-400 italic text-sm">No entries match the selected filter.</div>`
+    }
+
+    container.innerHTML = ribbonHtml + `<div class="activity-feed-wrap">${feedHtml}</div>`
+}
+window.renderActivityView = renderActivityView
+
+function setActivityFilter(group) {
+    sessionStorage.setItem('activity_type_filter', group)
+    renderActivityView()
+}
+window.setActivityFilter = setActivityFilter
+
 console.log('✅ views.js fully loaded including Discovery');

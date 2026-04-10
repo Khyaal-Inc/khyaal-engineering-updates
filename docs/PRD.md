@@ -241,6 +241,34 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F27 — Activity Feed View (Changelog, Persona Filter, Type Chips, Link-out) ✅ Shipped
+
+- `views.js` — `renderActivityView()`, `setActivityFilter()`, `getActivityConfig()`, `formatActivityTimestamp()`, `getActivityDayLabel()`, `buildActivityLinkOut()` added; `ACTIVITY_ACTION_CONFIG` and `ACTIVITY_GROUP_COLORS` module-level constants added
+- `core.js` — `if (view === 'activity') renderActivityView()` added to `switchView()`
+- `modes.js` — `'activity'` added to all three persona `availableViews`, `STAGE_TO_VIEWS.review`, and `VIEW_METADATA`
+- `workflow-nav.js` — `'activity'` added to `WORKFLOW_STAGES.review.views`
+- `index.html` — `<div id="activity-view" class="view-section"></div>` added
+- `styles.css` — activity feed layout, entry rows, icon badges, filter chips, group pills, link-out buttons
+
+**Data source**: `UPDATE_DATA.metadata.activity[]` — 50-entry rolling log written by `logChange()` on every CMS operation. Each entry: `{ id, timestamp, action, target, author }`.
+
+**`ACTIVITY_ACTION_CONFIG`**: 40+ action-type entries mapping action strings → `{ icon, group, label }`. Groups: `item | sprint | release | strategic | system`. Fuzzy match via `startsWith` catches `Groom Item (*)` variants.
+
+**Persona filtering**:
+| Persona | Sees |
+|---------|------|
+| PM | All entries |
+| Dev | `item` + `sprint` group entries only |
+| Exec | `release` + `strategic` group entries only |
+
+**Type filter chips** (ribbon, `sessionStorage`-backed): `All | Items | Sprints | Releases | Strategic | System`. Zero-count groups are hidden. Active chip inverts to indigo. `setActivityFilter(group)` → `sessionStorage.setItem` → `renderActivityView()`.
+
+**Grouping by day**: entries grouped under `Today`, `Yesterday`, weekday name (within 7 days), or full date. Relative timestamps: `just now → Nm ago → Nh ago → yesterday → Nd ago → DD MMM`.
+
+**Link-out** (`buildActivityLinkOut`): attempts to match `entry.target` string against sprint names/IDs, release names/IDs, epic names/IDs, OKR objectives, and item text. Returns a `→ View` button that calls `switchView()` on match; empty string on no match.
+
+**Entry layout**: left-border colour from group, icon badge (bg/border/text all group-themed), label + truncated target text, group pill + relative timestamp + optional link-out button.
+
 #### F26 — Release Readiness Checklist (Gate Checks, Scorecard, Ribbon Summary) ✅ Shipped
 
 - `views.js` — `computeReleaseReadiness()`, `buildReleaseReadinessBadge()`, `buildReleaseReadinessChecklist()`, `toggleReleaseReadiness()` added; `renderReleasesView()` updated with pre-computed ribbon pills + per-card checklist panel

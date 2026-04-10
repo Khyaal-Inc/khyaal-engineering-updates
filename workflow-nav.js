@@ -51,7 +51,7 @@ const WORKFLOW_STAGES = {
         label: 'Ship & Review',
         description: 'Ship & Retro: Publish releases, review analytics, update OKR progress',
         cadence: 'Per Sprint',
-        views: ['releases', 'analytics', 'dashboard'],
+        views: ['releases', 'analytics', 'dashboard', 'activity'],
         color: '#f59e0b', // amber
         order: 5
     }
