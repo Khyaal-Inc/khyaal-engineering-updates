@@ -161,7 +161,7 @@ function renderViewSubtabs(activeView) {
 
     // Source of Truth: Use the strategic stage views
     const stageKey = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery';
-    const stage = typeof WORKFLOW_STAGES !== 'undefined' ? WORKFLOW_STAGES[stageKey] : null;
+    let stage = typeof WORKFLOW_STAGES !== 'undefined' ? WORKFLOW_STAGES[stageKey] : null;
 
     if (!stage) {
         console.warn('Strategic stage metadata missing. Sub-tabs may be incomplete.');
@@ -185,6 +185,7 @@ function renderViewSubtabs(activeView) {
         if (fallbackView) {
             for (const [key, s] of Object.entries(WORKFLOW_STAGES)) {
                 if (s.views.includes(fallbackView)) {
+                    stage = s
                     views = s.views.filter(v => availableModeViews.includes(v))
                     break
                 }
