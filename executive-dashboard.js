@@ -178,11 +178,48 @@ function buildOKRRing(progress, size) {
         </svg>`
 }
 
+// ---- OKR status badge (computed, not stored) ----
+function computeOKRStatus(okr) {
+    const pct = okr.overallProgress || 0
+
+    // Explicitly paused
+    if (okr.status === 'paused') return { key: 'paused', label: 'Paused', cls: 'okr-status-paused' }
+
+    // Achieved
+    if (pct >= 100) return { key: 'achieved', label: '✓ Achieved', cls: 'okr-status-achieved' }
+
+    // At-risk: active OKR, progress <40%, quarter end within 30 days
+    if (okr.quarter && pct < 40) {
+        // Try to parse quarter end date from strings like "Q1 2026" or "Q2 FY26"
+        const quarterMatch = (okr.quarter || '').match(/Q([1-4])[^\d]*(\d{4}|\d{2})/)
+        if (quarterMatch) {
+            const q = parseInt(quarterMatch[1], 10)
+            let yr = parseInt(quarterMatch[2], 10)
+            if (yr < 100) yr += 2000
+            const qEndMonth = q * 3  // Q1→3, Q2→6, Q3→9, Q4→12
+            const qEnd = new Date(yr, qEndMonth, 0) // last day of that month
+            const daysLeft = Math.ceil((qEnd - new Date()) / 86400000)
+            if (daysLeft >= 0 && daysLeft <= 30) {
+                return { key: 'at-risk', label: '⚠ At Risk', cls: 'okr-status-at-risk', daysLeft }
+            }
+        }
+    }
+
+    // Generic behind without time pressure
+    if (pct < 40) return { key: 'behind', label: '↓ Behind', cls: 'okr-status-behind' }
+
+    // On track
+    return { key: 'on-track', label: '↑ On Track', cls: 'okr-status-on-track' }
+}
+
 function renderOKRSummary() {
     const okrs = UPDATE_DATA.metadata?.okrs || []
     if (okrs.length === 0) return ''
 
-    // Live portfolio health
+    const epics    = UPDATE_DATA.metadata?.epics || []
+    const sprints  = UPDATE_DATA.metadata?.sprints || []
+
+    // Portfolio health
     const avgProgress = Math.round(okrs.reduce((s, o) => s + (o.overallProgress || 0), 0) / okrs.length)
     const portfolioLabel = avgProgress >= 70 ? 'On Track' : avgProgress >= 40 ? 'At Risk' : 'Behind'
     const portfolioClass = avgProgress >= 70
@@ -191,63 +228,133 @@ function renderOKRSummary() {
             ? 'bg-amber-50 text-amber-700 border-amber-200'
             : 'bg-rose-50 text-rose-700 border-rose-200'
 
-    const cards = okrs.map(okr => {
-        const pct       = okr.overallProgress || 0
-        const krCount   = okr.keyResults?.length || 0
-        const krDone    = (okr.keyResults || []).filter(kr => (kr.progress || 0) >= 100).length
-        const signal    = pct >= 70 ? '🟢 On Track' : pct >= 40 ? '🟡 At Risk' : '🔴 Behind'
-        const textColor = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600'
+    const atRiskCount = okrs.filter(o => {
+        const s = computeOKRStatus(o)
+        return s.key === 'at-risk' || s.key === 'behind'
+    }).length
 
-        // Count linked items for execution context
-        const epicIds = new Set((UPDATE_DATA.metadata?.epics || []).filter(e => e.linkedOKR === okr.id).map(e => e.id))
-        let taskTotal = 0, taskDone = 0
-        ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => {
-            if (!epicIds.has(i.epicId)) return; taskTotal++; if (i.status === 'done') taskDone++
-        })))
-        const execPulse = taskTotal > 0 ? `${taskDone}/${taskTotal} tasks done` : 'No linked tasks'
+    const cards = okrs.map(okr => {
+        const pct      = okr.overallProgress || 0
+        const krCount  = okr.keyResults?.length || 0
+        const krDone   = (okr.keyResults || []).filter(kr => (kr.progress || 0) >= 100).length
+        const textColor = pct >= 80 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600'
+        const status   = computeOKRStatus(okr)
+
+        // ── Epic contribution trace ──
+        const linkedEpics = epics.filter(e => e.linkedOKR === okr.id)
+        const epicIds = new Set(linkedEpics.map(e => e.id))
+
+        // Per-epic task completion
+        const epicRows = linkedEpics.map(epic => {
+            let total = 0, done = 0
+            ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => {
+                if (i.epicId !== epic.id) return; total++; if (i.status === 'done') done++
+            })))
+            const epicPct  = total > 0 ? Math.round((done / total) * 100) : 0
+            const epicBar  = epicPct >= 80 ? '#10b981' : epicPct >= 50 ? '#f59e0b' : '#ef4444'
+            const h = computeEpicHealth(epic)
+            const hIcon = h.signal === 'on-track' ? '🟢' : h.signal === 'at-risk' ? '🟡' : h.signal === 'slipping' ? '🔴' : '⚪'
+            return `
+                <div class="okr-epic-row">
+                    <span class="okr-epic-signal">${hIcon}</span>
+                    <span class="okr-epic-name" title="${epic.name}">${epic.name}</span>
+                    <div class="okr-epic-bar-wrap">
+                        <div class="okr-epic-bar-fill" style="width:${epicPct}%;background:${epicBar}"></div>
+                    </div>
+                    <span class="okr-epic-pct">${epicPct}%</span>
+                </div>`
+        }).join('')
+
+        // ── Sprint feed ──
+        // Active sprints linked directly to this OKR, or whose items link through this OKR's epics
+        const activeSprints = sprints.filter(s => {
+            if (s.status !== 'active') return false
+            if (s.linkedOKR === okr.id) return true
+            // Check if any of the sprint's items link through an epic of this OKR
+            let hasEpicLink = false
+            ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => {
+                if (i.sprintId === s.id && epicIds.has(i.epicId)) hasEpicLink = true
+            })))
+            return hasEpicLink
+        })
+
+        const sprintFeed = activeSprints.length > 0
+            ? activeSprints.map(s => {
+                const sprintItems = []
+                ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => {
+                    if (i.sprintId === s.id) sprintItems.push(i)
+                })))
+                const sDone = sprintItems.filter(i => i.status === 'done').length
+                return `<div class="okr-sprint-pill">🏃 ${s.name} · ${sDone}/${sprintItems.length} done</div>`
+            }).join('')
+            : `<div class="okr-sprint-pill muted">No active sprint</div>`
+
+        // ── KR rows with descriptions ──
+        const krRows = (okr.keyResults || []).slice(0, 3).map(kr => {
+            const kpct = kr.progress || 0
+            const kbar = kpct >= 100 ? 'bg-emerald-500' : kpct >= 60 ? 'bg-amber-400' : 'bg-rose-400'
+            const desc = kr.description || kr
+            return `
+                <div class="flex items-center gap-2 group/kr">
+                    <span class="text-[9px] text-slate-400 shrink-0 w-20 truncate" title="${typeof desc === 'string' ? desc : ''}">${typeof desc === 'string' ? desc : ''}</span>
+                    <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="${kbar} h-full rounded-full transition-all" style="width:${kpct}%"></div>
+                    </div>
+                    <span class="text-[9px] font-black text-slate-500 w-7 text-right shrink-0">${kpct}%</span>
+                </div>`
+        }).join('')
+
+        const cardBorder = status.key === 'at-risk' ? 'border-amber-300' :
+                           status.key === 'behind'   ? 'border-rose-300'  :
+                           status.key === 'achieved' ? 'border-emerald-300' : 'border-slate-100'
 
         return `
-            <div class="group p-5 bg-slate-50 hover:bg-white rounded-2xl border border-slate-100 hover:border-slate-200 transition-all hover:shadow-md">
-                <div class="flex items-center gap-4 mb-4">
-                    <!-- SVG ring -->
-                    <div class="relative shrink-0" style="width:60px;height:60px">
-                        ${buildOKRRing(pct, 60)}
+            <div class="okr-dashboard-card group p-5 bg-slate-50 hover:bg-white rounded-2xl border ${cardBorder} hover:border-slate-200 transition-all hover:shadow-md">
+
+                <!-- Header: ring + title + status badge -->
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="relative shrink-0" style="width:56px;height:56px">
+                        ${buildOKRRing(pct, 56)}
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <span class="text-xs font-black ${textColor}">${pct}%</span>
+                            <span class="text-[11px] font-black ${textColor}">${pct}%</span>
                         </div>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">${okr.quarter || ''}</div>
-                        <h3 class="text-xs font-black text-slate-800 leading-snug line-clamp-2">${okr.objective}</h3>
+                        <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">${okr.quarter || ''}</span>
+                            <span class="okr-status-badge ${status.cls}">${status.label}${status.daysLeft !== undefined ? ` · ${status.daysLeft}d left` : ''}</span>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-800 leading-snug">${okr.objective}</h3>
                     </div>
                 </div>
 
-                <div class="space-y-1.5 mb-4">
-                    <div class="flex items-center justify-between text-[10px]">
+                <!-- Key Results -->
+                ${krCount > 0 ? `
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-[10px] mb-2">
                         <span class="text-slate-500 font-bold">Key Results</span>
                         <span class="font-black text-slate-700">${krDone}/${krCount} complete</span>
                     </div>
-                    <!-- KR micro-bars -->
-                    ${(okr.keyResults || []).slice(0, 3).map(kr => {
-                        const kpct = kr.progress || 0
-                        const kbar = kpct >= 100 ? 'bg-emerald-500' : kpct >= 60 ? 'bg-amber-400' : 'bg-rose-400'
-                        return `
-                            <div class="flex items-center gap-2">
-                                <div class="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
-                                    <div class="${kbar} h-full rounded-full" style="width:${kpct}%"></div>
-                                </div>
-                                <span class="text-[9px] font-black text-slate-500 w-7 text-right">${kpct}%</span>
-                            </div>`
-                    }).join('')}
+                    <div class="space-y-1.5">${krRows}</div>
+                </div>` : ''}
+
+                <!-- Epic contribution trace -->
+                ${linkedEpics.length > 0 ? `
+                <div class="mb-4">
+                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Contributing Epics</div>
+                    <div class="space-y-1">${epicRows}</div>
+                </div>` : ''}
+
+                <!-- Sprint feed -->
+                <div class="mb-4">
+                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Active Sprint</div>
+                    <div class="flex flex-wrap gap-1">${sprintFeed}</div>
                 </div>
 
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                        <div class="text-[9px] font-black text-slate-400">${signal}</div>
-                        <div class="text-[9px] text-slate-400 mt-0.5">${execPulse}</div>
-                    </div>
+                <!-- Footer -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end">
                     <button onclick="switchView('okr')" class="text-[9px] font-black text-indigo-600 hover:text-indigo-800 bg-white border border-indigo-100 px-2 py-1 rounded-lg transition-colors">
-                        Details →
+                        Full OKR View →
                     </button>
                 </div>
             </div>`
@@ -258,11 +365,12 @@ function renderOKRSummary() {
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h2 class="text-sm font-black text-slate-800">Strategic Progress — OKRs</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Outcome-based achievement · auto-calculated from task completion</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Outcome-based achievement · epic contribution · active sprint feed</p>
                 </div>
-                <span class="text-[10px] font-black px-3 py-1 rounded-full border ${portfolioClass}">
-                    Portfolio: ${portfolioLabel}
-                </span>
+                <div class="flex items-center gap-2">
+                    ${atRiskCount > 0 ? `<span class="text-[10px] font-black px-3 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">⚠ ${atRiskCount} need attention</span>` : ''}
+                    <span class="text-[10px] font-black px-3 py-1 rounded-full border ${portfolioClass}">Portfolio: ${portfolioLabel}</span>
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cards}</div>
         </div>`

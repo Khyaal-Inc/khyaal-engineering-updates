@@ -6512,3 +6512,80 @@ summary::-webkit-details-marker {
     text-align: center;
 }
 
+/* ── F28: OKR Dashboard Card ── */
+.okr-dashboard-card { position: relative; }
+
+.okr-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 900;
+    border-radius: 9999px;
+    border: 1.5px solid;
+    white-space: nowrap;
+}
+.okr-status-on-track { background: #dcfce7; color: #15803d; border-color: #86efac; }
+.okr-status-at-risk  { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.okr-status-behind   { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+.okr-status-achieved { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.okr-status-paused   { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+/* Epic contribution rows */
+.okr-epic-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    padding: 2px 0;
+}
+.okr-epic-signal { font-size: 9px; flex-shrink: 0; }
+.okr-epic-name {
+    flex: 0 0 90px;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
+}
+.okr-epic-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.okr-epic-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.3s;
+}
+.okr-epic-pct {
+    font-size: 9px;
+    font-weight: 800;
+    color: #64748b;
+    min-width: 26px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Sprint pills */
+.okr-sprint-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    border-radius: 9999px;
+}
+.okr-sprint-pill.muted {
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    font-style: italic;
+}
+

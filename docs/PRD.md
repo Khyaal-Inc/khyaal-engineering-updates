@@ -241,6 +241,31 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F28 — OKR Progress Dashboard Card (Status Badge, Epic Trace, Sprint Feed) ✅ Shipped
+
+- `executive-dashboard.js` — `computeOKRStatus()` added; `renderOKRSummary()` fully rewritten with epic contribution rows, active sprint feed, status badges, and at-risk header pill
+- `styles.css` — `.okr-status-badge` (5 variants), `.okr-epic-row`, `.okr-epic-bar-fill`, `.okr-sprint-pill` added
+
+**`computeOKRStatus(okr)` — computed status (not stored):**
+
+| Status | Condition | Badge colour |
+|--------|-----------|-------------|
+| `achieved` | `overallProgress >= 100` | Green |
+| `at-risk` | `progress < 40%` AND quarter end ≤ 30 days | Amber + days-left suffix |
+| `behind` | `progress < 40%` (no time pressure) | Red |
+| `on-track` | `progress >= 40%` | Green |
+| `paused` | `okr.status === 'paused'` | Grey |
+
+Quarter end parsing: regex against `Q1–Q4 YYYY` or `Q1–Q4 FY26`-style strings; falls back gracefully if unparseble.
+
+**Epic contribution trace**: all epics with `linkedOKR === okr.id` are listed with: health signal icon (🟢/🟡/🔴/⚪ from `computeEpicHealth()`), epic name (truncated), mini completion bar, and % label. Bar colour matches epic health thresholds.
+
+**Active sprint feed**: sprints with `status === 'active'` that either have `sprint.linkedOKR === okr.id` OR contain items whose `epicId` is one of the OKR's epics. Each pill shows sprint name + `done/total` count. "No active sprint" shown in greyed italic when none match.
+
+**Card border colour**: amber border for `at-risk`, rose for `behind`, emerald for `achieved`, default slate for all others — gives a scannable traffic-light grid at a glance.
+
+**Ribbon additions**: portfolio label (unchanged) + new "⚠ N need attention" amber pill showing count of `at-risk | behind` OKRs, hidden when count = 0.
+
 #### F27 — Activity Feed View (Changelog, Persona Filter, Type Chips, Link-out) ✅ Shipped
 
 - `views.js` — `renderActivityView()`, `setActivityFilter()`, `getActivityConfig()`, `formatActivityTimestamp()`, `getActivityDayLabel()`, `buildActivityLinkOut()` added; `ACTIVITY_ACTION_CONFIG` and `ACTIVITY_GROUP_COLORS` module-level constants added
