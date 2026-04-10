@@ -6696,3 +6696,19 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 .cap-bar-label-ok   { color: #16a34a; }
 .cap-bar-label-near { color: #b45309; }
 .cap-bar-label-over { color: #dc2626; }
+
+/* ── Admin Panel Tabs ── */
+.admin-tab-btn {
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+}
+.admin-tab-btn:hover { color: #475569; }
+.admin-tab-btn.active { color: #1e293b; border-bottom-color: #6366f1; }

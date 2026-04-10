@@ -5183,11 +5183,34 @@ function closeAdminPanel() {
     document.body.style.overflow = ''
     _adminUsersData = null
     _adminUsersSha = null
+    _adminActiveTab = 'users'
 }
+
+let _adminActiveTab = 'users'
 
 function renderAdminPanel(bodyHtml) {
     const el = document.getElementById('admin-panel-body')
-    if (el) el.innerHTML = bodyHtml
+    if (!el) return
+    const tabs = `
+        <div class="flex gap-1 mb-5 border-b border-slate-200 pb-0">
+            <button onclick="switchAdminTab('users')" id="admin-tab-users"
+                class="admin-tab-btn ${_adminActiveTab === 'users' ? 'active' : ''}">
+                👤 Users &amp; Grants
+            </button>
+            <button onclick="switchAdminTab('teams')" id="admin-tab-teams"
+                class="admin-tab-btn ${_adminActiveTab === 'teams' ? 'active' : ''}">
+                🏗️ Teams &amp; Projects
+            </button>
+        </div>`
+    el.innerHTML = tabs + `<div id="admin-tab-content">${bodyHtml}</div>`
+}
+window.switchAdminTab = function(tab) {
+    _adminActiveTab = tab
+    if (tab === 'users') {
+        renderAdminPanel(buildAdminUsersTable())
+    } else {
+        renderAdminPanel(buildAdminTeamsPanel())
+    }
 }
 
 function buildAdminUsersTable() {
@@ -5337,6 +5360,118 @@ function adminSetPassword(userIndex) {
         _adminUsersData.users[userIndex].passwordHash = hash
         showToast('Password updated — save to GitHub to persist', 'info')
     })
+}
+
+function buildAdminTeamsPanel() {
+    const tracks = (window.UPDATE_DATA?.tracks || [])
+    const projects = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering (default)', filePath: 'data.json' }])
+    const activeProjectId = window.ACTIVE_PROJECT_ID || 'default'
+
+    // ── Projects section ──
+    const projectRows = projects.map(p => {
+        const isActive = p.id === activeProjectId
+        return `
+            <tr class="border-b border-slate-100">
+                <td class="px-3 py-2 text-xs font-bold text-slate-800">
+                    ${isActive ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 align-middle"></span>' : ''}
+                    ${p.name}
+                </td>
+                <td class="px-3 py-2 text-xs text-slate-500 font-mono">${p.id}</td>
+                <td class="px-3 py-2 text-xs text-slate-500 font-mono">${p.filePath || 'data.json'}</td>
+                <td class="px-3 py-2 text-xs">
+                    ${isActive
+                        ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
+                        : `<button onclick="switchProject('${p.id}'); closeAdminPanel()" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Switch</button>`
+                    }
+                </td>
+            </tr>`
+    }).join('')
+
+    // ── Tracks section ──
+    let trackHtml = ''
+    if (tracks.length === 0) {
+        trackHtml = '<p class="text-slate-400 text-sm text-center py-6">No tracks found in data.</p>'
+    } else {
+        trackHtml = tracks.map((track, ti) => {
+            const itemCount = track.subtracks.reduce((sum, st) => sum + st.items.length, 0)
+            const doneCount = track.subtracks.reduce((sum, st) => sum + st.items.filter(i => i.status === 'done').length, 0)
+            const subRows = track.subtracks.map(st => `
+                <tr class="border-b border-slate-50">
+                    <td class="pl-8 pr-3 py-1.5 text-[10px] text-slate-500">↳ ${st.name}</td>
+                    <td class="px-3 py-1.5 text-[10px] text-slate-400">${st.items.length} items</td>
+                    <td class="px-3 py-1.5 text-[10px] text-slate-400">${st.items.filter(i=>i.status==='done').length} done</td>
+                    <td class="px-3 py-1.5"></td>
+                </tr>`).join('')
+            const pct = itemCount > 0 ? Math.round((doneCount / itemCount) * 100) : 0
+            const themeColor = { blue: '#3b82f6', emerald: '#10b981', violet: '#7c3aed', amber: '#f59e0b', rose: '#f43f5e', slate: '#64748b' }[track.theme] || '#64748b'
+            return `
+                <tr class="border-b border-slate-200 bg-slate-50/50">
+                    <td class="px-3 py-2 text-xs font-black text-slate-800 flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 rounded-full" style="background:${themeColor}"></span>
+                        ${track.name}
+                    </td>
+                    <td class="px-3 py-2 text-xs text-slate-600">${itemCount} items</td>
+                    <td class="px-3 py-2 text-xs text-slate-600">${doneCount} done · ${pct}%</td>
+                    <td class="px-3 py-2">
+                        <button onclick="closeAdminPanel(); openTrackEdit(${ti})"
+                            class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+                ${subRows}`
+        }).join('')
+    }
+
+    return `
+        <div class="space-y-6">
+            <!-- Projects -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest">Projects (PROJECT_REGISTRY)</h3>
+                    <span class="text-[10px] text-slate-400">Active: ${activeProjectId}</span>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50">
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Name</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">ID</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Data File</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${projectRows}</tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5">Projects are registered in <code>core.js → PROJECT_REGISTRY</code> and tied to <code>users.json</code> grants. To add a project, update both.</p>
+            </div>
+
+            <!-- Tracks -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest">Tracks (Teams) — ${tracks.length} in active project</h3>
+                    <button onclick="closeAdminPanel(); openTrackEdit()"
+                        class="px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors">
+                        + Add Track
+                    </button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50">
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Track / Subtrack</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Items</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Progress</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${trackHtml}</tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1.5">Tracks are the top-level functional teams within a project. Use "Edit" to rename or change theme. Items belong to subtracks within a track.</p>
+            </div>
+        </div>`
 }
 
 async function adminSaveUsers() {
