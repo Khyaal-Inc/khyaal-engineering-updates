@@ -8,7 +8,9 @@
 
 Claude Code (Recommended)
 ```bash
+/plugin install superpowers
 /plugin install frontend-design@claude-plugins-official
+
 
 # Add the marketplace
 /plugin marketplace add alirezarezvani/claude-skills

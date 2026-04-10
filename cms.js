@@ -4475,6 +4475,8 @@ function saveCmsChanges() {
                 subtracks: [{ name: 'General', items: [] }]
             });
         }
+        const _tf = document.getElementById('global-team-filter');
+        if (_tf) _tf.dataset.populated = '';
         logChange(editContext.trackIndex !== undefined ? 'Edit Track' : 'Add Track', name);
         renderTrackView();
         updateTabCounts();
@@ -4710,6 +4712,8 @@ function openTrackEdit(ti) {
 function deleteTrack(ti) {
     if (!confirm(`Delete track "${UPDATE_DATA.tracks[ti].name}" and ALL its items?`)) return;
     UPDATE_DATA.tracks.splice(ti, 1);
+    const _tf = document.getElementById('global-team-filter');
+    if (_tf) _tf.dataset.populated = '';
     closeCmsModal();
     renderTrackView();
     updateTabCounts();
