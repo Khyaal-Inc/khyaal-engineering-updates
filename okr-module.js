@@ -115,7 +115,21 @@ function renderOkrView() {
         }
     }
 
-    const okrs = UPDATE_DATA.metadata?.okrs || [];
+    const allOkrs = UPDATE_DATA.metadata?.okrs || [];
+    const allEpics = UPDATE_DATA.metadata?.epics || [];
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+
+    // Filter OKRs by track: include an OKR if any of its linked epics belong to the active track
+    const trackEpicIds = activeTeam
+        ? new Set(allEpics.filter(e => !e.track || e.track === activeTeam).map(e => e.id))
+        : null
+    const okrs = trackEpicIds
+        ? allOkrs.filter(o =>
+            (o.keyResults || []).some(kr => kr.linkedEpic && trackEpicIds.has(kr.linkedEpic)) ||
+            allEpics.some(e => e.linkedOKR === o.id && trackEpicIds.has(e.id))
+          )
+        : allOkrs
+
     const vision = UPDATE_DATA.metadata?.vision || '';
     const showManagement = (typeof shouldShowManagement === 'function') ? shouldShowManagement() : false;
 

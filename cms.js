@@ -5170,7 +5170,11 @@ async function openAdminPanel() {
         const { data, sha } = await res.json()
         _adminUsersData = data
         _adminUsersSha = sha || null
-        renderAdminPanel(buildAdminUsersTable())
+        // Sync PROJECT_REGISTRY from users.json if projects array exists
+        if (Array.isArray(data?.projects) && data.projects.length > 0) {
+            window.PROJECT_REGISTRY = data.projects
+        }
+        renderAdminPanel(_adminActiveTab === 'teams' ? buildAdminTeamsPanel() : buildAdminUsersTable())
     } catch (err) {
         console.error('❌ [admin] load users:', err)
         renderAdminPanel(`<div class="text-red-500 text-sm text-center py-8">Failed to load users: ${err.message}</div>`)
@@ -5364,11 +5368,11 @@ function adminSetPassword(userIndex) {
 
 function buildAdminTeamsPanel() {
     const tracks = (window.UPDATE_DATA?.tracks || [])
-    const projects = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering (default)', filePath: 'data.json' }])
+    const projects = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }])
     const activeProjectId = window.ACTIVE_PROJECT_ID || 'default'
 
     // ── Projects section ──
-    const projectRows = projects.map(p => {
+    const projectRows = projects.map((p, pi) => {
         const isActive = p.id === activeProjectId
         return `
             <tr class="border-b border-slate-100">
@@ -5378,11 +5382,13 @@ function buildAdminTeamsPanel() {
                 </td>
                 <td class="px-3 py-2 text-xs text-slate-500 font-mono">${p.id}</td>
                 <td class="px-3 py-2 text-xs text-slate-500 font-mono">${p.filePath || 'data.json'}</td>
-                <td class="px-3 py-2 text-xs">
+                <td class="px-3 py-2 text-xs flex items-center gap-1.5">
                     ${isActive
                         ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
-                        : `<button onclick="switchProject('${p.id}'); closeAdminPanel()" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Switch</button>`
+                        : `<button onclick="adminSwitchProject('${p.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Switch</button>`
                     }
+                    <button onclick="adminEditProject(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100 transition-colors">Edit</button>
+                    ${p.id !== 'default' ? `<button onclick="adminDeleteProject(${pi})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100 transition-colors">Delete</button>` : ''}
                 </td>
             </tr>`
     }).join('')
@@ -5428,8 +5434,11 @@ function buildAdminTeamsPanel() {
             <!-- Projects -->
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest">Projects (PROJECT_REGISTRY)</h3>
-                    <span class="text-[10px] text-slate-400">Active: ${activeProjectId}</span>
+                    <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest">Projects — ${projects.length} registered</h3>
+                    <button onclick="adminAddProject()"
+                        class="px-3 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-black hover:bg-slate-700 transition-colors">
+                        + Add Project
+                    </button>
                 </div>
                 <div class="overflow-x-auto rounded-lg border border-slate-200">
                     <table class="w-full text-xs border-collapse">
@@ -5438,13 +5447,13 @@ function buildAdminTeamsPanel() {
                                 <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Name</th>
                                 <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">ID</th>
                                 <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Data File</th>
-                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Status</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 uppercase tracking-wide text-[10px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody>${projectRows}</tbody>
                     </table>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1.5">Projects are registered in <code>core.js → PROJECT_REGISTRY</code> and tied to <code>users.json</code> grants. To add a project, update both.</p>
+                <p class="text-[10px] text-slate-400 mt-1.5">Projects are stored in <code>users.json → projects[]</code>. Each project has its own data file on GitHub. Save with "Save to GitHub" after edits.</p>
             </div>
 
             <!-- Tracks -->
@@ -5472,6 +5481,72 @@ function buildAdminTeamsPanel() {
                 <p class="text-[10px] text-slate-400 mt-1.5">Tracks are the top-level functional teams within a project. Use "Edit" to rename or change theme. Items belong to subtracks within a track.</p>
             </div>
         </div>`
+}
+
+// ── Project CRUD ──────────────────────────────────────────────────────────
+
+function _syncProjectsToRegistry() {
+    if (!_adminUsersData) return
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = []
+    window.PROJECT_REGISTRY = _adminUsersData.projects.length > 0
+        ? _adminUsersData.projects
+        : [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }]
+    // Repopulate the track filter select with updated project list
+    const filterEl = document.getElementById('global-team-filter')
+    if (filterEl) filterEl.dataset.populated = ''
+    if (typeof normalizeData === 'function') normalizeData()
+}
+
+window.adminSwitchProject = function(id) {
+    if (typeof switchProject === 'function') switchProject(id)
+    closeAdminPanel()
+}
+
+window.adminAddProject = function() {
+    const name = prompt('Project name (e.g. "AI Agent"):', '')?.trim()
+    if (!name) return
+    const idRaw = prompt('Project ID (lowercase, no spaces, e.g. "ai-agent"):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
+    if (!idRaw) return
+    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
+    if (window.PROJECT_REGISTRY.some(p => p.id === id)) {
+        showToast(`Project ID "${id}" already exists`, 'error'); return
+    }
+    const filePath = `data-${id}.json`
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects.push({ id, name, filePath })
+    _syncProjectsToRegistry()
+    showToast(`Project "${name}" added — save to GitHub to persist`, 'info')
+    renderAdminPanel(buildAdminTeamsPanel())
+}
+
+window.adminEditProject = function(pi) {
+    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
+    const p = projects[pi]
+    if (!p) return
+    const newName = prompt('Project name:', p.name)?.trim()
+    if (!newName) return
+    const newFile = prompt('Data file on GitHub:', p.filePath || `data-${p.id}.json`)?.trim()
+    if (!newFile) return
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects[pi] = { ...p, name: newName, filePath: newFile }
+    _syncProjectsToRegistry()
+    showToast(`Project "${newName}" updated — save to GitHub to persist`, 'info')
+    renderAdminPanel(buildAdminTeamsPanel())
+}
+
+window.adminDeleteProject = function(pi) {
+    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
+    const p = projects[pi]
+    if (!p || p.id === 'default') { showToast('Cannot delete the default project', 'error'); return }
+    if (!confirm(`Delete project "${p.name}"? This only removes it from the registry — no data files are deleted.`)) return
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects.splice(pi, 1)
+    _syncProjectsToRegistry()
+    showToast(`Project "${p.name}" removed — save to GitHub to persist`, 'info')
+    renderAdminPanel(buildAdminTeamsPanel())
 }
 
 async function adminSaveUsers() {

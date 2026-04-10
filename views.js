@@ -1315,6 +1315,7 @@ function renderBacklogView() {
     // ---- Gather all backlog items and compute stats ----
     const allBacklogItems = []
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+        if (activeTeam && activeTeam !== track.name) return
         const bl = track.subtracks.find(s => s.name === 'Backlog')
         if (!bl) return
         const si = track.subtracks.indexOf(bl)
@@ -1540,7 +1541,9 @@ function renderEpicsView() {
     if (!container) return;
 
     const data = window.UPDATE_DATA || {};
-    const epics = (data.metadata && data.metadata.epics) || [];
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const allEpicsRaw = (data.metadata && data.metadata.epics) || [];
+    const epics = activeTeam ? allEpicsRaw.filter(e => !e.track || e.track === activeTeam) : allEpicsRaw
     const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
     let ribbonHtml = `
@@ -1876,12 +1879,18 @@ function renderRoadmapView() {
         return;
     }
 
+    // Track filter — applied before persona filtering
+    const _roadmapActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const trackFilteredEpics = _roadmapActiveTeam
+        ? allEpics.filter(e => !e.track || e.track === _roadmapActiveTeam)
+        : allEpics
+
     // Persona filtering for epics
     const activeOKRIds = new Set(allOKRs.filter(o => o.status === 'active' || !o.status).map(o => o.id))
-    let visibleEpics = allEpics
+    let visibleEpics = trackFilteredEpics
     if (mode === 'exec') {
-        // Exec: only epics linked to active OKRs
-        visibleEpics = allEpics.filter(e => e.linkedOKR && activeOKRIds.has(e.linkedOKR))
+        // Exec: only epics linked to active OKRs (track filter already applied)
+        visibleEpics = trackFilteredEpics.filter(e => e.linkedOKR && activeOKRIds.has(e.linkedOKR))
     } else if (mode === 'dev' && currentUser) {
         // Dev: only epics that contain the dev's items
         const myEpicIds = new Set()

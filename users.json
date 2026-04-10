@@ -24,5 +24,12 @@
         }
       ]
     }
+  ],
+  "projects": [
+    {
+      "id": "default",
+      "name": "Khyaal Engineering",
+      "filePath": "data.json"
+    }
   ]
 }
