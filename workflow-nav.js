@@ -12,7 +12,8 @@ const WORKFLOW_STAGES = {
         description: 'Spikes & Ideation: Capturing ideas and validating feasibility',
         cadence: 'Ongoing',
         views: ['workflow', 'ideation', 'spikes'],
-        color: '#6366f1', // indigo',
+        pinnedViews: { pm: ['ideation'], dev: ['spikes'], exec: [] },
+        color: '#6366f1',
         order: 1
     },
     vision: {
@@ -22,7 +23,8 @@ const WORKFLOW_STAGES = {
         description: 'Strategic Alignment: Setting OKRs and defining strategic Epics',
         cadence: 'Quarterly',
         views: ['okr', 'epics'],
-        color: '#8b5cf6', // purple
+        pinnedViews: { pm: ['okr', 'epics'], dev: [], exec: ['okr', 'epics'] },
+        color: '#8b5cf6',
         order: 2
     },
     plan: {
@@ -32,7 +34,8 @@ const WORKFLOW_STAGES = {
         description: 'Sprint Planning: Grooming backlog, planning sprints, mapping roadmap horizons',
         cadence: 'Weekly',
         views: ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
-        color: '#3b82f6', // blue
+        pinnedViews: { pm: ['sprint', 'roadmap', 'backlog'], dev: ['sprint'], exec: ['roadmap'] },
+        color: '#3b82f6',
         order: 3
     },
     build: {
@@ -42,7 +45,8 @@ const WORKFLOW_STAGES = {
         description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
         cadence: 'Daily',
         views: ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        color: '#10b981', // green
+        pinnedViews: { pm: ['kanban', 'track'], dev: ['kanban', 'track', 'dependency'], exec: [] },
+        color: '#10b981',
         order: 4
     },
     review: {
@@ -52,7 +56,8 @@ const WORKFLOW_STAGES = {
         description: 'Ship & Retro: Publish releases, review analytics, update OKR progress',
         cadence: 'Per Sprint',
         views: ['releases', 'analytics', 'dashboard', 'activity'],
-        color: '#f59e0b', // amber
+        pinnedViews: { pm: ['releases', 'analytics'], dev: ['releases'], exec: ['dashboard', 'analytics'] },
+        color: '#f59e0b',
         order: 5
     }
 };
