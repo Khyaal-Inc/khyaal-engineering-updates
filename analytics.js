@@ -73,8 +73,10 @@ function calculateCurrentSprintVelocity() {
     const activeSprint = sprints.find(s => s.status === 'active')
     if (!activeSprint) return null
 
+    const _analyticsActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let planned = 0, completed = 0, inReview = 0, inProgress = 0
     UPDATE_DATA.tracks.forEach(track => {
+        if (_analyticsActiveTeam && _analyticsActiveTeam !== track.name) return
         track.subtracks.forEach(sub => {
             sub.items.forEach(item => {
                 if (item.sprintId !== activeSprint.id) return
@@ -102,9 +104,11 @@ function renderKPICards() {
     const lastVelocity = lastSprint ? Math.round((lastSprint.completed / lastSprint.planned) * 100) : 0
 
     // Count items by status bucket across all tracks
+    const _kpiActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let activeItems = 0, completedItems = 0, inReviewItems = 0, blockedItems = 0
     let completedPoints = 0, inReviewPoints = 0
     UPDATE_DATA.tracks.forEach(track => {
+        if (_kpiActiveTeam && _kpiActiveTeam !== track.name) return
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 const pts = parseInt(item.storyPoints) || 0

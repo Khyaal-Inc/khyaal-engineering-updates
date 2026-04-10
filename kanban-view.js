@@ -38,8 +38,10 @@ function renderKanbanView() {
     const wipLimits = getWipLimits()
 
     // Collect all items with source context
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     const items = [];
     UPDATE_DATA.tracks.forEach((track, ti) => {
+        if (activeTeam && activeTeam !== track.name) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 items.push({ ...item, track: track.name, trackIndex: ti, subtrackIndex: si, itemIndex: ii });

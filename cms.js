@@ -4635,20 +4635,21 @@ async function initArchiveFilter() {
     const container = document.getElementById('archive-filter');
     if (!container) return;
 
-    let html = '<div class="flex flex-wrap gap-2 items-center">';
-    html += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Filters:</span>';
-    html += '<button onclick="filterByDate(\'all\')" class="archive-btn active">All Entries</button>';
+    let innerHtml = '<div class="flex flex-wrap gap-2 items-center">';
+    innerHtml += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Filters:</span>';
+    innerHtml += '<button onclick="filterByDate(\'all\')" class="archive-btn active">All Entries</button>';
 
     if (hasLegacy) {
-        html += '<button onclick="filterByDate(\'Legacy\')" class="archive-btn">Legacy</button>';
+        innerHtml += '<button onclick="filterByDate(\'Legacy\')" class="archive-btn">Legacy</button>';
     }
 
     Array.from(dates).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-        html += `<button onclick="filterByDate('${date}')" class="archive-btn">${date}</button>`;
+        innerHtml += `<button onclick="filterByDate('${date}')" class="archive-btn">${date}</button>`;
     });
-    html += '</div>';
+    innerHtml += '</div>';
 
     // Add Physical Archives Section
+    let hasSnapshots = false
     try {
         const jwt = localStorage.getItem('khyaal_site_auth');
         const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID || 'default'}&filePath=archive`, {
@@ -4656,27 +4657,30 @@ async function initArchiveFilter() {
         });
         if (response.ok) {
             const { data: files } = await response.json();
-            const archives = files.filter(f => f.name.endsWith('.json'));
+            const archives = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
             if (archives.length > 0) {
-                html += '<div class="flex flex-wrap gap-2 items-center mt-4 pt-4 border-t border-slate-100 w-full">';
-                html += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Snapshots:</span>';
+                hasSnapshots = true
+                innerHtml += '<div class="flex flex-wrap gap-2 items-center mt-3 pt-3 border-t border-slate-100 w-full">';
+                innerHtml += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Snapshots:</span>';
 
                 if (window.loadingArchive) {
-                    html += `<button onclick="window.location.search=''" class="archive-btn bg-slate-900 text-white p-2 text-[10px] rounded">Live</button>`;
+                    innerHtml += `<button onclick="window.location.search=''" class="archive-btn bg-slate-900 text-white p-2 text-[10px] rounded">Live</button>`;
                 }
 
                 archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
                     let displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim();
                     const isActive = window.loadingArchive && window.loadingArchive.includes(file.name);
                     const activeClass = isActive ? 'ring-2 ring-indigo-500' : '';
-                    html += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700 p-2 text-[10px] rounded uppercase font-bold">${displayName}</button>`;
+                    innerHtml += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700 p-2 text-[10px] rounded uppercase font-bold">${displayName}</button>`;
                 });
-                html += '</div>';
+                innerHtml += '</div>';
             }
         }
     } catch (e) { }
-    container.innerHTML = html;
+
+    const summaryLabel = hasSnapshots ? '📅 Filters &amp; Snapshots' : '📅 Date Filters'
+    container.innerHTML = `<details class="archive-filter-toggle"><summary class="archive-filter-summary">${summaryLabel}</summary><div class="archive-filter-body">${innerHtml}</div></details>`;
 }
 
 function filterByDate(dateRange) {
@@ -5187,8 +5191,15 @@ function renderAdminPanel(bodyHtml) {
 }
 
 function buildAdminUsersTable() {
-    if (!_adminUsersData?.users?.length) {
-        return '<p class="text-slate-400 text-sm text-center py-8">No users found in users.json</p>'
+    if (!_adminUsersData) {
+        return '<p class="text-slate-400 text-sm text-center py-8">Users data not loaded. Try closing and reopening the panel.</p>'
+    }
+    if (!Array.isArray(_adminUsersData.users)) {
+        console.error('❌ [admin] unexpected users.json shape:', _adminUsersData)
+        return `<p class="text-amber-600 text-sm text-center py-8">Unexpected data format from users.json — expected <code>{ users: [] }</code>.<br>Check browser console for details.</p>`
+    }
+    if (!_adminUsersData.users.length) {
+        return '<p class="text-slate-400 text-sm text-center py-8">No users found in users.json. Add entries to users.json and redeploy.</p>'
     }
 
     const modeOptions = (currentMode) => ['pm', 'dev', 'exec'].map(m =>

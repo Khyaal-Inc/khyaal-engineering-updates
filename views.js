@@ -2049,8 +2049,10 @@ function buildSprintPlanningPanel(sprint) {
     ` : `<span style="font-size:10px;color:#94a3b8;">No velocity history</span>`
 
     // Unassigned backlog items (no sprintId), sorted by groom score desc
+    const _plannerActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     const allItems = []
     UPDATE_DATA.tracks.forEach(track => {
+        if (_plannerActiveTeam && _plannerActiveTeam !== track.name) return
         track.subtracks.forEach(sub => {
             sub.items.forEach(item => {
                 if (!item.sprintId) allItems.push(item)
@@ -2611,7 +2613,9 @@ function renderReleasesView() {
 function findItemsByMetadataId(key, value) {
     const found = [];
     const data = window.UPDATE_DATA || { tracks: [] };
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     data.tracks.forEach((track, ti) => {
+        if (activeTeam && activeTeam !== track.name) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 if (item[key] === value) {
@@ -2763,6 +2767,8 @@ function drawGanttChart(mode) {
         ? window.CURRENT_USER.name
         : null
 
+    const _ganttActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+
     // Determine which epic IDs are visible for this persona
     let visibleEpicIds = null // null = all
     if (mode === 'exec') {
@@ -2773,6 +2779,7 @@ function drawGanttChart(mode) {
         // Dev: only epics where the contributor has at least one item
         const devEpicIds = new Set()
         ;(UPDATE_DATA.tracks || []).forEach(track => {
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     if ((item.contributors || []).includes(currentUser) && item.epicId) {
@@ -2797,6 +2804,7 @@ function drawGanttChart(mode) {
 
         // Scan items to fill missing dates and compute progress
         ;(UPDATE_DATA.tracks || []).forEach(track => {
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     if (item.epicId !== epic.id) return
@@ -2841,6 +2849,7 @@ function drawGanttChart(mode) {
 
     if (mode === 'pm') {
         ;(UPDATE_DATA.tracks || []).forEach(track => {
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     // Item must belong to a visible epic that has a row
@@ -3169,9 +3178,11 @@ function renderDiscoveryView() {
     ribbonHtml += typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer(currentView) : '';
 
     // Filter for ideas and spikes across all tracks
+    const _discoveryActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let allItems = [];
     if (UPDATE_DATA && UPDATE_DATA.tracks) {
         UPDATE_DATA.tracks.forEach(t => {
+            if (_discoveryActiveTeam && _discoveryActiveTeam !== t.name) return
             if (t.subtracks) {
                 t.subtracks.forEach(s => {
                     if (s.items) {
