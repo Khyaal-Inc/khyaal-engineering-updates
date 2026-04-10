@@ -241,6 +241,31 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F26 — Release Readiness Checklist (Gate Checks, Scorecard, Ribbon Summary) ✅ Shipped
+
+- `views.js` — `computeReleaseReadiness()`, `buildReleaseReadinessBadge()`, `buildReleaseReadinessChecklist()`, `toggleReleaseReadiness()` added; `renderReleasesView()` updated with pre-computed ribbon pills + per-card checklist panel
+- `styles.css` — `release-ready-badge`, `release-readiness-panel`, `readiness-checklist`, score bar, check row styles added
+
+**`computeReleaseReadiness(release, items)` — 7-point gate check:**
+
+| # | Check | Required |
+|---|-------|---------|
+| 1 | Release has a name | ✓ |
+| 2 | Target date set | ✓ |
+| 3 | At least one item in scope | ✓ |
+| 4 | All items done (`N / total`) | ✓ |
+| 5 | No open blockers | ✓ |
+| 6 | At least one closed sprint feeding release | ✓ |
+| 7 | Linked to an OKR | optional |
+
+Returns `{ score (0–100), status ('ready'|'partial'|'blocked'), checks[], passed, total }`. Score is `passed / required * 100`. `ready` = 100%, `partial` = ≥60%, `blocked` = <60%.
+
+**Per-card checklist panel** (`buildReleaseReadinessChecklist`): injected below the release header for all non-shipped releases. Clicking the toggle row (`readiness-toggle-btn`) expands/collapses the check list via `window._releaseReadinessOpen[releaseId]` + `renderReleasesView()`. Each row shows ✓ (green), ✕ (red), or ○ (grey/optional). Shipped releases show no checklist — they already passed.
+
+**Ribbon summary pills**: before building `ribbonHtml`, readiness statuses of all open releases are computed and summarised as `N Ready`, `N Partial`, `N Blocked` pills inserted next to the ribbon breadcrumb. Zero-count pill types are omitted.
+
+**Badge variants**: `release-ready-badge.ready` (green), `.partial` (amber), `.blocked` (red) — shared between ribbon pills and per-card toggle button.
+
 #### F25 — Sprint Planning Panel (Velocity Capacity, Drag-to-Sprint, Editable Goal) ✅ Shipped
 
 - `views.js` — `buildSprintPlanningPanel()` helper added; `renderSprintView()` updated with planning toggle per sprint card + ribbon "Plan" toggle; drag/drop + assignment helpers added

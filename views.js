@@ -2347,12 +2347,159 @@ function renderSprintView() {
 }
 
 // ------ Releases View ------
+// ------ Release Readiness helpers (F26) ------
+
+function computeReleaseReadiness(release, items) {
+    const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || []
+    const checks = []
+
+    // 1. Has a name
+    checks.push({
+        id: 'name',
+        label: 'Release has a name',
+        pass: !!(release.name && release.name.trim())
+    })
+
+    // 2. Has a target date
+    checks.push({
+        id: 'date',
+        label: 'Target date set',
+        pass: !!(release.targetDate && release.targetDate.trim())
+    })
+
+    // 3. Has at least one item in scope
+    checks.push({
+        id: 'scope',
+        label: 'At least one item in scope',
+        pass: items.length > 0
+    })
+
+    // 4. All items done (no open blockers or in-flight work)
+    const openItems = items.filter(i => i.status !== 'done')
+    checks.push({
+        id: 'done',
+        label: `All items done (${items.length - openItems.length} / ${items.length})`,
+        pass: items.length > 0 && openItems.length === 0
+    })
+
+    // 5. No open blockers among release items
+    const openBlockers = items.filter(i => i.blocker && i.status !== 'done')
+    checks.push({
+        id: 'blockers',
+        label: openBlockers.length === 0 ? 'No open blockers' : `${openBlockers.length} open blocker${openBlockers.length > 1 ? 's' : ''}`,
+        pass: openBlockers.length === 0
+    })
+
+    // 6. At least one closed sprint feeds this release
+    const releasedIds = new Set(items.map(i => i.sprintId).filter(Boolean))
+    const feedingSprints = sprints.filter(s => s.status === 'completed' && releasedIds.has(s.id))
+    checks.push({
+        id: 'sprint',
+        label: feedingSprints.length > 0
+            ? `${feedingSprints.length} closed sprint${feedingSprints.length > 1 ? 's' : ''} feeding release`
+            : 'At least one closed sprint feeding release',
+        pass: feedingSprints.length > 0
+    })
+
+    // 7. Linked to an OKR
+    checks.push({
+        id: 'okr',
+        label: release.linkedOKR ? 'Linked to an OKR' : 'No OKR linked (optional)',
+        pass: !!release.linkedOKR,
+        optional: true
+    })
+
+    const required = checks.filter(c => !c.optional)
+    const passed = required.filter(c => c.pass).length
+    const score = Math.round((passed / required.length) * 100)
+
+    let status
+    if (score === 100) status = 'ready'
+    else if (score >= 60) status = 'partial'
+    else status = 'blocked'
+
+    return { score, status, checks, passed, total: required.length }
+}
+
+function buildReleaseReadinessBadge(readiness) {
+    if (readiness.status === 'ready') {
+        return `<span class="release-ready-badge ready">✓ Ready to Ship</span>`
+    }
+    if (readiness.status === 'partial') {
+        return `<span class="release-ready-badge partial">⚠ ${readiness.passed}/${readiness.total} checks</span>`
+    }
+    return `<span class="release-ready-badge blocked">✕ ${readiness.passed}/${readiness.total} checks</span>`
+}
+
+function buildReleaseReadinessChecklist(release, items, readiness) {
+    const panelId = `release-readiness-${release.id}`
+    const isOpen = !!(window._releaseReadinessOpen && window._releaseReadinessOpen[release.id])
+
+    const checkRows = readiness.checks.map(c => `
+        <div class="readiness-check-row ${c.pass ? 'pass' : c.optional ? 'optional' : 'fail'}">
+            <span class="readiness-check-icon">${c.pass ? '✓' : c.optional ? '○' : '✕'}</span>
+            <span class="readiness-check-label">${c.label}${c.optional ? ' <span class="readiness-optional-tag">optional</span>' : ''}</span>
+        </div>
+    `).join('')
+
+    const scoreBar = `
+        <div class="readiness-score-bar-wrap">
+            <div class="readiness-score-bar">
+                <div class="readiness-score-fill ${readiness.status}" style="width:${readiness.score}%"></div>
+            </div>
+            <span class="readiness-score-label">${readiness.score}%</span>
+        </div>
+    `
+
+    return `
+        <div class="release-readiness-panel">
+            <button class="readiness-toggle-btn" onclick="toggleReleaseReadiness('${release.id}')">
+                ${buildReleaseReadinessBadge(readiness)}
+                ${scoreBar}
+                <span class="readiness-chevron">${isOpen ? '▲' : '▼'}</span>
+            </button>
+            ${isOpen ? `
+            <div class="readiness-checklist" id="${panelId}">
+                ${checkRows}
+            </div>` : ''}
+        </div>
+    `
+}
+
+function toggleReleaseReadiness(releaseId) {
+    if (!window._releaseReadinessOpen) window._releaseReadinessOpen = {}
+    window._releaseReadinessOpen[releaseId] = !window._releaseReadinessOpen[releaseId]
+    renderReleasesView()
+}
+window.toggleReleaseReadiness = toggleReleaseReadiness
+
 function renderReleasesView() {
     const container = document.getElementById('releases-view');
     if (!container) return;
     const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
 
-    let ribbonHtml = `
+    const _allReleaseItems = releases.flatMap(r => findItemsByMetadataId('releasedIn', r.id));
+    const _filteredReleaseItems = applyExecFilter(_allReleaseItems, 'releases');
+
+    // Pre-compute readiness summary pills for the ribbon
+    const openReleases = releases.filter(r => r.status !== 'completed')
+    let readinessPillsHtml = ''
+    if (openReleases.length > 0) {
+        const statuses = openReleases.map(r => {
+            const items = applyExecFilter(findItemsByMetadataId('releasedIn', r.id), 'releases')
+            return computeReleaseReadiness(r, items).status
+        })
+        const readyCount   = statuses.filter(s => s === 'ready').length
+        const partialCount = statuses.filter(s => s === 'partial').length
+        const blockedCount = statuses.filter(s => s === 'blocked').length
+        readinessPillsHtml = [
+            readyCount   > 0 ? `<span class="release-ready-badge ready">${readyCount} Ready</span>` : '',
+            partialCount > 0 ? `<span class="release-ready-badge partial">${partialCount} Partial</span>` : '',
+            blockedCount > 0 ? `<span class="release-ready-badge blocked">${blockedCount} Blocked</span>` : ''
+        ].filter(Boolean).join('')
+    }
+
+    const ribbonHtml = `
         <div style="position:relative;margin-bottom:24px;">
             <div id="releases-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
                 <!-- Group 1: Navigation/Breadcrumb -->
@@ -2363,6 +2510,7 @@ function renderReleasesView() {
                         <h2 class="text-sm font-black text-slate-800">Engineering Releases</h2>
                     </div>
                     ${typeof renderInfoButton === 'function' ? renderInfoButton('releases') : ''}
+                    ${readinessPillsHtml ? `<div class="flex items-center gap-2 ml-2">${readinessPillsHtml}</div>` : ''}
                 </div>
 
                 <!-- Group 2: Actions -->
@@ -2370,10 +2518,10 @@ function renderReleasesView() {
                     <div id="releases-next-action-mount">
                         ${renderPrimaryStageAction('releases')}
                     </div>
-                    
+
                     ${shouldShowManagement() ? `
                     <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                    <button onclick="openReleaseEdit()" 
+                    <button onclick="openReleaseEdit()"
                         class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-sm hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2 active:scale-95">
                         <span class="text-lg">➕</span> Add New Release
                     </button>
@@ -2384,8 +2532,6 @@ function renderReleasesView() {
         </div>
     `;
 
-    const _allReleaseItems = releases.flatMap(r => findItemsByMetadataId('releasedIn', r.id));
-    const _filteredReleaseItems = applyExecFilter(_allReleaseItems, 'releases');
     let html = ribbonHtml + renderExecFilterBanner(_filteredReleaseItems.length, _allReleaseItems.length, 'releases');
 
     if (releases.length === 0) {
@@ -2416,6 +2562,17 @@ function renderReleasesView() {
         const releaseRibbonText = isClosed ? 'Shipped' : isInProgress ? 'In Progress' : 'Planned';
         const releaseRibbonClass = isClosed ? 'ribbon-shipped' : isInProgress ? 'ribbon-active' : 'ribbon-planned';
 
+        const readiness = computeReleaseReadiness(r, releaseItems)
+
+        const epicsInRelease = [...new Map(
+            releaseItems.filter(i => i.epicId)
+                .map(i => {
+                    const ep = (UPDATE_DATA.metadata?.epics || []).find(e => e.id === i.epicId)
+                    return ep ? [ep.id, ep] : null
+                })
+                .filter(Boolean)
+        ).values()]
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}">
                 ${(isClosed || isInProgress) ? `<div class="corner-ribbon ${releaseRibbonClass}">${releaseRibbonText}</div>` : ''}
@@ -2435,22 +2592,13 @@ function renderReleasesView() {
                              <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold uppercase tracking-wider">${releaseItems.length} Tasks</span>
                         </div>
                     </div>
+                    ${!isClosed ? buildReleaseReadinessChecklist(r, releaseItems, readiness) : ''}
                 </div>
-                ${(() => {
-                    const epicsInRelease = [...new Map(
-                        releaseItems.filter(i => i.epicId)
-                            .map(i => {
-                                const ep = (UPDATE_DATA.metadata?.epics || []).find(e => e.id === i.epicId)
-                                return ep ? [ep.id, ep] : null
-                            })
-                            .filter(Boolean)
-                    ).values()]
-                    return epicsInRelease.length ? `
-                        <div class="px-6 pb-3 flex flex-wrap gap-2 items-center">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Epics:</span>
-                            ${epicsInRelease.map(ep => `<button onclick="switchView('epics')" class="release-epic-pill">📍 ${ep.name}</button>`).join('')}
-                        </div>` : ''
-                })()}
+                ${epicsInRelease.length ? `
+                    <div class="px-6 pb-3 flex flex-wrap gap-2 items-center">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Epics:</span>
+                        ${epicsInRelease.map(ep => `<button onclick="switchView('epics')" class="release-epic-pill">📍 ${ep.name}</button>`).join('')}
+                    </div>` : ''}
                 <div class="p-2 space-y-4">
                     ${renderGroupedItemsWithReleaseAssign(releaseItems, releases, r.id)}
                 </div>
