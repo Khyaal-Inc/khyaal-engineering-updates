@@ -172,7 +172,11 @@ function renderViewSubtabs(activeView) {
     const availableModeViews = MODE_CONFIG[mode]?.availableViews || [];
 
     // Filter stage views by what's available for this persona
-    let views = stage.views.filter(v => availableModeViews.includes(v));
+    const allStageViews = stage.views.filter(v => availableModeViews.includes(v))
+    // Pinned views for this persona come first; rest follow in original order
+    const pinned = (stage.pinnedViews?.[mode] || []).filter(v => allStageViews.includes(v))
+    const secondary = allStageViews.filter(v => !pinned.includes(v))
+    let views = [...pinned, ...secondary]
 
     // If current stage has no views for this mode, fall back to finding the stage
     // that contains the active view — avoids blank nav during init race conditions
@@ -193,17 +197,23 @@ function renderViewSubtabs(activeView) {
         return;
     }
 
-    container.innerHTML = views.map(viewId => {
+    const pinnedSet = new Set((stage.pinnedViews?.[mode] || []))
+    container.innerHTML = views.map((viewId, idx) => {
+        // Insert separator before first secondary view
+        const prevId = views[idx - 1]
+        const isBoundary = idx > 0 && pinnedSet.has(prevId) && !pinnedSet.has(viewId) && pinnedSet.size > 0
+        const sep = isBoundary ? `<span class="view-subtab-sep" aria-hidden="true"></span>` : ''
+
         const meta = VIEW_METADATA[viewId];
         const isActive = viewId === (activeView || window.currentActiveView);
-        
+
         // Define labels locally to match popover logic
         const viewLabels = {
             'okr': '🎯 OKRs', 'epics': '🚀 Epics', 'roadmap': '🗺️ Roadmap', 'backlog': '📚 Backlog',
-            'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active', 
-            'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links', 
-            'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data', 
-            'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk', 
+            'sprint': '🏃 Sprints', 'releases': '📦 Releases', 'my-tasks': '✅ Active',
+            'kanban': '📋 Kanban', 'track': '🏗️ Tracks', 'dependency': '🔗 Links',
+            'workflow': '🛠️ Playbook', 'dashboard': '📊 Pulse', 'analytics': '📈 Data',
+            'capacity': '⚖️ Capacity', 'status': '📍 State', 'priority': '🔥 Risk',
             'contributor': '👥 Team', 'gantt': '📅 Gantt', 'ideation': '💡 Ideas', 'spikes': '🧪 Spikes'
         };
 
@@ -211,9 +221,9 @@ function renderViewSubtabs(activeView) {
         // Strip emoji prefix — text-only chips for clean enterprise nav
         const textOnly = label.replace(/^[\p{Emoji}\p{Emoji_Presentation}\uFE0F\u20D0-\u20FF\s]+/u, '').trim() || label;
 
-        return `
+        return sep + `
             <button onclick="window.currentActiveView='${viewId}'; switchView('${viewId}'); if(typeof updateCommandStripNav==='function') updateCommandStripNav(); if(typeof renderViewSubtabs==='function') renderViewSubtabs('${viewId}');" id="btn-${viewId}"
-                class="view-subtab ${isActive ? 'view-subtab-active' : ''}"
+                class="view-subtab ${isActive ? 'view-subtab-active' : ''}${pinnedSet.has(viewId) ? ' view-subtab-pinned' : ''}"
                 style="--active-color: ${stage.color}"
                 aria-label="${textOnly}" title="${textOnly}"
             >

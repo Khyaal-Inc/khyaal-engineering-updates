@@ -5073,6 +5073,19 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 .view-subtab:focus-visible {
     outline: 2px solid #818cf8; outline-offset: 1px;
 }
+/* Pinned view chip — slightly bolder weight */
+.view-subtab-pinned {
+    font-weight: 800;
+}
+/* Separator between pinned and secondary chips */
+.view-subtab-sep {
+    display: inline-block;
+    width: 1px; height: 16px;
+    background: rgba(148, 163, 184, 0.4);
+    margin: 0 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
 
 /* Mode segmented control */
 .mode-seg-control {
