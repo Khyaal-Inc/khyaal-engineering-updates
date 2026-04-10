@@ -6,6 +6,21 @@ let _selectedTags = [];
 let _selectedDeps = [];
 window.isActionLockActive = false; // Management Lock to prevent UI refreshes during modals
 
+// Watchdog: auto-releases the action lock after 30s to prevent silent UI freeze
+function _setLockWatchdog() {
+    clearTimeout(window._lockWatchdogTimer)
+    window._lockWatchdogTimer = setTimeout(() => {
+        if (window.isActionLockActive) {
+            window.isActionLockActive = false
+            console.error('❌ Action lock watchdog fired — lock was held >30s. UI auto-recovered.')
+            if (typeof showToast === 'function') showToast('Save may have stalled — UI recovered. Please retry.', 'error')
+        }
+    }, 30000)
+}
+function _clearLockWatchdog() {
+    clearTimeout(window._lockWatchdogTimer)
+}
+
 // CMS Config
 const CMS_CONFIG = {
     repoOwner: 'Khyaal-Inc',
@@ -729,6 +744,7 @@ window.spAdminSaveUsers = async function() {
     const jwt = localStorage.getItem('khyaal_site_auth')
     if (!jwt) { showToast('Not authenticated', 'error'); return }
     window.isActionLockActive = true
+    _setLockWatchdog()
     try {
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(_adminUsersData, null, 2))))
         const res = await fetch(`${LAMBDA_URL}?action=write&projectId=default&filePath=users.json`, {
@@ -746,6 +762,7 @@ window.spAdminSaveUsers = async function() {
         console.error('❌ [settings admin] save:', err)
         showToast(`Save failed: ${err.message}`, 'error')
     } finally {
+        _clearLockWatchdog()
         window.isActionLockActive = false
     }
 }
@@ -4901,6 +4918,7 @@ async function saveToGithub() {
 
     btn.disabled = true; btn.innerText = 'Saving...';
     window.isActionLockActive = true;
+    _setLockWatchdog();
     try {
         const projectId = window.ACTIVE_PROJECT_ID || 'default';
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4))));
@@ -4918,6 +4936,7 @@ async function saveToGithub() {
         alert('Save error: ' + e.message);
         btn.disabled = false; btn.innerText = 'Save to GitHub';
     } finally {
+        _clearLockWatchdog();
         window.isActionLockActive = false;
     }
 }
@@ -4987,12 +5006,13 @@ function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
 
     // Prevent background refreshes from killing the modal
     window.isActionLockActive = true;
+    _setLockWatchdog();
     window.uiState.isDirty = false; // Disarm unsaved-changes guard before any confirm dialog
 
     // Decouple from event loop to prevent instant closure
     setTimeout(() => {
         const confirmResult = confirm(`Delete task: "${data.item.text}"?`);
-        if (!confirmResult) { window.isActionLockActive = false; return; }
+        if (!confirmResult) { _clearLockWatchdog(); window.isActionLockActive = false; return; }
 
         UPDATE_DATA.tracks[data.ti].subtracks[data.si].items.splice(data.ii, 1);
         logChange('Delete Item', data.item.text);
@@ -5009,8 +5029,9 @@ function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
             switchView(currentView);
         }
         updateTabCounts();
-        
+
         // Release the lock
+        _clearLockWatchdog();
         window.isActionLockActive = false;
     }, 0);
 }
@@ -5020,6 +5041,7 @@ function sendToBacklog(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
     if (!data) return;
 
     window.isActionLockActive = true;
+    _setLockWatchdog();
     setTimeout(() => {
         const track = UPDATE_DATA.tracks[data.ti];
         let bIdx = track.subtracks.findIndex(s => s.name === 'Backlog');
@@ -5040,6 +5062,7 @@ function sendToBacklog(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
         }
         
         updateTabCounts();
+        _clearLockWatchdog();
         window.isActionLockActive = false;
     }, 0);
 }
@@ -5049,6 +5072,7 @@ function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
     if (!data) return;
 
     window.isActionLockActive = true;
+    _setLockWatchdog();
     setTimeout(() => {
         if (data.item.blocker) { 
             delete data.item.blocker; 
@@ -5056,9 +5080,10 @@ function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
             logChange('Unblock Item', data.item.text); 
         } else { 
             const note = prompt('Blocker reason:', '') || ''; 
-            if (!note) { 
-                window.isActionLockActive = false; 
-                return; 
+            if (!note) {
+                _clearLockWatchdog();
+                window.isActionLockActive = false;
+                return;
             } 
             data.item.blocker = true; 
             data.item.blockerNote = note; 
@@ -5077,8 +5102,9 @@ function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
         }
         
         if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
-        
+
         // Ensure lock is released after all state-changing rendering is complete
+        _clearLockWatchdog();
         window.isActionLockActive = false;
     }, 0);
 }
@@ -5213,6 +5239,7 @@ async function archiveAndClear() {
 
     btn.disabled = true; btn.innerText = 'Archiving...';
     window.isActionLockActive = true;
+    _setLockWatchdog();
     try {
         const projectId = window.ACTIVE_PROJECT_ID || 'default';
         const fileName = `archive_${new Date().toISOString().split('T')[0]}.json`;
@@ -5265,6 +5292,7 @@ async function archiveAndClear() {
         alert('Archive error: ' + e.message);
         btn.disabled = false; btn.innerText = 'Archive & Clear';
     } finally {
+        _clearLockWatchdog();
         window.isActionLockActive = false;
     }
 }
@@ -6053,6 +6081,7 @@ async function adminSaveUsers() {
     if (!jwt) { showToast('Not authenticated', 'error'); return }
 
     window.isActionLockActive = true
+    _setLockWatchdog()
     try {
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(_adminUsersData, null, 2))))
         const res = await fetch(`${LAMBDA_URL}?action=write`, {
@@ -6076,6 +6105,7 @@ async function adminSaveUsers() {
         console.error('❌ [admin] save users:', err)
         showToast(`Save failed: ${err.message}`, 'error')
     } finally {
+        _clearLockWatchdog()
         window.isActionLockActive = false
     }
 }
