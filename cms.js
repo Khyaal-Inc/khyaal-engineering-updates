@@ -1399,6 +1399,18 @@ function quickAssignSprint(itemId, sprintId) {
 }
 window.quickAssignSprint = quickAssignSprint;
 
+function updateSprintGoal(sprintId, goalText) {
+    const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || []
+    const sprint = sprints.find(s => s.id === sprintId)
+    if (!sprint) return
+    const trimmed = (goalText || '').trim()
+    if (sprint.goal === trimmed) return
+    sprint.goal = trimmed
+    logChange('sprint-goal-update', sprint.name)
+    saveToLocalStorage()
+}
+window.updateSprintGoal = updateSprintGoal;
+
 function quickAssignRelease(itemId, releaseId) {
     const found = findItemById(itemId)
     if (!found) return

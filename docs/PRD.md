@@ -241,6 +241,26 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F25 — Sprint Planning Panel (Velocity Capacity, Drag-to-Sprint, Editable Goal) ✅ Shipped
+
+- `views.js` — `buildSprintPlanningPanel()` helper added; `renderSprintView()` updated with planning toggle per sprint card + ribbon "Plan" toggle; drag/drop + assignment helpers added
+- `cms.js` — `updateSprintGoal(sprintId, goalText)` added
+- `styles.css` — sprint planning panel layout + drag zone + capacity bar + groom badge + assign/remove buttons
+
+**Activation**: Each active/planned sprint card gains a "📐 Plan Sprint" toggle button (hidden for Exec). The ribbon also shows a global "📐 Plan" toggle that opens the first active sprint's panel. Clicking "Hide Plan" collapses it. State stored in `window._sprintPlanningOpenId`.
+
+**Split-panel layout** (`sprint-planning-panel` CSS grid, 1:1 columns):
+- **Left — Backlog** (`sprint-planning-col backlog`): up to 30 unassigned items (no `sprintId`), sorted by `computeGroomScore()` descending. Each item shows its score badge (green ≥70, amber ≥40, red <40), truncated title, story points, and a "→ Sprint" button. Unassigned count shown in column header.
+- **Right — Sprint** (`sprint-planning-col sprint`): current sprint items with remove "✕" button; drop zone below when items exist. Sprint name + capacity bar in header.
+
+**Capacity bar**: reads average story-point velocity from all `status === 'completed'` sprints (done items' `storyPoints` summed, averaged across sprints). Committed points vs avg shown as a `6px` progress bar — fills purple normally, turns red when over-committed. Shows "No velocity history" when no closed sprints exist.
+
+**Drag-to-sprint**: backlog items are `draggable`; `sprintPlanDragStart` stores `itemId` in `dataTransfer`. Drop zones call `sprintPlanDrop(event, sprintId)` → `plannerAssignToSprint(itemId, sprintId)` → `quickAssignSprint()` → `saveToLocalStorage()` → `renderSprintView()`. The "→ Sprint" click button calls the same path without drag.
+
+**Remove from sprint**: "✕" button calls `plannerRemoveFromSprint(itemId)` → `quickAssignSprint(itemId, '')` → clears `sprintId`, saves, re-renders.
+
+**Editable sprint goal**: when planning panel is open, the static goal text is replaced by a `<textarea class="sprint-goal-input">`. `onblur` fires `updateSprintGoal(sprintId, value)` which diffs the value, mutates `sprint.goal`, calls `logChange` + `saveToLocalStorage()`. `Enter` without shift also blurs. When panel is closed, the static goal box returns.
+
 #### F24 — Kanban View Enhancement (WIP Limits, Exec Persona Filter, Persist on Drop) ✅ Shipped
 
 - `kanban-view.js` — WIP limit system added; Exec persona filter added; `handleKanbanDrop` fixed to persist

@@ -2013,6 +2013,188 @@ function renderRoadmapView() {
     container.innerHTML = html || '<div class="text-center py-20 text-slate-400">Roadmap is empty. Use the button to add your first planning category.</div>';
 }
 
+// ------ Sprint Planning helpers ------
+function buildSprintPlanningPanel(sprint) {
+    if (!sprint) return ''
+    const sprintId = sprint.id
+    const mode = getCurrentMode()
+    if (mode === 'exec') return ''
+
+    const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || []
+    const closedSprints = sprints.filter(s => s.status === 'completed')
+
+    // Average velocity from closed sprints (story points done)
+    let avgVelocity = 0
+    if (closedSprints.length > 0) {
+        const velocities = closedSprints.map(s => {
+            const items = findItemsByMetadataId('sprintId', s.id)
+            return items.filter(i => i.status === 'done').reduce((acc, i) => acc + (parseInt(i.storyPoints, 10) || 0), 0)
+        })
+        avgVelocity = Math.round(velocities.reduce((a, b) => a + b, 0) / velocities.length)
+    }
+
+    // Current sprint committed points
+    const currentItems = findItemsByMetadataId('sprintId', sprintId)
+    const committedPts = currentItems.reduce((acc, i) => acc + (parseInt(i.storyPoints, 10) || 0), 0)
+    const capacityPct = avgVelocity > 0 ? Math.min(Math.round((committedPts / avgVelocity) * 100), 200) : 0
+    const isOver = avgVelocity > 0 && committedPts > avgVelocity
+
+    const capacityBar = avgVelocity > 0 ? `
+        <div class="sprint-capacity-bar-wrap">
+            <div class="sprint-capacity-bar">
+                <div class="sprint-capacity-fill ${isOver ? 'over' : ''}" style="width:${Math.min(capacityPct, 100)}%"></div>
+            </div>
+            <span>${committedPts}pts / ${avgVelocity}pts avg${isOver ? ' ⚠️' : ''}</span>
+        </div>
+    ` : `<span style="font-size:10px;color:#94a3b8;">No velocity history</span>`
+
+    // Unassigned backlog items (no sprintId), sorted by groom score desc
+    const allItems = []
+    UPDATE_DATA.tracks.forEach(track => {
+        track.subtracks.forEach(sub => {
+            sub.items.forEach(item => {
+                if (!item.sprintId) allItems.push(item)
+            })
+        })
+    })
+    allItems.sort((a, b) => computeGroomScore(b) - computeGroomScore(a))
+    const topBacklog = allItems.slice(0, 30)
+
+    const backlogRows = topBacklog.length > 0
+        ? topBacklog.map(item => {
+            const score = computeGroomScore(item)
+            const badgeClass = score >= 70 ? 'high' : score >= 40 ? 'mid' : 'low'
+            const pts = item.storyPoints > 0 ? `<span style="font-size:10px;color:#94a3b8;">${item.storyPoints}sp</span>` : ''
+            return `
+                <div class="sprint-planning-item"
+                    draggable="true"
+                    ondragstart="sprintPlanDragStart(event, '${item.id}')"
+                    title="${(item.text || '').replace(/'/g, '&#39;')}">
+                    <span class="planning-groom-badge ${badgeClass}">${score}</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:#1e293b;">${item.text || '—'}</span>
+                    ${pts}
+                    <button class="sprint-assign-btn" onclick="plannerAssignToSprint('${item.id}', '${sprintId}')">→ Sprint</button>
+                </div>`
+        }).join('')
+        : '<div class="text-center py-6 text-slate-400 italic text-xs">All items are assigned to sprints</div>'
+
+    // Current sprint items list
+    const sprintRows = currentItems.length > 0
+        ? currentItems.map(item => {
+            const pts = item.storyPoints > 0 ? `<span style="font-size:10px;color:#94a3b8;">${item.storyPoints}sp</span>` : ''
+            return `
+                <div class="sprint-planning-item" title="${(item.text || '').replace(/'/g, '&#39;')}">
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:#1e293b;">${item.text || '—'}</span>
+                    ${pts}
+                    <button class="sprint-remove-btn" onclick="plannerRemoveFromSprint('${item.id}')">✕</button>
+                </div>`
+        }).join('')
+        : `<div class="sprint-planning-drag-zone"
+                ondragover="event.preventDefault();this.classList.add('over')"
+                ondragleave="this.classList.remove('over')"
+                ondrop="sprintPlanDrop(event, '${sprintId}');this.classList.remove('over')">
+                Drop items here to add to sprint
+            </div>`
+
+    // Editable goal field
+    const goalHtml = `
+        <div style="padding:10px 14px;background:#f8fafc;border-top:1.5px solid #e2e8f0;">
+            <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:4px;">Sprint Goal</div>
+            <textarea class="sprint-goal-input" rows="2"
+                placeholder="Set a clear goal for this sprint…"
+                onblur="updateSprintGoal('${sprintId}', this.value)"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.blur()}"
+            >${sprint.goal || ''}</textarea>
+        </div>
+    `
+
+    return `
+        <div class="sprint-planning-panel">
+            <div class="sprint-planning-col">
+                <div class="sprint-planning-col-header backlog">
+                    <span>📋 Backlog — top ${topBacklog.length} by readiness</span>
+                    <span style="font-size:10px;font-weight:600;color:#94a3b8;">${allItems.length} unassigned</span>
+                </div>
+                <div class="sprint-planning-item-list">${backlogRows}</div>
+            </div>
+            <div class="sprint-planning-col">
+                <div class="sprint-planning-col-header sprint">
+                    <span>🏃 ${sprint.name}</span>
+                    ${capacityBar}
+                </div>
+                <div class="sprint-planning-item-list"
+                    ondragover="event.preventDefault();document.getElementById('sprint-drop-zone-${sprintId}')?.classList.add('over')"
+                    ondragleave="document.getElementById('sprint-drop-zone-${sprintId}')?.classList.remove('over')"
+                    ondrop="sprintPlanDrop(event,'${sprintId}')">
+                    ${sprintRows}
+                    ${currentItems.length > 0 ? `
+                        <div class="sprint-planning-drag-zone" id="sprint-drop-zone-${sprintId}"
+                            ondragover="event.preventDefault();this.classList.add('over')"
+                            ondragleave="this.classList.remove('over')"
+                            ondrop="sprintPlanDrop(event,'${sprintId}');this.classList.remove('over')">
+                            Drop more items here
+                        </div>` : ''}
+                </div>
+                ${goalHtml}
+            </div>
+        </div>
+    `
+}
+
+function sprintPlanDragStart(event, itemId) {
+    event.dataTransfer.setData('text/plain', itemId)
+    event.dataTransfer.effectAllowed = 'move'
+}
+window.sprintPlanDragStart = sprintPlanDragStart
+
+function sprintPlanDrop(event, sprintId) {
+    event.preventDefault()
+    const itemId = event.dataTransfer.getData('text/plain')
+    if (!itemId) return
+    plannerAssignToSprint(itemId, sprintId)
+}
+window.sprintPlanDrop = sprintPlanDrop
+
+function plannerAssignToSprint(itemId, sprintId) {
+    if (typeof quickAssignSprint === 'function') {
+        quickAssignSprint(itemId, sprintId)
+    }
+    // Re-render sprint view preserving planning panel open state
+    const openPlanningId = window._sprintPlanningOpenId
+    renderSprintView()
+    if (openPlanningId) window._sprintPlanningOpenId = openPlanningId
+}
+window.plannerAssignToSprint = plannerAssignToSprint
+
+function plannerRemoveFromSprint(itemId) {
+    if (typeof quickAssignSprint === 'function') {
+        quickAssignSprint(itemId, '')
+    }
+    const openPlanningId = window._sprintPlanningOpenId
+    renderSprintView()
+    if (openPlanningId) window._sprintPlanningOpenId = openPlanningId
+}
+window.plannerRemoveFromSprint = plannerRemoveFromSprint
+
+function toggleSprintPlanning(sprintId) {
+    if (sprintId === null) {
+        // Ribbon toggle: open first active/planned sprint, or close if already open
+        if (window._sprintPlanningOpenId) {
+            window._sprintPlanningOpenId = null
+        } else {
+            const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || []
+            const target = sprints.find(s => s.status === 'active') || sprints.find(s => s.status !== 'completed')
+            window._sprintPlanningOpenId = target ? target.id : null
+        }
+    } else if (window._sprintPlanningOpenId === sprintId) {
+        window._sprintPlanningOpenId = null
+    } else {
+        window._sprintPlanningOpenId = sprintId
+    }
+    renderSprintView()
+}
+window.toggleSprintPlanning = toggleSprintPlanning
+
 // ------ Sprint View ------
 function renderSprintView() {
     const container = document.getElementById('sprint-view');
@@ -2046,6 +2228,11 @@ function renderSprintView() {
                         <span class="text-lg">➕</span> Add New Sprint
                     </button>
                     ` : ''}
+                    ${getCurrentMode() !== 'exec' ? `
+                    <button onclick="toggleSprintPlanning(null)"
+                        class="sprint-planning-toggle ${window._sprintPlanningOpenId ? 'active' : ''}">
+                        📐 Plan
+                    </button>` : ''}
                 </div>
             </div>
             ${typeof renderInfoCardContainer === 'function' ? renderInfoCardContainer('sprint') : ''}
@@ -2108,6 +2295,13 @@ function renderSprintView() {
         const sprintRibbonText = isClosed ? 'Closed' : isActive ? 'Active' : 'Planned';
         const sprintRibbonClass = isClosed ? 'ribbon-closed' : isActive ? 'ribbon-active' : 'ribbon-planned';
 
+        const isPlanningOpen = window._sprintPlanningOpenId === s.id
+        const planningToggleBtn = !isClosed && getCurrentMode() !== 'exec' ? `
+            <button onclick="toggleSprintPlanning('${s.id}')"
+                class="sprint-planning-toggle ${isPlanningOpen ? 'active' : ''}">
+                📐 ${isPlanningOpen ? 'Hide Plan' : 'Plan Sprint'}
+            </button>` : ''
+
         html += `
             <div class="sprint-card bg-white border rounded-xl overflow-hidden mb-8 shadow-sm corner-ribbon-wrap ${isClosed ? 'lifecycle-closed' : ''}">
                 ${(isClosed || isActive) ? `<div class="corner-ribbon ${sprintRibbonClass}">${sprintRibbonText}</div>` : ''}
@@ -2118,6 +2312,7 @@ function renderSprintView() {
                             <div class="flex items-center gap-3">
                                 <div class="font-black text-2xl text-slate-900">${s.name}</div>
                                 ${isClosed ? `<span class="lifecycle-closed-badge">✓ Closed</span>` : isActive ? `<span class="lifecycle-closed-badge" style="background:#eef2ff;border-color:#c7d2fe;color:#4f46e5;">● Active</span>` : ''}
+                                ${planningToggleBtn}
                                 ${cmsActions}
                             </div>
                             <div class="flex items-center gap-3 mt-1 flex-wrap">
@@ -2137,10 +2332,12 @@ function renderSprintView() {
                              ` : ''}
                         </div>
                     </div>
+                    ${isPlanningOpen ? '' : `
                     <div class="mt-4 p-3 bg-white rounded-lg border border-slate-200 text-sm text-slate-600 italic">
                         <span class="font-bold text-slate-800 not-italic">Goal:</span> ${s.goal || 'No goal set for this sprint.'}
-                    </div>
+                    </div>`}
                 </div>
+                ${isPlanningOpen ? buildSprintPlanningPanel(s) : ''}
                 <div class="p-2 space-y-4">
                     ${renderGroupedItems(sprintItems, 'sprint')}
                 </div>
