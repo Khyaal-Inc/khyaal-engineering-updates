@@ -34,7 +34,7 @@ function normalizeData() {
     if (projEl && !projEl.dataset.populated) {
         const projects = UPDATE_DATA.projects || []
         const currentProjVal = projEl.value
-        projEl.innerHTML = '<option value="">All Projects</option>' +
+        projEl.innerHTML = '<option value="">All Teams</option>' +
             projects.map(p => `<option value="${p.id}" ${p.id === currentProjVal ? 'selected' : ''}>${p.name}</option>`).join('')
         projEl.dataset.populated = 'true'
         // Always show — even with 1 project it serves as a breadcrumb label

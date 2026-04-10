@@ -684,7 +684,7 @@ window.spAdminDeleteTeam = function(pi) {
 window.spAdminAddProject = function() {
     if (!window.UPDATE_DATA) { showToast('No data loaded', 'error'); return }
     if (!Array.isArray(window.UPDATE_DATA.projects)) window.UPDATE_DATA.projects = []
-    const name = prompt('Project name (e.g. "Mobile App"):', '')?.trim()
+    const name = prompt('Team name (e.g. "Mobile App"):', '')?.trim()
     if (!name) return
     const idRaw = prompt('Project ID (lowercase, no spaces):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
     if (!idRaw) return
@@ -695,13 +695,13 @@ window.spAdminAddProject = function() {
     const projEl = document.getElementById('project-filter')
     if (projEl) projEl.dataset.populated = ''
     if (typeof normalizeData === 'function') normalizeData()
-    showToast(`Project "${name}" added — save data to persist`, 'info')
+    showToast(`Team "${name}" added — save data to persist`, 'info')
     _renderSpAdminBody()
 }
 window.spAdminEditProject = function(pi) {
     const proj = window.UPDATE_DATA?.projects?.[pi]
     if (!proj) return
-    const newName = prompt('Project name:', proj.name)?.trim()
+    const newName = prompt('Team name:', proj.name)?.trim()
     if (!newName) return
     proj.name = newName
     const projEl = document.getElementById('project-filter')
@@ -720,7 +720,7 @@ window.spAdminDeleteProject = function(pi) {
     const projEl = document.getElementById('project-filter')
     if (projEl) { projEl.dataset.populated = ''; projEl.value = '' }
     if (typeof normalizeData === 'function') normalizeData()
-    showToast(`Project "${proj.name}" deleted — save data to persist`, 'info')
+    showToast(`Team "${proj.name}" deleted — save data to persist`, 'info')
     _renderSpAdminBody()
 }
 
