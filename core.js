@@ -508,8 +508,50 @@ function setupKeyboardShortcuts() {
             '0': 'dependency'
         }
         if (viewMap[e.key]) { e.preventDefault(); switchView(viewMap[e.key]); return }
-        if (e.key === '/') { e.preventDefault(); const s = document.querySelector('.search-input'); if (s) { s.focus(); s.select(); } }
+        if (e.key === '/') { e.preventDefault(); const s = document.querySelector('.search-input'); if (s) { s.focus(); s.select(); } return }
+        if (e.key === '?') { e.preventDefault(); openKbdModal(); return }
+
+        // Alt+1/2/3 — persona switching
+        if (e.altKey && ['1','2','3'].includes(e.key)) {
+            e.preventDefault()
+            const modeMap = { '1': 'pm', '2': 'dev', '3': 'exec' }
+            if (typeof switchMode === 'function') switchMode(modeMap[e.key])
+            return
+        }
     })
+}
+
+// ------ Keyboard Shortcuts Modal ------
+function openKbdModal() {
+    const el = document.getElementById('kbd-modal-overlay')
+    if (el) el.classList.add('open')
+}
+function closeKbdModal() {
+    const el = document.getElementById('kbd-modal-overlay')
+    if (el) el.classList.remove('open')
+}
+// Close on Escape
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        const el = document.getElementById('kbd-modal-overlay')
+        if (el && el.classList.contains('open')) { closeKbdModal(); e.stopPropagation() }
+    }
+})
+
+// ------ Density Mode ------
+function setDensity(mode) {
+    // mode: 'compact' | 'default' | 'comfortable'
+    document.body.removeAttribute('data-density')
+    if (mode !== 'default') document.body.setAttribute('data-density', mode)
+    localStorage.setItem('khyaal_density', mode)
+    // Update toggle UI if visible
+    document.querySelectorAll('.density-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.density === mode)
+    })
+}
+function initDensity() {
+    const saved = localStorage.getItem('khyaal_density') || 'default'
+    setDensity(saved)
 }
 
 // ------ Command Palette ------

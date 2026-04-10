@@ -203,22 +203,27 @@ function initDashboard() {
     normalizeData();
     buildContributorList(); // from core.js
     setupKeyboardShortcuts(); // from core.js
+    if (typeof initDensity === 'function') initDensity(); // from core.js
     initCms(); // from cms.js
 
     if (typeof initModeSystem === 'function') initModeSystem(); // from modes.js
     if (typeof initWizard === 'function') initWizard(); // from wizard.js
-    if (typeof initWorkflowNav === 'function') initWorkflowNav(); // from workflow-nav.js
 
     // Initial view set
     const mode = getCurrentMode();
     const defaultView = mode === 'pm' ? 'okr' : mode === 'dev' ? 'my-tasks' : mode === 'exec' ? 'dashboard' : 'okr';
-    
+
+    // Set global state BEFORE initWorkflowNav so it reads the correct active view
+    // (not stale localStorage from a previous session)
+    window.currentActiveView = defaultView;
+
+    if (typeof initWorkflowNav === 'function') initWorkflowNav(); // from workflow-nav.js
+
     // Perform initial render loop
     switchView(defaultView);
     renderDashboard();
 
     // Init stage tabs + view sub-tabs
-    window.currentActiveView = defaultView;
     if (typeof renderStageTabs === 'function') {
         setTimeout(() => { renderStageTabs(defaultView); renderViewSubtabs(defaultView); }, 150);
     }

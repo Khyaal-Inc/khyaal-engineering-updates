@@ -409,15 +409,20 @@ function _buildSpSaveTab() {
 
 function _buildSpSettingsTab() {
     const isAuth = !!window.isGithubAuthenticated
-    if (!isAuth) {
-        return `<div class="text-slate-400 text-sm text-center py-12">
-            <div class="text-2xl mb-2">🔑</div>
-            <p>Authentication required</p>
-        </div>`
-    }
     const meta = window.UPDATE_DATA?.metadata || {}
+    const currentDensity = localStorage.getItem('khyaal_density') || 'default'
     return `
         <div class="space-y-5">
+            <div>
+                <p class="sp-section-title">Display Density</p>
+                <p class="text-[11px] text-slate-400 mb-3">Controls spacing and font size across all views.</p>
+                <div class="density-toggle-group">
+                    <button class="density-toggle-btn ${currentDensity === 'compact' ? 'active' : ''}" data-density="compact" onclick="setDensity('compact')">Compact</button>
+                    <button class="density-toggle-btn ${currentDensity === 'default' ? 'active' : ''}" data-density="default" onclick="setDensity('default')">Default</button>
+                    <button class="density-toggle-btn ${currentDensity === 'comfortable' ? 'active' : ''}" data-density="comfortable" onclick="setDensity('comfortable')">Comfortable</button>
+                </div>
+            </div>
+            ${isAuth ? `
             <div>
                 <p class="sp-section-title">Metadata & Configuration</p>
                 <div class="sp-action-row">
@@ -434,7 +439,7 @@ function _buildSpSettingsTab() {
                     <div class="flex justify-between"><span class="font-semibold">Epics</span><span>${window.UPDATE_DATA?.metadata?.epics?.length || 0}</span></div>
                     <div class="flex justify-between"><span class="font-semibold">Sprint Capacity</span><span>${meta.sprintCapacity || 20} SP</span></div>
                 </div>
-            </div>
+            </div>` : ''}
         </div>`
 }
 
@@ -1712,11 +1717,17 @@ function initCms() {
         });
     }
 
+    // Always init snapshots for any authenticated user (not just CMS mode)
+    const jwt = localStorage.getItem('khyaal_site_auth');
+    if (jwt && !window._archiveFilterInited) {
+        window._archiveFilterInited = true;
+        initArchiveFilter();
+    }
+
     if (params.get('cms') === 'true') {
         isCmsMode = true;
         renderTeamSwitcher()
         // Auto-authenticate CMS if a JWT session exists — no PAT required
-        const jwt = localStorage.getItem('khyaal_site_auth');
         if (jwt) {
             authenticateCms();
         }
@@ -1731,7 +1742,10 @@ function authenticateCms() {
     window.isGithubAuthenticated = true;
 
     renderTeamSwitcher()
-    initArchiveFilter();
+    if (!window._archiveFilterInited) {
+        window._archiveFilterInited = true;
+        initArchiveFilter();
+    }
 
     const currentView = document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'track';
     if (typeof switchView === 'function') switchView(currentView);
@@ -5084,27 +5098,6 @@ async function initArchiveFilter() {
         });
     });
 
-    // ── Filters button → #nav-filter-btn ────────────────────────────────────
-    const filterSlot = document.getElementById('nav-filter-btn')
-    if (filterSlot) {
-        let filterRows = `<div class="flex flex-wrap gap-1.5 items-center">`;
-        filterRows += `<button onclick="filterByDate('all')" class="archive-btn active">All</button>`;
-        if (hasLegacy) filterRows += `<button onclick="filterByDate('Legacy')" class="archive-btn">Legacy</button>`;
-        Array.from(dates).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-            filterRows += `<button onclick="filterByDate('${date}')" class="archive-btn">${date}</button>`;
-        });
-        filterRows += `</div>`;
-
-        filterSlot.innerHTML = `
-            <button class="nav-pill-btn" onclick="toggleNavFilterPanel(this)" aria-label="Date filters">
-                📅 Filters
-            </button>
-            <div class="nav-dropdown" id="nav-filter-panel">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Date Filters</p>
-                ${filterRows}
-            </div>`
-    }
-
     // ── Snapshots button → #nav-snapshots-btn ───────────────────────────────
     const snapshotsSlot = document.getElementById('nav-snapshots-btn')
     if (snapshotsSlot) {
@@ -5116,29 +5109,35 @@ async function initArchiveFilter() {
             if (response.ok) {
                 const { data: files } = await response.json();
                 const archives = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
-                if (archives.length > 0) {
-                    let snapRows = `<div class="flex flex-wrap gap-1.5 items-center">`;
-                    if (window.loadingArchive) {
-                        snapRows += `<button onclick="window.location.search=''" class="archive-btn">◉ Live</button>`;
-                    }
-                    archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
-                        const displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim();
-                        const isActive = window.loadingArchive && window.loadingArchive.includes(file.name);
-                        const activeClass = isActive ? 'ring-2 ring-indigo-500' : '';
-                        snapRows += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700">${displayName}</button>`;
-                    });
-                    snapRows += `</div>`;
-                    snapshotsSlot.innerHTML = `
-                        <button class="nav-pill-btn" onclick="toggleNavSnapshotsPanel(this)" aria-label="Snapshots">
-                            📸 ${archives.length}
-                        </button>
-                        <div class="nav-dropdown" id="nav-snapshots-panel">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Snapshots</p>
-                            ${snapRows}
-                        </div>`
+                let snapRows = `<div class="flex flex-wrap gap-1.5 items-center">`
+                if (window.loadingArchive) {
+                    snapRows += `<button onclick="window.location.search=''" class="archive-btn">◉ Live</button>`
                 }
+                if (archives.length > 0) {
+                    archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
+                        const displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim()
+                        const isActive = window.loadingArchive && window.loadingArchive.includes(file.name)
+                        const activeClass = isActive ? 'ring-2 ring-indigo-500' : ''
+                        snapRows += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700">${displayName}</button>`
+                    })
+                } else {
+                    snapRows += `<span class="text-[11px] text-slate-400 italic">No snapshots yet</span>`
+                }
+                snapRows += `</div>`
+                snapshotsSlot.innerHTML = `
+                    <button class="nav-pill-btn" onclick="toggleNavSnapshotsPanel(this)" aria-label="Snapshots">
+                        📸 ${archives.length || '–'}
+                    </button>
+                    <div class="nav-dropdown" id="nav-snapshots-panel">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Historical Snapshots</p>
+                        ${snapRows}
+                    </div>`
+            } else {
+                console.warn('⚠️ Snapshots fetch failed:', response.status)
             }
-        } catch (e) { }
+        } catch (e) {
+            console.warn('⚠️ initArchiveFilter error:', e)
+        }
     }
 }
 
@@ -5161,7 +5160,14 @@ window.toggleNavSnapshotsPanel = function(btn) {
     btn.classList.toggle('active', isOpen)
     document.getElementById('nav-filter-panel')?.classList.remove('open')
     if (isOpen) {
-        const close = (e) => { if (!panel.closest('.nav-filter-slot').contains(e.target)) { panel.classList.remove('open'); btn.classList.remove('active'); document.removeEventListener('click', close) } }
+        const slot = document.getElementById('nav-snapshots-btn')
+        const close = (e) => {
+            if (slot && !slot.contains(e.target)) {
+                panel.classList.remove('open')
+                btn.classList.remove('active')
+                document.removeEventListener('click', close)
+            }
+        }
         setTimeout(() => document.addEventListener('click', close), 0)
     }
 }

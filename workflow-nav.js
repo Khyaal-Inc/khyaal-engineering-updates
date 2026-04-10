@@ -67,13 +67,24 @@ function initWorkflowNav() {
     const savedExpanded = localStorage.getItem('khyaal_workflow_nav_expanded');
     isWorkflowNavExpanded = savedExpanded === null ? true : savedExpanded === 'true';
 
-    // Load current stage from localStorage or detect from current view
-    const savedStage = localStorage.getItem('khyaal_workflow_stage');
-    if (savedStage && WORKFLOW_STAGES[savedStage]) {
-        currentWorkflowStage = savedStage;
+    // Always derive stage from the active view — localStorage is only a hint
+    // for the stage switcher popover, not for the breadcrumb display
+    const activeView = window.currentActiveView
+    if (activeView) {
+        for (const [key, stage] of Object.entries(WORKFLOW_STAGES)) {
+            if (stage.views.includes(activeView)) {
+                currentWorkflowStage = key
+                localStorage.setItem('khyaal_workflow_stage', key)
+                break
+            }
+        }
     } else {
-        // Detect stage from active view
-        detectStageFromView();
+        const savedStage = localStorage.getItem('khyaal_workflow_stage')
+        if (savedStage && WORKFLOW_STAGES[savedStage]) {
+            currentWorkflowStage = savedStage
+        } else {
+            detectStageFromView()
+        }
     }
 
     // Render workflow navigation
@@ -87,14 +98,18 @@ function initWorkflowNav() {
 
 // Detect workflow stage based on current active view
 function detectStageFromView() {
-    if (window.isActionLockActive) return; // Prevent navigation sync during active tactical actions
+    if (window.isActionLockActive) return;
     try {
-        const sections = document.querySelectorAll('.view-section.active');
-        if (sections.length === 0) return;
-
-        // Priority: Use the last active section (most recently switched)
-        const activeSection = sections[sections.length - 1];
-        const activeView = activeSection.id.replace('-view', '');
+        // Prefer window.currentActiveView — always set authoritatively by switchView()
+        // before any DOM manipulation, so it's never stale.
+        // Fall back to DOM query only when window.currentActiveView is absent.
+        let activeView = window.currentActiveView;
+        if (!activeView) {
+            const sections = document.querySelectorAll('.view-section.active');
+            if (sections.length === 0) return;
+            const activeSection = sections[sections.length - 1];
+            activeView = activeSection.id.replace('-view', '');
+        }
 
         if (!activeView) return;
 
@@ -103,7 +118,7 @@ function detectStageFromView() {
             if (stage.views.includes(activeView)) {
                 const stageChanged = currentWorkflowStage !== stageKey;
                 currentWorkflowStage = stageKey;
-                window.khyaal_current_stage = stageKey; // Global sync
+                window.khyaal_current_stage = stageKey;
                 localStorage.setItem('khyaal_workflow_stage', stageKey);
 
                 console.log(`🧬 Stage Detected: ${stageKey} (from ${activeView})`);
@@ -131,8 +146,17 @@ function switchWorkflowStage(stageKey) {
     const stage = WORKFLOW_STAGES[stageKey];
     const defaultView = stage.views[0];
 
-    // Update UI 
-    renderWorkflowNav();
+    // Set global view state BEFORE rendering breadcrumb so updateCommandStripNav
+    // reads the correct view name — not the stale previous view
+    window.currentActiveView = defaultView;
+
+    // Close the strategy panel immediately — user has made their selection
+    const navContainer = document.getElementById('workflow-nav-container');
+    const navBackdrop = document.getElementById('strategy-backdrop');
+    if (navContainer) navContainer.classList.add('hidden', 'pointer-events-none');
+    if (navBackdrop) navBackdrop.classList.add('hidden', 'pointer-events-none');
+
+    // Update UI
     updateCommandStripNav();
 
     // Switch view only if not staying in modal (preserves the popover)
@@ -184,13 +208,10 @@ function updateCommandStripNav() {
 
     // 2. Render Breadcrumb
     const activeStage = WORKFLOW_STAGES[currentWorkflowStage];
-    const activeViewId = window.currentActiveView || document.querySelector('.view-section.active')?.id.replace('-view', '') || 'okr';
-    let viewName = formatViewName(activeViewId);
-
-    // Aesthetic Logic: Avoid "Ship / Ship" redundancy
-    if (viewName.toLowerCase() === activeStage?.name.toLowerCase()) {
-        viewName = 'Overview'; // Or just hide the view part
-    }
+    // Use window.currentActiveView only — DOM query returns stale active section
+    // since the DOM hasn't updated yet when called from switchWorkflowStage
+    const activeViewId = window.currentActiveView || 'okr';
+    const viewName = formatViewName(activeViewId);
 
     breadcrumb.innerHTML = `
         <div class="flex items-center cursor-pointer group hover:bg-slate-50/50 px-2 py-1 rounded-lg transition-all" onclick="toggleStrategyMenu()">
@@ -211,13 +232,28 @@ function updateCommandStripNav() {
 function formatViewName(viewId) {
     if (!viewId) return 'Home';
 
+    // Labels must match what's shown in the Row 2 chips (modes.js viewLabels)
     const overrides = {
-        'okr': 'Strategy',
-        'epics': 'Vision',
-        'my-tasks': 'My Day',
-        'releases': 'Ship',
-        'analytics': 'Trends',
-        'gantt': 'Timeline'
+        'okr':        'OKRs',
+        'epics':      'Epics',
+        'roadmap':    'Roadmap',
+        'backlog':    'Backlog',
+        'sprint':     'Sprints',
+        'releases':   'Releases',
+        'my-tasks':   'My Tasks',
+        'kanban':     'Kanban',
+        'track':      'Tracks',
+        'dependency': 'Links',
+        'workflow':   'Playbook',
+        'dashboard':  'Pulse',
+        'analytics':  'Data',
+        'capacity':   'Capacity',
+        'status':     'State',
+        'priority':   'Risk',
+        'contributor':'Team',
+        'gantt':      'Gantt',
+        'ideation':   'Ideas',
+        'spikes':     'Spikes'
     };
 
     if (overrides[viewId]) return overrides[viewId];
@@ -414,7 +450,7 @@ function renderWorkflowNav() {
 
                     return `
                                             <button 
-                                                onclick="switchView('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');" 
+                                                onclick="window.currentActiveView='${view}'; switchView('${view}'); if(typeof renderViewSubtabs==='function') renderViewSubtabs('${view}'); document.getElementById('workflow-nav-container').classList.add('hidden'); document.getElementById('strategy-backdrop').classList.add('hidden');"
                                                 class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${isViewActive ? 'bg-[var(--stage-color)] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-[var(--stage-color)]/10 hover:text-[var(--stage-color)]'}"
                                                 title="Open ${viewLabels[view] || view}"
                                             >

@@ -461,7 +461,7 @@ summary::-webkit-details-marker {
     font-size: 1rem;
     letter-spacing: -0.025em;
     position: sticky;
-    top: 96px;
+    top: 92px;
     z-index: 20;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
@@ -4859,21 +4859,28 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
    APP BAR — 2-Row Navigation System
    ================================================================ */
 
-/* Row 1: App bar */
+/* Row 1: App bar — light glassmorphic surface */
+#command-strip {
+    background: rgba(255,255,255,0.98);
+    border-bottom: 1px solid rgba(226,232,240,0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
 .app-bar {
     max-width: 1720px; margin: 0 auto; height: 48px; padding: 0 16px;
     display: flex; align-items: center; gap: 12px; justify-content: space-between;
+    background: transparent;
 }
 .app-bar-left  { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .app-bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-/* Breadcrumb chain: Team › Project › Track */
+/* Breadcrumb chain: Team / Project / Track */
 .nav-breadcrumb-chain {
     display: flex; align-items: center; gap: 2px;
 }
 .nav-chain-sep {
-    color: #cbd5e1; font-size: 0.8rem; line-height: 1;
-    pointer-events: none; user-select: none; padding: 0 1px;
+    color: #cbd5e1; font-size: 0.75rem; line-height: 1;
+    pointer-events: none; user-select: none; padding: 0 2px; font-weight: 400;
 }
 /* Unified nav select — borderless breadcrumb style */
 .nav-select {
@@ -4885,7 +4892,8 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     background-repeat: no-repeat; background-position: right 3px center;
     transition: color 0.15s; max-width: 160px;
 }
-.nav-select:hover, .nav-select:focus { color: #4f46e5; }
+.nav-select:hover { color: #4f46e5; }
+.nav-select:focus { color: #4f46e5; outline: 2px solid #818cf8; outline-offset: 2px; border-radius: 4px; }
 
 /* Unified Strategic Ribbon */
 .strategic-cluster {
@@ -4930,8 +4938,10 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
     border-radius: 8px; border: 1px solid transparent; color: #94a3b8;
     background: transparent; cursor: pointer; transition: all 0.15s; font-size: 1rem;
+    min-width: 44px; min-height: 44px; /* touch target */
 }
 .app-bar-gear:hover { background: #f1f5f9; border-color: #e2e8f0; color: #0f172a; }
+.app-bar-gear:focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; }
 
 /* KP logo badge */
 .kp-logo {
@@ -4939,7 +4949,7 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     background: linear-gradient(135deg, #4f46e5, #6366f1);
     color: white; display: flex; align-items: center; justify-content: center;
     font-size: 10px; font-weight: 900; font-style: italic; letter-spacing: -0.04em;
-    box-shadow: 0 2px 8px rgba(79,70,229,0.35); flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.5); flex-shrink: 0;
 }
 
 /* Project (track) selector */
@@ -4978,12 +4988,13 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 
 /* Row 2: View chips (left) + filter controls (right) */
 .view-subtabs-bar {
-    height: 44px; padding: 0 16px;
+    height: 40px; padding: 0 16px;
     display: flex; align-items: center;
-    background: rgba(248, 250, 252, 0.98);
-    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(248, 250, 252, 0.99);
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    overflow: hidden;
+    overflow: visible; /* must not clip .nav-dropdown which appears below the bar */
+    position: relative; z-index: 101;
 }
 /* Left scrollable zone for view tab chips */
 .view-subtabs-chips {
@@ -5000,7 +5011,9 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 }
 .nav-tag-pills {
     display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    max-width: 280px; overflow-x: auto; scrollbar-width: none;
 }
+.nav-tag-pills::-webkit-scrollbar { display: none; }
 /* Container for each filter/snapshot button + its dropdown */
 .nav-filter-slot { position: relative; }
 /* Compact pill buttons for Filters / Snapshots */
@@ -5027,30 +5040,38 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 .nav-dropdown.open { display: block; }
 
 .view-subtab {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 12px;
-    font-size: 0.7rem; font-weight: 800;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    background: rgba(241, 245, 249, 0.6);
-    color: #64748b;
-    cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 8px;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer; transition: all 0.15s ease;
     white-space: nowrap;
+    /* Ensure 44px touch target height without affecting visual */
+    min-height: 32px; align-items: center;
 }
+/* Hide emoji in chips — text label only for clean enterprise look */
+.view-subtab .subtab-emoji { display: none; }
 
 .view-subtab:hover {
-    background: #fff;
-    color: #1e293b;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-    border-color: #c7d2fe;
+    background: #f8fafc;
+    color: #334155;
+    border-color: #e2e8f0;
 }
 
 .view-subtab-active {
-    background: var(--active-color, #4f46e5);
-    color: white !important;
-    border-color: var(--active-color, #4f46e5);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    color: #1e293b !important;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     font-weight: 900;
+    /* Left-border accent — the key visual signal */
+    border-left: 3px solid var(--active-color, #4f46e5) !important;
+    padding-left: 10px; /* compensate for thicker border */
+}
+.view-subtab:focus-visible {
+    outline: 2px solid #818cf8; outline-offset: 1px;
 }
 
 /* Mode segmented control */
@@ -5060,13 +5081,15 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 }
 .mode-seg-btn {
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 8px; border-radius: 8px; border: none;
+    padding: 4px 10px; border-radius: 8px; border: none;
     font-size: 0.65rem; font-weight: 700;
     background: transparent; color: #64748b; cursor: pointer; transition: all 0.15s;
+    min-height: 28px;
 }
 .mode-seg-btn:hover { color: #0f172a; }
 .mode-seg-active { background: white; color: #0f172a; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 .mode-seg-label { font-size: 0.6rem; }
+.mode-seg-btn:focus-visible { outline: 2px solid #818cf8; outline-offset: 1px; border-radius: 6px; }
 @media (max-width: 480px) { .mode-seg-label { display: none; } }
 
 /* Dev user picker modal */
@@ -5785,7 +5808,7 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     color: white;
     font-size: 12px;
     position: sticky;
-    top: 96px;
+    top: 92px;
     z-index: 80;
     border-bottom: 1px solid rgba(255,255,255,0.15);
     box-shadow: 0 2px 8px rgba(79,70,229,0.2);
@@ -6851,3 +6874,107 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 .sp-admin-tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
 
 /* ── Team / Project / Track nav chain — styling via .nav-select ── */
+
+/* ── Density Mode System ── */
+/* Default density is set by component CSS above */
+/* Compact mode: tighter rows and smaller type in views */
+[data-density="compact"] .item-card,
+[data-density="compact"] .kanban-card,
+[data-density="compact"] .backlog-item {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+}
+[data-density="compact"] .track-header { font-size: 0.7rem; }
+[data-density="compact"] .view-subtabs-bar { height: 36px; }
+[data-density="compact"] .view-subtab { padding: 3px 9px; font-size: 0.62rem; }
+
+/* Comfortable mode: more breathing room */
+[data-density="comfortable"] .item-card,
+[data-density="comfortable"] .kanban-card,
+[data-density="comfortable"] .backlog-item {
+    padding: 14px 16px;
+    font-size: 0.85rem;
+}
+[data-density="comfortable"] .view-subtabs-bar { height: 48px; }
+[data-density="comfortable"] .view-subtab { padding: 8px 16px; font-size: 0.72rem; }
+
+/* Density toggle button in settings */
+.density-toggle-group {
+    display: flex; align-items: center; gap: 4px;
+    background: #f1f5f9; border-radius: 8px; padding: 3px;
+}
+.density-toggle-btn {
+    padding: 4px 10px; border-radius: 6px; border: none;
+    font-size: 0.65rem; font-weight: 700; color: #64748b;
+    background: transparent; cursor: pointer; transition: all 0.12s;
+}
+.density-toggle-btn:hover { color: #1e293b; }
+.density-toggle-btn.active { background: white; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* ── Keyboard Shortcut Reference Sheet ── */
+.kbd-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+}
+.kbd-modal-overlay.open { display: flex; }
+.kbd-modal {
+    background: #fff; border-radius: 16px;
+    padding: 24px; max-width: 540px; width: 92%;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.2);
+    animation: modalEnter 0.18s ease;
+    max-height: 80vh; overflow-y: auto;
+}
+.kbd-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+}
+.kbd-modal-title {
+    font-size: 0.8rem; font-weight: 900; color: #0f172a;
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+.kbd-close-btn {
+    width: 28px; height: 28px; border-radius: 8px; border: none;
+    background: #f1f5f9; color: #64748b; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; transition: all 0.12s;
+}
+.kbd-close-btn:hover { background: #e2e8f0; color: #0f172a; }
+.kbd-section-title {
+    font-size: 0.65rem; font-weight: 800; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin: 12px 0 6px;
+}
+.kbd-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #f1f5f9;
+}
+.kbd-row:last-child { border-bottom: none; }
+.kbd-desc { font-size: 0.75rem; color: #475569; }
+.kbd-keys { display: flex; gap: 4px; align-items: center; }
+kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 2px 7px; border-radius: 5px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 0 #cbd5e1;
+    font-size: 0.68rem; font-weight: 700; color: #334155;
+    font-family: inherit; min-width: 22px;
+}
+
+/* ── Mobile responsive nav ── */
+@media (max-width: 640px) {
+    .nav-breadcrumb-chain .nav-chain-sep,
+    .nav-breadcrumb-chain #project-filter,
+    .nav-breadcrumb-chain #global-team-filter {
+        display: none;
+    }
+    .strategic-cluster { display: none; }
+    .app-bar { gap: 8px; padding: 0 12px; }
+    #main-content { padding-top: 88px; }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+    .nav-select { max-width: 100px; }
+}
+@media (min-width: 1440px) {
+    .app-bar, .view-subtabs-bar { max-width: 1600px; margin: 0 auto; }
+}

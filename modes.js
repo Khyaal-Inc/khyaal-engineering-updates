@@ -172,7 +172,21 @@ function renderViewSubtabs(activeView) {
     const availableModeViews = MODE_CONFIG[mode]?.availableViews || [];
 
     // Filter stage views by what's available for this persona
-    const views = stage.views.filter(v => availableModeViews.includes(v));
+    let views = stage.views.filter(v => availableModeViews.includes(v));
+
+    // If current stage has no views for this mode, fall back to finding the stage
+    // that contains the active view — avoids blank nav during init race conditions
+    if (views.length === 0) {
+        const fallbackView = activeView || window.currentActiveView
+        if (fallbackView) {
+            for (const [key, s] of Object.entries(WORKFLOW_STAGES)) {
+                if (s.views.includes(fallbackView)) {
+                    views = s.views.filter(v => availableModeViews.includes(v))
+                    break
+                }
+            }
+        }
+    }
 
     if (views.length === 0) {
         container.innerHTML = '';
@@ -194,16 +208,16 @@ function renderViewSubtabs(activeView) {
         };
 
         const label = viewLabels[viewId] || meta?.label || viewId;
-        const emoji = label.includes(' ') ? label.split(' ')[0] : '';
-        const text = label.includes(' ') ? label.split(' ')[1] : label;
+        // Strip emoji prefix — text-only chips for clean enterprise nav
+        const textOnly = label.replace(/^[\p{Emoji}\p{Emoji_Presentation}\uFE0F\u20D0-\u20FF\s]+/u, '').trim() || label;
 
         return `
-            <button onclick="switchView('${viewId}')" id="btn-${viewId}"
-                class="view-subtab ${isActive ? 'view-subtab-active' : ''} group"
+            <button onclick="window.currentActiveView='${viewId}'; switchView('${viewId}'); if(typeof updateCommandStripNav==='function') updateCommandStripNav(); if(typeof renderViewSubtabs==='function') renderViewSubtabs('${viewId}');" id="btn-${viewId}"
+                class="view-subtab ${isActive ? 'view-subtab-active' : ''}"
                 style="--active-color: ${stage.color}"
+                aria-label="${textOnly}" title="${textOnly}"
             >
-                <span class="text-[12px] group-hover:scale-110 transition-transform">${emoji}</span>
-                <span class="uppercase font-extrabold tracking-wider text-[10px]">${text}</span>
+                <span>${textOnly}</span>
             </button>`;
     }).join('');
 }
