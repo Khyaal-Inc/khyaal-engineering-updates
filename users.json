@@ -5,7 +5,23 @@
       "name": "Gautam",
       "passwordHash": "a3377e9d5cf5fef520cdcd102f4107afc1bb7fb281b63ab92dabb1d5b9e80004",
       "grants": [
-        { "projectId": "default", "name": "Khyaal Engineering", "mode": "pm" }
+        {
+          "projectId": "default",
+          "name": "Khyaal Engineering",
+          "mode": "pm"
+        }
+      ]
+    },
+    {
+      "id": "vivek",
+      "name": "Vivek",
+      "passwordHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "grants": [
+        {
+          "projectId": "default",
+          "name": "Khyaal Engineering",
+          "mode": "dev"
+        }
       ]
     }
   ]
