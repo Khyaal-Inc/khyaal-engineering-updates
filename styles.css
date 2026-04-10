@@ -461,7 +461,7 @@ summary::-webkit-details-marker {
     font-size: 1rem;
     letter-spacing: -0.025em;
     position: sticky;
-    top: 48px;
+    top: 96px;
     z-index: 20;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
@@ -5727,7 +5727,7 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     color: white;
     font-size: 12px;
     position: sticky;
-    top: 48px;
+    top: 96px;
     z-index: 80;
     border-bottom: 1px solid rgba(255,255,255,0.15);
     box-shadow: 0 2px 8px rgba(79,70,229,0.2);
