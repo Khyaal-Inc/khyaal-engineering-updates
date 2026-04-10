@@ -241,6 +241,21 @@ Existing tools solve parts of the problem:
 - Triggered automatically on **Sprint Close** (`saveSprintClose`) and **Release Ship** (`shipRelease`) ceremonies
 - `overallProgress` is the authoritative value; `calculateOKRProgress()` (manual KR average) is the fallback when no linked epics exist
 
+#### F29 — Capacity Planning Enhancements (Velocity Comparison, Unpointed Warning, Workload Bars) ✅ Shipped
+
+- `capacity-planning.js` — `computeAvgVelocity()`, `buildVelocityComparisonBanner()`, `buildUnpointedWarning()`, `buildWorkloadBars()` added; `buildSprintTotals()` bug fixed (bad destructure); all three panels wired into `renderCapacityView()` PM/Dev path
+- `styles.css` — `.cap-velocity-*`, `.cap-unpointed-*`, `.cap-workload-*`, `.cap-bar-*` CSS blocks added
+
+**Velocity banner**: compares active sprint planned SP vs avg completed-sprint velocity (last 4 sprints); flags risk at >120%, caution at >100%, green when within range. Shown between header ribbon and summary cards.
+
+**Unpointed warning**: walks active sprint items for `!storyPoints || storyPoints === 0`; renders amber banner with pill list of item titles (max 6 + overflow count). Hidden when no unpointed items.
+
+**Workload bars**: per-contributor bar showing committed SP vs configurable sprint capacity (default 20, override via `UPDATE_DATA.metadata.sprintCapacity`). Colour-coded: green = under, amber = near (>85%), red = over (>115%). A vertical line marks the capacity threshold on the bar track.
+
+**Bug fixed**: `buildSprintTotals()` had `Object.entries(byprint =>` (syntax that silently produced empty iterations) — corrected to `Object.entries(bysprint).forEach(([sid, stats]) =>`.
+
+---
+
 #### F28 — OKR Progress Dashboard Card (Status Badge, Epic Trace, Sprint Feed) ✅ Shipped
 
 - `executive-dashboard.js` — `computeOKRStatus()` added; `renderOKRSummary()` fully rewritten with epic contribution rows, active sprint feed, status badges, and at-risk header pill

@@ -57,13 +57,168 @@ function buildSprintTotals(matrix, sprintIds) {
     const totals = {}
     sprintIds.forEach(id => totals[id] = { points: 0, done: 0 })
     Object.values(matrix).forEach(bysprint => {
-        Object.entries(byprint => {
+        Object.entries(bysprint).forEach(([sid, stats]) => {
             if (!totals[sid]) return
             totals[sid].points += Math.round(stats.points)
             totals[sid].done   += Math.round(stats.done)
         })
     })
     return totals
+}
+
+/**
+ * Computes average velocity (completed points) from the last N closed sprints.
+ * Returns { avg, samples, closedSprints[] }
+ */
+function computeAvgVelocity(maxSamples) {
+    const sprints = UPDATE_DATA.metadata?.sprints || []
+    const closed = sprints
+        .filter(s => s.status === 'completed' || s.status === 'closed')
+        .slice(-maxSamples)
+
+    if (closed.length === 0) return { avg: 0, samples: 0, closedSprints: [] }
+
+    const closedIdSet = new Set(closed.map(s => s.id))
+    const matrix = buildCapacityMatrix(closedIdSet)
+    const totals = buildSprintTotals(matrix, closedIdSet)
+
+    let totalDone = 0
+    closed.forEach(s => { totalDone += (totals[s.id]?.done || 0) })
+    const avg = closed.length > 0 ? Math.round(totalDone / closed.length) : 0
+
+    return { avg, samples: closed.length, closedSprints: closed }
+}
+
+/**
+ * Builds a banner comparing active sprint planned scope vs avg velocity.
+ * Risk threshold: planned > velocity × 1.2
+ */
+function buildVelocityComparisonBanner(activeSprint, activeSprintTotalPts, velocity) {
+    if (!activeSprint || velocity.samples === 0) return ''
+
+    const planned = activeSprintTotalPts
+    const avg = velocity.avg
+    const ratio = avg > 0 ? planned / avg : null
+
+    let statusHtml = ''
+    if (ratio === null) {
+        statusHtml = `<span class="cap-velocity-badge cap-velocity-unknown">No velocity data</span>`
+    } else if (ratio > 1.2) {
+        const overPct = Math.round((ratio - 1) * 100)
+        statusHtml = `<span class="cap-velocity-badge cap-velocity-risk">⚠ ${overPct}% over avg velocity — scope risk</span>`
+    } else if (ratio > 1.0) {
+        statusHtml = `<span class="cap-velocity-badge cap-velocity-caution">~ Slightly above avg — watchable</span>`
+    } else {
+        statusHtml = `<span class="cap-velocity-badge cap-velocity-ok">✓ Within velocity range</span>`
+    }
+
+    return `
+        <div class="cap-velocity-banner">
+            <div class="cap-velocity-row">
+                <span class="cap-velocity-label">Sprint scope</span>
+                <span class="cap-velocity-val">${planned} pts</span>
+                <span class="cap-velocity-sep">vs</span>
+                <span class="cap-velocity-label">Avg velocity</span>
+                <span class="cap-velocity-val">${avg} pts</span>
+                <span class="cap-velocity-label cap-velocity-sample">(${velocity.samples} sprint${velocity.samples !== 1 ? 's' : ''})</span>
+                ${statusHtml}
+            </div>
+        </div>`
+}
+
+/**
+ * Builds a warning row listing unpointed items in the active sprint.
+ */
+function buildUnpointedWarning(activeSprint) {
+    if (!activeSprint) return ''
+
+    const unpointed = []
+    ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(item => {
+        if (item.sprintId !== activeSprint.id) return
+        if (!item.storyPoints || parseInt(item.storyPoints) === 0) {
+            unpointed.push(item)
+        }
+    })))
+
+    if (unpointed.length === 0) return ''
+
+    const pills = unpointed.slice(0, 6).map(item =>
+        `<span class="cap-unpointed-pill">${item.title || item.id}</span>`
+    ).join('')
+    const overflow = unpointed.length > 6
+        ? `<span class="cap-unpointed-more">+${unpointed.length - 6} more</span>`
+        : ''
+
+    return `
+        <div class="cap-unpointed-banner">
+            <span class="cap-unpointed-icon">⚠</span>
+            <span class="cap-unpointed-count">${unpointed.length} unpointed item${unpointed.length !== 1 ? 's' : ''} in active sprint:</span>
+            <div class="cap-unpointed-pills">${pills}${overflow}</div>
+        </div>`
+}
+
+/**
+ * Builds per-contributor workload bars vs a weekly capacity threshold.
+ * Default capacity: 20 SP per sprint (configurable via UPDATE_DATA.metadata.sprintCapacity).
+ */
+function buildWorkloadBars(activeSprint, matrix) {
+    if (!activeSprint) return ''
+
+    const capacity = (UPDATE_DATA.metadata?.sprintCapacity) || 20
+    const contributors = Object.keys(matrix).sort()
+    const activeRows = contributors.filter(name => (matrix[name] || {})[activeSprint.id])
+
+    if (activeRows.length === 0) return ''
+
+    const bars = activeRows.map(name => {
+        const stats = matrix[name][activeSprint.id]
+        const pts = Math.round(stats.points)
+        const fillPct = Math.min(Math.round((pts / capacity) * 100), 100)
+        const overPct = pts > capacity ? Math.round(((pts - capacity) / capacity) * 100) : 0
+
+        let barCls, labelCls, statusLabel
+        if (pts > capacity * 1.15) {
+            barCls = 'cap-bar-over'; labelCls = 'cap-bar-label-over'; statusLabel = `${overPct}% over`
+        } else if (pts > capacity * 0.85) {
+            barCls = 'cap-bar-near'; labelCls = 'cap-bar-label-near'; statusLabel = 'near capacity'
+        } else {
+            barCls = 'cap-bar-ok'; labelCls = 'cap-bar-label-ok'; statusLabel = 'under capacity'
+        }
+
+        const colorClass = (typeof contributorColors !== 'undefined' && contributorColors[name])
+            ? contributorColors[name]
+            : 'bg-slate-100 text-slate-700'
+
+        return `
+            <div class="cap-workload-row">
+                <div class="cap-workload-name">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${colorClass}">${name}</span>
+                </div>
+                <div class="cap-workload-bar-wrap">
+                    <div class="cap-workload-bar-track">
+                        <div class="cap-workload-bar-fill ${barCls}" style="width:${fillPct}%"></div>
+                        <div class="cap-workload-capacity-line" style="left:${Math.min(Math.round((capacity / Math.max(pts, capacity)) * 100), 100)}%"></div>
+                    </div>
+                </div>
+                <div class="cap-workload-pts">${pts}<span class="cap-workload-pts-cap">/${capacity}</span></div>
+                <div class="cap-workload-status ${labelCls}">${statusLabel}</div>
+            </div>`
+    }).join('')
+
+    return `
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-black text-slate-800">Workload vs Capacity</h3>
+                <span class="text-[10px] text-slate-400 font-bold">Threshold: ${capacity} pts / sprint</span>
+            </div>
+            <div class="space-y-2.5">${bars}</div>
+            <div class="mt-3 flex items-center gap-5 text-[10px] text-slate-500 font-bold">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-2 rounded cap-bar-ok inline-block"></span> Under</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-2 rounded cap-bar-near inline-block"></span> Near (&gt;85%)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-2 rounded cap-bar-over inline-block"></span> Over (&gt;115%)</span>
+                <span class="ml-auto text-slate-400">| = sprint capacity threshold</span>
+            </div>
+        </div>`
 }
 
 // ---- HTML builders ----
@@ -306,6 +461,10 @@ function renderCapacityView() {
         })
     })
 
+    const activeSprint = sprints.find(s => s.status === 'active') || null
+    const activeSprintTotalPts = activeSprint ? (totals[activeSprint.id]?.points || 0) : 0
+    const velocity = computeAvgVelocity(4)
+
     const currentUser = typeof window.CURRENT_USER !== 'undefined' && window.CURRENT_USER?.name
         ? window.CURRENT_USER.name
         : null
@@ -330,7 +489,13 @@ function renderCapacityView() {
                 </div>
             </div>
 
+            ${buildVelocityComparisonBanner(activeSprint, activeSprintTotalPts, velocity)}
+
+            ${buildUnpointedWarning(activeSprint)}
+
             ${buildCapacitySummaryCards(sprints, matrix)}
+
+            ${buildWorkloadBars(activeSprint, matrix)}
 
             ${devNotice}
 
