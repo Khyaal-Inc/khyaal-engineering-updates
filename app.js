@@ -37,8 +37,8 @@ function normalizeData() {
         projEl.innerHTML = '<option value="">All Projects</option>' +
             projects.map(p => `<option value="${p.id}" ${p.id === currentProjVal ? 'selected' : ''}>${p.name}</option>`).join('')
         projEl.dataset.populated = 'true'
-        // Hide if only one project
-        projEl.style.display = projects.length <= 1 ? 'none' : ''
+        // Always show — even with 1 project it serves as a breadcrumb label
+        projEl.style.display = ''
     }
 
     // 1b. Populate #global-team-filter (track filter) from active project's tracks

@@ -750,7 +750,7 @@ function renderTeamSwitcher() {
     const el = document.getElementById('team-switcher')
     if (!el) return
     const reg = window.PROJECT_REGISTRY || []
-    if (reg.length <= 1) { el.style.display = 'none'; return }
+    // Always show — even with 1 team it serves as a breadcrumb label
     el.style.display = ''
     el.innerHTML = reg.map(p =>
         `<option value="${p.id}" ${p.id === (window.ACTIVE_PROJECT_ID || 'default') ? 'selected' : ''}>${p.name}</option>`
