@@ -686,10 +686,10 @@ window.spAdminAddProject = function() {
     if (!Array.isArray(window.UPDATE_DATA.projects)) window.UPDATE_DATA.projects = []
     const name = prompt('Team name (e.g. "Mobile App"):', '')?.trim()
     if (!name) return
-    const idRaw = prompt('Project ID (lowercase, no spaces):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
+    const idRaw = prompt('Team ID (lowercase, no spaces):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
     if (!idRaw) return
     const id = idRaw.replace(/[^a-z0-9-]/g, '-')
-    if (window.UPDATE_DATA.projects.some(p => p.id === id)) { showToast(`Project ID "${id}" already exists`, 'error'); return }
+    if (window.UPDATE_DATA.projects.some(p => p.id === id)) { showToast(`Team ID "${id}" already exists`, 'error'); return }
     window.UPDATE_DATA.projects.push({ id, name, tracks: [] })
     // Reset project filter so it repopulates
     const projEl = document.getElementById('project-filter')
@@ -707,15 +707,15 @@ window.spAdminEditProject = function(pi) {
     const projEl = document.getElementById('project-filter')
     if (projEl) projEl.dataset.populated = ''
     if (typeof normalizeData === 'function') normalizeData()
-    showToast(`Project "${newName}" updated — save data to persist`, 'info')
+    showToast(`Team "${newName}" updated — save data to persist`, 'info')
     _renderSpAdminBody()
 }
 window.spAdminDeleteProject = function(pi) {
     const projects = window.UPDATE_DATA?.projects || []
     const proj = projects[pi]
     if (!proj) return
-    if (projects.length <= 1) { showToast('Cannot delete the last project', 'error'); return }
-    if (!confirm(`Delete project "${proj.name}"? All its tracks and items will be removed from this team's data.`)) return
+    if (projects.length <= 1) { showToast('Cannot delete the last team', 'error'); return }
+    if (!confirm(`Delete team "${proj.name}"? All its tracks and items will be removed from this team's data.`)) return
     projects.splice(pi, 1)
     const projEl = document.getElementById('project-filter')
     if (projEl) { projEl.dataset.populated = ''; projEl.value = '' }
