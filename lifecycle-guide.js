@@ -829,14 +829,75 @@ function getCadenceNudge() {
     return nudges[0]
 }
 
+// Returns a coach signal derived from live sprint state (higher priority than cadence nudge)
+function getSprintCoachSignal() {
+    const data = window.UPDATE_DATA
+    if (!data) return null
+    const sprints = data.metadata?.sprints || []
+    const activeSprint = sprints.find(s => s.status === 'active')
+    const okrs = data.metadata?.okrs || []
+    const releases = data.metadata?.releases || []
+
+    // Signal 1: Active sprint ending within 2 days
+    if (activeSprint?.endDate) {
+        const daysLeft = Math.ceil((new Date(activeSprint.endDate) - new Date()) / 86400000)
+        if (daysLeft >= 0 && daysLeft <= 2) {
+            return { icon: '🏁', label: 'Sprint ending soon', msg: `"${activeSprint.name}" ends in ${daysLeft === 0 ? 'today' : daysLeft + 'd'} — run retrospective`, view: 'sprint', color: '#f59e0b', type: 'sprint-end' }
+        }
+    }
+
+    // Signal 2: No active OKRs
+    if (okrs.length === 0 || !okrs.some(o => o.status === 'active')) {
+        return { icon: '🎯', label: 'No active OKRs', msg: 'Set your quarterly objectives to align the team', view: 'okr', color: '#8b5cf6', type: 'no-okrs' }
+    }
+
+    // Signal 3: Active sprint but no 'now' items
+    if (activeSprint) {
+        const allItems = []
+        ;(data.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => allItems.push(i))))
+        const hasNow = allItems.some(i => i.sprintId === activeSprint.id && i.status === 'now')
+        if (!hasNow) {
+            return { icon: '📋', label: 'Sprint has no active items', msg: 'Pull items from backlog into this sprint', view: 'backlog', color: '#3b82f6', type: 'empty-sprint' }
+        }
+    }
+
+    // Signal 4: In Ship stage but no in-progress release
+    const currentStage = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : null
+    if (currentStage === 'review' && !releases.some(r => r.status === 'in-progress' || r.status === 'planned')) {
+        return { icon: '📦', label: 'No release tracked', msg: 'Create a release to track what ships this sprint', view: 'releases', color: '#f59e0b', type: 'no-release' }
+    }
+
+    return null
+}
+window.getSprintCoachSignal = getSprintCoachSignal
+
 function renderCadenceNudgeBanner() {
     const bar = document.getElementById('cadence-nudge-bar')
     if (!bar) return
+
+    // Sprint signals take priority over day-of-week cadence nudges
+    const sprintSignal = getSprintCoachSignal()
+    if (sprintSignal) {
+        bar.style.display = 'flex'
+        bar.style.setProperty('--cnb-color', sprintSignal.color)
+        bar.innerHTML = `
+            <span class="cnb-icon">${sprintSignal.icon}</span>
+            <div class="cnb-body">
+                <span class="cnb-label">${sprintSignal.label}</span>
+                <span class="cnb-msg">${sprintSignal.msg}</span>
+            </div>
+            <button class="cnb-cta" onclick="switchView('${sprintSignal.view}');document.getElementById('cadence-nudge-bar').style.display='none'">${sprintSignal.label.split(' ')[0]} →</button>
+        `
+        return
+    }
+
+    // Fall back to day-of-week cadence nudge
     const nudge = getCadenceNudge()
     if (!nudge) { bar.style.display = 'none'; return }
     const dismissed = localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
     if (dismissed) { bar.style.display = 'none'; return }
     bar.style.display = 'flex'
+    bar.style.setProperty('--cnb-color', '#6366f1')
     bar.innerHTML = `
         <span class="cnb-icon">${nudge.icon}</span>
         <div class="cnb-body">
