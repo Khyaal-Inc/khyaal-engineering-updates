@@ -5084,55 +5084,86 @@ async function initArchiveFilter() {
         });
     });
 
-    const container = document.getElementById('archive-filter');
-    if (!container) return;
+    // ── Filters button → #nav-filter-btn ────────────────────────────────────
+    const filterSlot = document.getElementById('nav-filter-btn')
+    if (filterSlot) {
+        let filterRows = `<div class="flex flex-wrap gap-1.5 items-center">`;
+        filterRows += `<button onclick="filterByDate('all')" class="archive-btn active">All</button>`;
+        if (hasLegacy) filterRows += `<button onclick="filterByDate('Legacy')" class="archive-btn">Legacy</button>`;
+        Array.from(dates).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+            filterRows += `<button onclick="filterByDate('${date}')" class="archive-btn">${date}</button>`;
+        });
+        filterRows += `</div>`;
 
-    let innerHtml = '<div class="flex flex-wrap gap-2 items-center">';
-    innerHtml += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Filters:</span>';
-    innerHtml += '<button onclick="filterByDate(\'all\')" class="archive-btn active">All Entries</button>';
-
-    if (hasLegacy) {
-        innerHtml += '<button onclick="filterByDate(\'Legacy\')" class="archive-btn">Legacy</button>';
+        filterSlot.innerHTML = `
+            <button class="nav-pill-btn" onclick="toggleNavFilterPanel(this)" aria-label="Date filters">
+                📅 Filters
+            </button>
+            <div class="nav-dropdown" id="nav-filter-panel">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Date Filters</p>
+                ${filterRows}
+            </div>`
     }
 
-    Array.from(dates).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
-        innerHtml += `<button onclick="filterByDate('${date}')" class="archive-btn">${date}</button>`;
-    });
-    innerHtml += '</div>';
-
-    // Add Physical Archives Section
-    let hasSnapshots = false
-    try {
-        const jwt = localStorage.getItem('khyaal_site_auth');
-        const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID || 'default'}&filePath=archive`, {
-            headers: { 'Authorization': `Bearer ${jwt}` }
-        });
-        if (response.ok) {
-            const { data: files } = await response.json();
-            const archives = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
-
-            if (archives.length > 0) {
-                hasSnapshots = true
-                innerHtml += '<div class="flex flex-wrap gap-2 items-center mt-3 pt-3 border-t border-slate-100 w-full">';
-                innerHtml += '<span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">Snapshots:</span>';
-
-                if (window.loadingArchive) {
-                    innerHtml += `<button onclick="window.location.search=''" class="archive-btn bg-slate-900 text-white p-2 text-[10px] rounded">Live</button>`;
+    // ── Snapshots button → #nav-snapshots-btn ───────────────────────────────
+    const snapshotsSlot = document.getElementById('nav-snapshots-btn')
+    if (snapshotsSlot) {
+        try {
+            const jwt = localStorage.getItem('khyaal_site_auth');
+            const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${window.ACTIVE_PROJECT_ID || 'default'}&filePath=archive`, {
+                headers: { 'Authorization': `Bearer ${jwt}` }
+            });
+            if (response.ok) {
+                const { data: files } = await response.json();
+                const archives = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
+                if (archives.length > 0) {
+                    let snapRows = `<div class="flex flex-wrap gap-1.5 items-center">`;
+                    if (window.loadingArchive) {
+                        snapRows += `<button onclick="window.location.search=''" class="archive-btn">◉ Live</button>`;
+                    }
+                    archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
+                        const displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim();
+                        const isActive = window.loadingArchive && window.loadingArchive.includes(file.name);
+                        const activeClass = isActive ? 'ring-2 ring-indigo-500' : '';
+                        snapRows += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700">${displayName}</button>`;
+                    });
+                    snapRows += `</div>`;
+                    snapshotsSlot.innerHTML = `
+                        <button class="nav-pill-btn" onclick="toggleNavSnapshotsPanel(this)" aria-label="Snapshots">
+                            📸 ${archives.length}
+                        </button>
+                        <div class="nav-dropdown" id="nav-snapshots-panel">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Snapshots</p>
+                            ${snapRows}
+                        </div>`
                 }
-
-                archives.sort((a, b) => b.name.localeCompare(a.name)).forEach(file => {
-                    let displayName = file.name.replace('.json', '').replace(/-/g, ' ').trim();
-                    const isActive = window.loadingArchive && window.loadingArchive.includes(file.name);
-                    const activeClass = isActive ? 'ring-2 ring-indigo-500' : '';
-                    innerHtml += `<button onclick="loadArchive('${file.name}')" class="archive-btn ${activeClass} bg-indigo-50 text-indigo-700 p-2 text-[10px] rounded uppercase font-bold">${displayName}</button>`;
-                });
-                innerHtml += '</div>';
             }
-        }
-    } catch (e) { }
+        } catch (e) { }
+    }
+}
 
-    const summaryLabel = hasSnapshots ? '📅 Filters &amp; Snapshots' : '📅 Date Filters'
-    container.innerHTML = `<details class="archive-filter-toggle"><summary class="archive-filter-summary">${summaryLabel}</summary><div class="archive-filter-body">${innerHtml}</div></details>`;
+window.toggleNavFilterPanel = function(btn) {
+    const panel = document.getElementById('nav-filter-panel')
+    if (!panel) return
+    const isOpen = panel.classList.toggle('open')
+    btn.classList.toggle('active', isOpen)
+    document.getElementById('nav-snapshots-panel')?.classList.remove('open')
+    if (isOpen) {
+        const close = (e) => { if (!panel.closest('.nav-filter-slot').contains(e.target)) { panel.classList.remove('open'); btn.classList.remove('active'); document.removeEventListener('click', close) } }
+        setTimeout(() => document.addEventListener('click', close), 0)
+    }
+}
+
+window.toggleNavSnapshotsPanel = function(btn) {
+    const panel = document.getElementById('nav-snapshots-panel')
+    if (!panel) return
+    const isOpen = panel.classList.toggle('open')
+    btn.classList.toggle('active', isOpen)
+    document.getElementById('nav-filter-panel')?.classList.remove('open')
+    if (isOpen) {
+        const close = (e) => { if (!panel.closest('.nav-filter-slot').contains(e.target)) { panel.classList.remove('open'); btn.classList.remove('active'); document.removeEventListener('click', close) } }
+        setTimeout(() => document.addEventListener('click', close), 0)
+    }
 }
 
 function filterByDate(dateRange) {

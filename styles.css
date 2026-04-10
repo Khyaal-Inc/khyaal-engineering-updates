@@ -4862,10 +4862,30 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 /* Row 1: App bar */
 .app-bar {
     max-width: 1720px; margin: 0 auto; height: 48px; padding: 0 16px;
-    display: flex; align-items: center; gap: 8px; justify-content: space-between;
+    display: flex; align-items: center; gap: 12px; justify-content: space-between;
 }
-.app-bar-left  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.app-bar-left  { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .app-bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* Breadcrumb chain: Team › Project › Track */
+.nav-breadcrumb-chain {
+    display: flex; align-items: center; gap: 2px;
+}
+.nav-chain-sep {
+    color: #cbd5e1; font-size: 0.8rem; line-height: 1;
+    pointer-events: none; user-select: none; padding: 0 1px;
+}
+/* Unified nav select — borderless breadcrumb style */
+.nav-select {
+    font-size: 0.72rem; font-weight: 700; color: #334155;
+    background: transparent; border: none;
+    padding: 3px 18px 3px 4px; cursor: pointer; outline: none;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 3px center;
+    transition: color 0.15s; max-width: 160px;
+}
+.nav-select:hover, .nav-select:focus { color: #4f46e5; }
 
 /* Unified Strategic Ribbon */
 .strategic-cluster {
@@ -4956,17 +4976,55 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 @media (max-width: 680px) { .stage-tab-label { display: none; } }
 @media (max-width: 480px) { .stage-tab { padding: 5px 7px; } }
 
-/* Row 2: Tactical View Chips (Outside) */
+/* Row 2: View chips (left) + filter controls (right) */
 .view-subtabs-bar {
-    height: 48px; padding: 0 16px;
-    display: flex; align-items: center; gap: 8px;
+    height: 44px; padding: 0 16px;
+    display: flex; align-items: center;
     background: rgba(248, 250, 252, 0.98);
     border-top: 1px solid rgba(226, 232, 240, 0.8);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: hidden;
 }
-.view-subtabs-bar::-webkit-scrollbar { display: none; }
+/* Left scrollable zone for view tab chips */
+.view-subtabs-chips {
+    display: flex; align-items: center; gap: 6px;
+    flex: 1; overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; padding-right: 4px;
+}
+.view-subtabs-chips::-webkit-scrollbar { display: none; }
+/* Right-pinned filter zone */
+.nav-filter-zone {
+    display: flex; align-items: center; gap: 6px;
+    flex-shrink: 0; padding-left: 10px;
+    border-left: 1px solid rgba(226, 232, 240, 0.8);
+}
+.nav-tag-pills {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+/* Container for each filter/snapshot button + its dropdown */
+.nav-filter-slot { position: relative; }
+/* Compact pill buttons for Filters / Snapshots */
+.nav-pill-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 9999px;
+    font-size: 0.65rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: #64748b; background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.nav-pill-btn:hover { background: #fff; border-color: #c7d2fe; color: #4f46e5; }
+.nav-pill-btn.active { background: #ede9fe; border-color: #c4b5fd; color: #4f46e5; }
+/* Dropdown panel for filters / snapshots */
+.nav-dropdown {
+    display: none; position: absolute;
+    top: calc(100% + 6px); right: 0;
+    min-width: 260px; max-width: 400px;
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    padding: 12px; z-index: 500;
+}
+.nav-dropdown.open { display: block; }
 
 .view-subtab {
     display: inline-flex; align-items: center; gap: 8px;
@@ -6792,14 +6850,4 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
 .sp-admin-tab-btn:hover { color: #334155; }
 .sp-admin-tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
 
-/* ── Team / Project / Track nav chain ── */
-#team-switcher {
-    font-size: 0.75rem; font-weight: 700; color: #334155;
-    background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 0.5rem;
-    padding: 0.28rem 0.55rem; cursor: pointer; max-width: 160px;
-}
-#project-filter {
-    font-size: 0.75rem; font-weight: 600; color: #475569;
-    background: #f1f5f9; border: 1.5px solid #e2e8f0; border-radius: 0.5rem;
-    padding: 0.28rem 0.55rem; cursor: pointer; max-width: 160px;
-}
+/* ── Team / Project / Track nav chain — styling via .nav-select ── */

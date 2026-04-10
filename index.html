@@ -205,13 +205,17 @@
                 <!-- Left: Logo + Team/Track Selector Chain -->
                 <div class="app-bar-left">
                     <div class="kp-logo">KP</div>
-                    <select id="team-switcher" onchange="onTeamSwitcherChange(this.value)" title="Switch team" aria-label="Switch team"></select>
-                    <select id="project-filter" class="project-select" onchange="onProjectFilterChange()" title="Filter by project" aria-label="Filter by project">
-                        <option value="">All Projects</option>
-                    </select>
-                    <select id="global-team-filter" class="project-select" onchange="onProjectChange()" title="Filter by track" aria-label="Filter by track">
-                        <option value="">All Tracks</option>
-                    </select>
+                    <div class="nav-breadcrumb-chain">
+                        <select id="team-switcher" class="nav-select" onchange="onTeamSwitcherChange(this.value)" title="Switch team" aria-label="Switch team"></select>
+                        <span class="nav-chain-sep">›</span>
+                        <select id="project-filter" class="nav-select" onchange="onProjectFilterChange()" title="Filter by project" aria-label="Filter by project">
+                            <option value="">All Projects</option>
+                        </select>
+                        <span class="nav-chain-sep">›</span>
+                        <select id="global-team-filter" class="nav-select" onchange="onProjectChange()" title="Filter by track" aria-label="Filter by track">
+                            <option value="">All Tracks</option>
+                        </select>
+                    </div>
 
                     <div class="strategic-cluster">
                         <div id="mini-pipeline" class="flex gap-1"></div>
@@ -233,8 +237,15 @@
                 </div>
             </div>
 
-            <!-- Row 2: View Sub-tabs (stage-specific view switcher) -->
-            <div id="view-subtabs" class="view-subtabs-bar"></div>
+            <!-- Row 2: View chips (left, scrollable) + filter controls (right, pinned) -->
+            <div id="view-subtabs" class="view-subtabs-bar">
+                <div id="view-subtabs-chips" class="view-subtabs-chips"></div>
+                <div id="nav-filter-zone" class="nav-filter-zone">
+                    <div id="tag-filter-bar" class="nav-tag-pills"></div>
+                    <div id="nav-filter-btn" class="nav-filter-slot"></div>
+                    <div id="nav-snapshots-btn" class="nav-filter-slot"></div>
+                </div>
+            </div>
 
         </div>
 
@@ -259,11 +270,6 @@
             <div id="workflow-nav-container" class="hidden fixed inset-x-0 top-24 z-[100] flex justify-center p-4">
             </div>
 
-
-            <!-- Archive Filter -->
-            <div id="archive-filter" class="archive-filter">
-                <!-- Populated by JS -->
-            </div>
 
             <!-- Floating Legend (HUD) -->
             <div

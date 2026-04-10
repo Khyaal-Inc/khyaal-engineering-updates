@@ -154,15 +154,15 @@ function renderStageTabs(activeView) {
         }).join('');
 }
 
-// Render view sub-tabs into #view-subtabs
+// Render view sub-tabs into #view-subtabs-chips
 function renderViewSubtabs(activeView) {
-    const container = document.getElementById('view-subtabs');
+    const container = document.getElementById('view-subtabs-chips')
     if (!container) return;
 
     // Source of Truth: Use the strategic stage views
     const stageKey = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery';
     const stage = typeof WORKFLOW_STAGES !== 'undefined' ? WORKFLOW_STAGES[stageKey] : null;
-    
+
     if (!stage) {
         console.warn('Strategic stage metadata missing. Sub-tabs may be incomplete.');
         return;
@@ -170,18 +170,14 @@ function renderViewSubtabs(activeView) {
 
     const mode = currentMode || 'pm';
     const availableModeViews = MODE_CONFIG[mode]?.availableViews || [];
-    
+
     // Filter stage views by what's available for this persona
     const views = stage.views.filter(v => availableModeViews.includes(v));
 
     if (views.length === 0) {
-        container.style.display = 'none';
+        container.innerHTML = '';
         return;
     }
-    
-    container.style.display = 'flex';
-    container.style.gap = '8px';
-    container.style.padding = '12px 0';
 
     container.innerHTML = views.map(viewId => {
         const meta = VIEW_METADATA[viewId];
