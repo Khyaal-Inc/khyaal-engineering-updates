@@ -202,11 +202,12 @@
         <div id="command-strip" class="fixed top-0 left-0 right-0 z-[100]">
             <!-- Row 1: App Bar -->
             <div class="app-bar">
-                <!-- Left: Logo + Project Selector -->
+                <!-- Left: Logo + Team/Track Selector Chain -->
                 <div class="app-bar-left">
                     <div class="kp-logo">KP</div>
-                    <select id="global-team-filter" class="project-select" onchange="onProjectChange()" title="Filter by project">
-                        <option value="">📁 All Projects</option>
+                    <select id="team-switcher" onchange="onTeamSwitcherChange(this.value)" title="Switch team" aria-label="Switch team"></select>
+                    <select id="global-team-filter" class="project-select" onchange="onProjectChange()" title="Filter by track" aria-label="Filter by track">
+                        <option value="">All Tracks</option>
                     </select>
 
                     <div class="strategic-cluster">
@@ -223,7 +224,7 @@
                 <div class="app-bar-right">
                     <div id="header-blocker-badge"></div>
                     <div id="header-mode-switcher"></div>
-                    <button onclick="toggleCmsDrawer()" class="app-bar-gear" title="CMS Settings">
+                    <button onclick="openSettingsPanel()" class="app-bar-gear" title="Settings & Management">
                         <span class="text-base">⚙️</span>
                     </button>
                 </div>
@@ -232,44 +233,6 @@
             <!-- Row 2: View Sub-tabs (stage-specific view switcher) -->
             <div id="view-subtabs" class="view-subtabs-bar"></div>
 
-            <!-- Collapsible CMS Drawer -->
-            <div id="cms-drawer" class="hidden border-t border-slate-100 bg-slate-50/50">
-                <div class="max-w-[1720px] mx-auto p-4 animate-fadeInDown">
-                    <div id="cms-controls" class="flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div class="flex-1 w-full">
-                            <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">CMS Management
-                                </h2>
-                                <button onclick="toggleCmsDrawer()"
-                                    class="text-slate-400 hover:text-slate-600">✕</button>
-                            </div>
-
-                            <div id="cms-auth-section" class="hidden"></div>
-
-                            <!-- Authenticated Actions -->
-                            <div id="cms-actions-section" class="hidden flex flex-wrap items-center gap-3">
-                                <div class="flex items-center gap-2 mr-4">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span
-                                        class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authenticated</span>
-                                </div>
-                                <button onclick="saveToGithub()" id="save-to-github-btn"
-                                    class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-800 transition-all shadow-md">Save
-                                    to GitHub</button>
-                                <button onclick="archiveAndClear()" id="archive-btn"
-                                    class="bg-amber-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-amber-700 transition-all shadow-md">Archive</button>
-                                <div class="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                                <button onclick="openMetadataEdit()"
-                                    class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Settings</button>
-                                <button id="admin-panel-btn" onclick="openAdminPanel()" style="display:none"
-                                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-indigo-700 transition-all shadow-md">Admin</button>
-                                <button onclick="logoutCms()"
-                                    class="bg-white text-slate-700 px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-50 transition-all border border-slate-200 shadow-sm">Logout</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Cadence Nudge Banner (System L) -->
@@ -521,6 +484,17 @@
             });
         </script>
     </div> <!-- Close p-3 md:p-6 -->
+
+    <!-- Settings Side Panel -->
+    <div id="settings-backdrop" onclick="closeSettingsPanel()"></div>
+    <div id="settings-panel" role="dialog" aria-label="Settings & Management">
+        <div class="settings-panel-header">
+            <h2>⚙️ Settings &amp; Management</h2>
+            <button onclick="closeSettingsPanel()" class="settings-panel-close" aria-label="Close settings">✕</button>
+        </div>
+        <div class="settings-panel-tabs" id="settings-panel-tabs"></div>
+        <div id="settings-panel-body"></div>
+    </div>
 </body>
 
 </html>

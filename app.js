@@ -14,6 +14,7 @@ function normalizeData() {
             filterEl.dataset.populated = "true";
         }
     }
+    if (typeof renderTeamSwitcher === 'function') renderTeamSwitcher()
 
     // 2. Load Custom Statuses into Global Config
     if (UPDATE_DATA.metadata && UPDATE_DATA.metadata.customStatuses) {

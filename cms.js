@@ -296,9 +296,388 @@ function switchView(viewId, targetId = null) {
     });
 }
 
-function toggleCmsDrawer() {
-    const drawer = document.getElementById('cms-drawer');
-    if (drawer) drawer.classList.toggle('hidden');
+// ── Legacy shim — keep working for any residual inline onclick references
+function toggleCmsDrawer() { openSettingsPanel() }
+
+// ── Settings Side Panel ──────────────────────────────────────────────────
+let _settingsPanelTab = 'save'   // 'save' | 'settings' | 'admin'
+let _spAdminSubTab = 'users'     // 'users' | 'teams'
+
+function openSettingsPanel() {
+    const panel = document.getElementById('settings-panel')
+    const backdrop = document.getElementById('settings-backdrop')
+    if (!panel) return
+    panel.classList.add('active')
+    if (backdrop) backdrop.classList.add('active')
+    document.body.style.overflow = 'hidden'
+    _renderSettingsTabs()
+    _renderSettingsPanelBody()
+}
+window.openSettingsPanel = openSettingsPanel
+
+function closeSettingsPanel() {
+    const panel = document.getElementById('settings-panel')
+    const backdrop = document.getElementById('settings-backdrop')
+    if (panel) panel.classList.remove('active')
+    if (backdrop) backdrop.classList.remove('active')
+    document.body.style.overflow = ''
+}
+window.closeSettingsPanel = closeSettingsPanel
+
+function switchSettingsTab(tab) {
+    _settingsPanelTab = tab
+    _renderSettingsTabs()
+    _renderSettingsPanelBody()
+}
+window.switchSettingsTab = switchSettingsTab
+
+function switchSpAdminSubTab(tab) {
+    _spAdminSubTab = tab
+    _renderSettingsPanelBody()
+}
+window.switchSpAdminSubTab = switchSpAdminSubTab
+
+function _renderSettingsTabs() {
+    const el = document.getElementById('settings-panel-tabs')
+    if (!el) return
+    const isAuth = !!window.isGithubAuthenticated
+    const isPm = isAuth && (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
+    const tabs = [
+        { id: 'save', label: '💾 Save & Archive', show: true },
+        { id: 'settings', label: '🔧 Settings', show: isAuth },
+        { id: 'admin', label: '🛡️ Admin', show: isPm },
+    ]
+    el.innerHTML = tabs.filter(t => t.show).map(t =>
+        `<button class="sp-tab-btn ${_settingsPanelTab === t.id ? 'active' : ''}" onclick="switchSettingsTab('${t.id}')">${t.label}</button>`
+    ).join('')
+}
+
+function _renderSettingsPanelBody() {
+    const el = document.getElementById('settings-panel-body')
+    if (!el) return
+    if (_settingsPanelTab === 'save') {
+        el.innerHTML = _buildSpSaveTab()
+    } else if (_settingsPanelTab === 'settings') {
+        el.innerHTML = _buildSpSettingsTab()
+    } else if (_settingsPanelTab === 'admin') {
+        _buildSpAdminTab()
+    }
+}
+
+function _buildSpSaveTab() {
+    const isAuth = !!window.isGithubAuthenticated
+    const isCms = !!isCmsMode
+    if (!isCms) {
+        return `<div class="text-slate-400 text-sm text-center py-12">
+            <div class="text-3xl mb-3">🔒</div>
+            <p class="font-semibold text-slate-500 mb-1">CMS mode not active</p>
+            <p class="text-xs">Add <code class="bg-slate-100 px-1 rounded">?cms=true</code> to the URL and log in to enable editing.</p>
+        </div>`
+    }
+    if (!isAuth) {
+        return `<div class="text-slate-400 text-sm text-center py-12">
+            <div class="text-3xl mb-3">🔑</div>
+            <p class="font-semibold text-slate-500 mb-1">Not authenticated</p>
+            <p class="text-xs">Log in to enable save and archive actions.</p>
+        </div>`
+    }
+    // Archive filter HTML — pull current snapshot controls if available
+    const archiveEl = document.getElementById('archive-filter')
+    const archiveInner = archiveEl ? archiveEl.innerHTML : ''
+    return `
+        <div class="space-y-5">
+            <div>
+                <p class="sp-section-title">Data Actions</p>
+                <div class="sp-action-row">
+                    <div class="flex items-center gap-2 w-full mb-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Authenticated</span>
+                    </div>
+                    <button onclick="saveToGithub()" id="save-to-github-btn" class="sp-btn sp-btn-primary">💾 Save to GitHub</button>
+                    <button onclick="archiveAndClear()" id="archive-btn" class="sp-btn sp-btn-warning">📦 Archive & Clear</button>
+                </div>
+            </div>
+            <div>
+                <p class="sp-section-title">Session</p>
+                <div class="sp-action-row">
+                    <button onclick="logoutCms()" class="sp-btn sp-btn-secondary">🚪 Logout</button>
+                </div>
+            </div>
+            ${archiveInner ? `<div><p class="sp-section-title">Snapshots & Filters</p><div class="mt-2">${archiveInner}</div></div>` : ''}
+        </div>`
+}
+
+function _buildSpSettingsTab() {
+    const isAuth = !!window.isGithubAuthenticated
+    if (!isAuth) {
+        return `<div class="text-slate-400 text-sm text-center py-12">
+            <div class="text-2xl mb-2">🔑</div>
+            <p>Authentication required</p>
+        </div>`
+    }
+    const meta = window.UPDATE_DATA?.metadata || {}
+    return `
+        <div class="space-y-5">
+            <div>
+                <p class="sp-section-title">Metadata & Configuration</p>
+                <div class="sp-action-row">
+                    <button onclick="openMetadataEdit()" class="sp-btn sp-btn-secondary">🔧 Edit Metadata Settings</button>
+                </div>
+                <p class="text-[11px] text-slate-400">Sprint capacity, OKR config, custom statuses, and global settings.</p>
+            </div>
+            <div>
+                <p class="sp-section-title">Current Project Data</p>
+                <div class="rounded-lg border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 space-y-1.5">
+                    <div class="flex justify-between"><span class="font-semibold">Active Team</span><span class="font-mono">${window.ACTIVE_PROJECT_ID || 'default'}</span></div>
+                    <div class="flex justify-between"><span class="font-semibold">Tracks</span><span>${window.UPDATE_DATA?.tracks?.length || 0}</span></div>
+                    <div class="flex justify-between"><span class="font-semibold">Sprints</span><span>${window.UPDATE_DATA?.metadata?.sprints?.length || 0}</span></div>
+                    <div class="flex justify-between"><span class="font-semibold">Epics</span><span>${window.UPDATE_DATA?.metadata?.epics?.length || 0}</span></div>
+                    <div class="flex justify-between"><span class="font-semibold">Sprint Capacity</span><span>${meta.sprintCapacity || 20} SP</span></div>
+                </div>
+            </div>
+        </div>`
+}
+
+async function _buildSpAdminTab() {
+    const el = document.getElementById('settings-panel-body')
+    if (!el) return
+    const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
+    if (!isPm) {
+        el.innerHTML = `<div class="text-slate-400 text-sm text-center py-12">
+            <div class="text-2xl mb-2">🛡️</div>
+            <p>PM grant required</p>
+        </div>`
+        return
+    }
+
+    el.innerHTML = `<div class="text-slate-400 text-sm text-center py-8">Loading…</div>`
+
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const res = await fetch(`${LAMBDA_URL}?action=read&projectId=default&filePath=users.json`, {
+            headers: { 'Authorization': `Bearer ${jwt}` }
+        })
+        if (!res.ok) throw new Error(`Read failed: ${res.status}`)
+        const { data, sha } = await res.json()
+        _adminUsersData = data
+        _adminUsersSha = sha || null
+        if (Array.isArray(data?.projects) && data.projects.length > 0) {
+            window.PROJECT_REGISTRY = data.projects
+            renderTeamSwitcher()
+        }
+    } catch (err) {
+        console.error('❌ [settings admin] load users:', err)
+        el.innerHTML = `<div class="text-red-500 text-sm text-center py-8">Failed to load: ${err.message}</div>`
+        return
+    }
+
+    _renderSpAdminBody(el)
+}
+
+function _renderSpAdminBody(el) {
+    if (!el) el = document.getElementById('settings-panel-body')
+    if (!el) return
+    const subTabHtml = `
+        <div class="sp-admin-tabs">
+            <button class="sp-admin-tab-btn ${_spAdminSubTab === 'users' ? 'active' : ''}" onclick="switchSpAdminSubTab('users')">👤 Users &amp; Grants</button>
+            <button class="sp-admin-tab-btn ${_spAdminSubTab === 'teams' ? 'active' : ''}" onclick="switchSpAdminSubTab('teams')">🏗️ Teams &amp; Tracks</button>
+        </div>
+        <div id="sp-admin-tab-content">
+            ${_spAdminSubTab === 'users' ? buildAdminUsersTable() : _buildSpTeamsPanel()}
+        </div>
+        <div class="mt-5 pt-4 border-t border-slate-100">
+            <button onclick="spAdminSaveUsers()" class="sp-btn sp-btn-primary">💾 Save to GitHub</button>
+        </div>`
+    el.innerHTML = subTabHtml
+}
+
+function _buildSpTeamsPanel() {
+    const tracks = (window.UPDATE_DATA?.tracks || [])
+    const projects = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }])
+    const activeProjectId = window.ACTIVE_PROJECT_ID || 'default'
+
+    const teamRows = projects.map((p, pi) => {
+        const isActive = p.id === activeProjectId
+        return `
+            <tr class="border-b border-slate-100">
+                <td class="px-3 py-2 text-xs font-bold text-slate-800">
+                    ${isActive ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 align-middle"></span>' : ''}
+                    ${p.name}
+                </td>
+                <td class="px-3 py-2 text-[10px] text-slate-500 font-mono">${p.id}</td>
+                <td class="px-3 py-2 text-[10px] text-slate-400 font-mono">${p.filePath || 'data.json'}</td>
+                <td class="px-3 py-2 text-xs flex items-center gap-1">
+                    ${isActive
+                        ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
+                        : `<button onclick="spAdminSwitchTeam('${p.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
+                    }
+                    <button onclick="spAdminEditTeam(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
+                    ${p.id !== 'default' ? `<button onclick="spAdminDeleteTeam(${pi})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
+                </td>
+            </tr>`
+    }).join('')
+
+    let trackHtml = ''
+    if (tracks.length === 0) {
+        trackHtml = '<tr><td colspan="4" class="text-slate-400 text-xs text-center py-4">No tracks in active team data.</td></tr>'
+    } else {
+        trackHtml = tracks.map((track, ti) => {
+            const itemCount = track.subtracks.reduce((s, st) => s + st.items.length, 0)
+            const doneCount = track.subtracks.reduce((s, st) => s + st.items.filter(i => i.status === 'done').length, 0)
+            const pct = itemCount > 0 ? Math.round((doneCount / itemCount) * 100) : 0
+            const themeColor = { blue: '#3b82f6', emerald: '#10b981', violet: '#7c3aed', amber: '#f59e0b', rose: '#f43f5e', slate: '#64748b' }[track.theme] || '#64748b'
+            const subRows = track.subtracks.map(st => `
+                <tr class="border-b border-slate-50">
+                    <td class="pl-8 pr-3 py-1 text-[10px] text-slate-400">↳ ${st.name}</td>
+                    <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.length}</td>
+                    <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.filter(i=>i.status==='done').length} done</td>
+                    <td></td>
+                </tr>`).join('')
+            return `
+                <tr class="border-b border-slate-200 bg-slate-50/50">
+                    <td class="px-3 py-2 text-xs font-black text-slate-800">
+                        <span class="inline-block w-2 h-2 rounded-full mr-1.5" style="background:${themeColor}"></span>${track.name}
+                    </td>
+                    <td class="px-3 py-2 text-xs text-slate-500">${itemCount}</td>
+                    <td class="px-3 py-2 text-xs text-slate-500">${doneCount} · ${pct}%</td>
+                    <td class="px-3 py-2">
+                        <button onclick="closeSettingsPanel(); openTrackEdit(${ti})" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-50 hover:text-indigo-700">Edit</button>
+                    </td>
+                </tr>${subRows}`
+        }).join('')
+    }
+
+    return `
+        <div class="space-y-5">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <p class="sp-section-title" style="margin:0">Teams — ${projects.length} registered</p>
+                    <button onclick="spAdminAddTeam()" class="sp-btn sp-btn-primary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Team</button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50">
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Name</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">ID</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Data File</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${teamRows}</tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">Teams are top-level workspaces. Each team has its own data file on GitHub.</p>
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <p class="sp-section-title" style="margin:0">Tracks — ${tracks.length} in active team</p>
+                    <button onclick="closeSettingsPanel(); openTrackEdit()" class="sp-btn sp-btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Track</button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50">
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Track / Subtrack</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Items</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Progress</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>${trackHtml}</tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">Tracks are functional areas within a team. Items live in subtracks under each track.</p>
+            </div>
+        </div>`
+}
+
+// SP Admin CRUD — Team management (maps to PROJECT_REGISTRY / users.json projects[])
+window.spAdminSwitchTeam = function(id) {
+    if (typeof switchProject === 'function') switchProject(id)
+    closeSettingsPanel()
+}
+window.spAdminAddTeam = function() {
+    const name = prompt('Team name (e.g. "AI Agent"):', '')?.trim()
+    if (!name) return
+    const idRaw = prompt('Team ID (lowercase, no spaces, e.g. "ai-agent"):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
+    if (!idRaw) return
+    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
+    if ((window.PROJECT_REGISTRY || []).some(p => p.id === id)) { showToast(`Team ID "${id}" already exists`, 'error'); return }
+    const filePath = `data-${id}.json`
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects.push({ id, name, filePath })
+    _syncProjectsToRegistry()
+    showToast(`Team "${name}" added — save to persist`, 'info')
+    _renderSpAdminBody()
+}
+window.spAdminEditTeam = function(pi) {
+    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
+    const p = projects[pi]
+    if (!p) return
+    const newName = prompt('Team name:', p.name)?.trim()
+    if (!newName) return
+    const newFile = prompt('Data file on GitHub:', p.filePath || `data-${p.id}.json`)?.trim()
+    if (!newFile) return
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects[pi] = { ...p, name: newName, filePath: newFile }
+    _syncProjectsToRegistry()
+    showToast(`Team "${newName}" updated — save to persist`, 'info')
+    _renderSpAdminBody()
+}
+window.spAdminDeleteTeam = function(pi) {
+    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
+    const p = projects[pi]
+    if (!p || p.id === 'default') { showToast('Cannot delete the default team', 'error'); return }
+    if (!confirm(`Delete team "${p.name}"? This only removes it from the registry — no data files are deleted.`)) return
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
+    _adminUsersData.projects.splice(pi, 1)
+    _syncProjectsToRegistry()
+    showToast(`Team "${p.name}" removed — save to persist`, 'info')
+    _renderSpAdminBody()
+}
+window.spAdminSaveUsers = async function() {
+    if (!_adminUsersData) return
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    if (!jwt) { showToast('Not authenticated', 'error'); return }
+    window.isActionLockActive = true
+    try {
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(_adminUsersData, null, 2))))
+        const res = await fetch(`${LAMBDA_URL}?action=write&projectId=default&filePath=users.json`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, sha: _adminUsersSha, message: 'chore: update users.json via admin' })
+        })
+        if (!res.ok) throw new Error(`Write failed: ${res.status}`)
+        const { sha } = await res.json()
+        _adminUsersSha = sha
+        showToast('Saved to GitHub', 'success')
+    } catch (err) {
+        console.error('❌ [settings admin] save:', err)
+        showToast(`Save failed: ${err.message}`, 'error')
+    } finally {
+        window.isActionLockActive = false
+    }
+}
+
+// ── Team switcher in nav bar ─────────────────────────────────────────────
+function renderTeamSwitcher() {
+    const el = document.getElementById('team-switcher')
+    if (!el) return
+    const reg = window.PROJECT_REGISTRY || []
+    if (reg.length <= 1) { el.style.display = 'none'; return }
+    el.style.display = ''
+    el.innerHTML = reg.map(p =>
+        `<option value="${p.id}" ${p.id === (window.ACTIVE_PROJECT_ID || 'default') ? 'selected' : ''}>${p.name}</option>`
+    ).join('')
+}
+window.renderTeamSwitcher = renderTeamSwitcher
+
+window.onTeamSwitcherChange = function(id) {
+    if (typeof switchProject === 'function') switchProject(id)
 }
 
 // ========================================
@@ -1253,7 +1632,7 @@ function initCms() {
 
     if (params.get('cms') === 'true') {
         isCmsMode = true;
-        document.getElementById('cms-controls').classList.add('active');
+        renderTeamSwitcher()
         // Auto-authenticate CMS if a JWT session exists — no PAT required
         const jwt = localStorage.getItem('khyaal_site_auth');
         if (jwt) {
@@ -1261,8 +1640,6 @@ function initCms() {
         }
     } else {
         window.isGithubAuthenticated = false;
-        const ctrls = document.getElementById('cms-controls');
-        if (ctrls) ctrls.classList.remove('active');
     }
 }
 
@@ -1271,14 +1648,7 @@ function authenticateCms() {
     if (!jwt) return;
     window.isGithubAuthenticated = true;
 
-    document.getElementById('cms-auth-section').classList.add('hidden');
-    document.getElementById('cms-actions-section').classList.remove('hidden');
-
-    // Show Admin button only if user has PM grant on any project
-    const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
-    const adminBtn = document.getElementById('admin-panel-btn')
-    if (adminBtn) adminBtn.style.display = isPm ? '' : 'none'
-
+    renderTeamSwitcher()
     initArchiveFilter();
 
     const currentView = document.querySelector('.filter-btn.active')?.id.replace('btn-', '') || 'track';
@@ -5491,10 +5861,11 @@ function _syncProjectsToRegistry() {
     window.PROJECT_REGISTRY = _adminUsersData.projects.length > 0
         ? _adminUsersData.projects
         : [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }]
-    // Repopulate the track filter select with updated project list
+    // Repopulate the track filter select with updated data
     const filterEl = document.getElementById('global-team-filter')
     if (filterEl) filterEl.dataset.populated = ''
     if (typeof normalizeData === 'function') normalizeData()
+    renderTeamSwitcher()
 }
 
 window.adminSwitchProject = function(id) {
