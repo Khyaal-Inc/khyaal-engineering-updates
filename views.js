@@ -300,7 +300,8 @@ function renderTrackView() {
 
     // 1. Initial Setup: Create persistent structure if it doesn't exist
     if (!document.getElementById('track-ribbon')) {
-        const teams = Array.from(new Set(UPDATE_DATA.tracks.filter(tr => tr.name).map(tr => tr.name)));
+        const _trackSource = (typeof getActiveTracks === 'function') ? getActiveTracks() : (UPDATE_DATA.tracks || [])
+        const teams = Array.from(new Set(_trackSource.filter(tr => tr.name).map(tr => tr.name)));
         const teamOptions = teams.map(n => `<option value="${n}">${n}</option>`).join('');
 
         container.innerHTML = `

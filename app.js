@@ -4,13 +4,51 @@
 function normalizeData() {
     if (!UPDATE_DATA) return;
 
-    // 1. Populate Global Team Filter if it exists
+    // 0. Auto-migrate flat tracks[] → projects[].tracks[] (backward compat)
+    // If data.json has no projects[] yet, wrap existing tracks into a default project.
+    // UPDATE_DATA.tracks stays in sync with the active project's tracks so CMS code
+    // can continue to read/write UPDATE_DATA.tracks without changes.
+    if (!Array.isArray(UPDATE_DATA.projects) || UPDATE_DATA.projects.length === 0) {
+        UPDATE_DATA.projects = [{
+            id: 'default-project',
+            name: 'Main Project',
+            tracks: UPDATE_DATA.tracks || []
+        }]
+        // UPDATE_DATA.tracks remains the same reference — no data copied
+    } else {
+        // Sync UPDATE_DATA.tracks to the active project's tracks so all CMS code still works
+        const activeProj = (typeof getActiveProject === 'function') ? getActiveProject() : null
+        const proj = activeProj
+            ? (UPDATE_DATA.projects.find(p => p.id === activeProj) || UPDATE_DATA.projects[0])
+            : null
+        if (proj) {
+            UPDATE_DATA.tracks = proj.tracks
+        } else {
+            // No project selected — flatten all projects' tracks
+            UPDATE_DATA.tracks = UPDATE_DATA.projects.flatMap(p => p.tracks || [])
+        }
+    }
+
+    // 1a. Populate #project-filter from UPDATE_DATA.projects[]
+    const projEl = document.getElementById('project-filter')
+    if (projEl && !projEl.dataset.populated) {
+        const projects = UPDATE_DATA.projects || []
+        const currentProjVal = projEl.value
+        projEl.innerHTML = '<option value="">All Projects</option>' +
+            projects.map(p => `<option value="${p.id}" ${p.id === currentProjVal ? 'selected' : ''}>${p.name}</option>`).join('')
+        projEl.dataset.populated = 'true'
+        // Hide if only one project
+        projEl.style.display = projects.length <= 1 ? 'none' : ''
+    }
+
+    // 1b. Populate #global-team-filter (track filter) from active project's tracks
     const filterEl = document.getElementById('global-team-filter');
     if (filterEl && !filterEl.dataset.populated) {
-        const teams = Array.from(new Set(UPDATE_DATA.tracks.filter(tr => tr.name).map(tr => tr.name)));
-        if (teams.length > 0) {
+        const tracks = (typeof getActiveTracks === 'function') ? getActiveTracks() : (UPDATE_DATA.tracks || [])
+        const trackNames = Array.from(new Set(tracks.filter(tr => tr.name).map(tr => tr.name)));
+        if (trackNames.length > 0) {
             const currentVal = filterEl.value;
-            filterEl.innerHTML = '<option value="">🌍 All Tracks</option>' + teams.map(n => `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`).join('');
+            filterEl.innerHTML = '<option value="">🌍 All Tracks</option>' + trackNames.map(n => `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`).join('');
             filterEl.dataset.populated = "true";
         }
     }
@@ -36,6 +74,8 @@ function normalizeData() {
 
                 // Stamp projectId for multi-project scoping
                 if (!item.projectId) item.projectId = window.ACTIVE_PROJECT_ID || 'default'
+                // Stamp subprojectId (project within team)
+                if (!item.subprojectId) item.subprojectId = (typeof getActiveProject === 'function' && getActiveProject()) || 'default-project'
 
                 // Clean up default dates for next/later if they are from a previous session's template
                 if (['next', 'later'].includes(item.status)) {

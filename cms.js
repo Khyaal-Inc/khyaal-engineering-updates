@@ -492,40 +492,74 @@ function _renderSpAdminBody(el) {
 }
 
 function _buildSpTeamsPanel() {
-    const tracks = (window.UPDATE_DATA?.tracks || [])
-    const projects = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }])
-    const activeProjectId = window.ACTIVE_PROJECT_ID || 'default'
+    const teamRegistry = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }])
+    const activeTeamId = window.ACTIVE_PROJECT_ID || 'default'
+    const dataProjects = (window.UPDATE_DATA?.projects || [])  // projects[] within active team's data.json
 
-    const teamRows = projects.map((p, pi) => {
-        const isActive = p.id === activeProjectId
+    // Build team rows — each team expands to show its projects
+    const teamRows = teamRegistry.map((team, ti) => {
+        const isActive = team.id === activeTeamId
+        // Team-level projects from users.json (registry metadata only)
+        const teamProjects = Array.isArray(team.projects) ? team.projects : []
+        // If this is the active team, show real project data from data.json
+        const liveProjects = isActive ? dataProjects : teamProjects
+        const projectsLabel = liveProjects.length > 0
+            ? liveProjects.map(p => p.name).join(', ')
+            : '—'
+
+        const projectSubRows = liveProjects.map((proj, pi) => {
+            const projTracks = Array.isArray(proj.tracks) ? proj.tracks : []
+            const trackNames = projTracks.map(t => t.name).join(' · ') || '—'
+            const totalItems = projTracks.reduce((s, t) => s + t.subtracks.reduce((ss, st) => ss + st.items.length, 0), 0)
+            return `
+                <tr class="border-b border-slate-50">
+                    <td class="pl-8 pr-3 py-1.5 text-[10px] text-slate-600 font-semibold">
+                        <span class="text-slate-400 mr-1">↳</span>${proj.name}
+                    </td>
+                    <td class="px-3 py-1.5 text-[10px] text-slate-400">${trackNames}</td>
+                    <td class="px-3 py-1.5 text-[10px] text-slate-400">${totalItems} items</td>
+                    <td class="px-3 py-1.5 text-xs flex items-center gap-1">
+                        ${isActive ? `<button onclick="spAdminEditProject(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>` : ''}
+                        ${(isActive && liveProjects.length > 1) ? `<button onclick="spAdminDeleteProject(${pi})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
+                    </td>
+                </tr>`
+        }).join('')
+
         return `
-            <tr class="border-b border-slate-100">
+            <tr class="border-b border-slate-100 ${isActive ? 'bg-indigo-50/40' : ''}">
                 <td class="px-3 py-2 text-xs font-bold text-slate-800">
                     ${isActive ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 align-middle"></span>' : ''}
-                    ${p.name}
+                    ${team.name}
                 </td>
-                <td class="px-3 py-2 text-[10px] text-slate-500 font-mono">${p.id}</td>
-                <td class="px-3 py-2 text-[10px] text-slate-400 font-mono">${p.filePath || 'data.json'}</td>
-                <td class="px-3 py-2 text-xs flex items-center gap-1">
+                <td class="px-3 py-2 text-[10px] text-slate-500">${liveProjects.length} project${liveProjects.length !== 1 ? 's' : ''}</td>
+                <td class="px-3 py-2 text-[10px] text-slate-400 font-mono">${team.filePath || 'data.json'}</td>
+                <td class="px-3 py-2 text-xs flex items-center gap-1 flex-wrap">
                     ${isActive
                         ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
-                        : `<button onclick="spAdminSwitchTeam('${p.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
+                        : `<button onclick="spAdminSwitchTeam('${team.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
                     }
-                    <button onclick="spAdminEditTeam(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
-                    ${p.id !== 'default' ? `<button onclick="spAdminDeleteTeam(${pi})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
+                    <button onclick="spAdminEditTeam(${ti})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
+                    ${team.id !== 'default' ? `<button onclick="spAdminDeleteTeam(${ti})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
+                    ${isActive ? `<button onclick="spAdminAddProject()" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold hover:bg-emerald-100">+ Project</button>` : ''}
                 </td>
-            </tr>`
+            </tr>
+            ${projectSubRows}`
     }).join('')
 
+    // Tracks table — all tracks in the active team (flat, for overview)
+    const allTracks = dataProjects.flatMap(p => p.tracks || [])
     let trackHtml = ''
-    if (tracks.length === 0) {
+    if (allTracks.length === 0) {
         trackHtml = '<tr><td colspan="4" class="text-slate-400 text-xs text-center py-4">No tracks in active team data.</td></tr>'
     } else {
-        trackHtml = tracks.map((track, ti) => {
+        trackHtml = allTracks.map((track, ti) => {
             const itemCount = track.subtracks.reduce((s, st) => s + st.items.length, 0)
             const doneCount = track.subtracks.reduce((s, st) => s + st.items.filter(i => i.status === 'done').length, 0)
             const pct = itemCount > 0 ? Math.round((doneCount / itemCount) * 100) : 0
             const themeColor = { blue: '#3b82f6', emerald: '#10b981', violet: '#7c3aed', amber: '#f59e0b', rose: '#f43f5e', slate: '#64748b' }[track.theme] || '#64748b'
+            // Find which project this track belongs to
+            const ownerProj = dataProjects.find(p => (p.tracks || []).some(t => t.id === track.id || t === track))
+            const ownerLabel = ownerProj ? `<span class="text-indigo-500">${ownerProj.name}</span> · ` : ''
             const subRows = track.subtracks.map(st => `
                 <tr class="border-b border-slate-50">
                     <td class="pl-8 pr-3 py-1 text-[10px] text-slate-400">↳ ${st.name}</td>
@@ -533,10 +567,12 @@ function _buildSpTeamsPanel() {
                     <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.filter(i=>i.status==='done').length} done</td>
                     <td></td>
                 </tr>`).join('')
+            // ti here is index into allTracks (= UPDATE_DATA.tracks after normalizeData sync)
             return `
                 <tr class="border-b border-slate-200 bg-slate-50/50">
                     <td class="px-3 py-2 text-xs font-black text-slate-800">
-                        <span class="inline-block w-2 h-2 rounded-full mr-1.5" style="background:${themeColor}"></span>${track.name}
+                        <span class="inline-block w-2 h-2 rounded-full mr-1.5" style="background:${themeColor}"></span>
+                        ${ownerLabel}${track.name}
                     </td>
                     <td class="px-3 py-2 text-xs text-slate-500">${itemCount}</td>
                     <td class="px-3 py-2 text-xs text-slate-500">${doneCount} · ${pct}%</td>
@@ -551,7 +587,7 @@ function _buildSpTeamsPanel() {
         <div class="space-y-5">
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <p class="sp-section-title" style="margin:0">Teams — ${projects.length} registered</p>
+                    <p class="sp-section-title" style="margin:0">Teams — ${teamRegistry.length} registered</p>
                     <button onclick="spAdminAddTeam()" class="sp-btn sp-btn-primary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Team</button>
                 </div>
                 <div class="overflow-x-auto rounded-lg border border-slate-200">
@@ -559,7 +595,7 @@ function _buildSpTeamsPanel() {
                         <thead>
                             <tr class="border-b border-slate-200 bg-slate-50">
                                 <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Name</th>
-                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">ID</th>
+                                <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Projects</th>
                                 <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Data File</th>
                                 <th class="text-left px-3 py-2 font-black text-slate-500 text-[10px] uppercase tracking-wide">Actions</th>
                             </tr>
@@ -567,11 +603,11 @@ function _buildSpTeamsPanel() {
                         <tbody>${teamRows}</tbody>
                     </table>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1">Teams are top-level workspaces. Each team has its own data file on GitHub.</p>
+                <p class="text-[10px] text-slate-400 mt-1">Teams are top-level workspaces. Each team has its own data file on GitHub. Projects group tracks within a team.</p>
             </div>
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <p class="sp-section-title" style="margin:0">Tracks — ${tracks.length} in active team</p>
+                    <p class="sp-section-title" style="margin:0">Tracks — ${allTracks.length} in active team</p>
                     <button onclick="closeSettingsPanel(); openTrackEdit()" class="sp-btn sp-btn-secondary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Track</button>
                 </div>
                 <div class="overflow-x-auto rounded-lg border border-slate-200">
@@ -587,7 +623,7 @@ function _buildSpTeamsPanel() {
                         <tbody>${trackHtml}</tbody>
                     </table>
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1">Tracks are functional areas within a team. Items live in subtracks under each track.</p>
+                <p class="text-[10px] text-slate-400 mt-1">Tracks are functional areas within a project. Items live in subtracks under each track.</p>
             </div>
         </div>`
 }
@@ -639,6 +675,50 @@ window.spAdminDeleteTeam = function(pi) {
     showToast(`Team "${p.name}" removed — save to persist`, 'info')
     _renderSpAdminBody()
 }
+// ── Project CRUD within active team (data.json projects[]) ──────────────
+window.spAdminAddProject = function() {
+    if (!window.UPDATE_DATA) { showToast('No data loaded', 'error'); return }
+    if (!Array.isArray(window.UPDATE_DATA.projects)) window.UPDATE_DATA.projects = []
+    const name = prompt('Project name (e.g. "Mobile App"):', '')?.trim()
+    if (!name) return
+    const idRaw = prompt('Project ID (lowercase, no spaces):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
+    if (!idRaw) return
+    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
+    if (window.UPDATE_DATA.projects.some(p => p.id === id)) { showToast(`Project ID "${id}" already exists`, 'error'); return }
+    window.UPDATE_DATA.projects.push({ id, name, tracks: [] })
+    // Reset project filter so it repopulates
+    const projEl = document.getElementById('project-filter')
+    if (projEl) projEl.dataset.populated = ''
+    if (typeof normalizeData === 'function') normalizeData()
+    showToast(`Project "${name}" added — save data to persist`, 'info')
+    _renderSpAdminBody()
+}
+window.spAdminEditProject = function(pi) {
+    const proj = window.UPDATE_DATA?.projects?.[pi]
+    if (!proj) return
+    const newName = prompt('Project name:', proj.name)?.trim()
+    if (!newName) return
+    proj.name = newName
+    const projEl = document.getElementById('project-filter')
+    if (projEl) projEl.dataset.populated = ''
+    if (typeof normalizeData === 'function') normalizeData()
+    showToast(`Project "${newName}" updated — save data to persist`, 'info')
+    _renderSpAdminBody()
+}
+window.spAdminDeleteProject = function(pi) {
+    const projects = window.UPDATE_DATA?.projects || []
+    const proj = projects[pi]
+    if (!proj) return
+    if (projects.length <= 1) { showToast('Cannot delete the last project', 'error'); return }
+    if (!confirm(`Delete project "${proj.name}"? All its tracks and items will be removed from this team's data.`)) return
+    projects.splice(pi, 1)
+    const projEl = document.getElementById('project-filter')
+    if (projEl) { projEl.dataset.populated = ''; projEl.value = '' }
+    if (typeof normalizeData === 'function') normalizeData()
+    showToast(`Project "${proj.name}" deleted — save data to persist`, 'info')
+    _renderSpAdminBody()
+}
+
 window.spAdminSaveUsers = async function() {
     if (!_adminUsersData) return
     const jwt = localStorage.getItem('khyaal_site_auth')
@@ -654,6 +734,8 @@ window.spAdminSaveUsers = async function() {
         if (!res.ok) throw new Error(`Write failed: ${res.status}`)
         const { sha } = await res.json()
         _adminUsersSha = sha
+        // Keep localStorage registry in sync after successful GitHub write
+        try { localStorage.setItem('khyaal_registry', JSON.stringify(window.PROJECT_REGISTRY)) } catch (e) { /* quota */ }
         showToast('Saved to GitHub', 'success')
     } catch (err) {
         console.error('❌ [settings admin] save:', err)
@@ -5861,9 +5943,13 @@ function _syncProjectsToRegistry() {
     window.PROJECT_REGISTRY = _adminUsersData.projects.length > 0
         ? _adminUsersData.projects
         : [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }]
+    // Persist registry to localStorage so it survives reload before GitHub save
+    try { localStorage.setItem('khyaal_registry', JSON.stringify(window.PROJECT_REGISTRY)) } catch (e) { /* quota */ }
     // Repopulate the track filter select with updated data
     const filterEl = document.getElementById('global-team-filter')
     if (filterEl) filterEl.dataset.populated = ''
+    const projEl = document.getElementById('project-filter')
+    if (projEl) projEl.dataset.populated = ''
     if (typeof normalizeData === 'function') normalizeData()
     renderTeamSwitcher()
 }

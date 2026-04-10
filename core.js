@@ -2,13 +2,48 @@
 
 // Multi-project state — 'default' maps to the legacy data.json file
 window.ACTIVE_PROJECT_ID = window.ACTIVE_PROJECT_ID || 'default'
-window.PROJECT_REGISTRY = window.PROJECT_REGISTRY || [
+
+// Restore team registry from localStorage cache (survives reload before GitHub save)
+const _cachedRegistry = (() => {
+    try { return JSON.parse(localStorage.getItem('khyaal_registry') || 'null') } catch { return null }
+})()
+window.PROJECT_REGISTRY = window.PROJECT_REGISTRY || _cachedRegistry || [
     { id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }
 ]
+
+// Active sub-project within the current team's data.json
+window.ACTIVE_SUBPROJECT_ID = window.ACTIVE_SUBPROJECT_ID || null
+
+// Returns the selected project ID from #project-filter
+function getActiveProject() {
+    return document.getElementById('project-filter')?.value || null
+}
+
+// Returns the selected track name from #global-team-filter
+function getActiveTrack() {
+    return document.getElementById('global-team-filter')?.value || null
+}
+
+// Returns the tracks for the currently selected project (or all tracks if no project selected)
+// Views use this instead of UPDATE_DATA.tracks so they respect the project filter.
+// NOTE: UPDATE_DATA.tracks is always kept in sync with the active project's tracks by
+// normalizeData(), so CMS edit code can continue to use UPDATE_DATA.tracks directly.
+function getActiveTracks() {
+    const projects = window.UPDATE_DATA?.projects || []
+    if (!projects.length) return window.UPDATE_DATA?.tracks || []
+    const activeProj = getActiveProject()
+    if (activeProj) {
+        const proj = projects.find(p => p.id === activeProj)
+        return proj?.tracks || []
+    }
+    // No project filter — flatten all projects' tracks
+    return projects.flatMap(p => p.tracks || [])
+}
 
 function switchProject(projectId) {
     if (window.ACTIVE_PROJECT_ID === projectId) return
     window.ACTIVE_PROJECT_ID = projectId
+    window.ACTIVE_SUBPROJECT_ID = null
     const project = window.PROJECT_REGISTRY.find(p => p.id === projectId)
     if (project && typeof CMS_CONFIG !== 'undefined') {
         CMS_CONFIG.filePath = project.filePath
@@ -26,6 +61,17 @@ function switchProject(projectId) {
     if (typeof showToast === 'function') showToast(`Switching to ${project?.name || projectId}…`, 'info')
     if (typeof initDashboard === 'function') initDashboard()
 }
+
+// Called when the project filter (#project-filter) changes
+function onProjectFilterChange() {
+    window.ACTIVE_SUBPROJECT_ID = document.getElementById('project-filter')?.value || null
+    // Reset track filter so it repopulates from the new project's tracks
+    const filterEl = document.getElementById('global-team-filter')
+    if (filterEl) { filterEl.dataset.populated = ''; filterEl.value = '' }
+    if (typeof normalizeData === 'function') normalizeData()
+    if (typeof renderDashboard === 'function') renderDashboard()
+}
+window.onProjectFilterChange = onProjectFilterChange
 
 let globalSearchQuery = '';
 let isAuthenticated = false; // Will be set by auth logic
