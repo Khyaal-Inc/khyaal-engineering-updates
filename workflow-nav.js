@@ -44,7 +44,7 @@ const WORKFLOW_STAGES = {
         label: 'Execution',
         description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
         cadence: 'Daily',
-        views: ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
+        views: ['my-tasks', 'kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
         pinnedViews: { pm: ['kanban', 'track'], dev: ['kanban', 'track', 'dependency'], exec: [] },
         color: '#10b981',
         order: 4
