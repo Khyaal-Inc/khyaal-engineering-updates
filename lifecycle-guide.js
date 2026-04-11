@@ -1355,6 +1355,8 @@ function getModalStageFromView(viewId) {
                 if (typeof renderSprintHUD  === 'function') renderSprintHUD();
                 // System L — show cadence nudge if relevant day
                 if (typeof renderCadenceNudgeBanner === 'function') renderCadenceNudgeBanner();
+                // Breadcrumb: final authoritative re-render with explicit viewId
+                if (typeof updateCommandStripNav === 'function') updateCommandStripNav(viewId);
             }, 60);
         };
     }

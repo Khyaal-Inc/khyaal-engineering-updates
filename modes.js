@@ -230,7 +230,7 @@ function renderViewSubtabs(activeView) {
         const textOnly = label.replace(/^[\p{Emoji}\p{Emoji_Presentation}\uFE0F\u20D0-\u20FF\s]+/u, '').trim() || label;
 
         return sep + `
-            <button onclick="window.currentActiveView='${viewId}'; switchView('${viewId}'); if(typeof updateCommandStripNav==='function') updateCommandStripNav(); if(typeof renderViewSubtabs==='function') renderViewSubtabs('${viewId}');" id="btn-${viewId}"
+            <button onclick="window.currentActiveView='${viewId}'; switchView('${viewId}'); if(typeof updateCommandStripNav==='function') updateCommandStripNav('${viewId}'); if(typeof renderViewSubtabs==='function') renderViewSubtabs('${viewId}');" id="btn-${viewId}"
                 class="view-subtab ${isActive ? 'view-subtab-active' : ''}${pinnedSet.has(viewId) ? ' view-subtab-pinned' : ''}"
                 style="--active-color: ${stage.color}"
                 aria-label="${textOnly}" title="${textOnly}"

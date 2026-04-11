@@ -392,7 +392,7 @@ function switchView(view) {
 
         // Synergistic update: Update stage detection and command strip breadcrumbs AFTER view has rendered
         if (typeof detectStageFromView === 'function') detectStageFromView();
-        if (typeof updateCommandStripNav === 'function') updateCommandStripNav();
+        if (typeof updateCommandStripNav === 'function') updateCommandStripNav(view);
     } catch (e) {
         console.error('❌ switchView Error:', e);
     }

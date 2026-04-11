@@ -180,7 +180,7 @@ function switchWorkflowStage(stageKey) {
 /**
  * Update the compact header navigation (Command Strip)
  */
-function updateCommandStripNav() {
+function updateCommandStripNav(viewId) {
     const miniPipeline = document.getElementById('mini-pipeline');
     const breadcrumb = document.getElementById('breadcrumb-nav');
 
@@ -192,11 +192,13 @@ function updateCommandStripNav() {
     const availableStages = Object.entries(WORKFLOW_STAGES)
         .filter(([key]) => isStageAvailableInCurrentMode(key));
 
+    // Use explicit viewId when provided — avoids any stale global read
+    const activeViewId = viewId || window.currentActiveView || 'okr'
+
     // Derive active stage key from current view — avoids stale currentWorkflowStage
-    const _activeViewId = window.currentActiveView || 'okr';
     let _activeStageKey = currentWorkflowStage;
     for (const [k, s] of Object.entries(WORKFLOW_STAGES)) {
-        if (s.views.includes(_activeViewId)) { _activeStageKey = k; break; }
+        if (s.views.includes(activeViewId)) { _activeStageKey = k; break; }
     }
     const currentIdx = availableStages.findIndex(([key]) => key === _activeStageKey);
 
@@ -207,7 +209,7 @@ function updateCommandStripNav() {
             const isPast = index < currentIdx;
 
             return `
-                <button onclick="switchWorkflowStage('${key}')" 
+                <button onclick="switchWorkflowStage('${key}')"
                     class="mini-pipeline-btn ${isActive ? 'active shadow-sm' : 'bg-transparent text-slate-400 hover:bg-slate-200/40'}"
                     title="${stage.name}"
                     style="${isActive ? `background-color: ${stage.color}; color: white;` : ''}"
@@ -218,7 +220,6 @@ function updateCommandStripNav() {
         }).join('');
 
     // 2. Render Breadcrumb — derive stage from active view directly to avoid stale currentWorkflowStage
-    const activeViewId = window.currentActiveView || 'okr';
     let activeStage = null;
     for (const [, s] of Object.entries(WORKFLOW_STAGES)) {
         if (s.views.includes(activeViewId)) { activeStage = s; break; }
