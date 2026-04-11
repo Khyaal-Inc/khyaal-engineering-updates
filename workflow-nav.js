@@ -639,7 +639,7 @@ function getRecommendedNextAction() {
                 { text: 'Review strategic alignment', view: 'roadmap' }
             ]
         },
-        definition: {
+        plan: {
             title: 'Define Requirements',
             actions: [
                 { text: 'Groom and scope stories', view: 'backlog' },
@@ -647,7 +647,7 @@ function getRecommendedNextAction() {
                 { text: 'Schedule upcoming releases', view: 'releases' }
             ]
         },
-        delivery: {
+        build: {
             title: 'Execute Delivery',
             actions: [
                 { text: 'Update task status on Kanban', view: 'kanban' },

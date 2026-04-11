@@ -1301,16 +1301,16 @@ const STAGE_REQUIRED_FIELDS = {
     roadmap:    { fields: ['planningHorizon','epicId','startDate','due'],      hint: 'Planning this initiative — set which time bucket it belongs to and add dates for the timeline.' },
     backlog:    { fields: ['epicId','storyPoints','priority','acceptanceCriteria','planningHorizon'], hint: 'Grooming — before sprint planning, every task needs a goal, size estimate, and done criteria.' },
     sprint:     { fields: ['sprintId','contributors','status','acceptanceCriteria'], hint: 'Committing to sprint — assign an owner and confirm done criteria is clear.' },
-    delivery:   { fields: ['status','contributors'],                           hint: 'Executing — keep status current and flag blockers immediately.' },
+    build:      { fields: ['status','contributors'],                           hint: 'Executing — keep status current and flag blockers immediately.' },
     review:     { fields: ['releasedIn','status'],                             hint: 'Shipping — assign to a release so it shows up in your metrics and OKR progress.' },
 };
 
 function getModalStageFromView(viewId) {
     const m = { ideation:'ideation', spikes:'spikes', okr:'vision', epics:'epics', roadmap:'roadmap',
-                backlog:'backlog', sprint:'sprint', capacity:'sprint', track:'delivery', kanban:'delivery',
-                'my-tasks':'delivery', status:'delivery', priority:'delivery', contributor:'delivery',
+                backlog:'backlog', sprint:'sprint', capacity:'sprint', track:'build', kanban:'build',
+                'my-tasks':'build', status:'build', priority:'build', contributor:'build',
                 releases:'review', analytics:'review', dashboard:'review' };
-    return m[viewId] || 'delivery';
+    return m[viewId] || 'build';
 }
 
 // ============================================================
