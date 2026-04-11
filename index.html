@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=04073">
+    <link rel="stylesheet" href="styles.css?v=04112">
 </head>
 
 <body class="bg-slate-50 text-slate-800 antialiased">
@@ -104,10 +104,10 @@
 
         <!-- DATA CONFIGURATION - EDIT THIS JSON TO UPDATE CONTENT -->
         <!-- CORE SCRIPTS -->
-        <script src="core.js?v=04111"></script>
-        <script src="views.js?v=04111"></script>
-        <script src="cms.js?v=04111"></script>
-        <script src="app.js?v=04111"></script>
+        <script src="core.js?v=04112"></script>
+        <script src="views.js?v=04112"></script>
+        <script src="cms.js?v=04112"></script>
+        <script src="app.js?v=04112"></script>
         <script>
             // Phase 6 Reset: Early-boot functional mapping
             window.openAddItemModal = function(type) {
@@ -123,18 +123,18 @@
         </script>
 
         <!-- NEW FEATURE MODULES -->
-        <script src="modes.js?v=04111"></script>
-        <script src="wizard.js?v=04111"></script>
-        <script src="workflow-nav.js?v=04111"></script>
-        <script src="dependency-view.js?v=04111"></script>
-        <script src="kanban-view.js?v=04111"></script>
-        <script src="okr-module.js?v=04111"></script>
-        <script src="analytics.js?v=04111"></script>
-        <script src="capacity-planning.js?v=04111"></script>
-        <script src="dev-focus.js?v=04111"></script>
-        <script src="executive-dashboard.js?v=04111"></script>
-        <script src="lifecycle-guide.js?v=04111"></script>
-        <script src="meeting-guide.js?v=04111"></script>
+        <script src="modes.js?v=04112"></script>
+        <script src="wizard.js?v=04112"></script>
+        <script src="workflow-nav.js?v=04112"></script>
+        <script src="dependency-view.js?v=04112"></script>
+        <script src="kanban-view.js?v=04112"></script>
+        <script src="okr-module.js?v=04112"></script>
+        <script src="analytics.js?v=04112"></script>
+        <script src="capacity-planning.js?v=04112"></script>
+        <script src="dev-focus.js?v=04112"></script>
+        <script src="executive-dashboard.js?v=04112"></script>
+        <script src="lifecycle-guide.js?v=04112"></script>
+        <script src="meeting-guide.js?v=04112"></script>
 
         <!-- Meeting Co-Pilot Panel (System E) -->
         <div id="guide-backdrop" onclick="typeof closeMeetingGuide==='function'&&closeMeetingGuide()"></div>
@@ -246,10 +246,10 @@
                 </div>
             </div>
 
-        </div>
+            <!-- Row 3: Cadence Nudge / Coach Bar (System L) — inside fixed nav so it stacks correctly -->
+            <div id="cadence-nudge-bar"></div>
 
-        <!-- Cadence Nudge Banner (System L) -->
-        <div id="cadence-nudge-bar"></div>
+        </div>
 
         <!-- Main Content Area (Extreme Density Padding + Widescreen Support) -->
         <div id="main-content" class="max-w-[1720px] mx-auto pt-[92px] pb-32">

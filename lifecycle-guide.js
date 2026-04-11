@@ -940,23 +940,40 @@ function getGateHealthSignal(stageId, data) {
 }
 window.getGateHealthSignal = getGateHealthSignal
 
+// Sync #main-content top padding to match whatever height #command-strip currently occupies
+function _syncNavPadding() {
+    const strip = document.getElementById('command-strip')
+    const main = document.getElementById('main-content')
+    if (strip && main) main.style.paddingTop = strip.offsetHeight + 'px'
+}
+
 function renderCadenceNudgeBanner() {
     const bar = document.getElementById('cadence-nudge-bar')
     if (!bar) return
 
+    const _show = (color, html) => {
+        bar.style.display = 'flex'
+        bar.style.setProperty('--cnb-color', color)
+        bar.innerHTML = html
+        _syncNavPadding()
+    }
+    const _hide = () => {
+        bar.style.display = 'none'
+        bar.innerHTML = ''
+        _syncNavPadding()
+    }
+
     // Priority 1: Sprint urgency signals
     const sprintSignal = getSprintCoachSignal()
     if (sprintSignal) {
-        bar.style.display = 'flex'
-        bar.style.setProperty('--cnb-color', sprintSignal.color)
-        bar.innerHTML = `
+        _show(sprintSignal.color, `
             <span class="cnb-icon">${sprintSignal.icon}</span>
             <div class="cnb-body">
                 <span class="cnb-label">${sprintSignal.label}</span>
                 <span class="cnb-msg">${sprintSignal.msg}</span>
             </div>
-            <button class="cnb-cta" onclick="switchView('${sprintSignal.view}');document.getElementById('cadence-nudge-bar').style.display='none'">${sprintSignal.label.split(' ')[0]} →</button>
-        `
+            <button class="cnb-cta" onclick="switchView('${sprintSignal.view}');renderCadenceNudgeBanner()">${sprintSignal.label.split(' ')[0]} →</button>
+        `)
         return
     }
 
@@ -964,60 +981,35 @@ function renderCadenceNudgeBanner() {
     const stageId = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : null
     const gateSignal = getGateHealthSignal(stageId, window.UPDATE_DATA)
     if (gateSignal) {
-        bar.style.display = 'flex'
-        bar.style.setProperty('--cnb-color', '#ef4444')
-        bar.innerHTML = `
+        _show('#ef4444', `
             <span class="cnb-icon">⚠️</span>
             <div class="cnb-body">
                 <span class="cnb-label">Gate Health</span>
                 <span class="cnb-msg">${gateSignal.message}</span>
             </div>
             <button class="cnb-dismiss" onclick="sessionStorage.setItem('${gateSignal.dismissKey}','1');renderCadenceNudgeBanner()" aria-label="Dismiss">✕</button>
-        `
+        `)
         return
     }
 
-    // Priority 3: Fall back to day-of-week cadence nudge
+    // Priority 3: Day-of-week cadence nudge
     const nudge = getCadenceNudge()
     const dismissed = nudge && localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
-    if (!nudge || dismissed) {
-        // Priority 4: Healthy-state bar — always show current stage context
-        // Derive from active view (same approach as renderViewSubtabs) to avoid stale currentWorkflowStage
-        let stageInfo = null
-        if (typeof WORKFLOW_STAGES !== 'undefined' && window.currentActiveView) {
-            for (const [, s] of Object.entries(WORKFLOW_STAGES)) {
-                if (s.views.includes(window.currentActiveView)) { stageInfo = s; break; }
-            }
-        }
-        if (!stageInfo && typeof WORKFLOW_STAGES !== 'undefined') {
-            stageInfo = WORKFLOW_STAGES[typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery']
-        }
-        if (stageInfo) {
-            bar.style.display = 'flex'
-            bar.style.setProperty('--cnb-color', stageInfo.color)
-            bar.innerHTML = `
-                <span class="cnb-icon">${stageInfo.icon}</span>
-                <div class="cnb-body">
-                    <span class="cnb-label">${stageInfo.name}</span>
-                    <span class="cnb-msg">${stageInfo.description}</span>
-                </div>
-            `
-        } else {
-            bar.style.display = 'none'
-        }
+    if (nudge && !dismissed) {
+        _show('#6366f1', `
+            <span class="cnb-icon">${nudge.icon}</span>
+            <div class="cnb-body">
+                <span class="cnb-label">${nudge.label}</span>
+                <span class="cnb-msg">${nudge.msg}</span>
+            </div>
+            <button class="cnb-cta" onclick="switchView('${nudge.view}');renderCadenceNudgeBanner()">${nudge.label.split(' ')[0]} View →</button>
+            <button class="cnb-dismiss" onclick="localStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');renderCadenceNudgeBanner()">✕</button>
+        `)
         return
     }
-    bar.style.display = 'flex'
-    bar.style.setProperty('--cnb-color', '#6366f1')
-    bar.innerHTML = `
-        <span class="cnb-icon">${nudge.icon}</span>
-        <div class="cnb-body">
-            <span class="cnb-label">${nudge.label}</span>
-            <span class="cnb-msg">${nudge.msg}</span>
-        </div>
-        <button class="cnb-cta" onclick="switchView('${nudge.view}');document.getElementById('cadence-nudge-bar').style.display='none'">${nudge.label.split(' ')[0]} View →</button>
-        <button class="cnb-dismiss" onclick="localStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');document.getElementById('cadence-nudge-bar').style.display='none'">✕</button>
-    `
+
+    // No actionable signal — hide bar entirely
+    _hide()
 }
 window.renderCadenceNudgeBanner = renderCadenceNudgeBanner
 

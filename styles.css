@@ -5817,50 +5817,49 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     display: none;
     align-items: center;
     gap: 10px;
-    padding: 6px 16px;
+    padding: 5px 16px;
     font-size: 0.72rem;
-    background: color-mix(in srgb, var(--cnb-color) 8%, white);
-    border-bottom: 1.5px solid color-mix(in srgb, var(--cnb-color) 20%, transparent);
-    min-height: 32px;
-    position: relative;
-    z-index: 100;
+    background: color-mix(in srgb, var(--cnb-color) 12%, white);
+    border-top: 1px solid color-mix(in srgb, var(--cnb-color) 18%, transparent);
+    min-height: 30px;
 }
-.cnb-icon { font-size: 16px; flex-shrink: 0; }
+.cnb-icon { font-size: 14px; flex-shrink: 0; }
 .cnb-body { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cnb-label {
     font-weight: 800;
-    font-size: 11px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     white-space: nowrap;
     flex-shrink: 0;
+    color: color-mix(in srgb, var(--cnb-color) 80%, #0f172a);
 }
 .cnb-msg {
-    opacity: 0.85;
     font-size: 11px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: #334155;
 }
 .cnb-cta {
-    background: rgba(255,255,255,0.2);
+    background: var(--cnb-color);
     color: white;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: none;
     border-radius: var(--radius-pill);
     padding: 3px 12px;
     font-size: 10px;
     font-weight: 800;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: opacity var(--transition-fast);
     white-space: nowrap;
     flex-shrink: 0;
     letter-spacing: 0.04em;
 }
-.cnb-cta:hover { background: rgba(255,255,255,0.35); }
+.cnb-cta:hover { opacity: 0.85; }
 .cnb-dismiss {
     background: transparent;
-    color: rgba(255,255,255,0.6);
+    color: #94a3b8;
     border: none;
     font-size: 14px;
     cursor: pointer;
@@ -5870,7 +5869,7 @@ details[open] .archive-filter-summary::after { content: ' ▴'; }
     line-height: 1;
     transition: color var(--transition-fast);
 }
-.cnb-dismiss:hover { color: white; }
+.cnb-dismiss:hover { color: #0f172a; }
 
 /* ============================================================
    SYSTEM N — Sprint Health HUD (command strip pill)
