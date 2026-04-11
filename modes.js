@@ -159,9 +159,30 @@ function renderViewSubtabs(activeView) {
     const container = document.getElementById('view-subtabs-chips')
     if (!container) return;
 
-    // Source of Truth: Use the strategic stage views
-    const stageKey = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery';
-    let stage = typeof WORKFLOW_STAGES !== 'undefined' ? WORKFLOW_STAGES[stageKey] : null;
+    if (typeof WORKFLOW_STAGES === 'undefined') {
+        console.warn('WORKFLOW_STAGES not loaded. Sub-tabs skipped.');
+        return;
+    }
+
+    // Derive stage from the activeView param first — it is always the ground truth.
+    // currentWorkflowStage can lag by one view during rapid navigation, causing stale chips.
+    const resolvedView = activeView || window.currentActiveView
+    let stage = null
+    let stageKey = null
+    if (resolvedView) {
+        for (const [key, s] of Object.entries(WORKFLOW_STAGES)) {
+            if (s.views.includes(resolvedView)) {
+                stage = s
+                stageKey = key
+                break
+            }
+        }
+    }
+    // Fall back to currentWorkflowStage only when the view isn't in any stage
+    if (!stage) {
+        stageKey = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery'
+        stage = WORKFLOW_STAGES[stageKey] || null
+    }
 
     if (!stage) {
         console.warn('Strategic stage metadata missing. Sub-tabs may be incomplete.');
@@ -178,21 +199,7 @@ function renderViewSubtabs(activeView) {
     const secondary = allStageViews.filter(v => !pinned.includes(v))
     let views = [...pinned, ...secondary]
 
-    // If current stage has no views for this mode, fall back to finding the stage
-    // that contains the active view — avoids blank nav during init race conditions
-    if (views.length === 0) {
-        const fallbackView = activeView || window.currentActiveView
-        if (fallbackView) {
-            for (const [key, s] of Object.entries(WORKFLOW_STAGES)) {
-                if (s.views.includes(fallbackView)) {
-                    stage = s
-                    views = s.views.filter(v => availableModeViews.includes(v))
-                    break
-                }
-            }
-        }
-    }
-
+    // If this stage has no views for this mode (e.g. exec in build), show nothing
     if (views.length === 0) {
         container.innerHTML = '';
         return;

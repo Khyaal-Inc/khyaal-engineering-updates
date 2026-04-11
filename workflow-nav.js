@@ -33,7 +33,7 @@ const WORKFLOW_STAGES = {
         label: 'Planning',
         description: 'Sprint Planning: Grooming backlog, planning sprints, mapping roadmap horizons',
         cadence: 'Weekly',
-        views: ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
+        views: ['sprint', 'roadmap', 'backlog', 'gantt', 'capacity'],
         pinnedViews: { pm: ['sprint', 'roadmap', 'backlog'], dev: ['sprint'], exec: ['roadmap'] },
         color: '#3b82f6',
         order: 3
@@ -45,7 +45,7 @@ const WORKFLOW_STAGES = {
         description: 'High-Velocity Execution: Moving tasks to done and unblocking the team',
         cadence: 'Daily',
         views: ['my-tasks', 'kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        pinnedViews: { pm: ['kanban', 'track'], dev: ['kanban', 'track', 'dependency'], exec: [] },
+        pinnedViews: { pm: ['kanban', 'track'], dev: ['my-tasks', 'kanban', 'track'], exec: [] },
         color: '#10b981',
         order: 4
     },
