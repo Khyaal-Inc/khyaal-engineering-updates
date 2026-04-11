@@ -10,8 +10,8 @@ console.log('🧭 lifecycle-guide.js loading...');
 const STAGES = [
     { id: 'discovery', icon: '💡', label: 'Discover', primaryView: 'ideation', color: '#7c3aed', stageNum: 1 },
     { id: 'vision',    icon: '🎯', label: 'Goals',    primaryView: 'okr',      color: '#4f46e5', stageNum: 2 },
-    { id: 'definition',icon: '📐', label: 'Plan',     primaryView: 'backlog',  color: '#2563eb', stageNum: 3 },
-    { id: 'delivery',  icon: '🚀', label: 'Build',    primaryView: 'kanban',   color: '#059669', stageNum: 4 },
+    { id: 'plan',      icon: '📐', label: 'Plan',     primaryView: 'backlog',  color: '#2563eb', stageNum: 3 },
+    { id: 'build',     icon: '🚀', label: 'Build',    primaryView: 'kanban',   color: '#059669', stageNum: 4 },
     { id: 'review',    icon: '🏁', label: 'Ship',     primaryView: 'releases', color: '#d97706', stageNum: 5 },
 ];
 
