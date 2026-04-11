@@ -882,9 +882,9 @@ function getGateHealthSignal(stageId, data) {
     const activeSprint = (data.metadata?.sprints || []).find(s => s.status === 'active')
     const closedSprints = (data.metadata?.sprints || []).filter(s => s.status === 'closed')
 
-    // Floating items — any stage
+    // Floating items — plan stage and later (discover/vision stages intentionally have unlinked items)
     const floatingItems = allItems.filter(i => !i.epicId && i.status !== 'done' && i.status !== 'archived')
-    if (floatingItems.length > 0) {
+    if (['plan', 'build', 'review'].includes(stageId) && floatingItems.length > 0) {
         const key = 'gate_floating_dismissed'
         if (!sessionStorage.getItem(key)) {
             return { message: `${floatingItems.length} item${floatingItems.length > 1 ? 's' : ''} floating without an epic — link them to epics`, dismissKey: key }
