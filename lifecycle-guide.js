@@ -979,9 +979,34 @@ function renderCadenceNudgeBanner() {
 
     // Priority 3: Fall back to day-of-week cadence nudge
     const nudge = getCadenceNudge()
-    if (!nudge) { bar.style.display = 'none'; return }
-    const dismissed = localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
-    if (dismissed) { bar.style.display = 'none'; return }
+    const dismissed = nudge && localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
+    if (!nudge || dismissed) {
+        // Priority 4: Healthy-state bar — always show current stage context
+        // Derive from active view (same approach as renderViewSubtabs) to avoid stale currentWorkflowStage
+        let stageInfo = null
+        if (typeof WORKFLOW_STAGES !== 'undefined' && window.currentActiveView) {
+            for (const [, s] of Object.entries(WORKFLOW_STAGES)) {
+                if (s.views.includes(window.currentActiveView)) { stageInfo = s; break; }
+            }
+        }
+        if (!stageInfo && typeof WORKFLOW_STAGES !== 'undefined') {
+            stageInfo = WORKFLOW_STAGES[typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : 'discovery']
+        }
+        if (stageInfo) {
+            bar.style.display = 'flex'
+            bar.style.setProperty('--cnb-color', stageInfo.color)
+            bar.innerHTML = `
+                <span class="cnb-icon">${stageInfo.icon}</span>
+                <div class="cnb-body">
+                    <span class="cnb-label">${stageInfo.name}</span>
+                    <span class="cnb-msg">${stageInfo.description}</span>
+                </div>
+            `
+        } else {
+            bar.style.display = 'none'
+        }
+        return
+    }
     bar.style.display = 'flex'
     bar.style.setProperty('--cnb-color', '#6366f1')
     bar.innerHTML = `

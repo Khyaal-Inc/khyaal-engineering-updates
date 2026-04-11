@@ -192,12 +192,18 @@ function updateCommandStripNav() {
     const availableStages = Object.entries(WORKFLOW_STAGES)
         .filter(([key]) => isStageAvailableInCurrentMode(key));
 
-    const currentIdx = availableStages.findIndex(([key]) => key === currentWorkflowStage);
+    // Derive active stage key from current view — avoids stale currentWorkflowStage
+    const _activeViewId = window.currentActiveView || 'okr';
+    let _activeStageKey = currentWorkflowStage;
+    for (const [k, s] of Object.entries(WORKFLOW_STAGES)) {
+        if (s.views.includes(_activeViewId)) { _activeStageKey = k; break; }
+    }
+    const currentIdx = availableStages.findIndex(([key]) => key === _activeStageKey);
 
     // 1. Render Mini Icons
     miniPipeline.innerHTML = availableStages
         .map(([key, stage], index) => {
-            const isActive = currentWorkflowStage === key;
+            const isActive = _activeStageKey === key;
             const isPast = index < currentIdx;
 
             return `
@@ -211,11 +217,13 @@ function updateCommandStripNav() {
             `;
         }).join('');
 
-    // 2. Render Breadcrumb
-    const activeStage = WORKFLOW_STAGES[currentWorkflowStage];
-    // Use window.currentActiveView only — DOM query returns stale active section
-    // since the DOM hasn't updated yet when called from switchWorkflowStage
+    // 2. Render Breadcrumb — derive stage from active view directly to avoid stale currentWorkflowStage
     const activeViewId = window.currentActiveView || 'okr';
+    let activeStage = null;
+    for (const [, s] of Object.entries(WORKFLOW_STAGES)) {
+        if (s.views.includes(activeViewId)) { activeStage = s; break; }
+    }
+    if (!activeStage) activeStage = WORKFLOW_STAGES[currentWorkflowStage];
     const viewName = formatViewName(activeViewId);
 
     breadcrumb.innerHTML = `
