@@ -170,6 +170,7 @@ function renderDashboard() {
     runSafe(renderBacklogView, 'Backlog');
     runSafe(renderKanbanView, 'Kanban');
     runSafe(renderAnalyticsView, 'Analytics');
+    runSafe(renderActivityView, 'Activity');
     runSafe(renderCapacityView, 'Capacity');
     runSafe(renderMyTasksView, 'MyTasks');
     runSafe(renderExecutiveDashboard, 'ExecutiveDashboard');
