@@ -873,11 +873,78 @@ function getSprintCoachSignal() {
 }
 window.getSprintCoachSignal = getSprintCoachSignal
 
+// Returns a gate health signal { message, dismissKey } or null based on current stage + data quality
+function getGateHealthSignal(stageId, data) {
+    if (!data || !data.tracks) return null
+    const allItems = data.tracks.flatMap(t => t.subtracks?.flatMap(s => s.items || []) || [])
+    const allEpics = data.metadata?.epics || []
+    const allOkrs  = data.metadata?.okrs  || []
+    const activeSprint = (data.metadata?.sprints || []).find(s => s.status === 'active')
+    const closedSprints = (data.metadata?.sprints || []).filter(s => s.status === 'closed')
+
+    // Floating items — any stage
+    const floatingItems = allItems.filter(i => !i.epicId && i.status !== 'done' && i.status !== 'archived')
+    if (floatingItems.length > 0) {
+        const key = 'gate_floating_dismissed'
+        if (!sessionStorage.getItem(key)) {
+            return { message: `${floatingItems.length} item${floatingItems.length > 1 ? 's' : ''} floating without an epic — link them to epics`, dismissKey: key }
+        }
+    }
+
+    // Vision/Plan gate — epics without OKR alignment
+    if (stageId === 'vision' || stageId === 'plan') {
+        const unalignedEpics = allEpics.filter(e => !e.linkedOKR && e.status !== 'done' && e.status !== 'archived')
+        if (unalignedEpics.length > 0) {
+            const key = 'gate_epic_okr_dismissed'
+            if (!sessionStorage.getItem(key)) {
+                return { message: `${unalignedEpics.length} epic${unalignedEpics.length > 1 ? 's' : ''} not linked to any OKR — align before planning`, dismissKey: key }
+            }
+        }
+    }
+
+    // Plan gate — sprint over capacity
+    if (stageId === 'plan' && activeSprint) {
+        const capacity = activeSprint.totalCapacity || 0
+        const planned  = activeSprint.plannedPoints  || 0
+        if (capacity > 0 && planned > capacity) {
+            const key = 'gate_capacity_dismissed'
+            if (!sessionStorage.getItem(key)) {
+                return { message: `Sprint is over capacity (${planned} pts planned, ${capacity} pts available) — defer or remove items`, dismissKey: key }
+            }
+        }
+    }
+
+    // Build/Review gate — KRs with zero progress after at least one sprint is closed
+    if ((stageId === 'build' || stageId === 'review') && closedSprints.length > 0) {
+        const staleKRs = allOkrs.flatMap(o => (o.keyResults || []).filter(kr => !kr.current || Number(kr.current) === 0))
+        if (staleKRs.length > 0) {
+            const key = 'gate_kr_progress_dismissed'
+            if (!sessionStorage.getItem(key)) {
+                return { message: `${staleKRs.length} key result${staleKRs.length > 1 ? 's' : ''} show no progress — update after sprint close`, dismissKey: key }
+            }
+        }
+    }
+
+    // Review gate — sprint overdue (ceremony prompt)
+    if (stageId === 'review' && activeSprint) {
+        const endDate = activeSprint.endDate ? new Date(activeSprint.endDate) : null
+        if (endDate && endDate < new Date()) {
+            const key = 'gate_retro_dismissed'
+            if (!sessionStorage.getItem(key)) {
+                return { message: `Sprint "${activeSprint.name}" is overdue — run retrospective and close the sprint`, dismissKey: key }
+            }
+        }
+    }
+
+    return null
+}
+window.getGateHealthSignal = getGateHealthSignal
+
 function renderCadenceNudgeBanner() {
     const bar = document.getElementById('cadence-nudge-bar')
     if (!bar) return
 
-    // Sprint signals take priority over day-of-week cadence nudges
+    // Priority 1: Sprint urgency signals
     const sprintSignal = getSprintCoachSignal()
     if (sprintSignal) {
         bar.style.display = 'flex'
@@ -893,7 +960,24 @@ function renderCadenceNudgeBanner() {
         return
     }
 
-    // Fall back to day-of-week cadence nudge
+    // Priority 2: Gate health signals
+    const stageId = typeof currentWorkflowStage !== 'undefined' ? currentWorkflowStage : null
+    const gateSignal = getGateHealthSignal(stageId, window.UPDATE_DATA)
+    if (gateSignal) {
+        bar.style.display = 'flex'
+        bar.style.setProperty('--cnb-color', '#ef4444')
+        bar.innerHTML = `
+            <span class="cnb-icon">⚠️</span>
+            <div class="cnb-body">
+                <span class="cnb-label">Gate Health</span>
+                <span class="cnb-msg">${gateSignal.message}</span>
+            </div>
+            <button class="cnb-dismiss" onclick="sessionStorage.setItem('${gateSignal.dismissKey}','1');renderCadenceNudgeBanner()" aria-label="Dismiss">✕</button>
+        `
+        return
+    }
+
+    // Priority 3: Fall back to day-of-week cadence nudge
     const nudge = getCadenceNudge()
     if (!nudge) { bar.style.display = 'none'; return }
     const dismissed = localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
