@@ -180,6 +180,9 @@ function renderDashboard() {
     if (typeof updateBacklogBadge === 'function') updateBacklogBadge();
     if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
     if (typeof buildTagFilterBar === 'function') buildTagFilterBar();
+
+    // 5. Refresh coach bar now that data is guaranteed to be available
+    if (typeof renderCadenceNudgeBanner === 'function') renderCadenceNudgeBanner();
 }
 
 // ------ CORE APP INITIALIZATION ------

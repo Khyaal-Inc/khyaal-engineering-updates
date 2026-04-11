@@ -72,18 +72,18 @@ const VIEW_METADATA = {
 // ============================================================
 const STAGE_TO_VIEWS = {
     pm: {
-        discovery: ['ideation', 'spikes'],
+        discovery: ['ideation', 'spikes', 'workflow'],
         vision:    ['okr', 'epics'],
-        plan:      ['roadmap', 'backlog', 'sprint', 'gantt', 'capacity'],
-        build:     ['kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        review:    ['releases', 'analytics', 'dashboard', 'workflow', 'activity']
+        plan:      ['sprint', 'roadmap', 'backlog', 'gantt', 'capacity'],
+        build:     ['my-tasks', 'kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
+        review:    ['releases', 'analytics', 'dashboard', 'activity']
     },
     dev: {
-        discovery: ['ideation', 'spikes'],
+        discovery: ['ideation', 'spikes', 'workflow'],
         vision:    [],
         plan:      ['sprint'],
         build:     ['my-tasks', 'kanban', 'track', 'dependency'],
-        review:    ['workflow', 'activity']
+        review:    ['activity']
     },
     exec: {
         discovery: ['ideation'],

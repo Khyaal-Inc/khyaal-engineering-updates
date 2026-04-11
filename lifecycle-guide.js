@@ -848,8 +848,8 @@ function getSprintCoachSignal() {
         }
     }
 
-    // Signal 2: No active OKRs
-    if (okrs.length === 0 || !okrs.some(o => o.status === 'active')) {
+    // Signal 2: No OKRs at all (status varies: 'active','on-track','at-risk' — any OKR counts)
+    if (okrs.length === 0) {
         return { icon: '🎯', label: 'No active OKRs', msg: 'Set your quarterly objectives to align the team', view: 'okr', color: '#8b5cf6', type: 'no-okrs' }
     }
 
