@@ -19,22 +19,24 @@ const STAGES = [
 const VIEW_LIFECYCLE_MAP = {
     ideation:   { stageId: 'discovery', stageNum: 1 },
     spikes:     { stageId: 'discovery', stageNum: 1 },
+    workflow:   { stageId: 'discovery', stageNum: 1 },
     okr:        { stageId: 'vision',    stageNum: 2 },
     epics:      { stageId: 'vision',    stageNum: 2 },
-    roadmap:    { stageId: 'definition', stageNum: 3 },
-    backlog:    { stageId: 'definition', stageNum: 3 },
-    sprint:     { stageId: 'definition', stageNum: 3 },
-    capacity:   { stageId: 'definition', stageNum: 3 },
-    track:      { stageId: 'delivery',  stageNum: 4 },
-    kanban:     { stageId: 'delivery',  stageNum: 4 },
-    'my-tasks': { stageId: 'delivery',  stageNum: 4 },
-    gantt:      { stageId: 'delivery',  stageNum: 4 },
-    dependency: { stageId: 'delivery',  stageNum: 4 },
-    status:     { stageId: 'delivery',  stageNum: 4 },
-    priority:   { stageId: 'delivery',  stageNum: 4 },
-    contributor:{ stageId: 'delivery',  stageNum: 4 },
+    roadmap:    { stageId: 'plan',      stageNum: 3 },
+    backlog:    { stageId: 'plan',      stageNum: 3 },
+    sprint:     { stageId: 'plan',      stageNum: 3 },
+    gantt:      { stageId: 'plan',      stageNum: 3 },
+    capacity:   { stageId: 'plan',      stageNum: 3 },
+    track:      { stageId: 'build',     stageNum: 4 },
+    kanban:     { stageId: 'build',     stageNum: 4 },
+    'my-tasks': { stageId: 'build',     stageNum: 4 },
+    dependency: { stageId: 'build',     stageNum: 4 },
+    status:     { stageId: 'build',     stageNum: 4 },
+    priority:   { stageId: 'build',     stageNum: 4 },
+    contributor:{ stageId: 'build',     stageNum: 4 },
     releases:   { stageId: 'review',    stageNum: 5 },
     analytics:  { stageId: 'review',    stageNum: 5 },
+    activity:   { stageId: 'review',    stageNum: 5 },
     dashboard:  { stageId: 'review',    stageNum: 5 },
 };
 
@@ -53,8 +55,8 @@ function checkStageCompletion(stageId) {
     switch (stageId) {
         case 'discovery': return _getAllItemsFlat().some(i => (i.tags || []).some(t => ['idea','spike'].includes(t.toLowerCase())));
         case 'vision':    return (data.metadata?.okrs?.length > 0) && (data.metadata?.epics?.length > 0);
-        case 'definition':return (data.metadata?.sprints?.length > 0) && _getAllItemsFlat().some(i => i.sprintId && i.storyPoints);
-        case 'delivery':  return _getAllItemsFlat().some(i => i.status === 'done');
+        case 'plan':      return (data.metadata?.sprints?.length > 0) && _getAllItemsFlat().some(i => i.sprintId && i.storyPoints);
+        case 'build':     return _getAllItemsFlat().some(i => i.status === 'done');
         case 'review':    return (data.metadata?.releases || []).some(r => r.status === 'published');
         default:          return false;
     }
