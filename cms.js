@@ -6044,7 +6044,109 @@ function adminSwitchTab(tab) {
 }
 
 function renderAdminUsersTab() {
-  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Users and Grants tab — coming soon</div>'
+  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  const users = registry.users || []
+  const workspaces = registry.projects || []
+  const activeWsId = window.ACTIVE_PROJECT_ID || ''
+
+  // Build user rows
+  const userRows = users.map((u, ui) => {
+    const initials = (u.name || u.id || '?')[0].toUpperCase()
+    const colors = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4']
+    const avatarColor = colors[ui % colors.length]
+    const grants = u.grants || []
+
+    const grantRows = grants.map((g, gi) => {
+      const ws = workspaces.find(p => p.id === g.projectId) || { name: g.projectId }
+      const roleColors = { pm: '#dcfce7;color:#166534', dev: '#fef3c7;color:#92400e', exec: '#dbeafe;color:#1d4ed8' }
+      const roleStyle = roleColors[g.mode] || '#f1f5f9;color:#374151'
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0">
+          <div>
+            <span style="font-size:11px;font-weight:700;color:#1e293b">${ws.name}</span>
+            <span style="font-size:9px;color:#94a3b8;margin-left:4px">/ All Projects</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="padding:2px 7px;background:${roleStyle};border-radius:4px;font-size:10px;font-weight:800">${g.mode}</span>
+            <button onclick="adminRevokeGrant('${u.id}', ${gi})" style="padding:2px 6px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:3px;font-size:10px;cursor:pointer">x</button>
+          </div>
+        </div>`
+    }).join('')
+
+    return `
+      <div style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;background:white;overflow:hidden">
+        <div style="padding:10px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:${avatarColor};color:white;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center">${initials}</div>
+            <div>
+              <div style="font-weight:800;color:#1e293b;font-size:12px">${u.name || u.id}</div>
+              <div style="color:#64748b;font-size:10px">${u.email || u.id}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="adminEditUserInline('${u.id}')" style="padding:3px 10px;background:white;border:1px solid #e2e8f0;color:#374151;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Edit</button>
+            <button onclick="adminRemoveUser('${u.id}')" style="padding:3px 10px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Remove</button>
+          </div>
+        </div>
+        <div style="padding:8px 14px 10px" id="admin-user-detail-${u.id}">
+          <div style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Workspace Access</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${grantRows || '<div style="font-size:10px;color:#94a3b8">No grants yet</div>'}
+            <button onclick="adminShowGrantForm('${u.id}')" style="padding:4px;border:1.5px dashed #c7d2fe;border-radius:5px;color:#6366f1;font-size:10px;font-weight:700;background:transparent;cursor:pointer;margin-top:4px">+ Grant Access to Workspace</button>
+            <div id="admin-grant-form-${u.id}" style="display:none"></div>
+          </div>
+        </div>
+      </div>`
+  }).join('')
+
+  // Build workspace rows
+  const wsRows = workspaces.map(ws => {
+    const isActive = ws.id === activeWsId
+    return `
+      <div style="border:${isActive ? '1.5px solid #c7d2fe' : '1px solid #e2e8f0'};border-radius:8px;margin-bottom:8px;background:${isActive ? '#eef2ff' : 'white'};overflow:hidden">
+        <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isActive ? '#6366f1' : '#cbd5e1'}"></span>
+            <span style="font-weight:800;color:${isActive ? '#312e81' : '#475569'};font-size:12px">${ws.name}</span>
+            ${isActive ? '<span style="background:#6366f1;color:white;border-radius:8px;padding:1px 7px;font-size:9px;font-weight:900">ACTIVE</span>' : ''}
+            <span style="font-size:10px;color:#94a3b8">${ws.dataFile || ws.id + '.json'}</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            ${!isActive ? `<button onclick="adminSwitchWorkspace('${ws.id}')" style="padding:3px 10px;background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Switch</button>` : ''}
+            <button onclick="adminEditWorkspaceInline('${ws.id}')" style="padding:3px 10px;background:white;border:1px solid #e2e8f0;color:#374151;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Edit</button>
+            <button onclick="adminDeleteWorkspace('${ws.id}')" style="padding:3px 10px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Delete</button>
+          </div>
+        </div>
+        <div id="admin-ws-form-${ws.id}" style="display:none;padding:10px 14px;border-top:1px solid #e2e8f0;background:#f8fafc"></div>
+      </div>`
+  }).join('')
+
+  return `
+    <!-- Users section -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em">Users <span style="background:#e2e8f0;color:#64748b;border-radius:8px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px">${users.length}</span></div>
+      <button onclick="adminShowAddUserForm()" style="padding:5px 12px;background:#6366f1;color:white;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer">+ Add User</button>
+    </div>
+    <div id="admin-add-user-form" style="display:none;margin-bottom:12px"></div>
+    ${userRows || '<div style="color:#94a3b8;font-size:12px;margin-bottom:12px">No users found.</div>'}
+
+    <!-- Workspaces section -->
+    <div style="border-top:1px solid #e2e8f0;padding-top:16px;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em">Workspaces <span style="background:#e2e8f0;color:#64748b;border-radius:8px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px">${workspaces.length}</span></div>
+        <button onclick="adminShowAddWorkspaceForm()" style="padding:5px 12px;background:#6366f1;color:white;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer">+ Add Workspace</button>
+      </div>
+      <div style="font-size:10px;color:#94a3b8;margin-bottom:10px">Each workspace is a top-level data file on GitHub. Workspace changes save to users.json.</div>
+      <div id="admin-add-ws-form" style="display:none;margin-bottom:12px"></div>
+      ${wsRows || '<div style="color:#94a3b8;font-size:12px">No workspaces found.</div>'}
+    </div>
+
+    <!-- Save CTA -->
+    <div style="border-top:1px solid #e2e8f0;padding-top:14px;margin-top:16px">
+      <button onclick="adminSaveUsersJson()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer">Save Users and Workspaces to GitHub</button>
+      <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:6px">Saves to users.json · Requires PM role</p>
+    </div>
+  `
 }
 
 function renderAdminStructureTab() {
