@@ -245,6 +245,7 @@ Proceed with the module you just suggested as next. Follow the same rules as bef
 - Focus on clean, working code that matches CLAUDE.md architecture rules
 - Update relevant documentation in ./docs/
 - After implementation, summarise what changed and suggest the next module
+- Also use superpower skills wherever required
 ```
 
 ### 4.3 Implement with Quality & Tests
