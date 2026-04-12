@@ -2334,6 +2334,205 @@
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-4",
               "tags": []
+            },
+            {
+              "id": "platform-admin-tambola-ticket",
+              "text": "Tambola ticket retention 7 days + event-only search filter",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [
+                "Vivek"
+              ],
+              "note": "Discard Tambola tickets after 7 days. Search box in CMS should filter by that event tickets only.",
+              "usecase": "Prevents clutter in the CMS ticket list; reduces confusion when managing multiple game sessions.",
+              "acceptanceCriteria": [
+                "Tickets older than 7 days auto-discarded",
+                "Search box filters to event-specific tickets only",
+                "Retention policy documented"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "cms",
+                "tambola"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-03",
+              "planningHorizon": "1M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-admin-events-cms",
+              "text": "Events CMS: start time in column, link mandatory, upload image from CMS",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Three CMS event improvements: (1) show start time in event list column; (2) make link field mandatory; (3) image upload from CMS instead of URL-only.",
+              "usecase": "Reduces ops friction in event management; prevents events going live without links.",
+              "acceptanceCriteria": [
+                "Events list column shows start time (not image URL)",
+                "Link field validation prevents save without value",
+                "Image upload from CMS functional"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "cms",
+                "events"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-admin-cache-clear",
+              "text": "Manual cache clear capability in CMS",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Add a manual cache clear button in CMS so ops team can clear cache without developer intervention.",
+              "usecase": "Reduces ops dependency on engineering for routine cache busting after content updates.",
+              "acceptanceCriteria": [
+                "Cache clear button visible in CMS admin",
+                "Clicking clears relevant caches (API, CDN, page cache)",
+                "Success/failure feedback shown"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "cms",
+                "cache",
+                "devops"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-admin-bulk-coins",
+              "text": "Bulk custom coin assignment via CMS",
+              "status": "review",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Allow bulk coin assignment to multiple users via CSV upload in CMS.",
+              "usecase": "Reduces manual effort for campaign coin rewards; enables bulk operations team workflows.",
+              "acceptanceCriteria": [
+                "CSV upload accepted with user_id and coin_amount columns",
+                "Bulk operation processed with success/failure count",
+                "Audit log created"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "cms",
+                "coins",
+                "bulk"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "1M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-admin-bulk-users",
+              "text": "Bulk User creation and Membership assignment",
+              "status": "review",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Allow batch creation of users and assignment of memberships via CSV upload in CMS.",
+              "usecase": "Enables onboarding of corporate or community group members in bulk.",
+              "acceptanceCriteria": [
+                "CSV upload accepted for batch user creation",
+                "Membership auto-assigned per CSV spec",
+                "Error rows reported with reason"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "cms",
+                "users",
+                "bulk",
+                "membership"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "1M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-admin-membership-details",
+              "text": "CMS membership details page — single profile view (4-click to 1)",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Currently viewing membership details requires 4 clicks + manual time conversion. New page consolidates all User Membership details (per Raissa Pinto spec) with assign membership flow.",
+              "usecase": "Reduces ops time per member inquiry from ~2 min to <30 sec.",
+              "acceptanceCriteria": [
+                "Single profile page shows all membership details",
+                "Fields per Raissa Pinto spec (dates, status, plan, payment history)",
+                "Assign membership flow on same page",
+                "Time conversion automatic"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "cms",
+                "membership",
+                "ux"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-admin-individual-roles",
+              "text": "Individual Roles: Event Manager + Support user types with separate logins",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Create Event Manager and Support role types with separate CMS login. User list from Raissa Pinto.",
+              "usecase": "Enables ops team members to manage events and support tickets without full admin access.",
+              "acceptanceCriteria": [
+                "Event Manager role: can create/edit events, cannot access billing",
+                "Support role: can view user profiles and memberships, cannot edit",
+                "Separate login credentials per role",
+                "User list provisioned per Raissa Pinto spec"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "cms",
+                "roles",
+                "auth"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-7"
             }
           ]
         },
