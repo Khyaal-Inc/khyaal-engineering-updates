@@ -6149,6 +6149,291 @@ function renderAdminUsersTab() {
   `
 }
 
+// ─── Users & Grants CRUD ─────────────────────────────────────────────────────
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+function adminShowAddUserForm() {
+  const el = document.getElementById('admin-add-user-form')
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="background:#f8fafc;border:1.5px solid #c7d2fe;border-radius:8px;padding:14px">
+      <div style="font-size:10px;font-weight:900;color:#4338ca;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add User</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">User ID (login name)</label>
+          <input id="admin-new-user-id" type="text" placeholder="gautam" style="width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:5px;font-size:11px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Display Name</label>
+          <input id="admin-new-user-name" type="text" placeholder="Gautam Lodhiya" style="width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:5px;font-size:11px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Email</label>
+          <input id="admin-new-user-email" type="email" placeholder="user@khyaal.com" style="width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:5px;font-size:11px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Initial Password</label>
+          <input id="admin-new-user-password" type="password" placeholder="password" style="width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:5px;font-size:11px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="adminSaveNewUser()" style="flex:1;padding:7px;background:#6366f1;color:white;border:none;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer">Add User</button>
+        <button onclick="document.getElementById('admin-add-user-form').style.display='none'" style="padding:7px 14px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+async function adminSaveNewUser() {
+  const id = (document.getElementById('admin-new-user-id')?.value || '').trim()
+  const name = (document.getElementById('admin-new-user-name')?.value || '').trim()
+  const email = (document.getElementById('admin-new-user-email')?.value || '').trim()
+  const password = (document.getElementById('admin-new-user-password')?.value || '').trim()
+  if (!id || !name || !password) { showToast('User ID, name, and password are required', 'error'); return }
+  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  if ((registry.users || []).find(u => u.id === id)) { showToast('User ID already exists', 'error'); return }
+  const passwordHash = await sha256(password)
+  const newUser = { id, name, email, passwordHash, grants: [] }
+  if (!registry.users) registry.users = []
+  registry.users.push(newUser)
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('User added — click Save to persist', 'info')
+}
+
+function adminEditUserInline(userId) {
+  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const user = (registry.users || []).find(u => u.id === userId)
+  if (!user) return
+  const detailEl = document.getElementById('admin-user-detail-' + userId)
+  if (!detailEl) return
+  detailEl.innerHTML = `
+    <div style="background:#f8fafc;border:1px solid #c7d2fe;border-radius:6px;padding:10px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Display Name</label>
+          <input id="admin-edit-user-name-${userId}" type="text" value="${user.name || ''}" style="width:100%;padding:5px 8px;border:1px solid #c7d2fe;border-radius:4px;font-size:11px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Email</label>
+          <input id="admin-edit-user-email-${userId}" type="email" value="${user.email || ''}" style="width:100%;padding:5px 8px;border:1px solid #c7d2fe;border-radius:4px;font-size:11px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="adminSaveUserEdit('${userId}')" style="flex:1;padding:6px;background:#6366f1;color:white;border:none;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer">Save</button>
+        <button onclick="renderAdminView()" style="padding:6px 12px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+function adminSaveUserEdit(userId) {
+  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const user = (registry.users || []).find(u => u.id === userId)
+  if (!user) return
+  user.name = (document.getElementById('admin-edit-user-name-' + userId)?.value || '').trim() || user.name
+  user.email = (document.getElementById('admin-edit-user-email-' + userId)?.value || '').trim() || user.email
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('User updated — click Save to persist', 'info')
+}
+
+function adminRemoveUser(userId) {
+  if (!confirm('Remove user "' + userId + '"? This also removes all their grants.')) return
+  const registry = window.PROJECT_REGISTRY || { users: [] }
+  registry.users = (registry.users || []).filter(u => u.id !== userId)
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('User removed — click Save to persist', 'info')
+}
+
+function adminShowGrantForm(userId) {
+  const el = document.getElementById('admin-grant-form-' + userId)
+  if (!el) return
+  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  const workspaces = registry.projects || []
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="background:#f8fafc;border:1px solid #c7d2fe;border-radius:5px;padding:8px;margin-top:6px">
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:flex-end">
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Workspace</label>
+          <select id="admin-grant-ws-${userId}" style="width:100%;padding:4px 6px;border:1px solid #c7d2fe;border-radius:4px;font-size:10px">
+            ${workspaces.map(w => `<option value="${w.id}">${w.name}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Role</label>
+          <select id="admin-grant-role-${userId}" style="width:100%;padding:4px 6px;border:1px solid #c7d2fe;border-radius:4px;font-size:10px">
+            <option value="pm">pm</option>
+            <option value="dev">dev</option>
+            <option value="exec">exec</option>
+          </select>
+        </div>
+        <button onclick="adminSaveGrant('${userId}')" style="padding:5px 10px;background:#6366f1;color:white;border:none;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer">Add</button>
+      </div>
+      <button onclick="document.getElementById('admin-grant-form-${userId}').style.display='none'" style="margin-top:5px;padding:3px;width:100%;background:transparent;border:none;color:#94a3b8;font-size:9px;cursor:pointer">Cancel</button>
+    </div>`
+}
+
+function adminSaveGrant(userId) {
+  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const user = (registry.users || []).find(u => u.id === userId)
+  if (!user) return
+  const projectId = document.getElementById('admin-grant-ws-' + userId)?.value
+  const mode = document.getElementById('admin-grant-role-' + userId)?.value
+  if (!projectId || !mode) return
+  if (!user.grants) user.grants = []
+  if (user.grants.find(g => g.projectId === projectId)) { showToast('Grant already exists for this workspace', 'error'); return }
+  user.grants.push({ projectId, mode })
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('Grant added — click Save to persist', 'info')
+}
+
+function adminRevokeGrant(userId, grantIdx) {
+  if (!confirm('Remove this grant?')) return
+  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const user = (registry.users || []).find(u => u.id === userId)
+  if (!user || !user.grants) return
+  user.grants.splice(grantIdx, 1)
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('Grant revoked — click Save to persist', 'info')
+}
+
+function adminShowAddWorkspaceForm() {
+  const el = document.getElementById('admin-add-ws-form')
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="background:#f8fafc;border:1.5px solid #c7d2fe;border-radius:8px;padding:14px">
+      <div style="font-size:10px;font-weight:900;color:#4338ca;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add Workspace</div>
+      <div style="margin-bottom:8px">
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Workspace Name</label>
+        <input id="admin-new-ws-name" type="text" placeholder="AI Agent Team" style="width:100%;padding:6px 8px;border:1px solid #c7d2fe;border-radius:5px;font-size:11px;box-sizing:border-box" oninput="adminPreviewWsId(this.value)">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Data File (auto-generated)</label>
+        <input id="admin-new-ws-file" type="text" placeholder="data-ai-agent-team.json" readonly style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:5px;font-size:11px;background:#f1f5f9;color:#94a3b8;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="adminSaveNewWorkspace()" style="flex:1;padding:7px;background:#6366f1;color:white;border:none;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer">Create Workspace</button>
+        <button onclick="document.getElementById('admin-add-ws-form').style.display='none'" style="padding:7px 14px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+function adminPreviewWsId(name) {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const fileEl = document.getElementById('admin-new-ws-file')
+  if (fileEl) fileEl.value = slug ? 'data-' + slug + '.json' : ''
+}
+
+function adminSaveNewWorkspace() {
+  const name = (document.getElementById('admin-new-ws-name')?.value || '').trim()
+  if (!name) { showToast('Workspace name is required', 'error'); return }
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const id = slug
+  const dataFile = 'data-' + slug + '.json'
+  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  if ((registry.projects || []).find(p => p.id === id)) { showToast('Workspace ID already exists', 'error'); return }
+  if (!registry.projects) registry.projects = []
+  registry.projects.push({ id, name, dataFile })
+  window.PROJECT_REGISTRY = registry
+  scaffoldProjectDataFile(id, name)
+  renderAdminView()
+  showToast('Workspace created — click Save to persist registry', 'info')
+}
+
+function adminEditWorkspaceInline(wsId) {
+  const el = document.getElementById('admin-ws-form-' + wsId)
+  if (!el) return
+  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const ws = (registry.projects || []).find(p => p.id === wsId)
+  if (!ws) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Workspace Name</label>
+        <input id="admin-edit-ws-name-${wsId}" type="text" value="${ws.name}" style="width:100%;padding:5px 8px;border:1px solid #c7d2fe;border-radius:4px;font-size:11px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Data File</label>
+        <input type="text" value="${ws.dataFile || wsId + '.json'}" readonly style="width:100%;padding:5px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;background:#f1f5f9;color:#94a3b8;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button onclick="adminSaveWorkspaceEdit('${wsId}')" style="flex:1;padding:6px;background:#6366f1;color:white;border:none;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer">Save</button>
+      <button onclick="document.getElementById('admin-ws-form-${wsId}').style.display='none'" style="padding:6px 12px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">Cancel</button>
+    </div>`
+}
+
+function adminSaveWorkspaceEdit(wsId) {
+  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const ws = (registry.projects || []).find(p => p.id === wsId)
+  if (!ws) return
+  ws.name = (document.getElementById('admin-edit-ws-name-' + wsId)?.value || '').trim() || ws.name
+  window.PROJECT_REGISTRY = registry
+  renderAdminView()
+  showToast('Workspace updated — click Save to persist', 'info')
+}
+
+function adminDeleteWorkspace(wsId) {
+  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const ws = (registry.projects || []).find(p => p.id === wsId)
+  if (!ws) return
+  if (wsId === window.ACTIVE_PROJECT_ID) { showToast('Cannot delete the active workspace. Switch first.', 'error'); return }
+  if (!confirm('Delete workspace "' + ws.name + '"? This will tombstone its data file on GitHub. This cannot be undone.')) return
+  registry.projects = (registry.projects || []).filter(p => p.id !== wsId)
+  window.PROJECT_REGISTRY = registry
+  deleteProjectDataFile(wsId)
+  renderAdminView()
+  showToast('Workspace deleted — click Save to persist registry', 'info')
+}
+
+function adminSwitchWorkspace(wsId) {
+  if (!confirm('Switch to workspace "' + wsId + '"? The page will reload.')) return
+  window.ACTIVE_PROJECT_ID = wsId
+  localStorage.setItem('khyaal_active_project', wsId)
+  location.reload()
+}
+
+async function adminSaveUsersJson() {
+  const registry = window.PROJECT_REGISTRY
+  if (!registry) { showToast('No registry data to save', 'error'); return }
+  if (window.isActionLockActive) { showToast('Save already in progress', 'error'); return }
+  window.isActionLockActive = true
+  try {
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    const content = btoa(JSON.stringify(registry, null, 2))
+    const response = await fetch(LAMBDA_URL + '?action=write', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + jwt, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, sha: window._lastUsersSha || undefined, message: 'chore: update users.json via admin panel', filePath: 'users.json' })
+    })
+    if (!response.ok) throw new Error('Write failed: ' + response.status)
+    const { sha } = await response.json()
+    if (sha) window._lastUsersSha = sha
+    showToast('Users and Workspaces saved to GitHub', 'success')
+  } catch (err) {
+    console.error('❌ adminSaveUsersJson:', err)
+    showToast('Save failed — check connection and try again', 'error')
+  } finally {
+    window.isActionLockActive = false
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function renderAdminStructureTab() {
   return '<div style="color:#94a3b8;padding:20px;font-size:12px">Structure tab — coming soon</div>'
 }
