@@ -6516,6 +6516,211 @@ function renderAdminStructureTab() {
   `
 }
 
+function adminAddProject() {
+  const el = document.getElementById('admin-add-project-form')
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="background:#f8fafc;border:1.5px solid #a7f3d0;border-radius:8px;padding:14px">
+      <div style="font-size:10px;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add Project</div>
+      <div style="margin-bottom:8px">
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Project Name</label>
+        <input id="admin-new-proj-name" type="text" placeholder="Khyaal Platform" style="width:100%;padding:6px 8px;border:1px solid #a7f3d0;border-radius:5px;font-size:11px;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="adminSaveNewProject()" style="flex:1;padding:7px;background:#10b981;color:white;border:none;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer">Create Project</button>
+        <button onclick="document.getElementById('admin-add-project-form').style.display='none'" style="padding:7px 14px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+function adminSaveNewProject() {
+  const name = (document.getElementById('admin-new-proj-name')?.value || '').trim()
+  if (!name) { showToast('Project name is required', 'error'); return }
+  const id = 'proj-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now()
+  const newProject = { id, name, tracks: [] }
+  if (!window.UPDATE_DATA.projects) window.UPDATE_DATA.projects = []
+  window.UPDATE_DATA.projects.push(newProject)
+  renderAdminView()
+  showToast('Project added — click Save to persist', 'info')
+}
+
+function adminEditProjectInline(projectId) {
+  const el = document.getElementById('admin-project-form-' + projectId)
+  if (!el) return
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  if (!proj) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:flex-end">
+      <div>
+        <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Project Name</label>
+        <input id="admin-edit-proj-name-${projectId}" type="text" value="${proj.name}" style="width:100%;padding:5px 8px;border:1px solid #c7d2fe;border-radius:4px;font-size:11px;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="adminSaveProjectEdit('${projectId}')" style="padding:6px 12px;background:#6366f1;color:white;border:none;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer">Save</button>
+        <button onclick="document.getElementById('admin-project-form-${projectId}').style.display='none'" style="padding:6px 10px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:4px;font-size:10px;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+function adminSaveProjectEdit(projectId) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  if (!proj) return
+  proj.name = (document.getElementById('admin-edit-proj-name-' + projectId)?.value || '').trim() || proj.name
+  renderAdminView()
+  showToast('Project updated — click Save to persist', 'info')
+}
+
+function adminDeleteProject(projectId) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  if (!proj) return
+  const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
+  if (!confirm('Delete project "' + proj.name + '"? This will permanently remove ' + itemCount + ' items, all tracks, and all subtracks within it.')) return
+  window.UPDATE_DATA.projects = (window.UPDATE_DATA.projects || []).filter(p => p.id !== projectId)
+  renderAdminView()
+  showToast('Project deleted — click Save to persist', 'info')
+}
+
+function adminAddTrack(projectId) {
+  const el = document.getElementById('admin-track-add-form-' + projectId)
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px">
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:flex-end">
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Track Name</label>
+          <input id="admin-new-track-name-${projectId}" type="text" placeholder="Website" style="width:100%;padding:5px 7px;border:1px solid #bfdbfe;border-radius:4px;font-size:10px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Colour</label>
+          <input id="admin-new-track-color-${projectId}" type="color" value="#3b82f6" style="height:28px;width:40px;border:1px solid #bfdbfe;border-radius:4px;padding:1px;cursor:pointer">
+        </div>
+        <button onclick="adminSaveNewTrack('${projectId}')" style="padding:5px 10px;background:#1d4ed8;color:white;border:none;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer">Add</button>
+      </div>
+      <button onclick="document.getElementById('admin-track-add-form-${projectId}').style.display='none'" style="margin-top:5px;padding:3px;width:100%;background:transparent;border:none;color:#94a3b8;font-size:9px;cursor:pointer">Cancel</button>
+    </div>`
+}
+
+function adminSaveNewTrack(projectId) {
+  const name = (document.getElementById('admin-new-track-name-' + projectId)?.value || '').trim()
+  if (!name) { showToast('Track name is required', 'error'); return }
+  const color = document.getElementById('admin-new-track-color-' + projectId)?.value || '#3b82f6'
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  if (!proj) return
+  const id = 't-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()
+  if (!proj.tracks) proj.tracks = []
+  proj.tracks.push({ id, name, color, subtracks: [] })
+  renderAdminView()
+  showToast('Track added — click Save to persist', 'info')
+}
+
+function adminEditTrackInline(projectId, trackId) {
+  const el = document.getElementById('admin-track-form-' + projectId + '-' + trackId)
+  if (!el) return
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+  if (!track) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:flex-end">
+      <div>
+        <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Track Name</label>
+        <input id="admin-edit-track-name-${projectId}-${trackId}" type="text" value="${track.name}" style="width:100%;padding:4px 6px;border:1px solid #c7d2fe;border-radius:4px;font-size:10px;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Colour</label>
+        <input id="admin-edit-track-color-${projectId}-${trackId}" type="color" value="${track.color || '#3b82f6'}" style="height:26px;width:36px;border:1px solid #e2e8f0;border-radius:3px;padding:1px;cursor:pointer">
+      </div>
+      <div style="display:flex;gap:4px">
+        <button onclick="adminSaveTrackEdit('${projectId}','${trackId}')" style="padding:4px 9px;background:#6366f1;color:white;border:none;border-radius:3px;font-size:9px;font-weight:800;cursor:pointer">Save</button>
+        <button onclick="document.getElementById('admin-track-form-${projectId}-${trackId}').style.display='none'" style="padding:4px 7px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:3px;font-size:9px;cursor:pointer">Cancel</button>
+      </div>
+    </div>`
+}
+
+function adminSaveTrackEdit(projectId, trackId) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+  if (!track) return
+  track.name = (document.getElementById('admin-edit-track-name-' + projectId + '-' + trackId)?.value || '').trim() || track.name
+  track.color = document.getElementById('admin-edit-track-color-' + projectId + '-' + trackId)?.value || track.color
+  renderAdminView()
+  showToast('Track updated — click Save to persist', 'info')
+}
+
+function adminDeleteTrack(projectId, trackId) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  if (!proj) return
+  const track = (proj.tracks || []).find(t => (t.id || '') === trackId)
+  if (!track) return
+  const itemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
+  if (!confirm('Delete track "' + track.name + '"? This removes ' + itemCount + ' items and all its subtracks.')) return
+  proj.tracks = (proj.tracks || []).filter(t => (t.id || '') !== trackId)
+  renderAdminView()
+  showToast('Track deleted — click Save to persist', 'info')
+}
+
+function adminAddSubtrack(projectId, trackId) {
+  const el = document.getElementById('admin-subtrack-form-' + projectId + '-' + trackId)
+  if (!el) return
+  el.style.display = 'block'
+  el.innerHTML = `
+    <div style="display:flex;gap:5px;align-items:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:6px 8px">
+      <input id="admin-new-subtrack-name-${projectId}-${trackId}" type="text" placeholder="e.g. Backlog" style="flex:1;padding:4px 6px;border:1px solid #bbf7d0;border-radius:3px;font-size:10px">
+      <button onclick="adminSaveNewSubtrack('${projectId}','${trackId}')" style="padding:4px 8px;background:#166534;color:white;border:none;border-radius:3px;font-size:9px;font-weight:800;cursor:pointer">Add</button>
+      <button onclick="document.getElementById('admin-subtrack-form-${projectId}-${trackId}').style.display='none'" style="padding:4px 6px;background:transparent;border:none;color:#94a3b8;font-size:9px;cursor:pointer">x</button>
+    </div>`
+}
+
+function adminSaveNewSubtrack(projectId, trackId) {
+  const name = (document.getElementById('admin-new-subtrack-name-' + projectId + '-' + trackId)?.value || '').trim()
+  if (!name) { showToast('Subtrack name is required', 'error'); return }
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+  if (!track) return
+  if (!track.subtracks) track.subtracks = []
+  track.subtracks.push({ name, items: [] })
+  renderAdminView()
+  showToast('Subtrack added — click Save to persist', 'info')
+}
+
+function adminRenameSubtrack(projectId, trackId, subtractIdx) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+  if (!track) return
+  const st = (track.subtracks || [])[subtractIdx]
+  if (!st) return
+  const newName = prompt('Rename subtrack "' + st.name + '":', st.name)
+  if (!newName || !newName.trim()) return
+  st.name = newName.trim()
+  renderAdminView()
+  showToast('Subtrack renamed — click Save to persist', 'info')
+}
+
+function adminDeleteSubtrack(projectId, trackId, subtractIdx) {
+  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+  if (!track) return
+  const st = (track.subtracks || [])[subtractIdx]
+  if (!st) return
+  if (!confirm('Delete subtrack "' + st.name + '"? This removes ' + (st.items || []).length + ' items permanently.')) return
+  track.subtracks.splice(subtractIdx, 1)
+  renderAdminView()
+  showToast('Subtrack deleted — click Save to persist', 'info')
+}
+
+async function adminSaveStructure() {
+  try {
+    await saveToGithub(window.UPDATE_DATA)
+    showToast('Structure saved to GitHub', 'success')
+    renderDashboard()
+  } catch (err) {
+    console.error('❌ adminSaveStructure:', err)
+  }
+}
+
 async function deleteProjectDataFile(projectId) {
     const jwt = localStorage.getItem('khyaal_site_auth');
     if (!jwt) return;
