@@ -398,6 +398,7 @@ function switchView(viewId, targetId = null) {
         if (viewId === 'my-tasks' && typeof renderMyTasksView === 'function') renderMyTasksView()
         if (viewId === 'dashboard' && typeof renderExecutiveDashboard === 'function') renderExecutiveDashboard()
         if (viewId === 'activity' && typeof renderActivityView === 'function') renderActivityView()
+        if (viewId === 'admin' && typeof renderAdminView === 'function') renderAdminView()
 
         // Post-render: blocker strip, tag filter bar, tab counts
         if (typeof renderBlockerStrip === 'function') renderBlockerStrip()
