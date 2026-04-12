@@ -5847,7 +5847,7 @@ window.adminSwitchProject = function(id) {
     closeAdminPanel()
 }
 
-window.adminAddProject = function() {
+window.adminWsAddProject = function() {
     const container = document.getElementById('admin-project-form-container');
     if (!container) return;
     container.innerHTML = `
