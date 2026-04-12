@@ -52,6 +52,62 @@
         "status": "in_progress",
         "planningHorizon": "6M",
         "linkedOKR": "okr-q1-2026-infrastructure"
+      },
+      {
+        "id": "community-bug-resolution",
+        "name": "Community Bug Resolution",
+        "track": "Khyaal Platform",
+        "objective": "Resolve all critical and high-priority bugs reported by the community across Khyaal Core and 50A50",
+        "scope": "Digi-gold payment bugs, KCMC card copy, buy membership UX/OTP, renewal fix, Full KYC, 50A50 category/pricing bugs",
+        "keyDeliverables": "Zero P0 bugs, all community-reported critical issues resolved",
+        "successMetrics": "P0 bug count = 0, support ticket volume -40%, user satisfaction",
+        "timeline": "Apr 12 - Apr 25, 2026",
+        "health": "on-track",
+        "status": "in_progress",
+        "linkedOKR": "okr-q2-2026-community-quality",
+        "planningHorizon": "1M"
+      },
+      {
+        "id": "fifty-above-fifty-platform",
+        "name": "50 Above 50 Platform Maturity",
+        "track": "Khyaal Platform",
+        "objective": "Stabilize the 50A50 CRM and website, fix all open issues, and ship app-only entry upload",
+        "scope": "50A50 CRM category/pricing bugs, website dashboard/redirect bugs, upload flow improvement, app-only entry upload",
+        "keyDeliverables": "All 7 critical 50A50 issues resolved, app-only upload live",
+        "successMetrics": "50A50 issue count = 0, upload flow completion rate >80%",
+        "timeline": "Apr 12 - May 9, 2026",
+        "health": "on-track",
+        "status": "in_progress",
+        "linkedOKR": "okr-q2-2026-community-quality",
+        "planningHorizon": "1M"
+      },
+      {
+        "id": "product-growth-features",
+        "name": "Product Growth Features",
+        "track": "Khyaal Platform",
+        "objective": "Ship engagement and growth features across web and server to increase app downloads and membership revenue",
+        "scope": "₹99 plan homepage, Offline Events server API, 50A50 app-only upload server, Voice of Kalinga, Assistant Bot v2.0.1",
+        "keyDeliverables": "₹99 on homepage, Offline Events API, app-only upload API, 3 event landing pages",
+        "successMetrics": "App downloads +20%, membership revenue +15%, 3 events launched on time",
+        "timeline": "Apr 12 - May 9, 2026",
+        "health": "on-track",
+        "status": "in_progress",
+        "linkedOKR": "okr-q2-2026-product-growth",
+        "planningHorizon": "3M"
+      },
+      {
+        "id": "cms-platform-capabilities",
+        "name": "CMS & Platform Capabilities",
+        "track": "Khyaal Platform",
+        "objective": "Complete CMS admin improvements, roles, insurance landing, and campaign infrastructure",
+        "scope": "CMS membership details page, individual roles, cache clear, events CMS improvements, insurance landing, Parents Day campaign, Pulse Membership Dashboard",
+        "keyDeliverables": "Membership details page, 2 new roles, cache clear button, insurance landing, Parents Day campaign",
+        "successMetrics": "4-click workflow reduced to 1, 2 roles operational, campaigns launched on time",
+        "timeline": "Apr 12 - May 23, 2026",
+        "health": "on-track",
+        "status": "in_progress",
+        "linkedOKR": "okr-q2-2026-platform-completeness",
+        "planningHorizon": "3M"
       }
     ],
     "okrs": [
