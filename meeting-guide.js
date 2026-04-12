@@ -603,9 +603,54 @@ document.addEventListener('keydown', e => {
 // ---- Restore state on load ----
 _loadState();
 
+// ---- launchMeetingWizard ----
+// Thin adapter so lifecycle-guide.js and inline onclick handlers can open the
+// Co-Pilot panel for a specific scenario.  The cadence nudge types don't always
+// match MEETING_SCENARIOS keys 1:1, so we normalise them here.
+//
+// Supported aliases (cadence-nudge type → scenario key):
+//   standup  → standup
+//   grooming → grooming
+//   weekly   → weekly-review
+//   release  → release-day
+//   sprint-end (sprint-close, retro, retrospective) → retro
+//   sprint-planning → sprint-planning
+//   quarterly → quarterly
+//   first-setup → first-setup
+//
+// Usage from inline onclick:
+//   onclick="launchMeetingWizard('standup')"
+//   onclick="launchMeetingWizard('retro')"
+const _SCENARIO_ALIAS = {
+    'weekly':          'weekly-review',
+    'weekly-review':   'weekly-review',
+    'release':         'release-day',
+    'release-day':     'release-day',
+    'sprint-end':      'retro',
+    'sprint-close':    'retro',
+    'retrospective':   'retro',
+    'sprint-planning': 'sprint-planning',
+    'quarterly':       'quarterly',
+    'first-setup':     'first-setup',
+    'standup':         'standup',
+    'grooming':        'grooming',
+    'retro':           'retro',
+}
+
+function launchMeetingWizard(meetingType) {
+    const scenarioId = _SCENARIO_ALIAS[meetingType] || meetingType
+    if (!MEETING_SCENARIOS[scenarioId]) {
+        console.warn('launchMeetingWizard: unknown scenario', meetingType)
+        openMeetingGuide()
+        return
+    }
+    openMeetingGuide(scenarioId)
+}
+
 // ---- Exports ----
-window.openMeetingGuide  = openMeetingGuide;
-window.closeMeetingGuide = closeMeetingGuide;
-window.MEETING_SCENARIOS = MEETING_SCENARIOS;
+window.openMeetingGuide    = openMeetingGuide;
+window.closeMeetingGuide   = closeMeetingGuide;
+window.MEETING_SCENARIOS   = MEETING_SCENARIOS;
+window.launchMeetingWizard = launchMeetingWizard;
 
 console.log('✅ meeting-guide.js — 8 scenarios active');

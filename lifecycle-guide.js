@@ -966,6 +966,10 @@ function renderCadenceNudgeBanner() {
     // Priority 1: Sprint urgency signals
     const sprintSignal = getSprintCoachSignal()
     if (sprintSignal) {
+        // Sprint-end signal maps to the retro Co-Pilot scenario
+        const pilotBtn = sprintSignal.type === 'sprint-end'
+            ? `<button class="cnb-cta" onclick="launchMeetingWizard('retro')" style="margin-left:4px">🧭 Retro Co-Pilot</button>`
+            : ''
         _show(sprintSignal.color, `
             <span class="cnb-icon">${sprintSignal.icon}</span>
             <div class="cnb-body">
@@ -973,6 +977,7 @@ function renderCadenceNudgeBanner() {
                 <span class="cnb-msg">${sprintSignal.msg}</span>
             </div>
             <button class="cnb-cta" onclick="switchView('${sprintSignal.view}');renderCadenceNudgeBanner()">${sprintSignal.label.split(' ')[0]} →</button>
+            ${pilotBtn}
         `)
         return
     }
@@ -996,6 +1001,12 @@ function renderCadenceNudgeBanner() {
     const nudge = getCadenceNudge()
     const dismissed = nudge && localStorage.getItem(`nudge_dismissed_${nudge.type}_${new Date().toDateString()}`)
     if (nudge && !dismissed) {
+        // Add a Co-Pilot button for nudge types that have a matching scenario
+        const _nudgeScenarioMap = { standup: 'standup', grooming: 'grooming', weekly: 'weekly', release: 'release' }
+        const pilotScenario = _nudgeScenarioMap[nudge.type]
+        const pilotBtn = pilotScenario
+            ? `<button class="cnb-cta" onclick="launchMeetingWizard('${pilotScenario}')" style="margin-left:4px">🧭 Co-Pilot</button>`
+            : ''
         _show('#6366f1', `
             <span class="cnb-icon">${nudge.icon}</span>
             <div class="cnb-body">
@@ -1003,6 +1014,7 @@ function renderCadenceNudgeBanner() {
                 <span class="cnb-msg">${nudge.msg}</span>
             </div>
             <button class="cnb-cta" onclick="switchView('${nudge.view}');renderCadenceNudgeBanner()">${nudge.label.split(' ')[0]} View →</button>
+            ${pilotBtn}
             <button class="cnb-dismiss" onclick="localStorage.setItem('nudge_dismissed_${nudge.type}_'+new Date().toDateString(),'1');renderCadenceNudgeBanner()">✕</button>
         `)
         return

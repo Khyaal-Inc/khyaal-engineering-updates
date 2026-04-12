@@ -448,7 +448,7 @@ function _buildSpSettingsTab() {
             <div>
                 <p class="sp-section-title">Current Project Data</p>
                 <div class="rounded-lg border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 space-y-1.5">
-                    <div class="flex justify-between"><span class="font-semibold">Active Team</span><span class="font-mono">${window.ACTIVE_PROJECT_ID || 'default'}</span></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold">Active Project</span><select onchange="switchProject(this.value)" class="cms-input text-xs py-1 px-2 w-40">${(window.PROJECT_REGISTRY || []).map(p => `<option value="${p.id}" ${p.id === (window.ACTIVE_PROJECT_ID || 'default') ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
                     <div class="flex justify-between"><span class="font-semibold">Tracks</span><span>${window.UPDATE_DATA?.tracks?.length || 0}</span></div>
                     <div class="flex justify-between"><span class="font-semibold">Sprints</span><span>${window.UPDATE_DATA?.metadata?.sprints?.length || 0}</span></div>
                     <div class="flex justify-between"><span class="font-semibold">Epics</span><span>${window.UPDATE_DATA?.metadata?.epics?.length || 0}</span></div>
@@ -6046,8 +6046,47 @@ window.adminAddProject = function() {
     if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
     _adminUsersData.projects.push({ id, name, filePath })
     _syncProjectsToRegistry()
+    scaffoldProjectDataFile(id, name)
     showToast(`Project "${name}" added — save to GitHub to persist`, 'info')
     renderAdminPanel(buildAdminTeamsPanel())
+}
+
+async function scaffoldProjectDataFile(projectId, projectName) {
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    if (!jwt) return
+    const skeleton = {
+        metadata: {
+            title: projectName + ' Engineering Pulse',
+            dateRange: '',
+            description: '',
+            vision: '',
+            modes: { default: 'pm', devDefaultView: 'my-tasks', execDefaultView: 'dashboard' },
+            epics: [], okrs: [], releases: [], sprints: [], ceremonyAudits: []
+        },
+        tracks: [
+            {
+                id: projectId + '-track-1',
+                name: 'Engineering',
+                subtracks: [
+                    { name: 'Backlog', items: [] }
+                ]
+            }
+        ]
+    }
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(skeleton, null, 2))))
+    const filePath = `data-${projectId}.json`
+    try {
+        const res = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectId: 'default', filePath, content, message: `chore: scaffold data file for project ${projectId}` })
+        })
+        if (!res.ok) throw new Error('Scaffold write failed: ' + res.status)
+        console.log(`✅ Scaffolded ${filePath}`)
+    } catch (err) {
+        console.error('❌ scaffoldProjectDataFile:', err)
+        showToast(`Warning: could not create data file for ${projectId} — create it manually`, 'error')
+    }
 }
 
 window.adminEditProject = function(pi) {
