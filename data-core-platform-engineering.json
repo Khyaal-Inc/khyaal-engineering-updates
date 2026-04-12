@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "title": "Core Platform Engineering Engineering Pulse",
+    "dateRange": "",
+    "description": "",
+    "vision": "",
+    "modes": {
+      "default": "pm",
+      "devDefaultView": "my-tasks",
+      "execDefaultView": "dashboard"
+    },
+    "epics": [],
+    "okrs": [],
+    "releases": [],
+    "sprints": [],
+    "ceremonyAudits": []
+  },
+  "tracks": [
+    {
+      "id": "core-platform-engineering-track-1",
+      "name": "Engineering",
+      "subtracks": [
+        {
+          "name": "Backlog",
+          "items": []
+        }
+      ]
+    }
+  ]
+}
