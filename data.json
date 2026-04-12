@@ -1790,6 +1790,172 @@
               "id": "platform-50a50-web-9",
               "due": "2026-10-01",
               "tags": []
+            },
+            {
+              "id": "platform-50a50-web-registration-cache",
+              "text": "50A50 registration shows ₹500 instead of ₹999 (cache issue)",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "New registration page shows ₹500 instead of ₹999 due to a cache issue.",
+              "usecase": "Fixes incorrect pricing display that confuses new registrants.",
+              "acceptanceCriteria": [
+                "New registration always shows ₹999",
+                "Cache cleared for affected pages",
+                "No price mismatch between display and checkout"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "pricing",
+                "50above50"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-web-dashboard-disappears",
+              "text": "50A50 dashboard button disappears intermittently (token/cookie TTL)",
+              "status": "now",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Dashboard button vanishes after token/cookie expiry. Check Token/Cookie TTL and contest caching.",
+              "usecase": "Ensures users can always access their dashboard without hard-refreshing.",
+              "acceptanceCriteria": [
+                "Dashboard button remains visible throughout session",
+                "Token refresh handled gracefully",
+                "No UI disappearance on TTL expiry"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "auth",
+                "50above50"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-web-submit-redirect",
+              "text": "50A50 submit entry redirects to home page instead of confirmation",
+              "status": "now",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Clicking Submit Entry redirects user back to home page. Likely token/cookie TTL or contest caching issue.",
+              "usecase": "Users lose submission progress; fixing this prevents data loss and user frustration.",
+              "acceptanceCriteria": [
+                "Submit Entry leads to confirmation screen",
+                "Entry saved correctly before redirect",
+                "No unexpected redirect to home page"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "50above50",
+                "submission"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-web-dashboard-persistent",
+              "text": "50A50 dashboard button not persistent in website top bar",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 2,
+              "contributors": [],
+              "note": "Dashboard button should be visible throughout the website top bar for all logged-in users.",
+              "usecase": "Improves navigation and reduces friction for returning contestants.",
+              "acceptanceCriteria": [
+                "Dashboard button visible in top bar on all pages for logged-in users",
+                "Button persists through page navigation"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "ux",
+                "50above50"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-web-upload-flow",
+              "text": "50A50 upload entry flow — show submission format before uploading",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Change upload flow so user sees required submission format/template before uploading their entry.",
+              "usecase": "Reduces invalid submissions; improves first-time submission success rate.",
+              "acceptanceCriteria": [
+                "Submission format/guidelines shown before upload prompt",
+                "User acknowledges format before proceeding",
+                "Upload step comes after format review"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "ux",
+                "50above50",
+                "upload"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-50a50-web-app-upload-server",
+              "text": "50A50 app-only entry upload — server-side API",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Server-side API to support app-only entry submission for 50A50. Mobile UI handled in Khyaal Mobile workspace.",
+              "usecase": "Enforces app-only upload policy to drive app downloads.",
+              "acceptanceCriteria": [
+                "API endpoint accepts entry uploads from authenticated app users",
+                "Web upload disabled after feature ships",
+                "App upload validated correctly (file type, size, category)"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "50above50",
+                "api",
+                "app"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-08",
+              "planningHorizon": "3M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-7"
             }
           ]
         },
@@ -1886,6 +2052,148 @@
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-crm-1",
               "tags": []
+            },
+            {
+              "id": "platform-50a50-crm-category-500",
+              "text": "50A50 category change asks ₹500 — category edit button missing",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Changing category in the dashboard triggers a ₹500 charge. Category edit button needs to be added separately from the payment flow.",
+              "usecase": "Allows contestants to correct category errors without being incorrectly charged.",
+              "acceptanceCriteria": [
+                "Category edit button added to dashboard",
+                "Category change does not trigger payment",
+                "Category change saved correctly in CRM"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "50above50",
+                "crm",
+                "pricing"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-crm-extra-categories",
+              "text": "50A50 extra unchecked categories re-appear after manual dashboard entry",
+              "status": "review",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Unchecked categories re-appear after manual entry. Fix involves data script to remove impacted users and fixing pre-selected category display logic.",
+              "usecase": "Ensures category list is clean and accurate; prevents duplicate/ghost category entries.",
+              "acceptanceCriteria": [
+                "Impacted users cleaned up via data script",
+                "Pre-selected categories not duplicated on manual entry",
+                "Category display accurate after save"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "50above50",
+                "crm"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-crm-fresh-pricing",
+              "text": "50A50 fresh user back-to-back entries showing ₹500 and ₹999 randomly",
+              "status": "review",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Fresh users making back-to-back contest entries randomly see ₹500 and ₹999. Pricing logic must be consistent.",
+              "usecase": "Ensures consistent and correct pricing for all users.",
+              "acceptanceCriteria": [
+                "First entry always ₹999",
+                "Subsequent entries follow correct pricing rules",
+                "No random price flip between ₹500 and ₹999"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "50above50",
+                "pricing"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-crm-partially-completed",
+              "text": "50A50 partially completed status stuck when deleting pending entry",
+              "status": "review",
+              "priority": "high",
+              "storyPoints": 2,
+              "contributors": [],
+              "note": "Deleting a pending entry from the partially-completed list does not update the user status correctly.",
+              "usecase": "Accurate status tracking ensures users can re-enter without being stuck in a limbo state.",
+              "acceptanceCriteria": [
+                "Deleting pending entry updates status from partially-completed to open/eligible",
+                "Status update reflected immediately in dashboard",
+                "No orphaned entries in CRM"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "bug",
+                "50above50",
+                "crm"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-50a50-crm-export-filter",
+              "text": "50A50 export submission filter",
+              "status": "later",
+              "priority": "low",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Add filter capability to the submission export feature — filter by category, status, or date range.",
+              "usecase": "Reduces manual data filtering work for operations team.",
+              "acceptanceCriteria": [
+                "Export filtered by category",
+                "Export filtered by submission status",
+                "Export filtered by date range"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "feature",
+                "50above50",
+                "crm",
+                "export"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": null
             }
           ]
         },
