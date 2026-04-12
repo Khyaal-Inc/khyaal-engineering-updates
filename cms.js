@@ -466,7 +466,7 @@ function _buildSpTeamsPanel() {
                     <td class="px-3 py-1.5 text-[10px] text-slate-400">${trackNames}</td>
                     <td class="px-3 py-1.5 text-[10px] text-slate-400">${totalItems} items</td>
                     <td class="px-3 py-1.5 text-xs flex items-center gap-1">
-                        ${isActive ? `<button onclick="spAdminEditProject(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>` : ''}
+                        ${isActive ? `<button onclick="adminEditProjectInline(${pi})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>` : ''}
                         ${(isActive && liveProjects.length > 1) ? `<button onclick="spAdminDeleteProject(${pi})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
                     </td>
                 </tr>`
@@ -485,9 +485,9 @@ function _buildSpTeamsPanel() {
                         ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
                         : `<button onclick="spAdminSwitchTeam('${team.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
                     }
-                    <button onclick="spAdminEditTeam(${ti})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
+                    <button onclick="adminEditWorkspaceInline(${ti})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
                     ${team.id !== 'default' ? `<button onclick="spAdminDeleteTeam(${ti})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
-                    ${isActive ? `<button onclick="spAdminAddProject()" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold hover:bg-emerald-100">+ Project</button>` : ''}
+                    ${isActive ? `<button onclick="adminAddProject()" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold hover:bg-emerald-100">+ Project</button>` : ''}
                 </td>
             </tr>
             ${projectSubRows}`
@@ -535,7 +535,7 @@ function _buildSpTeamsPanel() {
             <div>
                 <div class="flex items-center justify-between mb-2">
                     <p class="sp-section-title" style="margin:0">Teams — ${teamRegistry.length} registered</p>
-                    <button onclick="spAdminAddTeam()" class="sp-btn sp-btn-primary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Team</button>
+                    <button onclick="adminShowAddWorkspaceForm()" class="sp-btn sp-btn-primary" style="padding:0.3rem 0.7rem;font-size:0.7rem">+ Add Team</button>
                 </div>
                 <div class="overflow-x-auto rounded-lg border border-slate-200">
                     <table class="w-full text-xs border-collapse">
@@ -580,36 +580,6 @@ window.spAdminSwitchTeam = function(id) {
     if (typeof switchProject === 'function') switchProject(id)
     closeSettingsPanel()
 }
-window.spAdminAddTeam = function() {
-    const name = prompt('Team name (e.g. "AI Agent"):', '')?.trim()
-    if (!name) return
-    const idRaw = prompt('Team ID (lowercase, no spaces, e.g. "ai-agent"):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
-    if (!idRaw) return
-    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
-    if ((window.PROJECT_REGISTRY || []).some(p => p.id === id)) { showToast(`Team ID "${id}" already exists`, 'error'); return }
-    const filePath = `data-${id}.json`
-    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
-    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
-    _adminUsersData.projects.push({ id, name, filePath })
-    _syncProjectsToRegistry()
-    showToast(`Team "${name}" added — save to persist`, 'info')
-    _renderSpAdminBody()
-}
-window.spAdminEditTeam = function(pi) {
-    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
-    const p = projects[pi]
-    if (!p) return
-    const newName = prompt('Team name:', p.name)?.trim()
-    if (!newName) return
-    const newFile = prompt('Data file on GitHub:', p.filePath || `data-${p.id}.json`)?.trim()
-    if (!newFile) return
-    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
-    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
-    _adminUsersData.projects[pi] = { ...p, name: newName, filePath: newFile }
-    _syncProjectsToRegistry()
-    showToast(`Team "${newName}" updated — save to persist`, 'info')
-    _renderSpAdminBody()
-}
 window.spAdminDeleteTeam = function(pi) {
     const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
     const p = projects[pi]
@@ -623,35 +593,6 @@ window.spAdminDeleteTeam = function(pi) {
     _renderSpAdminBody()
 }
 // ── Project CRUD within active team (data.json projects[]) ──────────────
-window.spAdminAddProject = function() {
-    if (!window.UPDATE_DATA) { showToast('No data loaded', 'error'); return }
-    if (!Array.isArray(window.UPDATE_DATA.projects)) window.UPDATE_DATA.projects = []
-    const name = prompt('Team name (e.g. "Mobile App"):', '')?.trim()
-    if (!name) return
-    const idRaw = prompt('Team ID (lowercase, no spaces):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
-    if (!idRaw) return
-    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
-    if (window.UPDATE_DATA.projects.some(p => p.id === id)) { showToast(`Team ID "${id}" already exists`, 'error'); return }
-    window.UPDATE_DATA.projects.push({ id, name, tracks: [] })
-    // Reset project filter so it repopulates
-    const projEl = document.getElementById('project-filter')
-    if (projEl) projEl.dataset.populated = ''
-    if (typeof normalizeData === 'function') normalizeData()
-    showToast(`Team "${name}" added — save data to persist`, 'info')
-    _renderSpAdminBody()
-}
-window.spAdminEditProject = function(pi) {
-    const proj = window.UPDATE_DATA?.projects?.[pi]
-    if (!proj) return
-    const newName = prompt('Team name:', proj.name)?.trim()
-    if (!newName) return
-    proj.name = newName
-    const projEl = document.getElementById('project-filter')
-    if (projEl) projEl.dataset.populated = ''
-    if (typeof normalizeData === 'function') normalizeData()
-    showToast(`Team "${newName}" updated — save data to persist`, 'info')
-    _renderSpAdminBody()
-}
 window.spAdminDeleteProject = function(pi) {
     const projects = window.UPDATE_DATA?.projects || []
     const proj = projects[pi]
