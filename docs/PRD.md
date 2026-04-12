@@ -215,10 +215,10 @@ Existing tools solve parts of the problem:
 
 #### F11 — Multi-Project + Role-Based Access *(Confirmed design — internal vNext)*
 
-**Hierarchy:** Team (Org) → Projects → Tracks (view filters)
+**Hierarchy:** Workspace → Project → Track → Subtrack → Item
 
 - Each Project has a dedicated `data-{projectId}.json` file on GitHub (full data isolation)
-- Tracks remain view-level filters within a Project — no sub-file isolation
+- Tracks and Subtracks are data tiers within a Project's data file — no sub-file isolation per Track
 - `users.json` on GitHub stores the user registry: `{ id, name, passwordHash, grants[] }`
 - Each grant: `{ projectId, mode }` — controls which projects a user can see and at what max persona level
 - Lambda issues a user-scoped JWT containing `grants[]`; validates grants on every read/write request

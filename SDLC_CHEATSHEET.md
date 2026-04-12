@@ -457,3 +457,404 @@ Report progress after every task and stop if any review fails.
 To use these AIM prompts, simply copy and paste them into Claude Code (or any LLM) – they will work as direct replacements for the corresponding phases in the main cheatsheet.
 
 ---
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+================================================================================================================================
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+Here is the **completely generic SDLC cheatsheet** that works for **any role** – data engineer, core platform, backend API, web frontend, DevOps, Android, etc. It uses **placeholders** for role‑specific details and includes a **role selection guide** at the top. Each engineer customises it once per project, then follows the same copy‑paste workflow.
+
+```markdown
+# 🚀 Universal SDLC Cheatsheet – For Any Engineering Role
+*One methodology to rule all projects: Data, Backend, Web, Android, DevOps, Core Platform*
+
+## How to Use This Cheatsheet
+
+1. **Find your role** in the table below.
+2. **Fill in the placeholders** once per project (e.g., `[test-command]`, `[lint-command]`, `[architecture-pattern]`).
+3. **Follow the same prompts** – they work for every role because they use generic terms.
+4. **Let Superpowers + domain skills handle the rest.**
+
+---
+
+## 🧭 Role Selection & Placeholder Values
+
+| Role | Typical Tech Stack | Test command | Lint command | Build command | Architecture pattern |
+|------|--------------------|--------------|--------------|---------------|----------------------|
+| **Android** | Kotlin, Jetpack Compose, Gradle | `./gradlew testDebugUnitTest` | `./gradlew lint` | `./gradlew assembleDebug` | MVVM + Clean |
+| **Backend API** | Python (FastAPI), Go, Node.js | `pytest` or `go test` | `ruff` or `golangci-lint` | `python -m build` | Modular monolith / services |
+| **Web Frontend** | React, Vue, Svelte, Next.js | `npm test` | `npm run lint` | `npm run build` | Component‑based + state store |
+| **Data Engineering** | Python, SQL, dbt, Spark, Airflow | `pytest data_tests/` | `sqlfluff` | `dbt build` | Medallion (bronze/silver/gold) |
+| **DevOps** | Terraform, AWS CDK, Kubernetes, GitHub Actions | `terratest` or `cdk-nag` | `tflint` | `terraform plan` | GitOps, IaC, control plane |
+| **Core Platform** | Go, Rust, gRPC, service mesh | `go test -race` | `clippy` | `make build` | Clean Architecture, hexagonal |
+
+### Custom Placeholders (Fill once in your `CLAUDE.md`)
+
+```yaml
+role: [android|backend|web|data|devops|core]
+test_command: [e.g., ./gradlew testDebugUnitTest]
+lint_command: [e.g., ./gradlew lint]
+build_command: [e.g., ./gradlew assembleDebug]
+architecture_pattern: [e.g., MVVM + Clean]
+```
+
+---
+
+## 📦 One‑Time Setup (For Any Role)
+
+```bash
+# Install plugins (same for everyone)
+/plugin install superpowers@claude-plugins-official
+/plugin marketplace add alirezarezvani/claude-skills
+/plugin install engineering-skills product-skills pm-skills ra-qm-skills c-level-skills
+
+# Enable auto‑memory
+/memory
+# → Toggle "Auto-memory" ON
+
+# Deep init – creates CLAUDE.md
+export CLAUDE_CODE_NEW_INIT=1 && claude /init
+# Answer: your language, build tool, test command, etc.
+
+# Set role‑specific rules (copy‑paste this block, replace placeholders)
+```
+
+```text
+Using engineering-skills and writing-skills, create project rules:
+
+1. CLAUDE.md:
+   - Build: `[build_command]`
+   - Test: `[test_command]`
+   - Lint: `[lint_command]`
+   - Architecture: `[architecture_pattern]`
+   - TDD mandatory: write test first, then code
+   - Superpowers: brainstorm → plan → subagent → review → finish
+
+2. .claude/rules/stack-rules.md:
+   - Follow language idioms (Kotlin, Python, Go, etc.)
+   - Use [your framework] best practices
+   - Error handling, logging, observability
+   - Testing: unit + integration + (if relevant) e2e
+
+3. .claude/rules/refactor-rules.md:
+   - No behaviour change – tests must stay green
+   - Each refactor step ≤ 5 files
+   - Run full test suite after each step
+
+Ask me for any missing details (e.g., exact test framework).
+```
+
+After the above, run `/compact`. You are ready for any task.
+
+---
+
+## 🚀 Feature Workflow (PRD + Design, possibly incomplete)
+
+*Use when you have a product requirement (PRD) and a design (Figma, wireframe, or API spec).*
+
+### Step A – Fill missing user stories & AC
+
+*Replace `[feature-name]` and describe design.*
+
+```text
+**Actor:** Product Analyst (product-skills, pm-skills)
+
+**Input:** 
+- PRD: `./docs/PRD.md` (or paste content)
+- Design: [Figma link / OpenAPI spec / wireframe description]
+
+**Mission:** Ask me up to 5 questions:
+1. Primary user? Main goal? Happy path?
+2. Error conditions / edge cases?
+3. Non‑functional requirements (latency, scalability, offline, security)?
+4. Any analytics or logging needed?
+5. Dependencies on other features?
+
+After answers, generate:
+- `./docs/features/[feature-name]/USER_STORIES.md`
+- `./docs/features/[feature-name]/ACCEPTANCE_CRITERIA.md`
+
+Do NOT write code.
+```
+
+### Step B – Create implementation plan
+
+```text
+Invoke `writing-plans` skill.
+
+**Input:**
+- `./docs/features/[feature-name]/USER_STORIES.md`
+- `./docs/features/[feature-name]/ACCEPTANCE_CRITERIA.md`
+- Design (from Step A)
+- Stack rules (CLAUDE.md, stack-rules.md)
+
+**Mission:** Create a plan with tasks of 2‑5 minutes each. Each task includes:
+- Exact file path (role‑appropriate)
+- Code or pseudocode
+- Verification steps (unit test, integration test)
+- TDD: each code task preceded by a test task
+
+Save to `./docs/features/[feature-name]/IMPLEMENTATION_PLAN.md` and ask for approval.
+```
+
+### Step C – Execute with subagent TDD
+
+```text
+Invoke `subagent-driven-development` with `./docs/features/[feature-name]/IMPLEMENTATION_PLAN.md`.
+
+For each task:
+- Spawn fresh subagent (same language/stack as project)
+- Review 1: follows plan exactly
+- Review 2: code quality, test coverage
+- Enforce TDD: write failing test → fail → implement → pass → refactor
+
+After each task, run `requesting-code-review`. After all tasks, run `[test_command]`.
+```
+
+### Step D – Finish & document
+
+```text
+Generate for this feature:
+- `./docs/features/[feature-name]/README.md` – how to enable/test
+- `./docs/features/[feature-name]/TEST_COVERAGE.md` (module coverage)
+
+Append to `CHANGELOG.md` with `[Feature] [feature-name]`.
+
+Then invoke `finishing-a-development-branch` to merge or PR.
+```
+
+---
+
+## 🐞 Bug Workflow (RCA + Fix)
+
+*For any bug – crash, wrong output, performance, data quality.*
+
+### Step 0 – Gather context
+
+```text
+**Actor:** QA Engineer using `systematic-debugging`.
+
+**Input:** Bug description: [paste issue]
+
+**Mission:** Ask me up to 5 questions:
+- Steps to reproduce (exact)
+- Expected vs actual behaviour
+- Environment (OS, version, data volume)
+- Logs / stack trace / error messages
+- Frequency (always / sometimes)
+
+Save structured bug report to `./docs/bugs/BUG-[ID]_SUMMARY.md`.
+```
+
+### Step 1 – Root cause analysis
+
+```text
+**Actor:** Senior Engineer using `systematic-debugging`.
+
+**Input:** `./docs/bugs/BUG-[ID]_SUMMARY.md`
+
+**Mission:** 4‑phase RCA:
+1. Trace root cause – which layer (UI, API, data, infrastructure)?
+2. Defense‑in‑depth – add logging, error handling, assertions.
+3. Condition‑based waiting – if race, propose synchronisation patterns.
+4. Verify before fixing – propose a test that reproduces the bug.
+
+Save RCA to `./docs/bugs/BUG-[ID]_RCA.md`. Do NOT write fix yet.
+```
+
+### Step 2 – Fix plan (TDD)
+
+```text
+Invoke `writing-plans`.
+
+**Input:** RCA, stack rules.
+
+**Mission:** Create fix plan. Each task 2‑5 min, includes:
+- File path + code diff
+- Verification steps
+- TDD: write failing test BEFORE fix
+
+Save to `./docs/bugs/BUG-[ID]_FIX_PLAN.md` and ask approval.
+```
+
+### Step 3 – Execute fix
+
+```text
+Invoke `subagent-driven-development` with `./docs/bugs/BUG-[ID]_FIX_PLAN.md`.
+
+Same as Feature Step C – subagent, TDD, review.
+After all tasks, run `[test_command]`.
+```
+
+### Step 4 – Verify & finish
+
+```text
+Invoke `verification-before-completion`.
+
+- Manually reproduce bug – must be gone.
+- Run automated test that previously failed – now passes.
+- Check regressions (full test suite).
+
+Then `finishing-a-development-branch` → merge or PR.
+
+Update `./docs/HEALTH.md` with bug ID, RCA, fix date.
+Append `CHANGELOG.md` under “Fixed”.
+```
+
+---
+
+## 🔧 Refactor Workflow (No behaviour change)
+
+### Step A – Plan refactor
+
+```text
+**Actor:** Senior Engineer using `writing-plans`.
+
+**Input:** 
+- Module to refactor: `[path/to/module]`
+- Goal: improve structure / readability / performance
+
+**Mission:** Create a refactor plan where:
+- Each task changes ≤ 5 files
+- Each task includes exact file paths and before/after code
+- After each task, run existing tests (must stay green)
+- Do NOT write new tests (behaviour unchanged)
+
+Save plan to `./docs/refactors/[refactor-name]_PLAN.md` and ask approval.
+```
+
+### Step B – Execute refactor (batch, safe)
+
+```text
+Invoke `executing-plans` with `./docs/refactors/[refactor-name]_PLAN.md`.
+
+Execute tasks in batches of 2. After each batch:
+- Run `[test_command]`
+- If all green, continue. If any red, revert batch and stop.
+```
+
+### Step C – Commit & document
+
+```text
+After all batches pass:
+- Commit with message `refactor: [refactor-name]`
+- Update `./docs/HEALTH.md` – note tech debt reduced
+- Append `CHANGELOG.md` under “Refactored”
+- Invoke `finishing-a-development-branch` → merge or PR.
+```
+
+---
+
+## ✨ Refinement Workflow (Enhance existing feature)
+
+*Small improvements to existing code – new filter, extra field, better logging.*
+
+### Step A – Clarify refinement
+
+```text
+**Actor:** Product Analyst (product-skills)
+
+**Input:** Existing feature: [file paths / module name]
+Refinement request: [describe change]
+
+**Mission:** Ask me up to 3 questions:
+1. User benefit?
+2. Does it affect existing behaviour? (if yes, use Feature Workflow)
+3. Any design reference?
+
+Generate `./docs/refinements/[refinement-name]/REQUIREMENTS.md` (one paragraph, AC).
+```
+
+### Step B – Mini plan
+
+```text
+Invoke `writing-plans`.
+
+**Input:** 
+- `./docs/refinements/[refinement-name]/REQUIREMENTS.md`
+- Existing code of the feature
+
+**Mission:** Small plan (3‑6 tasks, each 2‑5 min). Include:
+- File paths to modify
+- Code changes (additions only)
+- TDD: write test for new behaviour first
+
+Save to `./docs/refinements/[refinement-name]/PLAN.md` and ask approval.
+```
+
+### Step C – Execute with subagent TDD
+
+```text
+Invoke `subagent-driven-development` with `./docs/refinements/[refinement-name]/PLAN.md`.
+
+Same as Feature Step C. After all tasks, run full test suite.
+```
+
+### Step D – Finish & document
+
+```text
+Generate `./docs/refinements/[refinement-name]/README.md` – what changed.
+Append `CHANGELOG.md` under “Changed”.
+Invoke `finishing-a-development-branch`.
+```
+
+---
+
+## 🔁 Decision Tree (For Any Role)
+
+| I want to... | Use workflow |
+|--------------|--------------|
+| Build something new from a spec | Feature Workflow |
+| Fix a bug | Bug Workflow |
+| Improve code without changing behaviour | Refactor Workflow |
+| Add a small tweak to existing feature | Refinement Workflow |
+| Not sure? Start with Feature Workflow. | |
+
+---
+
+## 💡 Pro Tips (Universal)
+
+- **Before any workflow**, run `/compact` if you have been chatting for a while.
+- **Use `claude --continue`** to resume after a break.
+- **Always commit after each successful workflow** – Superpowers assumes clean git state.
+- **If tests fail during subagent execution**, let the subagent fix them (TDD cycle).
+- **For large refactors**, break into multiple Refactor Workflow runs (one per module).
+
+---
+
+## ✅ One‑Page Checklist (For Any Task)
+
+- [ ] Chose correct workflow (feature / bug / refactor / refinement)
+- [ ] Filled placeholders in `CLAUDE.md` (once per project)
+- [ ] Ran Step A (clarify / RCA / plan)
+- [ ] Got approval on plan
+- [ ] Executed with subagent (or batch for refactor)
+- [ ] Ran `[test_command]` – all green
+- [ ] Finished branch (merge or PR)
+- [ ] Updated docs (CHANGELOG, HEALTH, feature README)
+- [ ] Ran `/compact` after completion
+
+**Now pick your role, fill the placeholders, paste the first prompt – and let Superpowers handle the rest.** 🚀
+```
+
+---
+
+Save this as `UNIVERSAL_SDLC.md` and share it with **any engineer** – data, backend, web, Android, DevOps, core platform. They just need to fill the placeholders once per project and then follow the same copy‑paste prompts. No role‑specific forks needed.
+khyaal@999

@@ -13,6 +13,24 @@ Zero-deployment, no-build, frontend-only SPA. No Node.js, no bundler, no server.
 
 **Hard rule: Never introduce React, Vue, Angular, npm packages, or a build step.**
 
+## Data Hierarchy
+
+```
+Workspace  (users.json → projects[])
+  └─ Project  (each projects[] entry → owns a data.json file)
+      └─ Track  (data.json → tracks[])
+          └─ Subtrack  (track.subtracks[])
+              └─ Item  (subtrack.items[])
+```
+
+| Tier | JSON location | Example |
+|------|--------------|---------|
+| Workspace | `users.json → projects[].name` | `"Core Platform Engineering"` |
+| Project | `users.json → projects[]` (each has a `filePath`) | `"Khyaal Engineering"` → `data.json` |
+| Track | `data.json → tracks[].name` | `"platform"`, `"pulse"`, `"devops"` |
+| Subtrack | `track.subtracks[].name` | `"Website"`, `"API"`, `"Backlog"` |
+| Item | `subtrack.items[]` | individual tasks / cards |
+
 ## File Responsibilities
 
 | File | Owns |

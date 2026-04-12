@@ -6,6 +6,9 @@ description: View renderer contracts, HTML template patterns, modal injection, C
 
 ## View Renderer Contract
 
+> **Data tiers:** Workspace → Project → Track → Subtrack → Item
+> View renderers iterate over `UPDATE_DATA.tracks[]` (Track tier) → `.subtracks[]` → `.items[]`.
+
 Every view renderer follows this exact pattern:
 
 ```javascript

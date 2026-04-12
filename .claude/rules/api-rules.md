@@ -115,6 +115,8 @@ try {
 
 ## Multi-Project Extension
 
+> **Hierarchy reminder:** Workspace = `users.json → projects[]` entry. Project = a `projectId` key that maps to a data file. Every Lambda call is scoped to one `projectId`.
+
 All Lambda calls include `?projectId=` (implemented in Phase 2):
 
 ```javascript

@@ -64,6 +64,22 @@ graph LR
     B -- "CMS Save" --> GH
 ```
 
+### Data Hierarchy
+
+```
+Workspace → Project → Track → Subtrack → Item
+```
+
+| Tier | JSON location | Example |
+|------|--------------|---------|
+| **Workspace** | `users.json → projects[].name` | `"Core Platform Engineering"` |
+| **Project** | `users.json → projects[]` (each has a `filePath`) | `"Khyaal Engineering"` → `data.json` |
+| **Track** | `data.json → tracks[]` | `"platform"`, `"pulse"`, `"devops"` |
+| **Subtrack** | `track.subtracks[]` | `"Website"`, `"API"`, `"Backlog"` |
+| **Item** | `subtrack.items[]` | individual tasks / cards |
+
+User grants in `users.json` are scoped to the **Project** tier (`projectId`). Tracks and Subtracks are data tiers inside a project's data file — not separately permissioned.
+
 ---
 
 ## ⚙️ Setup & Authentication
@@ -127,7 +143,7 @@ The platform uses a **Unified Strategic Ribbon** in the app bar to anchor the li
 | `gantt` | Plan | Timeline bar chart visualization. |
 | `capacity` | Plan | Team workload vs. available sprint hours. |
 | `kanban` | Build | Professional 8-column drag-and-drop board. |
-| `track` | Build | Grouped work by project/subtrack. |
+| `track` | Build | Grouped work by track and subtrack. |
 | `dependency`| Build | Mermaid.js dependency graph of tasks. |
 | `status` | Build | Items grouped by delivery status. |
 | `priority` | Build | High/Medium/Low sorting. |

@@ -142,25 +142,27 @@ flowchart TD
 
 ## 5. Multi-Project Architecture (Confirmed Design)
 
-> **Hierarchy:** Team (Org) → Projects → Tracks (filters only)
+> **Hierarchy:** Workspace → Project → Track → Subtrack → Item
 > **Auth boundary:** Role-based per user — each user has a configured set of `{ projectId, mode }` grants
 > **Data isolation:** One `data-{projectId}.json` per Project on GitHub
-> **Tracks:** View-level filters within a Project — no separate data files per Track
+> **Tracks:** Data tiers within a Project's data file — contain Subtracks which contain Items
 
 ### 5.1 Organisational Hierarchy
 
 ```mermaid
 flowchart TD
-    ORG[Khyaal\nTeam / Org]
-    ORG --> P1[Platform Project\ndata-platform.json]
-    ORG --> P2[AI Agent Project\ndata-ai-agent.json]
+    WS[Workspace\ne.g. Core Platform Engineering\nusers.json → projects]
+    WS --> P1[Project: Platform\ndata-platform.json]
+    WS --> P2[Project: AI Agent\ndata-ai-agent.json]
     P1 --> T1A[Track: Website]
     P1 --> T1B[Track: Mobile]
     P1 --> T1C[Track: Backend]
     P2 --> T2A[Track: Sales Agent]
     P2 --> T2B[Track: Rec Engine]
-    T1A & T1B & T1C --> V1[19 views\nfiltered by active Track]
-    T2A & T2B --> V2[19 views\nfiltered by active Track]
+    T1A --> S1A[Subtrack: Frontend\nSubtrack: API\nSubtrack: Backlog]
+    T1B --> S1B[Subtrack: iOS\nSubtrack: Android]
+    T2A --> S2A[Subtrack: NLP\nSubtrack: Backlog]
+    S1A & S1B & S2A --> I[Items\nsubtrack.items]
 ```
 
 ### 5.2 Role-Based Access Model

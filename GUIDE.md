@@ -157,11 +157,11 @@ Now → [Move to QA] → QA → [Send to Review] → Review → [Mark Done] → 
 
 ---
 
-## Projects (Tracks)
+## Projects & Tracks
 
-**Tracks are your projects.** Everything in this dashboard — tasks, epics, sprints, releases — belongs to a track.
+**Tracks are the top-level product areas within a project.** Everything in this dashboard — tasks, epics, sprints, releases — belongs to a track. Each track contains subtracks, and each subtrack holds the individual work items.
 
-Examples: `Mobile`, `Backend`, `Web`, `Infrastructure`, `Data`
+Examples: `platform` (Website, API, Backlog), `pulse` (Analytics, CDP, AI Agents), `devops` (Infrastructure, Backlog)
 
 Use the **📁 Project** dropdown in the top bar to filter the entire dashboard to one project. All views, counts, and ceremonies respect this filter.
 

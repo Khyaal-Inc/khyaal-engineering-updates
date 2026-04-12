@@ -62,9 +62,9 @@ The backend (Lambda) adopts a serverless routing model, extended to accept `proj
 
 ### Confirmed organisational model
 
-**Hierarchy: Team (Org) → Projects → Tracks (view filters)**
+**Hierarchy: Workspace → Project → Track → Subtrack → Item**
 
-Tracks remain view-level filters within a Project — no separate data files per Track. Each Project has full data isolation via its own `data-{projectId}.json` file on GitHub.
+Tracks and Subtracks are data tiers within a Project's data file — no separate data files per Track. Each Project has full data isolation via its own `data-{projectId}.json` file on GitHub. The Workspace is the top-level container defined in `users.json → projects[]`.
 
 ### Current state
 
@@ -73,14 +73,16 @@ All data is global. One shared password grants full access. No user identity. `d
 ### Target state
 
 ```
-Khyaal (Team / Org)
+Workspace: Core Platform Engineering  (users.json → projects[])
 ├── Platform Project       → data-platform.json
-│   ├── Track: Website     ─┐
-│   ├── Track: Mobile       ├── view filters only (no data isolation)
-│   └── Track: Backend     ─┘
+│   ├── Track: Website
+│   │   ├── Subtrack: Frontend
+│   │   └── Subtrack: API           ← data tiers (no separate isolation)
+│   ├── Track: Mobile
+│   └── Track: Backend
 └── AI Agent Project       → data-ai-agent.json
-    ├── Track: Sales Agent ─┐
-    └── Track: Rec Engine  ─┘ view filters only
+    ├── Track: Sales Agent
+    └── Track: Rec Engine
 
 User "Gautam"  → grants: [{ projectId: 'platform', mode: 'pm' }, { projectId: 'ai-agent', mode: 'exec' }]
 User "Priya"   → grants: [{ projectId: 'platform', mode: 'dev' }]
