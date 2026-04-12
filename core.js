@@ -318,83 +318,97 @@ function updateTabCounts() {
         const el = document.getElementById(`tab-count-${v}`);
         if (el) el.textContent = counts[v] || '';
     });
+    if (typeof renderMiniPipeline === 'function') renderMiniPipeline()
 }
 
-function switchView(view) {
+function switchView(viewId, targetId = null) {
     try {
-        window.currentActiveView = view; // Set global state immediately
+        // Guard: ignore view switches while a Lambda write is in progress
+        if (window.isActionLockActive) return
 
-        const targetId = `${view}-view`;
-        const vSection = document.getElementById(targetId);
-
-        console.log(`🎯 switchView('${view}') - DOM Analysis:`, {
-            exists: !!vSection,
-            allSections: document.querySelectorAll('.view-section').length,
-            targetId: targetId
-        });
-
-        // Terminal Diagnostic: If search failed, log what's actually there
-        if (!vSection) {
-            const allIds = Array.from(document.querySelectorAll('[id]')).map(el => el.id);
-            console.warn('❌ CRITICAL: Target view missing. Current DOM IDs:', allIds.slice(0, 50));
+        // Modal close: skip once if a ceremony success screen was just shown
+        if (window._skipModalCloseOnce) {
+            window._skipModalCloseOnce = false
+        } else {
+            if (typeof closeCmsModal === 'function') closeCmsModal()
         }
 
+        // Set global state immediately
+        window.currentActiveView = viewId
+
+        const vSection = document.getElementById(`${viewId}-view`)
+
+        // Hide all view sections (both class and style)
         document.querySelectorAll('.view-section').forEach(v => {
-            v.classList.remove('active');
-            v.style.display = 'none'; // Force hide
-        });
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            v.classList.remove('active')
+            v.style.display = 'none'
+        })
 
-        const btn = document.getElementById(`btn-${view}`);
-        if (btn) btn.classList.add('active');
+        // Clear filter-btn active state
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
 
+        // Update nav-link active state
+        document.querySelectorAll('.nav-link').forEach(l => {
+            l.classList.toggle('active', l.getAttribute('onclick')?.includes(viewId))
+        })
+
+        // Update btn-${viewId} active state
+        const btn = document.getElementById(`btn-${viewId}`)
+        if (btn) btn.classList.add('active')
+
+        // Show target view section
         if (vSection) {
-            vSection.classList.add('active');
-            vSection.style.display = 'block'; // Force show
-            console.log(`✅ switchView('${view}') - Stage Sync Initiated`);
+            vSection.classList.add('active')
+            vSection.style.display = 'block'
 
-            // Sync breadcrumb & ribbon stage
-            if (typeof detectStageFromView === 'function') {
-                detectStageFromView();
-            }
+            // Sync breadcrumb & ribbon stage immediately on show
+            if (typeof detectStageFromView === 'function') detectStageFromView()
         }
 
-        // Render the appropriate view
-        if (view === 'track') renderTrackView();
-        if (view === 'workflow') renderWorkflowView();
-        if (view === 'ideation' || view === 'spikes') {
-            if (typeof renderDiscoveryView === 'function') renderDiscoveryView(view);
-        }
-        if (view === 'roadmap') renderRoadmapView();
-        if (view === 'epics') renderEpicsView();
-        if (view === 'status') renderStatusView();
-        if (view === 'priority') renderPriorityView();
-        if (view === 'contributor') renderContributorView();
-        if (view === 'gantt') renderGanttView();
-        if (view === 'backlog') renderBacklogView();
-        if (view === 'sprint') renderSprintView();
-        if (view === 'releases') renderReleasesView();
-        if (view === 'dependency') renderDependencyView();
-        if (view === 'kanban') renderKanbanView();
-        if (view === 'okr') renderOkrView();
-        if (view === 'analytics') renderAnalyticsView();
-        if (view === 'capacity') renderCapacityView();
-        if (view === 'my-tasks') renderMyTasksView();
-        if (view === 'dashboard') renderExecutiveDashboard();
-        if (view === 'activity') renderActivityView();
-        if (view === 'ideation' || view === 'spikes') {
-            if (typeof renderDiscoveryView === 'function') renderDiscoveryView();
+        // Deep-link: scroll to and highlight a specific element after render
+        if (targetId) {
+            setTimeout(() => {
+                const element = document.getElementById(targetId) || document.querySelector(`[data-id="${targetId}"]`)
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    element.classList.add('highlight-pulse')
+                    setTimeout(() => element.classList.remove('highlight-pulse'), 3000)
+                }
+            }, 300)
         }
 
-        renderBlockerStrip();
-        buildTagFilterBar();
-        updateTabCounts();
+        // Render the appropriate view (all guarded with typeof checks)
+        if (viewId === 'track' && typeof renderTrackView === 'function') renderTrackView()
+        if (viewId === 'workflow' && typeof renderWorkflowView === 'function') renderWorkflowView()
+        if ((viewId === 'ideation' || viewId === 'spikes') && typeof renderDiscoveryView === 'function') renderDiscoveryView(viewId)
+        if (viewId === 'roadmap' && typeof renderRoadmapView === 'function') renderRoadmapView()
+        if (viewId === 'epics' && typeof renderEpicsView === 'function') renderEpicsView()
+        if (viewId === 'status' && typeof renderStatusView === 'function') renderStatusView()
+        if (viewId === 'priority' && typeof renderPriorityView === 'function') renderPriorityView()
+        if (viewId === 'contributor' && typeof renderContributorView === 'function') renderContributorView()
+        if (viewId === 'gantt' && typeof renderGanttView === 'function') renderGanttView()
+        if (viewId === 'backlog' && typeof renderBacklogView === 'function') renderBacklogView()
+        if (viewId === 'sprint' && typeof renderSprintView === 'function') renderSprintView()
+        if (viewId === 'releases' && typeof renderReleasesView === 'function') renderReleasesView()
+        if (viewId === 'dependency' && typeof renderDependencyView === 'function') renderDependencyView()
+        if (viewId === 'kanban' && typeof renderKanbanView === 'function') renderKanbanView()
+        if (viewId === 'okr' && typeof renderOkrView === 'function') renderOkrView()
+        if (viewId === 'analytics' && typeof renderAnalyticsView === 'function') renderAnalyticsView()
+        if (viewId === 'capacity' && typeof renderCapacityView === 'function') renderCapacityView()
+        if (viewId === 'my-tasks' && typeof renderMyTasksView === 'function') renderMyTasksView()
+        if (viewId === 'dashboard' && typeof renderExecutiveDashboard === 'function') renderExecutiveDashboard()
+        if (viewId === 'activity' && typeof renderActivityView === 'function') renderActivityView()
 
-        // Synergistic update: Update stage detection and command strip breadcrumbs AFTER view has rendered
-        if (typeof detectStageFromView === 'function') detectStageFromView();
-        if (typeof updateCommandStripNav === 'function') updateCommandStripNav(view);
+        // Post-render: blocker strip, tag filter bar, tab counts
+        if (typeof renderBlockerStrip === 'function') renderBlockerStrip()
+        if (typeof buildTagFilterBar === 'function') buildTagFilterBar()
+        if (typeof updateTabCounts === 'function') updateTabCounts()
+
+        // Final stage + command strip sync after all rendering is done
+        if (typeof detectStageFromView === 'function') detectStageFromView()
+        if (typeof updateCommandStripNav === 'function') updateCommandStripNav(viewId)
     } catch (e) {
-        console.error('❌ switchView Error:', e);
+        console.error('❌ switchView Error:', e)
     }
 }
 
@@ -406,14 +420,27 @@ function setSubtrackCollapsed(trackId, subtrackName, v) { sessionStorage.setItem
 // ------ Changelog ------
 let CHANGELOG = [];
 function logChange(action, detail) {
-    CHANGELOG.unshift({ action, detail, time: new Date().toLocaleTimeString() });
-    if (CHANGELOG.length > 50) CHANGELOG.pop();
-    const badge = document.getElementById('changelog-count');
-    if (badge) badge.textContent = CHANGELOG.length;
-    const body = document.getElementById('changelog-body');
+    // In-memory debug log (session only, inspectable via window.CHANGELOG)
+    CHANGELOG.unshift({ action, detail, time: new Date().toLocaleTimeString() })
+    if (CHANGELOG.length > 50) CHANGELOG.pop()
+    const badge = document.getElementById('changelog-count')
+    if (badge) badge.textContent = CHANGELOG.length
+    const body = document.getElementById('changelog-body')
     if (body) body.innerHTML = CHANGELOG.map(e =>
         `<div class="changelog-entry"><strong>${e.action}</strong> — ${e.detail}<div class="changelog-time">${e.time}</div></div>`
-    ).join('');
+    ).join('')
+    // Persistent activity feed (saved to GitHub via UPDATE_DATA)
+    if (window.UPDATE_DATA?.metadata) {
+        if (!window.UPDATE_DATA.metadata.activity) window.UPDATE_DATA.metadata.activity = []
+        window.UPDATE_DATA.metadata.activity.unshift({
+            id: `act-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            action,
+            target: detail,
+            author: window.CURRENT_USER?.name || 'PM / Strategist'
+        })
+        if (window.UPDATE_DATA.metadata.activity.length > 50) window.UPDATE_DATA.metadata.activity.pop()
+    }
 }
 function toggleChangelog() {
     document.getElementById('changelog-panel').classList.toggle('open');

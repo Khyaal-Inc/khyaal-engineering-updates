@@ -35,27 +35,6 @@ const CMS_CONFIG = {
 /**
  * Standard change logging for strategic visibility
  */
-function logChange(action, target) {
-    if (!UPDATE_DATA.metadata.activity) UPDATE_DATA.metadata.activity = [];
-    const entry = {
-        id: `act-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        action: action,
-        target: target,
-        author: 'PM / Strategist'
-    };
-    UPDATE_DATA.metadata.activity.unshift(entry);
-    if (UPDATE_DATA.metadata.activity.length > 50) UPDATE_DATA.metadata.activity.pop();
-}
-
-/**
- * Refreshes all view counts and tab markers
- */
-function updateTabCounts() {
-    // This usually relies on individual view renderers, 
-    // but here we ensure the mini-pipeline and counters are updated
-    if (typeof renderMiniPipeline === 'function') renderMiniPipeline();
-}
 
 /**
  * Persists a ceremony audit for historical replay
@@ -257,58 +236,6 @@ function synthesizeAudit(type, targetId) {
         ],
         actions: [{ label: 'Return to Dashboard', fn: () => switchView('analytics') }]
     };
-}
-
-/**
- * Global View Orchestrator
- */
-function switchView(viewId, targetId = null) {
-    if (window.isActionLockActive) return; // Ignore view switches while an action is in progress
-    
-    // 1. Close any open modals UNLESS we just showed a ceremony success screen
-    if (window._skipModalCloseOnce) {
-        window._skipModalCloseOnce = false; // Reset for next time
-    } else {
-        closeCmsModal();
-    }
-
-    // 2. Hide all views
-    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-
-    // 3. Show target view
-    const target = document.getElementById(`${viewId}-view`);
-    if (target) {
-        target.classList.add('active');
-        // Trigger specific renderers
-        if (viewId === 'track' && typeof renderTrackView === 'function') renderTrackView();
-        if (viewId === 'roadmap' && typeof renderRoadmapView === 'function') renderRoadmapView();
-        if (viewId === 'epics' && typeof renderEpicsView === 'function') renderEpicsView();
-        if (viewId === 'okr' && typeof renderOkrView === 'function') renderOkrView();
-        if (viewId === 'sprint' && typeof renderSprintView === 'function') renderSprintView();
-        if (viewId === 'releases' && typeof renderReleasesView === 'function') renderReleasesView();
-        if (viewId === 'backlog' && typeof renderBacklogView === 'function') renderBacklogView();
-        if (viewId === 'kanban' && typeof renderKanbanView === 'function') renderKanbanView();
-        if (viewId === 'analytics' && typeof renderAnalyticsView === 'function') renderAnalyticsView();
-        if (viewId === 'status' && typeof renderStatusView === 'function') renderStatusView();
-        if (viewId === 'priority' && typeof renderPriorityView === 'function') renderPriorityView();
-
-        // 3a. Deep link highlighting
-        if (targetId) {
-            setTimeout(() => {
-                const element = document.getElementById(targetId) || document.querySelector(`[data-id="${targetId}"]`);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    element.classList.add('highlight-pulse');
-                    setTimeout(() => element.classList.remove('highlight-pulse'), 3000);
-                }
-            }, 300);
-        }
-    }
-
-    // 4. Update tab state
-    document.querySelectorAll('.nav-link').forEach(l => {
-        l.classList.toggle('active', l.getAttribute('onclick')?.includes(viewId));
-    });
 }
 
 // ── Legacy shim — keep working for any residual inline onclick references
@@ -5978,6 +5905,7 @@ function buildAdminTeamsPanel() {
                         <tbody>${projectRows}</tbody>
                     </table>
                 </div>
+                <div id="admin-project-form-container"></div>
                 <p class="text-[10px] text-slate-400 mt-1.5">Projects are stored in <code>users.json → projects[]</code>. Each project has its own data file on GitHub. Save with "Save to GitHub" after edits.</p>
             </div>
 
@@ -6033,23 +5961,43 @@ window.adminSwitchProject = function(id) {
 }
 
 window.adminAddProject = function() {
-    const name = prompt('Project name (e.g. "AI Agent"):', '')?.trim()
-    if (!name) return
-    const idRaw = prompt('Project ID (lowercase, no spaces, e.g. "ai-agent"):', name.toLowerCase().replace(/\s+/g, '-'))?.trim()
-    if (!idRaw) return
-    const id = idRaw.replace(/[^a-z0-9-]/g, '-')
-    if (window.PROJECT_REGISTRY.some(p => p.id === id)) {
-        showToast(`Project ID "${id}" already exists`, 'error'); return
+    const container = document.getElementById('admin-project-form-container');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-2 space-y-2">
+            <div class="text-xs font-bold text-slate-700 mb-1">New Project</div>
+            <input id="admin-proj-name" type="text" placeholder="Project name (e.g. AI Agent)" class="cms-input text-xs w-full" />
+            <input id="admin-proj-id" type="text" placeholder="ID: lowercase-with-dashes" class="cms-input text-xs w-full" />
+            <div class="flex gap-2 mt-1">
+                <button onclick="adminAddProjectSave()" class="px-3 py-1 bg-emerald-600 text-white text-xs rounded font-bold hover:bg-emerald-700">Add</button>
+                <button onclick="adminCancelProjectForm()" class="px-3 py-1 bg-slate-200 text-slate-700 text-xs rounded font-bold hover:bg-slate-300">Cancel</button>
+            </div>
+        </div>`;
+    const nameInput = document.getElementById('admin-proj-name');
+    const idInput = document.getElementById('admin-proj-id');
+    if (nameInput && idInput) {
+        nameInput.addEventListener('input', () => {
+            idInput.value = nameInput.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        });
+        nameInput.focus();
     }
-    const filePath = `data-${id}.json`
-    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
-    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
-    _adminUsersData.projects.push({ id, name, filePath })
-    _syncProjectsToRegistry()
-    scaffoldProjectDataFile(id, name)
-    showToast(`Project "${name}" added — save to GitHub to persist`, 'info')
-    renderAdminPanel(buildAdminTeamsPanel())
-}
+};
+
+window.adminAddProjectSave = function() {
+    const name = document.getElementById('admin-proj-name')?.value.trim();
+    const id = document.getElementById('admin-proj-id')?.value.trim().replace(/[^a-z0-9-]/g, '-');
+    if (!name || !id) { showToast('Name and ID are required', 'error'); return; }
+    if (window.PROJECT_REGISTRY.some(p => p.id === id)) { showToast(`ID "${id}" already exists`, 'error'); return; }
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return; }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY];
+    const filePath = `data-${id}.json`;
+    _adminUsersData.projects.push({ id, name, filePath });
+    _syncProjectsToRegistry();
+    scaffoldProjectDataFile(id, name);
+    adminCancelProjectForm();
+    showToast(`Project "${name}" added — save to GitHub to persist`, 'info');
+    renderAdminPanel(buildAdminTeamsPanel());
+};
 
 async function scaffoldProjectDataFile(projectId, projectName) {
     const jwt = localStorage.getItem('khyaal_site_auth')
@@ -6090,20 +6038,42 @@ async function scaffoldProjectDataFile(projectId, projectName) {
 }
 
 window.adminEditProject = function(pi) {
-    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
-    const p = projects[pi]
-    if (!p) return
-    const newName = prompt('Project name:', p.name)?.trim()
-    if (!newName) return
-    const newFile = prompt('Data file on GitHub:', p.filePath || `data-${p.id}.json`)?.trim()
-    if (!newFile) return
-    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
-    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
-    _adminUsersData.projects[pi] = { ...p, name: newName, filePath: newFile }
-    _syncProjectsToRegistry()
-    showToast(`Project "${newName}" updated — save to GitHub to persist`, 'info')
-    renderAdminPanel(buildAdminTeamsPanel())
-}
+    const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY;
+    const p = projects[pi];
+    if (!p) return;
+    const container = document.getElementById('admin-project-form-container');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2 space-y-2">
+            <div class="text-xs font-bold text-amber-700 mb-1">Edit Project</div>
+            <input id="admin-proj-edit-name" type="text" value="${p.name}" class="cms-input text-xs w-full" />
+            <input id="admin-proj-edit-file" type="text" value="${p.filePath || 'data-' + p.id + '.json'}" class="cms-input text-xs w-full" />
+            <div class="flex gap-2 mt-1">
+                <button onclick="adminEditProjectSave(${pi})" class="px-3 py-1 bg-amber-600 text-white text-xs rounded font-bold hover:bg-amber-700">Save</button>
+                <button onclick="adminCancelProjectForm()" class="px-3 py-1 bg-slate-200 text-slate-700 text-xs rounded font-bold hover:bg-slate-300">Cancel</button>
+            </div>
+        </div>`;
+    document.getElementById('admin-proj-edit-name')?.focus();
+};
+
+window.adminEditProjectSave = function(pi) {
+    const newName = document.getElementById('admin-proj-edit-name')?.value.trim();
+    const newFile = document.getElementById('admin-proj-edit-file')?.value.trim();
+    if (!newName || !newFile) { showToast('Name and file path are required', 'error'); return; }
+    if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return; }
+    if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY];
+    const p = _adminUsersData.projects[pi];
+    _adminUsersData.projects[pi] = { ...p, name: newName, filePath: newFile };
+    _syncProjectsToRegistry();
+    adminCancelProjectForm();
+    showToast(`Project "${newName}" updated — save to GitHub to persist`, 'info');
+    renderAdminPanel(buildAdminTeamsPanel());
+};
+
+window.adminCancelProjectForm = function() {
+    const container = document.getElementById('admin-project-form-container');
+    if (container) container.innerHTML = '';
+};
 
 window.adminDeleteProject = function(pi) {
     const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
@@ -6113,9 +6083,54 @@ window.adminDeleteProject = function(pi) {
     if (!_adminUsersData) { showToast('Load admin panel first', 'error'); return }
     if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = [...window.PROJECT_REGISTRY]
     _adminUsersData.projects.splice(pi, 1)
+    // Clean up stale grants pointing to the deleted project
+    if (Array.isArray(_adminUsersData.users)) {
+        _adminUsersData.users.forEach(u => {
+            if (Array.isArray(u.grants)) {
+                u.grants = u.grants.filter(g => g.projectId !== p.id);
+            }
+        });
+    }
+    // Offer to tombstone the data file on GitHub
+    if (confirm(`Also mark data file "data-${p.id}.json" as deleted on GitHub?`)) {
+        deleteProjectDataFile(p.id);
+    }
     _syncProjectsToRegistry()
     showToast(`Project "${p.name}" removed — save to GitHub to persist`, 'info')
     renderAdminPanel(buildAdminTeamsPanel())
+}
+
+async function deleteProjectDataFile(projectId) {
+    const jwt = localStorage.getItem('khyaal_site_auth');
+    if (!jwt) return;
+    try {
+        const readRes = await fetch(`${LAMBDA_URL}?action=read&projectId=default&filePath=data-${projectId}.json`, {
+            headers: { 'Authorization': `Bearer ${jwt}` }
+        });
+        if (!readRes.ok) {
+            showToast(`data-${projectId}.json not found — may already be removed`, 'info');
+            return;
+        }
+        const { sha } = await readRes.json();
+        const tombstone = { _deleted: true, _deletedAt: new Date().toISOString(), projectId };
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(tombstone, null, 2))));
+        const writeRes = await fetch(`${LAMBDA_URL}?action=write`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                projectId: 'default',
+                filePath: `data-${projectId}.json`,
+                content,
+                sha,
+                message: `chore: tombstone data file for deleted project ${projectId}`
+            })
+        });
+        if (!writeRes.ok) throw new Error('Write failed: ' + writeRes.status);
+        showToast(`data-${projectId}.json marked as deleted on GitHub`, 'success');
+    } catch (err) {
+        console.error('❌ deleteProjectDataFile:', err);
+        showToast(`Could not tombstone data file — delete data-${projectId}.json manually from GitHub`, 'error');
+    }
 }
 
 async function adminSaveUsers() {
