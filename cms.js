@@ -5778,14 +5778,6 @@ function adminAddGrant(userIndex) {
     renderAdminPanel(buildAdminUsersTable())
 }
 
-function adminRemoveUser(userIndex) {
-    if (!_adminUsersData?.users[userIndex]) return
-    const user = _adminUsersData.users[userIndex]
-    if (!confirm(`Remove user "${user.name || user.id}"? This will revoke all their access.`)) return
-    _adminUsersData.users.splice(userIndex, 1)
-    renderAdminPanel(buildAdminUsersTable())
-}
-
 function adminAddUser() {
     const id = prompt('Username (alphanumeric, no spaces):')?.trim().toLowerCase()
     if (!id || !/^[a-z0-9_-]+$/.test(id)) { showToast('Invalid username', 'error'); return }
@@ -6337,7 +6329,7 @@ function adminPreviewWsId(name) {
   if (fileEl) fileEl.value = slug ? 'data-' + slug + '.json' : ''
 }
 
-function adminSaveNewWorkspace() {
+async function adminSaveNewWorkspace() {
   const name = (document.getElementById('admin-new-ws-name')?.value || '').trim()
   if (!name) { showToast('Workspace name is required', 'error'); return }
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -6348,7 +6340,7 @@ function adminSaveNewWorkspace() {
   if (!registry.projects) registry.projects = []
   registry.projects.push({ id, name, dataFile })
   window.PROJECT_REGISTRY = registry
-  scaffoldProjectDataFile(id, name)
+  await scaffoldProjectDataFile(id, name)
   renderAdminView()
   showToast('Workspace created — click Save to persist registry', 'info')
 }
