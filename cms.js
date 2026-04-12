@@ -5995,6 +5995,12 @@ window.adminDeleteProject = function(pi) {
     renderAdminPanel(buildAdminTeamsPanel())
 }
 
+function renderAdminView() {
+    var container = document.getElementById('admin-view');
+    if (!container) return;
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">Loading Admin...</div>';
+}
+
 async function deleteProjectDataFile(projectId) {
     const jwt = localStorage.getItem('khyaal_site_auth');
     if (!jwt) return;
