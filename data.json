@@ -171,6 +171,123 @@
           }
         ],
         "overallProgress": 91
+      },
+      {
+        "id": "okr-q2-2026-community-quality",
+        "quarter": "Q2 2026",
+        "objective": "Eliminate critical community-reported bugs across Khyaal Core and 50 Above 50",
+        "owner": "Platform Team",
+        "keyResults": [
+          {
+            "id": "kr-cq-1",
+            "description": "All P0/P1 critical bugs resolved (Digi-gold, KCMC, buy membership flow)",
+            "target": 100,
+            "current": 0,
+            "unit": "%",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "community-bug-resolution"
+          },
+          {
+            "id": "kr-cq-2",
+            "description": "7 critical 50A50 issues closed (category change, pricing, dashboard, redirect)",
+            "target": 7,
+            "current": 4,
+            "unit": "issues",
+            "progress": 57,
+            "status": "on-track",
+            "linkedEpic": "fifty-above-fifty-platform"
+          },
+          {
+            "id": "kr-cq-3",
+            "description": "Zero P0 bugs in production at sprint end",
+            "target": 0,
+            "current": 4,
+            "unit": "bugs",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "community-bug-resolution"
+          }
+        ],
+        "overallProgress": 19
+      },
+      {
+        "id": "okr-q2-2026-product-growth",
+        "quarter": "Q2 2026",
+        "objective": "Ship features driving app downloads, membership revenue, and user engagement",
+        "owner": "Platform Team",
+        "keyResults": [
+          {
+            "id": "kr-pg-1",
+            "description": "₹99 plan live on homepage (Apr 8)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 80,
+            "status": "on-track",
+            "linkedEpic": "product-growth-features"
+          },
+          {
+            "id": "kr-pg-2",
+            "description": "Offline Events server-side shipped (Apr 24)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "product-growth-features"
+          },
+          {
+            "id": "kr-pg-3",
+            "description": "50A50 app-only upload live to drive app downloads (May 8)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "product-growth-features"
+          }
+        ],
+        "overallProgress": 27
+      },
+      {
+        "id": "okr-q2-2026-platform-completeness",
+        "quarter": "Q2 2026",
+        "objective": "Complete CMS, roles, insurance, and campaign infrastructure",
+        "owner": "Platform Team",
+        "keyResults": [
+          {
+            "id": "kr-pc-1",
+            "description": "CMS membership details page live (reduces 4-click workflow to 1)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "cms-platform-capabilities"
+          },
+          {
+            "id": "kr-pc-2",
+            "description": "Individual roles (Event Manager, Support) launched",
+            "target": 2,
+            "current": 0,
+            "unit": "roles",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "cms-platform-capabilities"
+          },
+          {
+            "id": "kr-pc-3",
+            "description": "Insurance landing page + Parents Day campaign ready by May 8",
+            "target": 2,
+            "current": 0,
+            "unit": "launches",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "cms-platform-capabilities"
+          }
+        ],
+        "overallProgress": 0
       }
     ],
     "sprints": [
