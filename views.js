@@ -112,187 +112,6 @@ function renderCommentThread(comments, ti, si, ii, itemId, viewPrefix = 'main') 
     }).join('');
 }
 
-// ------ Workflow / Playbook View ------
-function renderWorkflowView() {
-    const container = document.getElementById('workflow-view');
-    if (!container) return;
-
-    let ribbonHtml = `
-        <div id="workflow-ribbon" class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4">
-            <!-- Group 1: Navigation/Breadcrumb -->
-            <div class="flex items-center gap-3 px-2">
-                <span class="text-xl">🛠️</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-medium text-slate-400">Engineering Playbook</span>
-                    <h2 class="text-sm font-black text-slate-800">Process & Workflow</h2>
-                </div>
-            </div>
-
-            <!-- Group 2: Actions -->
-            <div class="flex items-center gap-2">
-                <div id="workflow-next-action-mount">
-                    ${renderPrimaryStageAction('workflow')}
-                </div>
-            </div>
-        </div>
-    `;
-
-    const mode = typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm'
-    const activeTab = window.workflowTab || (mode === 'dev' ? 'dev' : 'pm')
-
-    const stages = [
-        {
-            num: 1, icon: '🔍', title: 'Discovery', color: 'border-slate-300 bg-slate-50',
-            badgeColor: 'bg-slate-100 text-slate-700',
-            who: ['PM'], when: 'Pre-quarter / ongoing',
-            views: [{ id: 'ideation', label: 'Ideation' }, { id: 'spikes', label: 'Spikes' }],
-            steps: [
-                'Capture raw ideas and opportunities in Ideation view',
-                'Run technical spikes to validate feasibility',
-                'Tag ideas with #idea or #spike',
-                'Shortlist validated ideas as input for Vision stage'
-            ],
-            output: 'Validated idea list ready for OKR planning',
-            next: { id: 'okr', label: 'Vision →' },
-            devVisible: false
-        },
-        {
-            num: 2, icon: '🌟', title: 'Vision', color: 'border-indigo-200 bg-indigo-50/30',
-            badgeColor: 'bg-indigo-100 text-indigo-700',
-            who: ['PM', 'Exec'], when: 'Quarter start (once per quarter)',
-            views: [{ id: 'okr', label: 'OKRs' }, { id: 'epics', label: 'Epics' }],
-            steps: [
-                'Set quarterly Objectives & Key Results in OKR view',
-                'Create Strategic Epics aligned to each OKR',
-                'Link Key Results to Epics via "Linked Epic" field',
-                'Get Exec sign-off on OKR targets'
-            ],
-            output: 'OKRs with linked Epics and measurable Key Results',
-            next: { id: 'roadmap', label: 'Definition →' },
-            devVisible: false
-        },
-        {
-            num: 3, icon: '📐', title: 'Definition', color: 'border-blue-200 bg-blue-50/30',
-            badgeColor: 'bg-blue-100 text-blue-700',
-            who: ['PM', 'Dev'], when: 'Sprint start (every 1–2 weeks)',
-            views: [{ id: 'roadmap', label: 'Roadmap' }, { id: 'backlog', label: 'Backlog' }, { id: 'sprint', label: 'Sprint' }],
-            steps: [
-                'Map Epics to planning horizons in Roadmap view',
-                'Break Epics into tasks in Backlog — set story points, AC, priority',
-                'Assign tasks to sprint via inline "Assign to Sprint" on backlog items',
-                'Create a Release milestone with target date',
-                'Dev: Review your sprint tasks, ask PM to clarify acceptance criteria'
-            ],
-            output: 'Sprint with committed items, Release milestone created',
-            next: { id: 'kanban', label: 'Delivery →' },
-            devVisible: true,
-            devNote: 'Review your assigned tasks in Sprint view. Clarify acceptance criteria before starting.'
-        },
-        {
-            num: 4, icon: '🚀', title: 'Delivery', color: 'border-emerald-200 bg-emerald-50/30',
-            badgeColor: 'bg-emerald-100 text-emerald-700',
-            who: ['Dev', 'PM'], when: 'During sprint (daily)',
-            views: [{ id: 'my-tasks', label: 'My Tasks' }, { id: 'kanban', label: 'Kanban' }, { id: 'track', label: 'Track' }, { id: 'dependency', label: 'Dependencies' }],
-            steps: [
-                'Dev: Open My Tasks — see your assigned items with Epic + OKR context',
-                'Move cards on Kanban: Later → Next → Now → QA → Review → Done',
-                'Flag a blocker via the item edit modal if you are stuck',
-                'PM: Resolve blockers using the "✅ Resolve" button on the blocker strip',
-                'Mark items Done once code is merged and verified'
-            ],
-            output: 'Done items in Kanban ready to be shipped to a Release',
-            next: { id: 'releases', label: 'Review/Ship →' },
-            devVisible: true,
-            devNote: 'This is your primary stage. Use My Tasks as your daily starting point.'
-        },
-        {
-            num: 5, icon: '🏁', title: 'Review / Ship', color: 'border-purple-200 bg-purple-50/30',
-            badgeColor: 'bg-purple-100 text-purple-700',
-            who: ['PM', 'Exec'], when: 'Sprint end / release day',
-            views: [{ id: 'releases', label: 'Releases' }, { id: 'analytics', label: 'Analytics' }, { id: 'dashboard', label: 'Dashboard' }],
-            steps: [
-                'Click "📦 Promote Done Items →" on sprint card to assign done items to a release',
-                'Open Releases view — verify items, set publish date',
-                'PM: Update OKR Key Result progress based on what shipped',
-                'Exec: Review Dashboard for blockers, OKR health, and at-risk items',
-                'Review Analytics — velocity, burndown, team performance',
-                'Decide what goes into next quarter\'s Discovery → restart cycle'
-            ],
-            output: 'Published release + updated OKR progress → feeds next Discovery',
-            next: { id: 'ideation', label: 'Discovery →' },
-            devVisible: true,
-            devNote: 'Check Releases to confirm your work is correctly attributed. Review Analytics for team velocity.'
-        }
-    ]
-
-    const visibleStages = activeTab === 'dev' ? stages.filter(s => s.devVisible) : stages
-
-    const stageCards = visibleStages.map(s => {
-        const whoHtml = s.who.map(w => {
-            const colors = { PM: 'bg-blue-100 text-blue-800', Dev: 'bg-green-100 text-green-800', Exec: 'bg-purple-100 text-purple-800' }
-            return `<span class="px-2 py-0.5 rounded-full text-[10px] font-black ${colors[w]}">${w}</span>`
-        }).join('')
-        const viewBtns = s.views.map(v =>
-            `<button onclick="switchView('${v.id}')" class="playbook-view-btn">${v.label} →</button>`
-        ).join('')
-        const stepsList = (activeTab === 'dev' && s.devNote ? [s.devNote, ...s.steps.filter((_, i) => i > 0)] : s.steps)
-            .map((step, i) => `<li class="flex gap-2.5 items-start"><span class="shrink-0 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[9px] font-black text-slate-500">${i + 1}</span><span class="text-xs text-slate-700 leading-relaxed">${step}</span></li>`).join('')
-
-        return `
-            <div class="playbook-stage-card rounded-2xl border-2 ${s.color} p-6">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <span class="w-8 h-8 rounded-xl ${s.badgeColor} flex items-center justify-center text-base font-black">${s.num}</span>
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl">${s.icon}</span>
-                                <h3 class="text-base font-black text-slate-900">${s.title}</h3>
-                            </div>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                ${whoHtml}
-                                <span class="text-[10px] text-slate-400 font-bold ml-1">· ${s.when}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2 justify-end">${viewBtns}</div>
-                </div>
-                <ul class="space-y-2 mb-4">${stepsList}</ul>
-                <div class="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                    <div class="text-[10px] font-medium text-slate-400">Output</div>
-                    <div class="text-xs font-bold text-slate-600 text-right max-w-xs">${s.output}</div>
-                </div>
-                <div class="mt-3 flex justify-end">
-                    <button onclick="switchView('${s.next.id}')" class="cms-btn cms-btn-primary text-xs px-4 py-1.5">${s.next.label}</button>
-                </div>
-            </div>`
-    }).join('')
-
-    container.innerHTML = ribbonHtml + `
-        <div class="space-y-4">
-            <!-- Tabs -->
-            <div class="flex gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm w-fit">
-                <button onclick="window.workflowTab='pm'; renderWorkflowView()" class="px-5 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'pm' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}">👨‍💼 PM Playbook</button>
-                <button onclick="window.workflowTab='dev'; renderWorkflowView()" class="px-5 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'dev' ? 'bg-green-600 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}">👩‍💻 Developer Guide</button>
-            </div>
-
-            <!-- Lifecycle flow strip -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-2 flex-wrap text-[10px] font-medium text-slate-500">
-                <span class="text-slate-300">Flow:</span>
-                <span class="px-2 py-1 bg-slate-100 rounded">🔍 Discovery</span><span class="text-slate-300">→</span>
-                <span class="px-2 py-1 bg-indigo-100 rounded text-indigo-700">🌟 Vision</span><span class="text-slate-300">→</span>
-                <span class="px-2 py-1 bg-blue-100 rounded text-blue-700">📐 Definition</span><span class="text-slate-300">→</span>
-                <span class="px-2 py-1 bg-emerald-100 rounded text-emerald-700">🚀 Delivery</span><span class="text-slate-300">→</span>
-                <span class="px-2 py-1 bg-purple-100 rounded text-purple-700">🏁 Review/Ship</span><span class="text-slate-300">→ loops back</span>
-            </div>
-
-            <!-- Stage cards -->
-            <div class="space-y-4">${stageCards}</div>
-        </div>
-    `
-}
-
-window.workflowTab = null
-
 // ------ Track View ------
 function renderTrackView() {
     const container = document.getElementById('track-view');
@@ -3529,5 +3348,186 @@ function setActivityFilter(group) {
     renderActivityView()
 }
 window.setActivityFilter = setActivityFilter
+
+function renderIdeationView() {
+    const container = document.getElementById('ideation-view')
+    if (!container) return
+    const mode = getCurrentMode()
+    const activeTeam = getActiveTeam()
+
+    // Collect matching items
+    const groups = {}
+    UPDATE_DATA.tracks.forEach((track, ti) => {
+        if (activeTeam && activeTeam !== track.name) return
+        track.subtracks.forEach((subtrack, si) => {
+            subtrack.items.forEach((item, ii) => {
+                const isIdea = item.type === 'idea' ||
+                    (Array.isArray(item.tags) && item.tags.includes('idea')) ||
+                    (item.planningHorizon === 'now' && item.status === 'backlog')
+                if (!isIdea) return
+                if (!groups[track.name]) groups[track.name] = []
+                groups[track.name].push({ item, ti, si, ii })
+            })
+        })
+    })
+
+    // Fallback: all backlog items with no epicId
+    let usedFallback = false
+    if (Object.keys(groups).length === 0) {
+        usedFallback = true
+        UPDATE_DATA.tracks.forEach((track, ti) => {
+            if (activeTeam && activeTeam !== track.name) return
+            track.subtracks.forEach((subtrack, si) => {
+                subtrack.items.forEach((item, ii) => {
+                    if (item.status === 'backlog' && !item.epicId) {
+                        if (!groups[track.name]) groups[track.name] = []
+                        groups[track.name].push({ item, ti, si, ii })
+                    }
+                })
+            })
+        })
+    }
+
+    let html = `
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 mb-4">
+            <span class="text-xl">💡</span>
+            <div>
+                <span class="text-[10px] font-medium text-slate-400">Stage 1 · Discover — Raw ideas before committing to build</span>
+                <h2 class="text-sm font-black text-slate-800">Idea Backlog</h2>
+            </div>
+        </div>
+    `
+
+    const trackNames = Object.keys(groups)
+    if (trackNames.length === 0) {
+        const addBtn = typeof openAddItemModal === 'function'
+            ? `<button onclick="openAddItemModal && openAddItemModal()" class="mt-3 px-5 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 active:scale-95 transition-all">+ Capture Idea</button>`
+            : ''
+        html += `
+            <div class="flex flex-col items-center justify-center py-20 text-center">
+                <div class="text-5xl mb-4">💡</div>
+                <h3 class="text-base font-black text-slate-700 mb-1">No ideas captured yet</h3>
+                <p class="text-xs text-slate-400 max-w-xs">Park ideas here before committing to build anything.</p>
+                ${addBtn}
+            </div>
+        `
+        container.innerHTML = html
+        return
+    }
+
+    trackNames.forEach(trackName => {
+        const entries = groups[trackName]
+        html += `
+            <div class="mb-6">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">${trackName} · ${entries.length} idea${entries.length !== 1 ? 's' : ''}</div>
+                <div class="flex flex-col gap-2">
+        `
+        entries.forEach(({ item, ti, si, ii }) => {
+            const statusClass = `status-badge status-${item.status || 'none'}`
+            const priorityLabel = item.priority ? `<span class="text-[10px] text-slate-400 font-medium">${item.priority}</span>` : ''
+            html += `
+                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex items-start justify-between gap-3 hover:border-indigo-300 transition-all">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="${statusClass}">${item.status || 'none'}</span>
+                            ${priorityLabel}
+                        </div>
+                        <div class="text-sm font-semibold text-slate-800 truncate mb-1" title="${(item.text || '').replace(/"/g, '&quot;')}">${item.text || '(untitled)'}</div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${renderTagPills(item.tags || [])}
+                            ${renderContributors(item.contributors || [])}
+                        </div>
+                    </div>
+                    <button onclick="switchView('epics')" class="shrink-0 px-3 py-1.5 text-[10px] font-black bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-all whitespace-nowrap active:scale-95">
+                        Promote to Epic →
+                    </button>
+                </div>
+            `
+        })
+        html += `</div></div>`
+    })
+
+    container.innerHTML = html
+}
+window.renderIdeationView = renderIdeationView
+
+function renderSpikesView() {
+    const container = document.getElementById('spikes-view')
+    if (!container) return
+    const mode = getCurrentMode()
+    const activeTeam = getActiveTeam()
+
+    const groups = {}
+    UPDATE_DATA.tracks.forEach((track, ti) => {
+        if (activeTeam && activeTeam !== track.name) return
+        track.subtracks.forEach((subtrack, si) => {
+            subtrack.items.forEach((item, ii) => {
+                const tagMatch = Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase() === 'spike')
+                const textMatch = typeof item.text === 'string' && item.text.toLowerCase().includes('[spike]')
+                const typeMatch = item.type === 'spike'
+                if (!tagMatch && !textMatch && !typeMatch) return
+                if (!groups[track.name]) groups[track.name] = []
+                groups[track.name].push({ item, ti, si, ii })
+            })
+        })
+    })
+
+    let html = `
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 mb-4">
+            <span class="text-xl">🔬</span>
+            <div>
+                <span class="text-[10px] font-medium text-slate-400">Stage 1 · Discover — Time-boxed research tasks</span>
+                <h2 class="text-sm font-black text-slate-800">Spikes</h2>
+            </div>
+        </div>
+    `
+
+    const trackNames = Object.keys(groups)
+    if (trackNames.length === 0) {
+        html += `
+            <div class="flex flex-col items-center justify-center py-20 text-center">
+                <div class="text-5xl mb-4">🔬</div>
+                <h3 class="text-base font-black text-slate-700 mb-1">No spikes defined</h3>
+                <p class="text-xs text-slate-400 max-w-xs">A spike is a short research task to answer a technical question before committing to build.</p>
+                <button onclick="switchView('backlog')" class="mt-3 px-5 py-2 bg-slate-800 text-white text-xs font-black rounded-xl hover:bg-slate-700 active:scale-95 transition-all">Go to Backlog →</button>
+            </div>
+        `
+        container.innerHTML = html
+        return
+    }
+
+    trackNames.forEach(trackName => {
+        const entries = groups[trackName]
+        html += `
+            <div class="mb-6">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">${trackName} · ${entries.length} spike${entries.length !== 1 ? 's' : ''}</div>
+                <div class="flex flex-col gap-2">
+        `
+        entries.forEach(({ item, ti, si, ii }) => {
+            const statusClass = `status-badge status-${item.status || 'none'}`
+            html += `
+                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex items-start justify-between gap-3 hover:border-amber-300 transition-all">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="${statusClass}">${item.status || 'none'}</span>
+                            ${renderDueDateBadge(item)}
+                        </div>
+                        <div class="text-sm font-semibold text-slate-800 truncate mb-1" title="${(item.text || '').replace(/"/g, '&quot;')}">${item.text || '(untitled)'}</div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${renderTagPills(item.tags || [])}
+                        </div>
+                    </div>
+                    <button onclick="switchView('backlog')" class="shrink-0 px-3 py-1.5 text-[10px] font-black bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-all whitespace-nowrap active:scale-95">
+                        Convert to Task →
+                    </button>
+                </div>
+            `
+        })
+        html += `</div></div>`
+    })
+
+    container.innerHTML = html
+}
+window.renderSpikesView = renderSpikesView
 
 console.log('✅ views.js fully loaded including Discovery');

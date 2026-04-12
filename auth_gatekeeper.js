@@ -70,10 +70,10 @@ exports.handler = async (event) => {
                 }
             }
             const dataFile = projectId !== 'default' ? `data-${projectId}.json` : 'data.json'
-            const data = await fetchFromGitHub(token, dataFile)
+            const { data, sha } = await fetchFileWithSha(token, dataFile)
             return {
                 statusCode: 200, headers: resHeaders,
-                body: JSON.stringify({ authenticated: true, data })
+                body: JSON.stringify({ authenticated: true, data, sha })
             }
         }
 

@@ -2472,7 +2472,7 @@ function openSprintEdit(sprintId) {
         </button>
         ${sprintId ? `
             <button onclick="deleteSprint('${sprintId}')" class="cms-btn cms-btn-danger mr-auto flex items-center gap-2">
-                <span>🗑️</span> Delete Sprint
+                <span>🔒</span> Close Sprint
             </button>
         ` : ''}
         ${sprintId && sprint.status === 'completed' ? `
@@ -4922,13 +4922,15 @@ async function saveToGithub() {
     try {
         const projectId = window.ACTIVE_PROJECT_ID || 'default';
         const content = btoa(unescape(encodeURIComponent(JSON.stringify(UPDATE_DATA, null, 4))));
+        const sha = window._lastDataSha || null
         const res = await fetch(`${LAMBDA_URL}?action=write`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId, content, message: 'CMS: Update dashboard data' })
+            body: JSON.stringify({ projectId, content, sha, message: 'CMS: Update dashboard data' })
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Save failed');
+        if (result.sha) window._lastDataSha = result.sha
         alert('Saved successfully!');
         location.reload();
     } catch (e) {
@@ -5583,7 +5585,7 @@ function deleteOKR(okrIndex) {
 
 function deleteSprint(sprintId) {
     const sprint = UPDATE_DATA.metadata.sprints.find(s => s.id === sprintId);
-    if (!confirm(`Delete sprint "${sprint.name}"? This will not delete tasks, but they will be unlinked from this sprint.`)) return;
+    if (!confirm(`Close sprint "${sprint.name}"? This will mark it as closed. Sprint history is preserved.`)) return;
 
     // Clear sprintId from items
     UPDATE_DATA.tracks.forEach(track => {
@@ -5594,11 +5596,13 @@ function deleteSprint(sprintId) {
         });
     });
 
-    const idx = UPDATE_DATA.metadata.sprints.findIndex(s => s.id === sprintId);
-    UPDATE_DATA.metadata.sprints.splice(idx, 1);
-    logChange('Delete Sprint', sprint.name);
+    sprint.status = 'closed';
+    sprint.closedAt = new Date().toISOString().split('T')[0];
+    logChange('Close Sprint', sprint.name);
+    saveToLocalStorage();
     switchView('sprint');
     updateTabCounts();
+    renderDashboard();
 }
 
 function deleteRelease(releaseId) {

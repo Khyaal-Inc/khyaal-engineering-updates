@@ -372,7 +372,8 @@
                                     headers: { 'Authorization': `Bearer ${cachedSession}` }
                                 });
                                 if (readResp.ok) {
-                                    const { data } = await readResp.json();
+                                    const { data, sha } = await readResp.json();
+                                    window._lastDataSha = sha
                                     // Prefer local edits over server if cached data exists
                                     const urlParams = new URL(window.location.href).searchParams;
                                     const isArchive = urlParams.get('archive');
@@ -449,8 +450,9 @@
                         authMessage.innerText = 'Auth succeeded but data fetch failed. Please reload.';
                         return;
                     }
-                    const { data } = await readResp.json();
+                    const { data, sha } = await readResp.json();
                     window.UPDATE_DATA = data;
+                    window._lastDataSha = sha
                     authMessage.innerText = '';
                     showProtectedContent();
 

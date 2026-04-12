@@ -77,6 +77,10 @@ function normalizeData() {
                 // Stamp subprojectId (project within team)
                 if (!item.subprojectId) item.subprojectId = (typeof getActiveProject === 'function' && getActiveProject()) || 'default-project'
 
+                // Default story points and planning horizon for new items
+                if (item.storyPoints === undefined || item.storyPoints === null) item.storyPoints = 0
+                if (!item.planningHorizon) item.planningHorizon = ''
+
                 // Clean up default dates for next/later if they are from a previous session's template
                 if (['next', 'later'].includes(item.status)) {
                     if (item.startDate === '2026-03-20') delete item.startDate;
@@ -174,6 +178,8 @@ function renderDashboard() {
     runSafe(renderCapacityView, 'Capacity');
     runSafe(renderMyTasksView, 'MyTasks');
     runSafe(renderExecutiveDashboard, 'ExecutiveDashboard');
+    runSafe(renderIdeationView, 'Ideation');
+    runSafe(renderSpikesView, 'Spikes');
     
     // 4. Update cross-view indicators
     if (typeof updateTabCounts === 'function') updateTabCounts();
