@@ -1591,8 +1591,24 @@ function findItemById(itemId) {
     return null;
 }
 
+async function adminLoadUsersRegistry() {
+  try {
+    const jwt = localStorage.getItem('khyaal_site_auth')
+    const response = await fetch(LAMBDA_URL + '?action=read&filePath=users.json', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    })
+    if (!response.ok) return
+    const { data, sha } = await response.json()
+    if (data) window.PROJECT_REGISTRY = data
+    if (sha) window._lastUsersSha = sha
+  } catch (err) {
+    console.warn('⚠️ adminLoadUsersRegistry: could not load users.json', err)
+  }
+}
+
 function initCms() {
     const params = new URLSearchParams(window.location.search);
+    const mode = getCurrentMode()
 
     // Global modal behavior (works even in read-only mode if a modal is triggered)
     const modal = document.getElementById('cms-modal');
@@ -1608,6 +1624,8 @@ function initCms() {
         window._archiveFilterInited = true;
         initArchiveFilter();
     }
+
+    if (mode === 'pm') adminLoadUsersRegistry()
 
     if (params.get('cms') === 'true') {
         isCmsMode = true;

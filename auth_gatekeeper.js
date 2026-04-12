@@ -55,6 +55,16 @@ exports.handler = async (event) => {
             // Optional filePath: directory listings use raw helper (returns array);
             // regular files use fetchFileWithSha to also return the blob SHA for optimistic locking
             if (qs.filePath) {
+                const ADMIN_FILES_READ = ['users.json']
+                if (ADMIN_FILES_READ.includes(qs.filePath)) {
+                    const isPm = (claims.grants || []).some(g => g.mode === 'pm')
+                    if (!isPm) {
+                        return {
+                            statusCode: 403, headers: resHeaders,
+                            body: JSON.stringify({ error: 'PM access required' })
+                        }
+                    }
+                }
                 const isDirectory = !qs.filePath.includes('.')
                 if (isDirectory) {
                     const data = await fetchRawFromGitHub(token, qs.filePath)
