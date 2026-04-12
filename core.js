@@ -332,6 +332,8 @@ function switchView(viewId, targetId = null) {
         } else {
             if (typeof closeCmsModal === 'function') closeCmsModal()
         }
+        if (typeof closeSettingsPanel === 'function') closeSettingsPanel()
+        if (typeof closeAdminPanel === 'function') closeAdminPanel()
 
         // Set global state immediately
         window.currentActiveView = viewId

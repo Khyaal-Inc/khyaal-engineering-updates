@@ -424,18 +424,21 @@ async function _buildSpAdminTab() {
 function _renderSpAdminBody(el) {
     if (!el) el = document.getElementById('settings-panel-body')
     if (!el) return
-    const subTabHtml = `
-        <div class="sp-admin-tabs">
-            <button class="sp-admin-tab-btn ${_spAdminSubTab === 'users' ? 'active' : ''}" onclick="switchSpAdminSubTab('users')">👤 Users &amp; Grants</button>
-            <button class="sp-admin-tab-btn ${_spAdminSubTab === 'teams' ? 'active' : ''}" onclick="switchSpAdminSubTab('teams')">🏗️ Teams &amp; Tracks</button>
-        </div>
-        <div id="sp-admin-tab-content">
-            ${_spAdminSubTab === 'users' ? buildAdminUsersTable() : _buildSpTeamsPanel()}
-        </div>
-        <div class="mt-5 pt-4 border-t border-slate-100">
-            <button onclick="spAdminSaveUsers()" class="sp-btn sp-btn-primary">💾 Save to GitHub</button>
+    
+    el.innerHTML = `
+        <div style="padding:40px 20px;text-align:center">
+            <div style="font-size:40px;margin-bottom:20px">🛡️</div>
+            <h3 style="font-size:16px;font-weight:900;color:#1e293b;margin-bottom:8px">Full Admin Access</h3>
+            <p style="font-size:12px;color:#64748b;margin-bottom:24px;line-height:1.5">
+                Manage workspaces, users, projects, tracks, and subtracks in the high-fidelity Admin view.
+            </p>
+            <button onclick="closeSettingsPanel(); switchView('admin')" class="sp-btn sp-btn-primary" style="width:100%;justify-content:center;padding:12px">
+                🛡️ Open Admin ↗
+            </button>
+            <p style="font-size:10px;color:#94a3b8;margin-top:16px italic">
+                Advanced controls for PMs and Strategists
+            </p>
         </div>`
-    el.innerHTML = subTabHtml
 }
 
 function _buildSpTeamsPanel() {
@@ -5565,31 +5568,8 @@ async function openAdminPanel() {
     const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
     if (!isPm) { showToast('Admin access requires PM grant', 'error'); return }
 
-    const modal = document.getElementById('admin-panel-modal')
-    if (!modal) { console.error('❌ [admin] #admin-panel-modal not found'); return }
-
-    modal.classList.add('active')
-    document.body.style.overflow = 'hidden'
-    renderAdminPanel('<div class="text-slate-400 text-sm text-center py-8">Loading users…</div>')
-
-    try {
-        const jwt = localStorage.getItem('khyaal_site_auth')
-        const res = await fetch(`${LAMBDA_URL}?action=read&projectId=default&filePath=users.json`, {
-            headers: { 'Authorization': `Bearer ${jwt}` }
-        })
-        if (!res.ok) throw new Error(`Read failed: ${res.status}`)
-        const { data, sha } = await res.json()
-        _adminUsersData = data
-        _adminUsersSha = sha || null
-        // Sync PROJECT_REGISTRY from users.json if projects array exists
-        if (Array.isArray(data?.projects) && data.projects.length > 0) {
-            window.PROJECT_REGISTRY = data.projects
-        }
-        renderAdminPanel(_adminActiveTab === 'teams' ? buildAdminTeamsPanel() : buildAdminUsersTable())
-    } catch (err) {
-        console.error('❌ [admin] load users:', err)
-        renderAdminPanel(`<div class="text-red-500 text-sm text-center py-8">Failed to load users: ${err.message}</div>`)
-    }
+    // Legacy modal path — redirect to full view
+    switchView('admin');
 }
 
 function closeAdminPanel() {

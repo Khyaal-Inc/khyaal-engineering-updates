@@ -13,7 +13,7 @@ const MODE_CONFIG = {
         availableViews: [
             'epics', 'roadmap', 'backlog', 'sprint', 'kanban',
             'dependency', 'okr', 'capacity', 'analytics',
-            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard', 'ideation', 'spikes', 'activity'
+            'track', 'releases', 'status', 'priority', 'contributor', 'gantt', 'workflow', 'dashboard', 'ideation', 'spikes', 'activity', 'admin'
         ],
         description: 'Strategic planning, backlog grooming, sprint management',
         primaryNavOrder: ['okr', 'roadmap', 'epics', 'releases', 'backlog', 'sprint', 'my-tasks', 'kanban', 'track', 'dashboard', 'analytics', 'capacity']
@@ -64,7 +64,8 @@ const VIEW_METADATA = {
     'dependency': { label: '🕸️ Dependencies', category: 'primary' },
     'gantt': { label: '📅 Gantt', category: 'primary' },
     'workflow': { label: '🛠️ Playbook', category: 'primary' },
-    'activity': { label: '📋 Activity', category: 'primary' }
+    'activity': { label: '📋 Activity', category: 'primary' },
+    'admin': { label: '🛡️ Admin', category: 'primary' }
 };
 
 // ============================================================
@@ -76,7 +77,7 @@ const STAGE_TO_VIEWS = {
         vision:    ['okr', 'epics'],
         plan:      ['sprint', 'roadmap', 'backlog', 'gantt', 'capacity'],
         build:     ['my-tasks', 'kanban', 'track', 'dependency', 'status', 'priority', 'contributor'],
-        review:    ['releases', 'analytics', 'dashboard', 'activity']
+        review:    ['releases', 'analytics', 'dashboard', 'activity', 'admin']
     },
     dev: {
         discovery: ['ideation', 'spikes', 'workflow'],
