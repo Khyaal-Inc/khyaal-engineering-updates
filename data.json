@@ -426,6 +426,54 @@
         "completedPoints": 55,
         "status": "completed",
         "linkedOKR": "okr-q1-2026-analytics"
+      },
+      {
+        "id": "sprint-6",
+        "name": "Community Bug Fix Sprint",
+        "startDate": "2026-04-12",
+        "endDate": "2026-04-25",
+        "goal": "Resolve all critical community bugs, fix 50A50 issues, ship ₹99 plan on homepage, complete Badminton landing page",
+        "tracks": [
+          "Khyaal Platform",
+          "Pulse",
+          "DevOps"
+        ],
+        "plannedPoints": 55,
+        "completedPoints": 0,
+        "status": "active",
+        "linkedOKR": "okr-q2-2026-community-quality"
+      },
+      {
+        "id": "sprint-7",
+        "name": "Feature Delivery Sprint",
+        "startDate": "2026-04-26",
+        "endDate": "2026-05-09",
+        "goal": "Ship Offline Events server API, Voice of Kalinga landing page, 50A50 app upload server side, CMS membership details page",
+        "tracks": [
+          "Khyaal Platform",
+          "Pulse",
+          "DevOps"
+        ],
+        "plannedPoints": 55,
+        "completedPoints": 0,
+        "status": "planned",
+        "linkedOKR": "okr-q2-2026-product-growth"
+      },
+      {
+        "id": "sprint-8",
+        "name": "Growth & Campaign Sprint",
+        "startDate": "2026-05-10",
+        "endDate": "2026-05-23",
+        "goal": "Parents Day campaign, Insurance landing page, Pulse Membership Dashboard, Cached Categories Re-Migration",
+        "tracks": [
+          "Khyaal Platform",
+          "Pulse",
+          "DevOps"
+        ],
+        "plannedPoints": 50,
+        "completedPoints": 0,
+        "status": "planned",
+        "linkedOKR": "okr-q2-2026-platform-completeness"
       }
     ],
     "releases": [
@@ -482,6 +530,33 @@
         "impact": "Personalized user experience, scalable event management, seamless authentication",
         "status": "completed",
         "linkedEpic": "analytics-intelligence"
+      },
+      {
+        "id": "v3.2-community-fix",
+        "name": "v3.2 Community Fix",
+        "targetDate": "2026-04-25",
+        "tracks": [
+          "Khyaal Platform"
+        ],
+        "features": "Critical bugs (Digi-gold SIP/one-time, KCMC card copy, buy membership UX/OTP), ₹99 plan on homepage, 50A50 category/pricing/dashboard fixes, CMS improvements (cache clear, tambola ticket, events CMS)",
+        "successCriteria": "Zero P0 bugs in production, all community-reported critical issues resolved",
+        "impact": "Restored user trust, unblocked revenue flows, stabilized 50A50 platform",
+        "status": "in_progress",
+        "linkedEpic": "community-bug-resolution"
+      },
+      {
+        "id": "v4.0-feature-release",
+        "name": "v4.0 Feature Release",
+        "targetDate": "2026-05-09",
+        "tracks": [
+          "Khyaal Platform",
+          "Pulse"
+        ],
+        "features": "Offline Events server API, Voice of Kalinga landing page, 50A50 app-only upload server, CMS membership details page, Individual roles (Event Manager, Support)",
+        "successCriteria": "Offline Events API live, 50A50 app upload functional, CMS membership page reduces workflow to 1 click",
+        "impact": "Increased app downloads, expanded platform capabilities, reduced ops friction",
+        "status": "planned",
+        "linkedEpic": "product-growth-features"
       }
     ],
     "roadmap": [
@@ -489,19 +564,19 @@
         "id": "1M",
         "label": "Now (Immediate / 1 Month)",
         "color": "blue",
-        "linkedObjective": "okr-q1-2026-platform"
+        "linkedObjective": "okr-q2-2026-community-quality"
       },
       {
         "id": "3M",
         "label": "Next (Strategic / 3 Months)",
         "color": "indigo",
-        "linkedObjective": "okr-q1-2026-analytics"
+        "linkedObjective": "okr-q2-2026-product-growth"
       },
       {
         "id": "6M",
         "label": "Later (Future / 6 Months)",
         "color": "slate",
-        "linkedObjective": "okr-q1-2026-infrastructure"
+        "linkedObjective": "okr-q2-2026-platform-completeness"
       }
     ],
     "capacity": {
