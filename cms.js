@@ -5996,16 +5996,16 @@ window.adminDeleteProject = function(pi) {
 }
 
 function renderAdminView() {
-  var container = document.getElementById('admin-view');
-  if (!container) return;
-  var mode = getCurrentMode();
+  const container = document.getElementById('admin-view')
+  if (!container) return
+  const mode = getCurrentMode()
   if (mode !== 'pm') {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8">Admin access requires PM mode.</div>';
-    return;
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8">Admin access requires PM mode.</div>'
+    return
   }
 
-  var usersActive = _adminActiveTab === 'users';
-  var structActive = _adminActiveTab === 'structure';
+  const usersActive = _adminActiveTab === 'users'
+  const structActive = _adminActiveTab === 'structure'
 
   container.innerHTML = `
     <div style="max-width:960px;margin:0 auto;padding:24px 20px">
@@ -6039,16 +6039,16 @@ function renderAdminView() {
 }
 
 function adminSwitchTab(tab) {
-  _adminActiveTab = tab;
-  renderAdminView();
+  _adminActiveTab = tab
+  renderAdminView()
 }
 
 function renderAdminUsersTab() {
-  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Users and Grants tab — coming soon</div>';
+  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Users and Grants tab — coming soon</div>'
 }
 
 function renderAdminStructureTab() {
-  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Structure tab — coming soon</div>';
+  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Structure tab — coming soon</div>'
 }
 
 async function deleteProjectDataFile(projectId) {
