@@ -1223,6 +1223,238 @@
               "id": "platform-website-17",
               "due": "2026-10-01",
               "tags": []
+            },
+            {
+              "id": "platform-website-badminton",
+              "text": "Khyaal Badminton Championship (Kannur) landing page + comms",
+              "status": "now",
+              "priority": "high",
+              "storyPoints": 5,
+              "contributors": [
+                "Vivek",
+                "Subhrajit"
+              ],
+              "note": "Landing page and communications setup for Khyaal Badminton Championship in Kannur.",
+              "usecase": "Drives registrations and app downloads for the event; surfaces Khyaal brand.",
+              "acceptanceCriteria": [
+                "Landing page live with event details",
+                "Registration form functional",
+                "Communication emails/notifications configured"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "event",
+                "landing-page"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-03",
+              "due": "2026-04-03",
+              "planningHorizon": "1M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-99plan",
+              "text": "₹99 Monthly Membership — surface on homepage",
+              "status": "review",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [
+                "Vivek"
+              ],
+              "note": "Surface ₹99/month plan prominently on the Khyaal homepage to drive new membership signups.",
+              "usecase": "Increases conversion from homepage visitors to paid members by reducing barrier to entry.",
+              "acceptanceCriteria": [
+                "₹99 plan card visible on homepage above the fold",
+                "Clicking CTA leads to correct checkout flow",
+                "Plan details accurate (price, features, billing cycle)"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "tags": [
+                "membership",
+                "revenue"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-08",
+              "due": "2026-04-09",
+              "planningHorizon": "1M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-buy-membership-ux",
+              "text": "Buy membership popup — mobile number entry UX broken",
+              "status": "now",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "Mobile number entry UX in the buy membership popup is broken. Users cannot complete the purchase flow.",
+              "usecase": "Unblocks membership purchase flow on website; critical for revenue.",
+              "acceptanceCriteria": [
+                "Mobile number entry field works correctly",
+                "Input validation shows appropriate errors",
+                "User can proceed to OTP step successfully"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "membership",
+                "ux"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-buy-membership-otp",
+              "text": "Buy membership popup — multiple OTPs triggered on multiple taps",
+              "status": "review",
+              "priority": "high",
+              "storyPoints": 2,
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "Tapping the OTP send button multiple times triggers multiple OTP requests, causing confusion.",
+              "usecase": "Prevents user confusion and OTP flooding; improves purchase conversion.",
+              "acceptanceCriteria": [
+                "OTP button disabled after first tap",
+                "Cooldown timer shown before allowing resend",
+                "Only one OTP request sent per tap"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "bug",
+                "membership",
+                "otp"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-pending-migration",
+              "text": "Pending migration from old website — complete remaining pages",
+              "status": "now",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "Remaining pages from the old website still need to be migrated to the new platform. Dev work through Apr 6.",
+              "usecase": "Completes platform modernization; removes legacy hosting dependency.",
+              "acceptanceCriteria": [
+                "All remaining pages migrated",
+                "No broken links",
+                "Performance parity with existing migrated pages"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "migration",
+                "website"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-06",
+              "due": "2026-04-06",
+              "planningHorizon": "1M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-recaptcha-50a50",
+              "text": "ReCAPTCHA on 50Above50 website forms",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 3,
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "Add ReCAPTCHA to 50Above50 website to prevent bot submissions (same implementation as Khyaal website).",
+              "usecase": "Protects 50A50 registration and entry forms from automated attacks.",
+              "acceptanceCriteria": [
+                "reCAPTCHA v3 added to 50A50 registration form",
+                "reCAPTCHA v3 added to 50A50 entry submission form",
+                "Score threshold configured",
+                "No false positive blocking for legitimate users"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "security",
+                "50above50"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-07",
+              "due": "2026-04-08",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-website-voice-of-kalinga",
+              "text": "Voice of Kalinga — landing page + communications setup",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Landing page and communications setup for Voice of Kalinga event. Target: Apr 17.",
+              "usecase": "Drives registrations for the event; promotes Khyaal brand in Kalinga region.",
+              "acceptanceCriteria": [
+                "Landing page live by Apr 17",
+                "Event details, dates, registration information complete",
+                "Communication flow configured"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "event",
+                "landing-page"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-17",
+              "planningHorizon": "3M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-website-online-events",
+              "text": "Online Events on Web — web-based online event support",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Build web-based online events support so users can join live events from the browser.",
+              "usecase": "Expands event access beyond app users; increases engagement.",
+              "acceptanceCriteria": [
+                "Online events visible and joinable on web",
+                "Registration flow works",
+                "Live event link accessible post-registration"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "tags": [
+                "events",
+                "web"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "product-growth-features",
+              "sprintId": null
             }
           ]
         },
