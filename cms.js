@@ -5996,9 +5996,59 @@ window.adminDeleteProject = function(pi) {
 }
 
 function renderAdminView() {
-    var container = document.getElementById('admin-view');
-    if (!container) return;
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">Loading Admin...</div>';
+  var container = document.getElementById('admin-view');
+  if (!container) return;
+  var mode = getCurrentMode();
+  if (mode !== 'pm') {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8">Admin access requires PM mode.</div>';
+    return;
+  }
+
+  var usersActive = _adminActiveTab === 'users';
+  var structActive = _adminActiveTab === 'structure';
+
+  container.innerHTML = `
+    <div style="max-width:960px;margin:0 auto;padding:24px 20px">
+
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:20px;font-weight:900;color:#1e293b;margin:0">Admin</h2>
+          <p style="font-size:12px;color:#94a3b8;margin:2px 0 0">Manage workspaces, users, and project structure</p>
+        </div>
+        <button onclick="switchView('okr')" style="padding:8px 16px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:7px;font-size:12px;font-weight:700;color:#374151;cursor:pointer">Back to Dashboard</button>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:0">
+        <button onclick="adminSwitchTab('users')" style="padding:8px 18px;font-size:12px;font-weight:800;border:none;cursor:pointer;border-bottom:2px solid ${usersActive ? '#6366f1' : 'transparent'};margin-bottom:-2px;color:${usersActive ? '#6366f1' : '#64748b'};background:transparent">
+          Users and Grants
+        </button>
+        <button onclick="adminSwitchTab('structure')" style="padding:8px 18px;font-size:12px;font-weight:800;border:none;cursor:pointer;border-bottom:2px solid ${structActive ? '#6366f1' : 'transparent'};margin-bottom:-2px;color:${structActive ? '#6366f1' : '#64748b'};background:transparent">
+          Structure
+        </button>
+      </div>
+
+      <!-- Tab content -->
+      <div id="admin-tab-content">
+        ${usersActive ? renderAdminUsersTab() : renderAdminStructureTab()}
+      </div>
+
+    </div>
+  `;
+}
+
+function adminSwitchTab(tab) {
+  _adminActiveTab = tab;
+  renderAdminView();
+}
+
+function renderAdminUsersTab() {
+  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Users and Grants tab — coming soon</div>';
+}
+
+function renderAdminStructureTab() {
+  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Structure tab — coming soon</div>';
 }
 
 async function deleteProjectDataFile(projectId) {
