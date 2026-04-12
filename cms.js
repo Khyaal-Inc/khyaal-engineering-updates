@@ -6427,7 +6427,93 @@ async function adminSaveUsersJson() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function renderAdminStructureTab() {
-  return '<div style="color:#94a3b8;padding:20px;font-size:12px">Structure tab — coming soon</div>'
+  const projects = (window.UPDATE_DATA?.projects) || []
+  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const activeWsId = window.ACTIVE_PROJECT_ID || 'default'
+  const activeWsName = (registry.projects || []).find(p => p.id === activeWsId)?.name || activeWsId
+
+  const projectRows = projects.map((proj, pi) => {
+    const trackCount = (proj.tracks || []).length
+    const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
+
+    const trackRows = (proj.tracks || []).map((track, ti) => {
+      const trackId = track.id || String(ti)
+      const trackItemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
+      const colorDot = track.color ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${track.color};margin-right:5px"></span>` : ''
+
+      const subtracks = (track.subtracks || []).map((st, sti) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#f8fafc;border-radius:4px;border:1px solid #f1f5f9">
+          <span style="font-size:10px;color:#475569">+ ${st.name} <span style="color:#94a3b8">(${(st.items || []).length})</span></span>
+          <div style="display:flex;gap:4px">
+            <button onclick="adminRenameSubtrack('${proj.id}','${trackId}',${sti})" style="padding:2px 6px;background:white;border:1px solid #e2e8f0;color:#475569;border-radius:3px;font-size:9px;cursor:pointer">Rename</button>
+            <button onclick="adminDeleteSubtrack('${proj.id}','${trackId}',${sti})" style="padding:2px 6px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:3px;font-size:9px;cursor:pointer">Delete</button>
+          </div>
+        </div>`).join('')
+
+      return `
+        <div style="border:1px solid #e2e8f0;border-radius:6px;margin-bottom:5px;overflow:hidden">
+          <div style="padding:7px 10px;display:flex;justify-content:space-between;align-items:center;background:#fafafa">
+            <div style="display:flex;align-items:center">${colorDot}<span style="font-weight:700;font-size:11px;color:#1e293b">${track.name}</span><span style="color:#94a3b8;font-size:10px;margin-left:6px">${trackItemCount} items</span></div>
+            <div style="display:flex;gap:4px">
+              <button onclick="adminEditTrackInline('${proj.id}','${trackId}')" style="padding:2px 8px;background:white;border:1px solid #e2e8f0;color:#374151;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer">Edit</button>
+              <button onclick="adminDeleteTrack('${proj.id}','${trackId}')" style="padding:2px 8px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer">Delete</button>
+            </div>
+          </div>
+          <div id="admin-track-form-${proj.id}-${trackId}" style="display:none;padding:8px 10px;border-top:1px solid #f1f5f9;background:#f8fafc"></div>
+          <div style="padding:5px 10px 7px 20px;border-top:1px solid #f8fafc">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div style="font-size:9px;font-weight:900;color:#cbd5e1;text-transform:uppercase;letter-spacing:.06em">Subtracks</div>
+              <button onclick="adminAddSubtrack('${proj.id}','${trackId}')" style="padding:1px 7px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:3px;font-size:9px;font-weight:800;cursor:pointer">+ Subtrack</button>
+            </div>
+            <div id="admin-subtracks-${proj.id}-${trackId}" style="display:flex;flex-direction:column;gap:3px">
+              ${subtracks || '<div style="font-size:9px;color:#94a3b8">No subtracks</div>'}
+            </div>
+            <div id="admin-subtrack-form-${proj.id}-${trackId}" style="display:none;margin-top:5px"></div>
+          </div>
+        </div>`
+    }).join('')
+
+    return `
+      <div style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;overflow:hidden;background:white">
+        <div style="padding:10px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:900;color:#1e293b;font-size:13px">${proj.name}</span>
+            <span style="color:#94a3b8;font-size:10px">${trackCount} tracks · ${itemCount} items</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="adminEditProjectInline('${proj.id}')" style="padding:3px 10px;background:white;border:1px solid #e2e8f0;color:#374151;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Edit</button>
+            <button onclick="adminDeleteProject('${proj.id}')" style="padding:3px 10px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Delete</button>
+          </div>
+        </div>
+        <div id="admin-project-form-${proj.id}" style="display:none;padding:10px 14px;border-top:1px solid #e2e8f0;background:#f8fafc"></div>
+        <div style="padding:8px 14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+            <div style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em">Tracks</div>
+            <button onclick="adminAddTrack('${proj.id}')" style="padding:2px 9px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:4px;font-size:9px;font-weight:800;cursor:pointer">+ Add Track</button>
+          </div>
+          <div id="admin-tracks-${proj.id}">
+            ${trackRows || '<div style="font-size:10px;color:#94a3b8">No tracks yet</div>'}
+          </div>
+          <div id="admin-track-add-form-${proj.id}" style="display:none;margin-top:6px"></div>
+        </div>
+      </div>`
+  }).join('')
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em">Projects</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:2px">in workspace: <strong style="color:#4338ca">${activeWsName}</strong></div>
+      </div>
+      <button onclick="adminAddProject()" style="padding:5px 12px;background:#10b981;color:white;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer">+ Add Project</button>
+    </div>
+    <div id="admin-add-project-form" style="display:none;margin-bottom:12px"></div>
+    ${projectRows || '<div style="color:#94a3b8;font-size:12px">No projects in this workspace.</div>'}
+    <div style="border-top:1px solid #e2e8f0;padding-top:14px;margin-top:8px">
+      <button onclick="adminSaveStructure()" style="width:100%;padding:10px;background:#6366f1;color:white;border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer">Save Structure to GitHub</button>
+      <p style="font-size:10px;color:#94a3b8;text-align:center;margin-top:6px">Saves to data.json</p>
+    </div>
+  `
 }
 
 async function deleteProjectDataFile(projectId) {
