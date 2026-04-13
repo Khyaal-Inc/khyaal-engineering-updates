@@ -3005,6 +3005,318 @@
               "id": "platform-api-20",
               "due": "2026-10-01",
               "tags": []
+            },
+            {
+              "id": "platform-api-renewal-fix",
+              "text": "Renewal issue fix — post-autopay cancel + renewal (CRON frequency)",
+              "status": "done",
+              "priority": "high",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Post autopay cancel + renewal flow was broken; required manual backend activation. Fixed by increasing CRON job frequency. Released Apr 2.",
+              "usecase": "Ensures autopay renewal works end-to-end without manual intervention.",
+              "acceptanceCriteria": [
+                "Renewal works automatically post autopay cancel",
+                "CRON frequency increased to handle timely processing",
+                "Akshay confirmed fix in testing"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "payment",
+                "renewal"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-03-28",
+              "due": "2026-04-02",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-5",
+              "releasedIn": "v3.1-personalization-engine"
+            },
+            {
+              "id": "platform-api-full-kyc",
+              "text": "Full KYC fix — not working since Oct 2025",
+              "status": "done",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Full KYC was broken since Oct 2025. New flow released Apr 2. Users to be informed to retry KYC.",
+              "usecase": "KYC compliance and user onboarding require this to work correctly.",
+              "acceptanceCriteria": [
+                "Full KYC flow functional end-to-end",
+                "New flow released and users notified to retry",
+                "No regression in partial KYC flow"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "kyc",
+                "compliance"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-03-28",
+              "due": "2026-04-02",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-5",
+              "releasedIn": "v3.1-personalization-engine"
+            },
+            {
+              "id": "platform-api-kcmc-card-copy",
+              "text": "KCMC card delivery copy: 15 business days + 30 min/day for printing",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 1,
+              "contributors": [],
+              "note": "App currently shows 5-7 days. Change to 15 business days. Add 30 min daily for card printing (marketing).",
+              "usecase": "Sets accurate delivery expectations; prevents support tickets.",
+              "acceptanceCriteria": [
+                "App shows 15 business days for KCMC card delivery",
+                "Marketing note 30 min daily for printing included where appropriate"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "copy",
+                "kcmc",
+                "card"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-api-khyaal-card-track",
+              "text": "Remove Khyaal card track delivery from app",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 2,
+              "contributors": [],
+              "note": "The Khyaal card track delivery feature needs to be removed from the app.",
+              "usecase": "Removes deprecated feature to reduce confusion.",
+              "acceptanceCriteria": [
+                "Khyaal card track delivery section removed from app UI",
+                "No broken references or crashes after removal"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "cleanup",
+                "app",
+                "card"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-api-digi-gold-sip",
+              "text": "Digi-gold SIP: random monthly payment skip — setup Caratlane call + fix",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Digi-gold SIP randomly skips monthly payments. Requires call with Caratlane team + log of recent failures.",
+              "usecase": "Protects user investments; prevents SIP irregularities causing financial harm.",
+              "acceptanceCriteria": [
+                "Caratlane call scheduled and root cause identified",
+                "All recent SIP failure cases logged",
+                "Fix deployed and verified with test SIP cycle",
+                "No payment skips in subsequent monitoring period"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "digi-gold",
+                "payment"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-api-digi-gold-one-time",
+              "text": "Digi-gold one-time payment: payment fails but amount gets deducted",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "One-time digi-gold payment fails on platform but user bank account is debited. Jayram & Alfa cases documented.",
+              "usecase": "Prevents financial harm to users; critical compliance issue.",
+              "acceptanceCriteria": [
+                "Payment gateway reconciliation working correctly",
+                "Deducted amount either refunded or gold credited",
+                "Jayram & Alfa cases resolved",
+                "Monitoring in place to detect future mismatches"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "digi-gold",
+                "payment"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "community-bug-resolution",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "platform-api-login-error",
+              "text": "Login/Join OTP: Oops something went wrong — better error message",
+              "status": "later",
+              "priority": "low",
+              "storyPoints": 2,
+              "contributors": [],
+              "note": "After OTP entry some users see Oops something went wrong due to network issues. Better error message with retry guidance needed.",
+              "usecase": "Reduces user confusion and support tickets for temporary network errors.",
+              "acceptanceCriteria": [
+                "Network error shows specific message",
+                "Retry button offered",
+                "Generic Oops message replaced"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "ux",
+                "auth",
+                "error"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "community-bug-resolution",
+              "sprintId": null
+            },
+            {
+              "id": "platform-api-cached-categories",
+              "text": "Cached Old Categories Re-Migration — platform API cleanup",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Old category data cached in the platform API needs to be cleaned up and re-migrated to prevent stale data issues.",
+              "usecase": "Prevents stale category data from surfacing to users; required for 50A50 category fix completeness.",
+              "acceptanceCriteria": [
+                "Old category cache cleared",
+                "Category data re-migrated from source of truth",
+                "No stale categories visible in any platform surface"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "cleanup",
+                "cache",
+                "categories"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "fifty-above-fifty-platform",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-api-assistant-bot",
+              "text": "Assistant Bot v2.0.1 — server-side upgrade",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Server-side upgrade for the Khyaal App Assistant Bot to v2.0.1. Mobile UI upgrade in Khyaal Mobile workspace.",
+              "usecase": "Improves assistant response quality and adds new capabilities.",
+              "acceptanceCriteria": [
+                "Server API updated to v2.0.1 spec",
+                "Mobile app assistant works with new server API",
+                "No regression in existing assistant functionality"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "api",
+                "assistant",
+                "bot"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "",
+              "planningHorizon": "3M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-api-offline-events",
+              "text": "Offline Events — server-side API (register, view booked events, tickets, info)",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 13,
+              "contributors": [],
+              "note": "Build server-side API for Offline Events. Mobile UI in Khyaal Mobile workspace.",
+              "usecase": "Enables users to discover, register for, and manage offline events from the app.",
+              "acceptanceCriteria": [
+                "GET /events returns offline events list with pagination",
+                "POST /events/:id/register creates registration",
+                "GET /user/events returns booked events",
+                "GET /events/:id/ticket returns ticket details",
+                "Event info endpoint returns full event details"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "api",
+                "events",
+                "offline"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-04-24",
+              "planningHorizon": "3M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "platform-api-zoho-crm-travel",
+              "text": "Zoho CRM for Travel setup — driven by Pulse Journey",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Set up Zoho CRM for the Travel team, integrating with existing Pulse Journey tracking.",
+              "usecase": "Enables Travel team to manage leads and customer journeys in a CRM.",
+              "acceptanceCriteria": [
+                "Zoho CRM instance configured for Travel team",
+                "Pulse Journey data flow integrated",
+                "Travel team trained on CRM usage"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "crm",
+                "zoho",
+                "travel"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": null
             }
           ]
         },
