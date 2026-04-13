@@ -1,0 +1,638 @@
+{
+  "metadata": {
+    "title": "Khyaal Mobile",
+    "workspace": "Khyaal Mobile",
+    "dateRange": "12th April 2026 – Active",
+    "description": "Engineering pulse for Khyaal Mobile app development — tracking OKRs, sprints, and app feature delivery.",
+    "vision": "Build the best mobile experience for active seniors in India, with seamless onboarding, engaging features, and reliable performance.",
+    "modes": {
+      "default": "pm",
+      "devDefaultView": "my-tasks",
+      "execDefaultView": "dashboard"
+    },
+    "epics": [
+      {
+        "id": "app-experience",
+        "name": "App Experience & Feature Expansion",
+        "track": "Khyaal App",
+        "objective": "Ship app features that grow downloads, engagement, and user retention",
+        "scope": "App bugs batch, Offline Events mobile, 50A50 app upload, Guided Tours, Center Stage, Streak, Gamification",
+        "keyDeliverables": "App bugs released, Offline Events mobile UI, 50A50 app-only upload, Guided Tours for new users",
+        "successMetrics": "App downloads +20%, retention D7 +15%, Guided Tour completion >60%",
+        "timeline": "Apr 12 - May 23, 2026",
+        "health": "on-track",
+        "status": "in_progress",
+        "linkedOKR": "okr-q2-2026-mobile",
+        "planningHorizon": "3M"
+      }
+    ],
+    "okrs": [
+      {
+        "id": "okr-q2-2026-mobile",
+        "quarter": "Q2 2026",
+        "objective": "Ship app features that grow downloads, engagement, and user retention",
+        "owner": "Mobile Team",
+        "keyResults": [
+          {
+            "id": "kr-mob-1",
+            "description": "App Bugs Batch released (Apr 11)",
+            "target": 1,
+            "current": 1,
+            "unit": "release",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "app-experience"
+          },
+          {
+            "id": "kr-mob-2",
+            "description": "Offline Events mobile UI shipped (Apr 24)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "app-experience"
+          },
+          {
+            "id": "kr-mob-3",
+            "description": "50A50 app-only entry upload live to drive app downloads (May 8)",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "app-experience"
+          },
+          {
+            "id": "kr-mob-4",
+            "description": "Guided Tours launched for new users on first launch",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "app-experience"
+          }
+        ],
+        "overallProgress": 25
+      }
+    ],
+    "sprints": [
+      {
+        "id": "sprint-6",
+        "name": "App Bug Fix + Stability",
+        "startDate": "2026-04-12",
+        "endDate": "2026-04-25",
+        "goal": "Fix remaining app bugs (modify event link, login OTP UX, KCMC card copy), prepare for Offline Events mobile work",
+        "tracks": [
+          "Khyaal App"
+        ],
+        "plannedPoints": 30,
+        "completedPoints": 0,
+        "status": "active",
+        "linkedOKR": "okr-q2-2026-mobile"
+      },
+      {
+        "id": "sprint-7",
+        "name": "App Feature Sprint",
+        "startDate": "2026-04-26",
+        "endDate": "2026-05-09",
+        "goal": "Offline Events mobile UI, 50A50 app-only entry upload mobile UI, Assistant Bot v2.0.1 mobile update",
+        "tracks": [
+          "Khyaal App"
+        ],
+        "plannedPoints": 35,
+        "completedPoints": 0,
+        "status": "planned",
+        "linkedOKR": "okr-q2-2026-mobile"
+      },
+      {
+        "id": "sprint-8",
+        "name": "App Growth Sprint",
+        "startDate": "2026-05-10",
+        "endDate": "2026-05-23",
+        "goal": "Guided Tours for new users, Center Stage, Parents Day campaign mobile side",
+        "tracks": [
+          "Khyaal App"
+        ],
+        "plannedPoints": 30,
+        "completedPoints": 0,
+        "status": "planned",
+        "linkedOKR": "okr-q2-2026-mobile"
+      }
+    ],
+    "releases": [
+      {
+        "id": "v1.0-app-bugs",
+        "name": "v1.0 App Bugs Release",
+        "targetDate": "2026-04-11",
+        "tracks": [
+          "Khyaal App"
+        ],
+        "features": "App Bugs Batch, event listing auto-refresh fix, subscription cancelled sheet",
+        "successCriteria": "All batch bugs resolved, no regression",
+        "impact": "Improved app stability and user experience",
+        "status": "completed",
+        "linkedEpic": "app-experience"
+      },
+      {
+        "id": "v2.0-app-features",
+        "name": "v2.0 App Features",
+        "targetDate": "2026-05-09",
+        "tracks": [
+          "Khyaal App"
+        ],
+        "features": "Offline Events mobile, 50A50 app-only upload, Assistant Bot v2.0.1",
+        "successCriteria": "Offline Events usable, 50A50 upload functional on app, Bot upgraded",
+        "impact": "Increased app downloads, expanded feature set",
+        "status": "planned",
+        "linkedEpic": "app-experience"
+      }
+    ],
+    "roadmap": [
+      {
+        "id": "1M",
+        "label": "Now (Immediate / 1 Month)",
+        "color": "blue",
+        "linkedObjective": "okr-q2-2026-mobile"
+      },
+      {
+        "id": "3M",
+        "label": "Next (Strategic / 3 Months)",
+        "color": "indigo",
+        "linkedObjective": "okr-q2-2026-mobile"
+      },
+      {
+        "id": "6M",
+        "label": "Later (Future / 6 Months)",
+        "color": "slate",
+        "linkedObjective": "okr-q2-2026-mobile"
+      }
+    ],
+    "capacity": {
+      "teamMembers": [
+        {
+          "name": "Mobile Team",
+          "capacity": 40,
+          "track": "Khyaal App",
+          "role": "Mobile Engineer"
+        }
+      ],
+      "totalCapacity": 40
+    },
+    "velocityHistory": [
+      {
+        "sprintId": "sprint-6",
+        "planned": 30,
+        "completed": 0,
+        "velocity": 0,
+        "dates": "Apr 12-25, 2026"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "id": "mobile",
+      "name": "Khyaal App",
+      "theme": "emerald",
+      "subtracks": [
+        {
+          "name": "Core App",
+          "items": [
+            {
+              "id": "mobile-core-app-bugs-batch",
+              "text": "App Bugs Batch release (Apr 11)",
+              "status": "done",
+              "priority": "high",
+              "storyPoints": 13,
+              "contributors": [],
+              "note": "Batch of current app bug fixes. Released Apr 11.",
+              "usecase": "Improves app stability and fixes user-reported issues.",
+              "acceptanceCriteria": [
+                "All batch bugs resolved",
+                "No new regressions introduced",
+                "Release notes prepared"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "bug",
+                "batch"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-01",
+              "due": "2026-04-11",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6",
+              "releasedIn": "v1.0-app-bugs"
+            },
+            {
+              "id": "mobile-core-event-listing-refresh",
+              "text": "Event listing auto-refresh on visit (not pull-to-refresh only)",
+              "status": "done",
+              "priority": "medium",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Event listing only refreshed on pull-to-refresh. Seniors expect auto-refresh when visiting the screen. Fixed in 3.1.5.",
+              "usecase": "Ensures seniors always see up-to-date events without knowing the pull-to-refresh gesture.",
+              "acceptanceCriteria": [
+                "Events auto-refresh on screen visit",
+                "Pull-to-refresh still works as secondary option",
+                "Update popup shown to users on new version"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "ux",
+                "events"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-01",
+              "due": "2026-04-11",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6",
+              "releasedIn": "v1.0-app-bugs"
+            },
+            {
+              "id": "mobile-core-subscription-cancelled-sheet",
+              "text": "Subscription Cancelled Sheet — dashboard to view + export cancelled UPI users",
+              "status": "done",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Dashboard to view and export list of users with cancelled UPI subscriptions. Released Apr 2.",
+              "usecase": "Enables ops team to identify and follow up with lapsed subscribers.",
+              "acceptanceCriteria": [
+                "Dashboard shows cancelled UPI subscription users",
+                "Export to CSV functional",
+                "Filters by date range"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "dashboard",
+                "subscription"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-03-28",
+              "due": "2026-04-02",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6",
+              "releasedIn": "v1.0-app-bugs"
+            },
+            {
+              "id": "mobile-core-modify-event-link",
+              "text": "Modify event: old link shown for some users 2-3 days after modification",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 3,
+              "contributors": [],
+              "note": "Modifying an event 2-3 days early still shows the old link for some users due to caching.",
+              "usecase": "Ensures all users see the correct event link immediately after modification.",
+              "acceptanceCriteria": [
+                "Modified event link propagated to all users within 30 minutes",
+                "No stale link shown after modification",
+                "Cache invalidation triggered on event update"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "medium",
+              "tags": [
+                "bug",
+                "events",
+                "cache"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "mobile-core-login-otp-ux",
+              "text": "Login/Join OTP: Oops something went wrong — better error message",
+              "status": "next",
+              "priority": "low",
+              "storyPoints": 2,
+              "contributors": [],
+              "note": "After OTP entry some users see Oops something went wrong due to network issues. Needs better error message.",
+              "usecase": "Reduces user confusion and support tickets for temporary network errors.",
+              "acceptanceCriteria": [
+                "Specific error message shown for network issues",
+                "Retry button offered to user",
+                "Generic Oops message replaced"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "ux",
+                "auth",
+                "error"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6"
+            },
+            {
+              "id": "mobile-core-kcmc-card-copy",
+              "text": "KCMC card delivery copy — app-side: 15 business days",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 1,
+              "contributors": [],
+              "note": "App shows 5-7 days for KCMC card delivery. Update to 15 business days on app-side display.",
+              "usecase": "Sets accurate delivery expectations; prevents support tickets.",
+              "acceptanceCriteria": [
+                "App shows 15 business days for KCMC card delivery"
+              ],
+              "effortLevel": "low",
+              "impactLevel": "low",
+              "tags": [
+                "copy",
+                "kcmc",
+                "card"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-12",
+              "due": "2026-04-25",
+              "planningHorizon": "1M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-6"
+            }
+          ]
+        },
+        {
+          "name": "Features",
+          "items": [
+            {
+              "id": "mobile-feat-assistant-bot",
+              "text": "Assistant Bot v2.0.1 — mobile UI upgrade",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Mobile UI upgrade for Khyaal App Assistant Bot to v2.0.1. Server-side API upgrade in Core Platform Engineering workspace.",
+              "usecase": "Improves assistant experience with better UI and new capabilities.",
+              "acceptanceCriteria": [
+                "Mobile UI updated to v2.0.1 design",
+                "Works with updated server API",
+                "No regression in existing assistant functionality"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "assistant",
+                "bot",
+                "ui"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "mobile-feat-offline-events",
+              "text": "Offline Events — mobile UI (view, register, tickets, info)",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 13,
+              "contributors": [],
+              "note": "Mobile UI for Offline Events feature. Server-side API in Core Platform Engineering workspace.",
+              "usecase": "Enables users to discover, register for, and manage offline events from the app.",
+              "acceptanceCriteria": [
+                "Offline events list view with filters",
+                "Event registration flow functional",
+                "Booked events visible in My Events",
+                "Ticket view with QR code",
+                "Event info screen complete"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "events",
+                "offline",
+                "mobile"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "mobile-feat-50a50-app-upload",
+              "text": "50A50 app-only entry upload — mobile UI",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Mobile UI for 50A50 app-only entry upload. Server-side API in Core Platform Engineering workspace.",
+              "usecase": "Drives app downloads by making app the only upload channel.",
+              "acceptanceCriteria": [
+                "Upload flow works end-to-end on mobile",
+                "File picker with format validation",
+                "Upload progress shown",
+                "Success/error feedback"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "50above50",
+                "upload",
+                "mobile"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-04-26",
+              "due": "2026-05-08",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-7"
+            },
+            {
+              "id": "mobile-feat-guided-tours",
+              "text": "Guided Tours — onboarding flow for new users on first launch",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 13,
+              "contributors": [],
+              "note": "Guided tour for new users on first app launch. Increases app usage by reducing onboarding friction.",
+              "usecase": "Increases D7 retention by showing users key app features on first launch.",
+              "acceptanceCriteria": [
+                "Tour shown on first launch only",
+                "Covers: events, membership, digi-gold, community",
+                "Skip option available",
+                "Tour completion tracked"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "onboarding",
+                "ux",
+                "mobile"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-8"
+            },
+            {
+              "id": "mobile-feat-center-stage",
+              "text": "Center Stage",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Center Stage feature for the Khyaal App. Details to be spec with server team.",
+              "usecase": "New engagement feature for app users.",
+              "acceptanceCriteria": [
+                "Feature spec defined and approved",
+                "Mobile UI implemented",
+                "Server API integration complete"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "tags": [
+                "feature",
+                "mobile"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-8"
+            },
+            {
+              "id": "mobile-feat-parents-day",
+              "text": "Parents Day Campaign — mobile side (Jun 1 release)",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Mobile-side campaign for Parents Day. Dev must start by May 10 for May 8 release.",
+              "usecase": "Seasonal campaign to drive engagement around Parents Day.",
+              "acceptanceCriteria": [
+                "Campaign banner/notification in app by May 8",
+                "Deep link to campaign landing page works",
+                "Push notification configured for Jun 1"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "campaign",
+                "parents-day",
+                "mobile"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "2026-05-08",
+              "planningHorizon": "3M",
+              "epicId": "app-experience",
+              "sprintId": "sprint-8"
+            },
+            {
+              "id": "mobile-feat-earn-coins-shop",
+              "text": "Earn Coins on Khyaal Shop",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Users earn Khyaal coins on Khyaal Shop purchases.",
+              "usecase": "Increases shop engagement and incentivizes purchases with coin rewards.",
+              "acceptanceCriteria": [
+                "Coins awarded post-purchase",
+                "Coin balance updated in app",
+                "Transaction history shows shop coins"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "tags": [
+                "coins",
+                "shop",
+                "rewards"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "app-experience",
+              "sprintId": null
+            },
+            {
+              "id": "mobile-feat-streak",
+              "text": "User Streak feature",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "User streak feature to gamify daily app usage.",
+              "usecase": "Increases daily active users through streak-based engagement.",
+              "acceptanceCriteria": [
+                "Streak counter visible on home screen",
+                "Streak increments on daily login",
+                "Streak broken if no login for 24h",
+                "Recovery mechanic available"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "tags": [
+                "gamification",
+                "streak",
+                "engagement"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "app-experience",
+              "sprintId": null
+            },
+            {
+              "id": "mobile-feat-gamification",
+              "text": "Spin the Wheel & Scratch Card — gamification engagement feature",
+              "status": "later",
+              "priority": "medium",
+              "storyPoints": 13,
+              "contributors": [],
+              "note": "Gamification feature combining spin-the-wheel and scratch card mechanics for user engagement.",
+              "usecase": "Increases DAU and session time through game mechanics.",
+              "acceptanceCriteria": [
+                "Spin the wheel functional with prize logic",
+                "Scratch card mechanic functional",
+                "Rewards distributed via coins or vouchers",
+                "Daily play limits enforced"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "medium",
+              "tags": [
+                "gamification",
+                "engagement"
+              ],
+              "mediaUrl": "",
+              "startDate": "",
+              "due": "",
+              "planningHorizon": "6M",
+              "epicId": "app-experience",
+              "sprintId": null
+            }
+          ]
+        },
+        {
+          "name": "Backlog",
+          "items": []
+        }
+      ]
+    }
+  ]
+}
