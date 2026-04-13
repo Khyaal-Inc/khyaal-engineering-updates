@@ -810,7 +810,7 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-5",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11"
             },
@@ -842,7 +842,7 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-5",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11"
             },
@@ -935,7 +935,7 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "3M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-5",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11"
             },
@@ -2929,7 +2929,8 @@
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "id": "platform-api-17",
-              "due": "2026-06-30"
+              "due": "2026-06-30",
+              "sprintId": "sprint-6"
             },
             {
               "text": "Centerstage: Chat / Messenger backend",
@@ -2954,7 +2955,8 @@
               "epicId": "platform-modernization",
               "id": "platform-api-18",
               "due": "2026-07-01",
-              "tags": []
+              "tags": [],
+              "sprintId": "sprint-7"
             },
             {
               "text": "Support for app-code authentication in API",
@@ -3255,7 +3257,7 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-04-26",
-              "due": "",
+              "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
               "sprintId": "sprint-7"
@@ -3285,7 +3287,7 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-04-26",
-              "due": "2026-04-24",
+              "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
               "sprintId": "sprint-7"
@@ -3342,7 +3344,8 @@
               "publishedDate": "2026-03-25",
               "planningHorizon": "1M",
               "sprintId": "sprint-4",
-              "tags": []
+              "tags": [],
+              "epicId": "platform-modernization"
             }
           ]
         },
@@ -3399,7 +3402,7 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-05-10",
-              "due": "2026-05-09",
+              "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
               "sprintId": "sprint-8"
@@ -4553,7 +4556,8 @@
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
-              "id": "pulse-ai-agents-7"
+              "id": "pulse-ai-agents-7",
+              "sprintId": "sprint-6"
             },
             {
               "text": "AI Assistant 2.0",
@@ -4580,7 +4584,8 @@
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
-              "id": "pulse-ai-agents-8"
+              "id": "pulse-ai-agents-8",
+              "sprintId": "sprint-6"
             }
           ]
         },
@@ -4810,7 +4815,7 @@
               ],
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-5",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine"
             },
             {
@@ -4842,7 +4847,7 @@
               ],
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-5",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine"
             },
             {
@@ -5017,7 +5022,7 @@
           "name": "Backlog",
           "items": [
             {
-              "id": "pulse-flow-0",
+              "id": "pulse-backlog-0",
               "text": "Personalization in Flow",
               "status": "later",
               "priority": "low",
@@ -5041,7 +5046,7 @@
               "due": "2026-10-01"
             },
             {
-              "id": "pulse-ai-agents-4",
+              "id": "pulse-backlog-1",
               "text": "AI Assistant 2.0",
               "status": "later",
               "priority": "medium",
