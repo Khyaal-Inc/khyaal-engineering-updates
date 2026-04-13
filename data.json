@@ -3345,6 +3345,124 @@
               "tags": []
             }
           ]
+        },
+        {
+          "name": "Campaigns & Events",
+          "items": [
+            {
+              "id": "platform-campaign-senior-spotlight",
+              "text": "Khyaal Senior Spotlight (Trivandrum) — landing page + comms",
+              "status": "done",
+              "priority": "high",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Landing page and communications for Khyaal Senior Spotlight event in Trivandrum. Released Apr 2.",
+              "usecase": "Brought paid users and drove app usage in Trivandrum.",
+              "acceptanceCriteria": [
+                "Landing page live with event details",
+                "Communications sent to target audience",
+                "Registration flow functional"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "high",
+              "tags": [
+                "event",
+                "landing-page"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-03-28",
+              "due": "2026-04-02",
+              "planningHorizon": "1M",
+              "epicId": "product-growth-features",
+              "sprintId": "sprint-5",
+              "releasedIn": "v3.1-personalization-engine"
+            },
+            {
+              "id": "platform-campaign-insurance-landing",
+              "text": "Khyaal Insurance landing page",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 5,
+              "contributors": [],
+              "note": "Build the Khyaal Insurance product landing page.",
+              "usecase": "Gives insurance product a dedicated page for marketing and conversion.",
+              "acceptanceCriteria": [
+                "Landing page live with insurance product details",
+                "CTA links to correct purchase/inquiry flow",
+                "SEO optimized"
+              ],
+              "effortLevel": "medium",
+              "impactLevel": "medium",
+              "tags": [
+                "insurance",
+                "landing-page"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "2026-05-09",
+              "planningHorizon": "3M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-8"
+            },
+            {
+              "id": "platform-campaign-parents-day",
+              "text": "Parents Day Campaign (Jun 1 release) — dev start May 10",
+              "status": "next",
+              "priority": "high",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Campaign targeting Jun 1 (Parents Day). Dev must start by May 10 for May 8 release.",
+              "usecase": "Seasonal campaign to drive membership and engagement around Parents Day.",
+              "acceptanceCriteria": [
+                "Campaign landing page live by May 8",
+                "Email/notification communications configured",
+                "Campaign analytics tracking set up",
+                "Dev started by May 10"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "campaign",
+                "parents-day"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "2026-05-08",
+              "planningHorizon": "3M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-8"
+            },
+            {
+              "id": "platform-campaign-pulse-membership-dashboard",
+              "text": "Pulse Membership Dashboard",
+              "status": "next",
+              "priority": "medium",
+              "storyPoints": 8,
+              "contributors": [],
+              "note": "Build a Pulse dashboard view for membership metrics — new vs renewing members, churn rate, plan distribution.",
+              "usecase": "Gives leadership data-driven visibility into membership health.",
+              "acceptanceCriteria": [
+                "Dashboard shows new and renewing member counts",
+                "Churn rate visible with trend",
+                "Plan distribution shown",
+                "Date range filter functional"
+              ],
+              "effortLevel": "high",
+              "impactLevel": "high",
+              "tags": [
+                "pulse",
+                "dashboard",
+                "membership",
+                "analytics"
+              ],
+              "mediaUrl": "",
+              "startDate": "2026-05-10",
+              "due": "",
+              "planningHorizon": "3M",
+              "epicId": "cms-platform-capabilities",
+              "sprintId": "sprint-8"
+            }
+          ]
         }
       ]
     },
