@@ -8,7 +8,7 @@ const _cachedRegistry = (() => {
     try { return JSON.parse(localStorage.getItem('khyaal_registry') || 'null') } catch { return null }
 })()
 window.PROJECT_REGISTRY = window.PROJECT_REGISTRY || _cachedRegistry || [
-    { id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }
+    { id: 'default', name: 'Core Platform Engineering', filePath: 'data.json' }
 ]
 
 // Active sub-project within the current team's data.json
@@ -117,14 +117,14 @@ const themeColors = {
 };
 
 const statusConfig = {
-    done:    { label: 'Done',    class: 'badge-done',    bucket: 'bucket-done' },
-    now:     { label: 'Now',     class: 'badge-now',     bucket: 'bucket-now' },
-    next:    { label: 'Next',    class: 'badge-next',    bucket: 'bucket-next' },
-    later:   { label: 'Later',   class: 'badge-later',   bucket: 'bucket-later' },
+    done: { label: 'Done', class: 'badge-done', bucket: 'bucket-done' },
+    now: { label: 'Now', class: 'badge-now', bucket: 'bucket-now' },
+    next: { label: 'Next', class: 'badge-next', bucket: 'bucket-next' },
+    later: { label: 'Later', class: 'badge-later', bucket: 'bucket-later' },
     blocked: { label: 'Blocked', class: 'badge-blocked', bucket: 'bucket-blocked' },
-    onhold:  { label: 'On Hold', class: 'badge-onhold',  bucket: 'bucket-onhold' },
-    qa:      { label: 'QA',      class: 'badge-qa',      bucket: 'bucket-qa' },
-    review:  { label: 'Review',  class: 'badge-review',  bucket: 'bucket-review' }
+    onhold: { label: 'On Hold', class: 'badge-onhold', bucket: 'bucket-onhold' },
+    qa: { label: 'QA', class: 'badge-qa', bucket: 'bucket-qa' },
+    review: { label: 'Review', class: 'badge-review', bucket: 'bucket-review' }
 };
 
 const priorityConfig = {
@@ -562,7 +562,7 @@ function setupKeyboardShortcuts() {
         if (e.key === '?') { e.preventDefault(); openKbdModal(); return }
 
         // Alt+1/2/3 — persona switching
-        if (e.altKey && ['1','2','3'].includes(e.key)) {
+        if (e.altKey && ['1', '2', '3'].includes(e.key)) {
             e.preventDefault()
             const modeMap = { '1': 'pm', '2': 'dev', '3': 'exec' }
             if (typeof switchMode === 'function') switchMode(modeMap[e.key])
@@ -611,22 +611,22 @@ let _cmdPaletteResults = [] // flat array of result objects built on each query
 
 // View shortcuts surfaced in the palette regardless of search query
 const CMD_VIEWS = [
-    { id: 'epics',       label: 'Epics',        icon: '🌟', stage: 'Vision' },
-    { id: 'okr',         label: 'OKRs',          icon: '🎯', stage: 'Vision' },
-    { id: 'roadmap',     label: 'Roadmap',       icon: '🗺️', stage: 'Plan' },
-    { id: 'backlog',     label: 'Backlog',        icon: '📋', stage: 'Plan' },
-    { id: 'sprint',      label: 'Sprint',         icon: '⚡', stage: 'Plan' },
-    { id: 'kanban',      label: 'Kanban',         icon: '📌', stage: 'Build' },
-    { id: 'track',       label: 'Track',          icon: '📊', stage: 'Build' },
-    { id: 'releases',    label: 'Releases',       icon: '🚀', stage: 'Ship' },
-    { id: 'analytics',   label: 'Analytics',      icon: '📈', stage: 'Ship' },
-    { id: 'dashboard',   label: 'Dashboard',      icon: '🏠', stage: 'Ship' },
-    { id: 'dependency',  label: 'Dependencies',   icon: '🔗', stage: 'Build' },
-    { id: 'status',      label: 'By Status',      icon: '🔵', stage: 'Build' },
-    { id: 'priority',    label: 'By Priority',    icon: '🔴', stage: 'Build' },
+    { id: 'epics', label: 'Epics', icon: '🌟', stage: 'Vision' },
+    { id: 'okr', label: 'OKRs', icon: '🎯', stage: 'Vision' },
+    { id: 'roadmap', label: 'Roadmap', icon: '🗺️', stage: 'Plan' },
+    { id: 'backlog', label: 'Backlog', icon: '📋', stage: 'Plan' },
+    { id: 'sprint', label: 'Sprint', icon: '⚡', stage: 'Plan' },
+    { id: 'kanban', label: 'Kanban', icon: '📌', stage: 'Build' },
+    { id: 'track', label: 'Track', icon: '📊', stage: 'Build' },
+    { id: 'releases', label: 'Releases', icon: '🚀', stage: 'Ship' },
+    { id: 'analytics', label: 'Analytics', icon: '📈', stage: 'Ship' },
+    { id: 'dashboard', label: 'Dashboard', icon: '🏠', stage: 'Ship' },
+    { id: 'dependency', label: 'Dependencies', icon: '🔗', stage: 'Build' },
+    { id: 'status', label: 'By Status', icon: '🔵', stage: 'Build' },
+    { id: 'priority', label: 'By Priority', icon: '🔴', stage: 'Build' },
     { id: 'contributor', label: 'By Contributor', icon: '👤', stage: 'Build' },
-    { id: 'ideation',    label: 'Ideation',       icon: '💡', stage: 'Discover' },
-    { id: 'workflow',    label: 'Workflow',        icon: '🔍', stage: 'Discover' },
+    { id: 'ideation', label: 'Ideation', icon: '💡', stage: 'Discover' },
+    { id: 'workflow', label: 'Workflow', icon: '🔍', stage: 'Discover' },
 ]
 
 function openCmdPalette() {
@@ -658,8 +658,8 @@ function onCmdPaletteInput(value) {
 function onCmdPaletteKey(e) {
     if (e.key === 'Escape') { e.preventDefault(); closeCmdPalette(); return }
     if (e.key === 'ArrowDown') { e.preventDefault(); moveCmdPaletteIndex(1); return }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); moveCmdPaletteIndex(-1); return }
-    if (e.key === 'Enter')     { e.preventDefault(); executeCmdPaletteResult(_cmdPaletteIndex); return }
+    if (e.key === 'ArrowUp') { e.preventDefault(); moveCmdPaletteIndex(-1); return }
+    if (e.key === 'Enter') { e.preventDefault(); executeCmdPaletteResult(_cmdPaletteIndex); return }
 }
 
 function moveCmdPaletteIndex(delta) {
@@ -724,15 +724,15 @@ function pushCmdRecent(itemId) {
 function buildActionCorpus(actionQuery) {
     const data = window.UPDATE_DATA
     const actions = [
-        { label: 'New Epic',          sub: 'Open the create-epic form',          icon: '🌟', action: () => { if (typeof openEpicEdit === 'function') openEpicEdit(null); switchView('epics') } },
-        { label: 'New Sprint',        sub: 'Open the create-sprint form',         icon: '⚡', action: () => { if (typeof openSprintEdit === 'function') openSprintEdit(); switchView('sprint') } },
-        { label: 'New Release',       sub: 'Open the create-release form',        icon: '🚀', action: () => { if (typeof openReleaseEdit === 'function') openReleaseEdit(); switchView('releases') } },
-        { label: 'New Roadmap Item',  sub: 'Open the create-roadmap-item form',   icon: '🗺️', action: () => { if (typeof openRoadmapEdit === 'function') openRoadmapEdit(); switchView('roadmap') } },
-        { label: 'Advance Horizons',  sub: 'Shift all roadmap horizons forward',  icon: '⏩', action: () => { if (typeof advanceRoadmapHorizons === 'function') advanceRoadmapHorizons() } },
-        { label: 'Switch to PM',      sub: 'Change persona to Product Manager',   icon: '📋', action: () => { if (typeof switchMode === 'function') switchMode('pm') } },
-        { label: 'Switch to Dev',     sub: 'Change persona to Developer',         icon: '💻', action: () => { if (typeof switchMode === 'function') switchMode('dev') } },
-        { label: 'Switch to Exec',    sub: 'Change persona to Executive',         icon: '📊', action: () => { if (typeof switchMode === 'function') switchMode('exec') } },
-        { label: 'Refresh Data',      sub: 'Clear cache and reload from GitHub',  icon: '🔄', action: () => { localStorage.removeItem('khyaal_data'); location.reload() } },
+        { label: 'New Epic', sub: 'Open the create-epic form', icon: '🌟', action: () => { if (typeof openEpicEdit === 'function') openEpicEdit(null); switchView('epics') } },
+        { label: 'New Sprint', sub: 'Open the create-sprint form', icon: '⚡', action: () => { if (typeof openSprintEdit === 'function') openSprintEdit(); switchView('sprint') } },
+        { label: 'New Release', sub: 'Open the create-release form', icon: '🚀', action: () => { if (typeof openReleaseEdit === 'function') openReleaseEdit(); switchView('releases') } },
+        { label: 'New Roadmap Item', sub: 'Open the create-roadmap-item form', icon: '🗺️', action: () => { if (typeof openRoadmapEdit === 'function') openRoadmapEdit(); switchView('roadmap') } },
+        { label: 'Advance Horizons', sub: 'Shift all roadmap horizons forward', icon: '⏩', action: () => { if (typeof advanceRoadmapHorizons === 'function') advanceRoadmapHorizons() } },
+        { label: 'Switch to PM', sub: 'Change persona to Product Manager', icon: '📋', action: () => { if (typeof switchMode === 'function') switchMode('pm') } },
+        { label: 'Switch to Dev', sub: 'Change persona to Developer', icon: '💻', action: () => { if (typeof switchMode === 'function') switchMode('dev') } },
+        { label: 'Switch to Exec', sub: 'Change persona to Executive', icon: '📊', action: () => { if (typeof switchMode === 'function') switchMode('exec') } },
+        { label: 'Refresh Data', sub: 'Clear cache and reload from GitHub', icon: '🔄', action: () => { localStorage.removeItem('khyaal_data'); location.reload() } },
     ]
 
     // Dynamic: active sprint close
@@ -810,14 +810,14 @@ function buildCmdCorpus(query) {
     // ── Items ──────────────────────────────────────────────────────────────
     if (query) {
         const itemMatches = []
-        ;(UPDATE_DATA.tracks || []).forEach(track => {
-            track.subtracks.forEach(sub => {
-                sub.items.forEach(item => {
-                    const score = cmdScoreItem(item, query)
-                    if (score >= 0) itemMatches.push({ item, track, sub, score })
+            ; (UPDATE_DATA.tracks || []).forEach(track => {
+                track.subtracks.forEach(sub => {
+                    sub.items.forEach(item => {
+                        const score = cmdScoreItem(item, query)
+                        if (score >= 0) itemMatches.push({ item, track, sub, score })
+                    })
                 })
             })
-        })
         itemMatches.sort((a, b) => b.score - a.score).slice(0, 5).forEach(({ item, track, sub }) => {
             results.push({
                 type: 'item',
@@ -856,7 +856,7 @@ function buildCmdCorpus(query) {
 
     // ── OKRs ───────────────────────────────────────────────────────────────
     if (query) {
-        ;(UPDATE_DATA.metadata?.okrs || [])
+        ; (UPDATE_DATA.metadata?.okrs || [])
             .map(okr => ({ okr, score: cmdScore(okr.objective || '', query) }))
             .filter(x => x.score >= 0)
             .sort((a, b) => b.score - a.score)
@@ -873,7 +873,7 @@ function buildCmdCorpus(query) {
 
     // ── Sprints ────────────────────────────────────────────────────────────
     if (query) {
-        ;(UPDATE_DATA.metadata?.sprints || [])
+        ; (UPDATE_DATA.metadata?.sprints || [])
             .map(sp => ({ sp, score: cmdScore(sp.name || sp.id || '', query) }))
             .filter(x => x.score >= 0)
             .sort((a, b) => b.score - a.score)
@@ -893,7 +893,7 @@ function buildCmdCorpus(query) {
 
     // ── Releases ───────────────────────────────────────────────────────────
     if (query) {
-        ;(UPDATE_DATA.metadata?.releases || [])
+        ; (UPDATE_DATA.metadata?.releases || [])
             .map(r => ({ r, score: cmdScore(r.name || r.id || '', query) }))
             .filter(x => x.score >= 0)
             .sort((a, b) => b.score - a.score)
@@ -931,8 +931,8 @@ function renderCmdPaletteResults(query) {
 
     // Group by type for visual separation
     const typeOrder = ['action', 'recent', 'view', 'item', 'epic', 'okr', 'sprint', 'release']
-    const typeLabel  = { action: 'Actions', recent: 'Recently Opened', view: 'Views', item: 'Items', epic: 'Epics', okr: 'OKRs', sprint: 'Sprints', release: 'Releases' }
-    const iconClass  = { action: 'cp-icon-action', recent: 'cp-icon-recent', view: 'cp-icon-view', item: 'cp-icon-item', epic: 'cp-icon-epic', okr: 'cp-icon-okr', sprint: 'cp-icon-sprint', release: 'cp-icon-release' }
+    const typeLabel = { action: 'Actions', recent: 'Recently Opened', view: 'Views', item: 'Items', epic: 'Epics', okr: 'OKRs', sprint: 'Sprints', release: 'Releases' }
+    const iconClass = { action: 'cp-icon-action', recent: 'cp-icon-recent', view: 'cp-icon-view', item: 'cp-icon-item', epic: 'cp-icon-epic', okr: 'cp-icon-okr', sprint: 'cp-icon-sprint', release: 'cp-icon-release' }
 
     let html = ''
     let flatIndex = 0

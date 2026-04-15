@@ -103,7 +103,7 @@ No automated tests. Manual testing workflow:
 5. Validate JSON structure in data.json
 
 ### #team
-- Project Owner: Khyaal Engineering
+- Project Owner: Core Platform Engineering
 - Contributors listed in data.json capacity.teamMembers
 - Tracks represent team ownership boundaries
 

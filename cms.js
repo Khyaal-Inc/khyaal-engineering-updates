@@ -41,7 +41,7 @@ const CMS_CONFIG = {
  */
 function saveCeremonyAudit(type, targetId, config) {
     if (!UPDATE_DATA.metadata.ceremonyAudits) UPDATE_DATA.metadata.ceremonyAudits = [];
-    
+
     const auditRecord = {
         id: `audit-${Date.now()}`,
         timestamp: new Date().toISOString(),
@@ -402,7 +402,7 @@ function _buildSpAdminTab() {
 function _renderSpAdminBody(el) {
     if (!el) el = document.getElementById('settings-panel-body')
     if (!el) return
-    
+
     el.innerHTML = `
         <div style="padding:40px 20px;text-align:center">
             <div style="font-size:40px;margin-bottom:20px">🛡️</div>
@@ -420,7 +420,7 @@ function _renderSpAdminBody(el) {
 }
 
 function _buildSpTeamsPanel() {
-    const teamRegistry = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }])
+    const teamRegistry = (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Core Platform Engineering', filePath: 'data.json' }])
     const activeTeamId = window.ACTIVE_PROJECT_ID || 'default'
     const dataProjects = (window.UPDATE_DATA?.projects || [])  // projects[] within active team's data.json
 
@@ -463,9 +463,9 @@ function _buildSpTeamsPanel() {
                 <td class="px-3 py-2 text-[10px] text-slate-400 font-mono">${team.filePath || 'data.json'}</td>
                 <td class="px-3 py-2 text-xs flex items-center gap-1 flex-wrap">
                     ${isActive
-                        ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
-                        : `<button onclick="spAdminSwitchTeam('${team.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
-                    }
+                ? '<span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black">Active</span>'
+                : `<button onclick="spAdminSwitchTeam('${team.id}')" class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold hover:bg-indigo-100 hover:text-indigo-700">Switch</button>`
+            }
                     <button onclick="adminEditWorkspaceInline(${ti})" class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold hover:bg-amber-100">Edit</button>
                     ${team.id !== 'default' ? `<button onclick="spAdminDeleteTeam(${ti})" class="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-full text-[10px] font-bold hover:bg-rose-100">Delete</button>` : ''}
                     ${isActive ? `<button onclick="adminAddProject()" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold hover:bg-emerald-100">+ Project</button>` : ''}
@@ -492,7 +492,7 @@ function _buildSpTeamsPanel() {
                 <tr class="border-b border-slate-50">
                     <td class="pl-8 pr-3 py-1 text-[10px] text-slate-400">↳ ${st.name}</td>
                     <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.length}</td>
-                    <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.filter(i=>i.status==='done').length} done</td>
+                    <td class="px-3 py-1 text-[10px] text-slate-400">${st.items.filter(i => i.status === 'done').length} done</td>
                     <td></td>
                 </tr>`).join('')
             // ti here is index into allTracks (= UPDATE_DATA.tracks after normalizeData sync)
@@ -557,11 +557,11 @@ function _buildSpTeamsPanel() {
 }
 
 // SP Admin CRUD — Team management (maps to PROJECT_REGISTRY / users.json projects[])
-window.spAdminSwitchTeam = function(id) {
+window.spAdminSwitchTeam = function (id) {
     if (typeof switchProject === 'function') switchProject(id)
     closeSettingsPanel()
 }
-window.spAdminDeleteTeam = function(pi) {
+window.spAdminDeleteTeam = function (pi) {
     const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
     const p = projects[pi]
     if (!p || p.id === 'default') { showToast('Cannot delete the default team', 'error'); return }
@@ -574,7 +574,7 @@ window.spAdminDeleteTeam = function(pi) {
     _renderSpAdminBody()
 }
 // ── Project CRUD within active team (data.json projects[]) ──────────────
-window.spAdminDeleteProject = function(pi) {
+window.spAdminDeleteProject = function (pi) {
     const projects = window.UPDATE_DATA?.projects || []
     const proj = projects[pi]
     if (!proj) return
@@ -588,7 +588,7 @@ window.spAdminDeleteProject = function(pi) {
     _renderSpAdminBody()
 }
 
-window.spAdminSaveUsers = async function() {
+window.spAdminSaveUsers = async function () {
     if (!_adminUsersData) return
     const jwt = localStorage.getItem('khyaal_site_auth')
     if (!jwt) { showToast('Not authenticated', 'error'); return }
@@ -629,7 +629,7 @@ function renderTeamSwitcher() {
 }
 window.renderTeamSwitcher = renderTeamSwitcher
 
-window.onTeamSwitcherChange = function(id) {
+window.onTeamSwitcherChange = function (id) {
     if (typeof switchProject === 'function') switchProject(id)
 }
 
@@ -889,15 +889,17 @@ function buildContextAwareForm(item, isNewItem, trackInfo = {}) {
                 const v = item[f];
                 return !v || (Array.isArray(v) && !v.length);
             });
-            const stageColors = { ideation:'#7c3aed', spikes:'#7c3aed', vision:'#4f46e5', epics:'#4f46e5',
-                                  roadmap:'#2563eb', backlog:'#2563eb', sprint:'#2563eb',
-                                  delivery:'#059669', review:'#d97706' };
+            const stageColors = {
+                ideation: '#7c3aed', spikes: '#7c3aed', vision: '#4f46e5', epics: '#4f46e5',
+                roadmap: '#2563eb', backlog: '#2563eb', sprint: '#2563eb',
+                delivery: '#059669', review: '#d97706'
+            };
             const color = stageColors[modalStage] || '#4f46e5';
             html += `<div class="modal-stage-hint" style="border-left:4px solid ${color}">
                 <span class="msh-icon" style="color:${color}">📍</span>
                 <div class="msh-body">
                     <div class="msh-hint">${stageInfo.hint}</div>
-                    ${missing.length > 0 ? `<div class="msh-missing">${missing.length} field${missing.length>1?'s':''} need attention below ↓</div>` : '<div class="msh-ok">✅ All key fields filled for this stage</div>'}
+                    ${missing.length > 0 ? `<div class="msh-missing">${missing.length} field${missing.length > 1 ? 's' : ''} need attention below ↓</div>` : '<div class="msh-ok">✅ All key fields filled for this stage</div>'}
                 </div>
             </div>`;
         }
@@ -980,7 +982,7 @@ function buildPillar(pillarKey, item, context) {
         const val = item[fieldName];
         const isEmpty = !val || (Array.isArray(val) && !val.length);
         const needsAttention = isRequired && isEmpty;
-        const alreadyDone   = isRequired && !isEmpty;
+        const alreadyDone = isRequired && !isEmpty;
 
         if (needsAttention) {
             html += `<div class="field-stage-required">${renderField(fieldName, item)}<span class="field-required-badge">⚠️ Needed for this stage</span></div>`;
@@ -1151,7 +1153,7 @@ function renderFieldInner(fieldName, item, val, isProtected, attr, persona) {
             `;
 
         case 'planningHorizon':
-            const knownHorizons = ['1M','3M','6M','1Y'];
+            const knownHorizons = ['1M', '3M', '6M', '1Y'];
             const isLegacyHorizon = val && !knownHorizons.includes(val);
             return `
                 <div class="field-wrapper">
@@ -1287,7 +1289,7 @@ function renderFieldInner(fieldName, item, val, isProtected, attr, persona) {
                     <label class="cms-label">🔢 Complexity (Story Points)</label>
                     <select id="edit-storyPoints" class="cms-input shadow-sm focus:shadow-md" ${attr}>
                         <option value="">— Select Points —</option>
-                        ${[1,2,3,5,8,13,21].map(n => `<option value="${n}" ${val == n ? 'selected' : ''}>${n} pt${n > 1 ? 's' : ''}</option>`).join('')}
+                        ${[1, 2, 3, 5, 8, 13, 21].map(n => `<option value="${n}" ${val == n ? 'selected' : ''}>${n} pt${n > 1 ? 's' : ''}</option>`).join('')}
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Fibonacci scale · 1=trivial · 5=1 day · 13=1 week</p>
                 </div>
@@ -1429,7 +1431,7 @@ window.uiState = {
  */
 function isFieldProtected(fieldName) {
     const persona = window.uiState.modalPersona || (typeof getCurrentMode === 'function' ? getCurrentMode() : 'pm');
-    
+
     // Developers are PREVENTED from editing Strategic alignment
     if (persona === 'dev') {
         const protectedStrategicFields = [
@@ -1440,7 +1442,7 @@ function isFieldProtected(fieldName) {
         ];
         return protectedStrategicFields.includes(fieldName);
     }
-    
+
     return false;
 }
 
@@ -1573,24 +1575,24 @@ function findItemById(itemId) {
 }
 
 async function adminLoadUsersRegistry() {
-  try {
-    const jwt = localStorage.getItem('khyaal_site_auth')
-    const response = await fetch(LAMBDA_URL + '?action=read&filePath=users.json', {
-      headers: { Authorization: 'Bearer ' + jwt }
-    })
-    if (!response.ok) return
-    const { data, sha } = await response.json()
-    if (data) {
-      _adminUsersData = data
-      _adminUsersSha = sha || null
-      if (Array.isArray(data.projects) && data.projects.length > 0) {
-        window.PROJECT_REGISTRY = data.projects
-        renderTeamSwitcher()
-      }
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const response = await fetch(LAMBDA_URL + '?action=read&filePath=users.json', {
+            headers: { Authorization: 'Bearer ' + jwt }
+        })
+        if (!response.ok) return
+        const { data, sha } = await response.json()
+        if (data) {
+            _adminUsersData = data
+            _adminUsersSha = sha || null
+            if (Array.isArray(data.projects) && data.projects.length > 0) {
+                window.PROJECT_REGISTRY = data.projects
+                renderTeamSwitcher()
+            }
+        }
+    } catch (err) {
+        console.warn('⚠️ adminLoadUsersRegistry: could not load users.json', err)
     }
-  } catch (err) {
-    console.warn('⚠️ adminLoadUsersRegistry: could not load users.json', err)
-  }
 }
 
 function initCms() {
@@ -1658,9 +1660,11 @@ function openItemEdit(ti, si, ii, itemId) {
     const item = data.item;
     editContext = { type: 'item', trackIndex: data.ti, subtrackIndex: data.si, itemIndex: data.ii, itemId: item.id };
 
-    const statusLabels = { now: '🔵 Developing', next: '🟠 Planned', later: '⚪ Backlog',
+    const statusLabels = {
+        now: '🔵 Developing', next: '🟠 Planned', later: '⚪ Backlog',
         qa: '🧪 Testing', review: '🟣 In Review', blocked: '🔴 Blocked',
-        onhold: '🟡 On Hold', done: '🟢 Done' };
+        onhold: '🟡 On Hold', done: '🟢 Done'
+    };
     const effectiveStatus = (item.blocker === true && item.status !== 'blocked') ? 'blocked' : item.status;
     const stagePill = effectiveStatus ? `<span class="modal-stage-pill">${statusLabels[effectiveStatus] || effectiveStatus}</span>` : '';
     const viewTitleMap = {
@@ -1901,7 +1905,7 @@ function openReleaseBuilder(sprintId) {
         const stepIndicator = [1, 2, 3].map(n => `
             <div style="display:flex;align-items:center;gap:6px;">
                 <div style="width:22px;height:22px;border-radius:50%;background:${n <= step ? '#4f46e5' : '#e2e8f0'};color:${n <= step ? 'white' : '#94a3b8'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;">${n < step ? '✓' : n}</div>
-                <span style="font-size:10px;font-weight:700;color:${n === step ? '#1e293b' : '#94a3b8'};white-space:nowrap;">${['Select Items','Pick Release','Confirm'][n-1]}</span>
+                <span style="font-size:10px;font-weight:700;color:${n === step ? '#1e293b' : '#94a3b8'};white-space:nowrap;">${['Select Items', 'Pick Release', 'Confirm'][n - 1]}</span>
                 ${n < 3 ? '<div style="width:24px;height:1px;background:#e2e8f0;"></div>' : ''}
             </div>`).join('')
 
@@ -1940,7 +1944,7 @@ function openReleaseBuilder(sprintId) {
                     const releasedBadge = rel ? `<span style="font-size:9px;padding:2px 6px;background:#fef2f2;border-radius:4px;font-weight:700;color:#991b1b;flex-shrink:0;">Shipped in ${rel}</span>` : ''
                     const pts = item.storyPoints ? `<span style="font-size:9px;padding:2px 6px;background:#f1f5f9;border-radius:4px;font-weight:700;color:#64748b;">${item.storyPoints}SP</span>` : ''
                     const epic = (UPDATE_DATA.metadata?.epics || []).find(e => e.id === item.epicId)
-                    const epicTag = epic ? `<span style="font-size:9px;padding:1px 6px;background:#ede9fe;border-radius:4px;font-weight:700;color:#6d28d9;">${epic.name.substring(0,20)}</span>` : ''
+                    const epicTag = epic ? `<span style="font-size:9px;padding:1px 6px;background:#ede9fe;border-radius:4px;font-weight:700;color:#6d28d9;">${epic.name.substring(0, 20)}</span>` : ''
                     return `
                         <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid ${checked ? '#c7d2fe' : '#e2e8f0'};background:${checked ? '#eef2ff' : 'white'};cursor:pointer;transition:all 0.15s;margin-bottom:6px;">
                             <input type="checkbox" data-item-id="${item.id}" ${checked ? 'checked' : ''} style="accent-color:#4f46e5;width:14px;height:14px;flex-shrink:0;" onchange="window._rbToggleItem('${item.id}', this.checked)">
@@ -2044,9 +2048,9 @@ function openReleaseBuilder(sprintId) {
                     <div style="flex:1;"></div>
                     <button onclick="window._rbClose()" style="padding:9px 16px;border-radius:8px;background:white;border:1px solid #e2e8f0;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;">Cancel</button>
                     ${step < 3
-                        ? `<button onclick="window._rbStep(${step + 1})" ${(!canProceedStep1 && step === 1) || (!canProceedStep2 && step === 2) ? 'disabled' : ''} style="padding:9px 20px;border-radius:8px;background:#4f46e5;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;opacity:${(step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2) ? 0.4 : 1};">Next →</button>`
-                        : `<button onclick="window._rbConfirm()" style="padding:9px 20px;border-radius:8px;background:#059669;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;">📦 Ship ${selectedIds.size} Items</button>`
-                    }
+                ? `<button onclick="window._rbStep(${step + 1})" ${(!canProceedStep1 && step === 1) || (!canProceedStep2 && step === 2) ? 'disabled' : ''} style="padding:9px 20px;border-radius:8px;background:#4f46e5;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;opacity:${(step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2) ? 0.4 : 1};">Next →</button>`
+                : `<button onclick="window._rbConfirm()" style="padding:9px 20px;border-radius:8px;background:#059669;border:none;font-size:12px;font-weight:700;color:white;cursor:pointer;">📦 Ship ${selectedIds.size} Items</button>`
+            }
                 </div>
             </div>`
     }
@@ -2117,7 +2121,7 @@ function promoteSprintToRelease(sprintId) {
     openReleaseBuilder(sprintId)
 }
 
-window.openReleaseBuilder     = openReleaseBuilder
+window.openReleaseBuilder = openReleaseBuilder
 window.promoteSprintToRelease = promoteSprintToRelease
 
 
@@ -2462,7 +2466,7 @@ async function saveSprintClose(sprintId) {
     // 2. Apply rollover resolutions
     const resolutionSelects = document.querySelectorAll('[id^="rollover-"]');
     const movements = [];
-    
+
     resolutionSelects.forEach(select => {
         const itemId = select.getAttribute('data-item-id');
         const resolution = select.value;
@@ -2506,7 +2510,7 @@ async function saveSprintClose(sprintId) {
 
     // 3. Record Velocity History
     if (!UPDATE_DATA.metadata.velocityHistory) UPDATE_DATA.metadata.velocityHistory = [];
-    
+
     // Check if record already exists, if so update it, else push
     const existingHistoryIdx = UPDATE_DATA.metadata.velocityHistory.findIndex(h => h.sprintId === sprintId);
     const historyRecord = {
@@ -2537,7 +2541,7 @@ async function saveSprintClose(sprintId) {
 
     // 6. Notify and Save
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    
+
     // High-Fidelity Stats
     const totalTasks = items.length;
     const doneTasksCount = doneItems.length;
@@ -2640,13 +2644,13 @@ function openRetroModal(sprintId) {
     if (!sprint) return
 
     const items = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', sprintId) : []
-    const doneItems   = items.filter(i => i.status === 'done')
+    const doneItems = items.filter(i => i.status === 'done')
     const blockedItems = items.filter(i => i.blocker || i.status === 'blocked')
     const rolledItems = items.filter(i => i.status !== 'done')
 
-    const plannedPts   = items.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
+    const plannedPts = items.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
     const completedPts = doneItems.reduce((s, i) => s + (parseInt(i.storyPoints) || 0), 0)
-    const velocityPct  = Math.round((completedPts / (plannedPts || 1)) * 100)
+    const velocityPct = Math.round((completedPts / (plannedPts || 1)) * 100)
 
     const history = (UPDATE_DATA.metadata.velocityHistory || []).filter(h => h.sprintId !== sprintId).slice(-3)
     const avgVelocity = history.length
@@ -2667,7 +2671,7 @@ function openRetroModal(sprintId) {
     const didntSuggestions = []
     if (velocityPct < 70) didntSuggestions.push(`⚠️ Velocity below target — ${velocityPct}% (${completedPts}/${plannedPts} pts)`)
     if (avgVelocity !== null && completedPts < avgVelocity) didntSuggestions.push(`⚠️ Below 3-sprint avg of ${avgVelocity} pts`)
-    if (blockedItems.length > 0) didntSuggestions.push(`⚠️ ${blockedItems.length} blocker${blockedItems.length > 1 ? 's' : ''} during sprint: ${blockedItems.map(i => i.text.substring(0,30)).join('; ')}`)
+    if (blockedItems.length > 0) didntSuggestions.push(`⚠️ ${blockedItems.length} blocker${blockedItems.length > 1 ? 's' : ''} during sprint: ${blockedItems.map(i => i.text.substring(0, 30)).join('; ')}`)
     if (rolledItems.length > 0) didntSuggestions.push(`⚠️ ${rolledItems.length} item${rolledItems.length > 1 ? 's' : ''} rolled over`)
     const didntDefault = didntSuggestions.join('\n') || '(add observations here)'
 
@@ -2714,11 +2718,11 @@ function openRetroModal(sprintId) {
             <div>
                 <label class="cms-label">😊 Team morale (1 – 5)</label>
                 <div class="flex gap-3" id="retro-morale-picker">
-                    ${[1,2,3,4,5].map(n => `
+                    ${[1, 2, 3, 4, 5].map(n => `
                         <button type="button"
                             onclick="document.querySelectorAll('.retro-morale-btn').forEach(b=>b.classList.remove('ring-2','ring-indigo-500','bg-indigo-50')); this.classList.add('ring-2','ring-indigo-500','bg-indigo-50'); document.getElementById('retro-morale-value').value='${n}'"
                             class="retro-morale-btn flex-1 py-2 rounded-xl border-2 border-slate-200 text-lg font-black text-slate-700 hover:border-indigo-300 transition-all ${(existing.morale || 0) == n ? 'ring-2 ring-indigo-500 bg-indigo-50' : ''}">
-                            ${['😞','😐','🙂','😊','🚀'][n-1]}
+                            ${['😞', '😐', '🙂', '😊', '🚀'][n - 1]}
                         </button>`).join('')}
                 </div>
                 <input type="hidden" id="retro-morale-value" value="${existing.morale || ''}">
@@ -2740,7 +2744,7 @@ function openRetroModal(sprintId) {
 
 function buildRetroReadonlySection(sprint) {
     const r = sprint.retro
-    const moraleEmoji = ['😞','😐','🙂','😊','🚀'][r.morale - 1] || ''
+    const moraleEmoji = ['😞', '😐', '🙂', '😊', '🚀'][r.morale - 1] || ''
     const savedDate = r.savedAt ? new Date(r.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
 
     const section = (label, value) => value ? `
@@ -2768,10 +2772,10 @@ function saveRetro(sprintId) {
     if (!sprint) return
 
     sprint.retro = {
-        well:    document.getElementById('retro-well')?.value.trim() || '',
-        didnt:   document.getElementById('retro-didnt')?.value.trim() || '',
+        well: document.getElementById('retro-well')?.value.trim() || '',
+        didnt: document.getElementById('retro-didnt')?.value.trim() || '',
         actions: document.getElementById('retro-actions')?.value.trim() || '',
-        morale:  parseInt(document.getElementById('retro-morale-value')?.value) || null,
+        morale: parseInt(document.getElementById('retro-morale-value')?.value) || null,
         savedAt: new Date().toISOString()
     }
 
@@ -2847,7 +2851,7 @@ function confirmCloseOKR(idx) {
     UPDATE_DATA.metadata.okrs[idx].updatedAt = new Date().toISOString();
 
     if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-    
+
     // Counts for summary
     const linkedEpics = (UPDATE_DATA.metadata.epics || []).filter(e => e.linkedOKR === okr.id);
     const completedEpics = linkedEpics.filter(e => e.status === 'completed').length;
@@ -3104,15 +3108,15 @@ function moveItemToBacklog(itemRef) {
 function renderCeremonySuccess(type, config, isHistorical = false) {
     // Ceremony-type color accent config
     const typeTheme = {
-        'sprint':         { color: '#059669', bg: 'bg-emerald-600', light: 'bg-emerald-50',  border: 'border-emerald-200', text: 'text-emerald-700', icon: '🏃', label: 'Sprint Ceremony' },
-        'sprint-kickoff': { color: '#0ea5e9', bg: 'bg-sky-600',     light: 'bg-sky-50',      border: 'border-sky-200',     text: 'text-sky-700',     icon: '🚀', label: 'Sprint Kickoff' },
-        'okr':            { color: '#4f46e5', bg: 'bg-indigo-600',  light: 'bg-indigo-50',   border: 'border-indigo-200',  text: 'text-indigo-700',  icon: '🎯', label: 'OKR Quarter Close' },
-        'okr-launch':     { color: '#4f46e5', bg: 'bg-indigo-600',  light: 'bg-indigo-50',   border: 'border-indigo-200',  text: 'text-indigo-700',  icon: '🎯', label: 'OKR Quarter Launch' },
-        'epic':           { color: '#7c3aed', bg: 'bg-violet-600',  light: 'bg-violet-50',   border: 'border-violet-200',  text: 'text-violet-700',  icon: '🚀', label: 'Epic Ceremony' },
-        'epic-kickoff':   { color: '#7c3aed', bg: 'bg-violet-600',  light: 'bg-violet-50',   border: 'border-violet-200',  text: 'text-violet-700',  icon: '🚀', label: 'Epic Kickoff' },
-        'release':        { color: '#d97706', bg: 'bg-amber-600',   light: 'bg-amber-50',    border: 'border-amber-200',   text: 'text-amber-700',   icon: '🚢', label: 'Release Ceremony' },
-        'release-lock':   { color: '#d97706', bg: 'bg-amber-600',   light: 'bg-amber-50',    border: 'border-amber-200',   text: 'text-amber-700',   icon: '📋', label: 'Release Scope Lock' },
-        'roadmap':        { color: '#0891b2', bg: 'bg-cyan-600',    light: 'bg-cyan-50',     border: 'border-cyan-200',    text: 'text-cyan-700',    icon: '🗺️', label: 'Roadmap Ceremony' }
+        'sprint': { color: '#059669', bg: 'bg-emerald-600', light: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', icon: '🏃', label: 'Sprint Ceremony' },
+        'sprint-kickoff': { color: '#0ea5e9', bg: 'bg-sky-600', light: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', icon: '🚀', label: 'Sprint Kickoff' },
+        'okr': { color: '#4f46e5', bg: 'bg-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', icon: '🎯', label: 'OKR Quarter Close' },
+        'okr-launch': { color: '#4f46e5', bg: 'bg-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', icon: '🎯', label: 'OKR Quarter Launch' },
+        'epic': { color: '#7c3aed', bg: 'bg-violet-600', light: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', icon: '🚀', label: 'Epic Ceremony' },
+        'epic-kickoff': { color: '#7c3aed', bg: 'bg-violet-600', light: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', icon: '🚀', label: 'Epic Kickoff' },
+        'release': { color: '#d97706', bg: 'bg-amber-600', light: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: '🚢', label: 'Release Ceremony' },
+        'release-lock': { color: '#d97706', bg: 'bg-amber-600', light: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: '📋', label: 'Release Scope Lock' },
+        'roadmap': { color: '#0891b2', bg: 'bg-cyan-600', light: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', icon: '🗺️', label: 'Roadmap Ceremony' }
     };
     const theme = typeTheme[type] || { color: '#475569', bg: 'bg-slate-600', light: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-700', icon: '📜', label: 'Lifecycle Ceremony' };
 
@@ -3231,14 +3235,14 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
                 </div>
                 <div class="audit-impact-log bg-slate-50 rounded-2xl border border-slate-200 overflow-y-auto max-h-[200px] p-2 space-y-1 custom-scrollbar shadow-inner">
                     ${config.items.map(item => {
-                        const statusKey = (item.status || '').toLowerCase();
-                        const isDone = ['done', 'completed', 'achieved', 'shipped'].includes(statusKey);
-                        const dotColor = statusColors[statusKey] || 'bg-slate-400';
-                        const statusLabel = statusLabels[statusKey] || (item.status || 'N/A');
-                        const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' && item.id ? `openItemEdit('${item.id}')` : '');
-                        const idTag = item.id ? `<span class="text-[8px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">#${String(item.id).substring(0, 12)}</span>` : '';
+            const statusKey = (item.status || '').toLowerCase();
+            const isDone = ['done', 'completed', 'achieved', 'shipped'].includes(statusKey);
+            const dotColor = statusColors[statusKey] || 'bg-slate-400';
+            const statusLabel = statusLabels[statusKey] || (item.status || 'N/A');
+            const linkFn = item.type === 'epic' ? `switchView('epics', '${item.id}')` : (item.type === 'task' && item.id ? `openItemEdit('${item.id}')` : '');
+            const idTag = item.id ? `<span class="text-[8px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">#${String(item.id).substring(0, 12)}</span>` : '';
 
-                        return `
+            return `
                             <div class="flex items-center gap-2 p-2 pl-3 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 hover:shadow-sm transition-all group ${linkFn ? 'cursor-pointer' : ''} active:scale-[0.99]"
                                  ${linkFn ? `onclick="${linkFn}"` : ''}>
                                 <div class="w-2 h-2 rounded-full ${dotColor} shrink-0 opacity-75 group-hover:opacity-100"></div>
@@ -3252,7 +3256,7 @@ function renderCeremonySuccess(type, config, isHistorical = false) {
                                     ${item.destination ? `<span class="text-[8px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">${item.destination}</span>` : ''}
                                 </div>
                             </div>`;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>`;
     }
@@ -3313,7 +3317,7 @@ function shipRelease(releaseId) {
         const track = UPDATE_DATA.tracks[item.trackIndex];
         const subtrack = track.subtracks[item.subtrackIndex];
         const realItem = subtrack.items[item.itemIndex];
-        
+
         if (nextRelease) {
             realItem.releasedIn = nextRelease.id;
             realItem.status = 'next'; // Reset to Planned for next release
@@ -3333,9 +3337,9 @@ function shipRelease(releaseId) {
         if (release.linkedOKR) okrIds.add(release.linkedOKR)
         // Also pick up OKRs linked through the epics this release covers
         const epicIds = new Set(items.filter(i => i.epicId).map(i => i.epicId))
-        ;(UPDATE_DATA.metadata?.epics || []).forEach(e => {
-            if (epicIds.has(e.id) && e.linkedOKR) okrIds.add(e.linkedOKR)
-        })
+            ; (UPDATE_DATA.metadata?.epics || []).forEach(e => {
+                if (epicIds.has(e.id) && e.linkedOKR) okrIds.add(e.linkedOKR)
+            })
         okrIds.forEach(okrId => {
             const newProgress = recalcOKRProgress(okrId)
             if (newProgress !== null) {
@@ -4531,13 +4535,13 @@ function updateItemGrooming(trackIndex, subtrackIndex, itemIndex, field, value, 
         console.error('❌ updateItemGrooming: Item context not found', { trackIndex, subtrackIndex, itemIndex, itemId });
         return;
     }
-    
+
     data.item[field] = value;
     logChange(`Groom Item (${field})`, data.item.text);
-    
+
     saveToLocalStorage();
     renderDashboard();
-    
+
     // Auto-refresh the current view
     const currentView = window.currentActiveView || 'backlog';
     if (typeof switchView === 'function') switchView(currentView);
@@ -4820,13 +4824,13 @@ async function saveToGithub() {
 function toggleComments(ti, si, ii, itemId, viewPrefix = 'main') {
     const data = itemId ? findItemById(itemId) : { item: UPDATE_DATA.tracks[ti].subtracks[si].items[ii] };
     if (!data) return;
-    
+
     const id = `${viewPrefix}-comments-${data.item.id}`;
     const el = document.getElementById(id);
     if (!el) return;
-    
+
     const isNowVisible = el.classList.toggle('hidden') === false;
-    
+
     // 🏆 Phase 29: Track open state to survive silent re-renders
     if (isNowVisible) {
         window.uiState.openComments.add(data.item.id);
@@ -4842,37 +4846,37 @@ function addComment(ti, si, ii, itemId, viewPrefix = 'main') {
         console.error('❌ addComment: Item context not found', { ti, si, ii, itemId });
         return;
     }
-    
+
     const inputId = `${viewPrefix}-comment-input-${data.item.id}`;
     const input = document.getElementById(inputId);
     if (!input || !input.value.trim()) return;
-    
+
     if (!data.item.comments) data.item.comments = [];
-    data.item.comments.push({ 
-        id: `c-${Date.now()}`, 
-        text: input.value.trim(), 
-        author: 'PM', 
-        timestamp: new Date().toISOString() 
+    data.item.comments.push({
+        id: `c-${Date.now()}`,
+        text: input.value.trim(),
+        author: 'PM',
+        timestamp: new Date().toISOString()
     });
-    
+
     input.value = '';
     saveToLocalStorage();
-    
+
     // Phase 29: Smart re-render (maintains open state)
-    renderDashboard(); 
+    renderDashboard();
 }
 
 function deleteComment(ti, si, ii, cid, itemId, viewPrefix = 'main') {
     // 🏆 Phase 31: Use Universal Resolver for absolute ID-first matching
     const data = getValidatedItemContext(itemId || { trackIndex: ti, subtrackIndex: si, itemIndex: ii });
     if (!data) return;
-    
+
     data.item.comments = (data.item.comments || []).filter(c => c.id !== cid);
-    
+
     saveToLocalStorage();
-    
+
     // Phase 29: Smart re-render (maintains open state)
-    renderDashboard(); 
+    renderDashboard();
 }
 
 function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
@@ -4894,7 +4898,7 @@ function deleteItem(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
 
         closeCmsModal();
         saveToLocalStorage();
-        
+
         // Final refresh
         if (viewPrefix) {
             renderDashboard();
@@ -4924,18 +4928,18 @@ function sendToBacklog(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
         const [item] = track.subtracks[data.si].items.splice(data.ii, 1);
         track.subtracks[bIdx].items.push(item);
         logChange('Move to Backlog', item.text);
-        
+
         saveToLocalStorage();
-        
+
         // Force full view reflection
-        renderDashboard(); 
+        renderDashboard();
         if (viewPrefix) {
             switchView(viewPrefix);
         } else {
             const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
             switchView(currentView);
         }
-        
+
         updateTabCounts();
         _clearLockWatchdog();
         window.isActionLockActive = false;
@@ -4949,33 +4953,33 @@ function toggleBlocker(ti_ignored, si_ignored, ii_ignored, itemId, viewPrefix) {
     window.isActionLockActive = true;
     _setLockWatchdog();
     setTimeout(() => {
-        if (data.item.blocker) { 
-            delete data.item.blocker; 
-            delete data.item.blockerNote; 
-            logChange('Unblock Item', data.item.text); 
-        } else { 
-            const note = prompt('Blocker reason:', '') || ''; 
+        if (data.item.blocker) {
+            delete data.item.blocker;
+            delete data.item.blockerNote;
+            logChange('Unblock Item', data.item.text);
+        } else {
+            const note = prompt('Blocker reason:', '') || '';
             if (!note) {
                 _clearLockWatchdog();
                 window.isActionLockActive = false;
                 return;
-            } 
-            data.item.blocker = true; 
-            data.item.blockerNote = note; 
-            logChange('Flag Blocker', data.item.text); 
+            }
+            data.item.blocker = true;
+            data.item.blockerNote = note;
+            logChange('Flag Blocker', data.item.text);
         }
 
         saveToLocalStorage();
-        
+
         // Force full view reflection
-        renderDashboard(); 
+        renderDashboard();
         if (viewPrefix) {
             switchView(viewPrefix);
         } else {
             const currentView = document.querySelector('.view-section.active')?.id.replace('-view', '') || 'track';
             switchView(currentView);
         }
-        
+
         if (typeof renderBlockerStrip === 'function') renderBlockerStrip();
 
         // Ensure lock is released after all state-changing rendering is complete
@@ -5046,7 +5050,7 @@ async function initArchiveFilter() {
     }
 }
 
-window.toggleNavFilterPanel = function(btn) {
+window.toggleNavFilterPanel = function (btn) {
     const panel = document.getElementById('nav-filter-panel')
     if (!panel) return
     const isOpen = panel.classList.toggle('open')
@@ -5058,7 +5062,7 @@ window.toggleNavFilterPanel = function(btn) {
     }
 }
 
-window.toggleNavSnapshotsPanel = function(btn) {
+window.toggleNavSnapshotsPanel = function (btn) {
     const panel = document.getElementById('nav-snapshots-panel')
     if (!panel) return
     const isOpen = panel.classList.toggle('open')
@@ -5583,7 +5587,7 @@ function renderAdminPanel(bodyHtml) {
         </div>`
     el.innerHTML = tabs + `<div id="admin-tab-content">${bodyHtml}</div>`
 }
-window.switchAdminTab = function(tab) {
+window.switchAdminTab = function (tab) {
     _adminActiveTab = tab
     if (tab === 'users') {
         renderAdminPanel(buildAdminUsersTable())
@@ -5608,7 +5612,7 @@ function buildAdminUsersTable() {
         `<option value="${m}" ${m === currentMode ? 'selected' : ''}>${m.toUpperCase()}</option>`
     ).join('')
 
-    const projectOptions = (currentId) => (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Khyaal Engineering' }]).map(p =>
+    const projectOptions = (currentId) => (window.PROJECT_REGISTRY || [{ id: 'default', name: 'Core Platform Engineering' }]).map(p =>
         `<option value="${p.id}" ${p.id === currentId ? 'selected' : ''}>${p.name} (${p.id})</option>`
     ).join('')
 
@@ -5695,7 +5699,7 @@ function adminAddGrant(userIndex) {
     const firstProject = (window.PROJECT_REGISTRY || [])[0]?.id || 'default'
     _adminUsersData.users[userIndex].grants.push({
         projectId: firstProject,
-        name: (window.PROJECT_REGISTRY || [])[0]?.name || 'Khyaal Engineering',
+        name: (window.PROJECT_REGISTRY || [])[0]?.name || 'Core Platform Engineering',
         mode: 'exec'
     })
     renderAdminPanel(buildAdminUsersTable())
@@ -5753,7 +5757,7 @@ function _syncProjectsToRegistry() {
     if (!Array.isArray(_adminUsersData.projects)) _adminUsersData.projects = []
     window.PROJECT_REGISTRY = _adminUsersData.projects.length > 0
         ? _adminUsersData.projects
-        : [{ id: 'default', name: 'Khyaal Engineering', filePath: 'data.json' }]
+        : [{ id: 'default', name: 'Core Platform Engineering', filePath: 'data.json' }]
     // Persist registry to localStorage so it survives reload before GitHub save
     try { localStorage.setItem('khyaal_registry', JSON.stringify(window.PROJECT_REGISTRY)) } catch (e) { /* quota */ }
     // Repopulate the track filter select with updated data
@@ -5765,12 +5769,12 @@ function _syncProjectsToRegistry() {
     renderTeamSwitcher()
 }
 
-window.adminSwitchProject = function(id) {
+window.adminSwitchProject = function (id) {
     if (typeof switchProject === 'function') switchProject(id)
     closeAdminPanel()
 }
 
-window.adminWsAddProject = function() {
+window.adminWsAddProject = function () {
     const container = document.getElementById('admin-project-form-container');
     if (!container) return;
     container.innerHTML = `
@@ -5793,7 +5797,7 @@ window.adminWsAddProject = function() {
     }
 };
 
-window.adminAddProjectSave = function() {
+window.adminAddProjectSave = function () {
     const name = document.getElementById('admin-proj-name')?.value.trim();
     const id = document.getElementById('admin-proj-id')?.value.trim().replace(/[^a-z0-9-]/g, '-');
     if (!name || !id) { showToast('Name and ID are required', 'error'); return; }
@@ -5847,7 +5851,7 @@ async function scaffoldProjectDataFile(projectId, projectName) {
     }
 }
 
-window.adminEditProject = function(pi) {
+window.adminEditProject = function (pi) {
     const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY;
     const p = projects[pi];
     if (!p) return;
@@ -5866,7 +5870,7 @@ window.adminEditProject = function(pi) {
     document.getElementById('admin-proj-edit-name')?.focus();
 };
 
-window.adminEditProjectSave = function(pi) {
+window.adminEditProjectSave = function (pi) {
     const newName = document.getElementById('admin-proj-edit-name')?.value.trim();
     const newFile = document.getElementById('admin-proj-edit-file')?.value.trim();
     if (!newName || !newFile) { showToast('Name and file path are required', 'error'); return; }
@@ -5880,12 +5884,12 @@ window.adminEditProjectSave = function(pi) {
     renderAdminPanel(buildAdminTeamsPanel());
 };
 
-window.adminCancelProjectForm = function() {
+window.adminCancelProjectForm = function () {
     const container = document.getElementById('admin-project-form-container');
     if (container) container.innerHTML = '';
 };
 
-window.adminDeleteProject = function(pi) {
+window.adminDeleteProject = function (pi) {
     const projects = _adminUsersData?.projects || window.PROJECT_REGISTRY
     const p = projects[pi]
     if (!p || p.id === 'default') { showToast('Cannot delete the default project', 'error'); return }
@@ -5911,24 +5915,24 @@ window.adminDeleteProject = function(pi) {
 }
 
 function renderAdminView() {
-  const container = document.getElementById('admin-view')
-  if (!container) return
-  const mode = getCurrentMode()
-  if (mode !== 'pm') {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8">Admin access requires PM mode.</div>'
-    return
-  }
+    const container = document.getElementById('admin-view')
+    if (!container) return
+    const mode = getCurrentMode()
+    if (mode !== 'pm') {
+        container.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8">Admin access requires PM mode.</div>'
+        return
+    }
 
-  if (!_adminUsersData) {
-    container.innerHTML = `<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">Loading admin data…</div>`
-    adminLoadUsersRegistry().then(() => renderAdminView())
-    return
-  }
+    if (!_adminUsersData) {
+        container.innerHTML = `<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">Loading admin data…</div>`
+        adminLoadUsersRegistry().then(() => renderAdminView())
+        return
+    }
 
-  const usersActive = _adminActiveTab === 'users'
-  const structActive = _adminActiveTab === 'structure'
+    const usersActive = _adminActiveTab === 'users'
+    const structActive = _adminActiveTab === 'structure'
 
-  container.innerHTML = `
+    container.innerHTML = `
     <div style="max-width:960px;margin:0 auto;padding:24px 20px">
 
       <!-- Header -->
@@ -5960,28 +5964,28 @@ function renderAdminView() {
 }
 
 function adminSwitchTab(tab) {
-  _adminActiveTab = tab
-  renderAdminView()
+    _adminActiveTab = tab
+    renderAdminView()
 }
 
 function renderAdminUsersTab() {
-  const registry = _adminUsersData || { users: [], projects: [] }
-  const users = registry.users || []
-  const workspaces = registry.projects || []
-  const activeWsId = window.ACTIVE_PROJECT_ID || ''
+    const registry = _adminUsersData || { users: [], projects: [] }
+    const users = registry.users || []
+    const workspaces = registry.projects || []
+    const activeWsId = window.ACTIVE_PROJECT_ID || ''
 
-  // Build user rows
-  const userRows = users.map((u, ui) => {
-    const initials = (u.name || u.id || '?')[0].toUpperCase()
-    const colors = ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4']
-    const avatarColor = colors[ui % colors.length]
-    const grants = u.grants || []
+    // Build user rows
+    const userRows = users.map((u, ui) => {
+        const initials = (u.name || u.id || '?')[0].toUpperCase()
+        const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+        const avatarColor = colors[ui % colors.length]
+        const grants = u.grants || []
 
-    const grantRows = grants.map((g, gi) => {
-      const ws = workspaces.find(p => p.id === g.projectId) || { name: g.projectId }
-      const roleColors = { pm: '#dcfce7;color:#166534', dev: '#fef3c7;color:#92400e', exec: '#dbeafe;color:#1d4ed8' }
-      const roleStyle = roleColors[g.mode] || '#f1f5f9;color:#374151'
-      return `
+        const grantRows = grants.map((g, gi) => {
+            const ws = workspaces.find(p => p.id === g.projectId) || { name: g.projectId }
+            const roleColors = { pm: '#dcfce7;color:#166534', dev: '#fef3c7;color:#92400e', exec: '#dbeafe;color:#1d4ed8' }
+            const roleStyle = roleColors[g.mode] || '#f1f5f9;color:#374151'
+            return `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:#f8fafc;border-radius:5px;border:1px solid #e2e8f0">
           <div>
             <span style="font-size:11px;font-weight:700;color:#1e293b">${ws.name}</span>
@@ -5992,9 +5996,9 @@ function renderAdminUsersTab() {
             <button onclick="adminRevokeGrant('${u.id}', ${gi})" style="padding:2px 6px;background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:3px;font-size:10px;cursor:pointer">x</button>
           </div>
         </div>`
-    }).join('')
+        }).join('')
 
-    return `
+        return `
       <div style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;background:white;overflow:hidden">
         <div style="padding:10px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center">
           <div style="display:flex;align-items:center;gap:10px">
@@ -6018,12 +6022,12 @@ function renderAdminUsersTab() {
           </div>
         </div>
       </div>`
-  }).join('')
+    }).join('')
 
-  // Build workspace rows
-  const wsRows = workspaces.map(ws => {
-    const isActive = ws.id === activeWsId
-    return `
+    // Build workspace rows
+    const wsRows = workspaces.map(ws => {
+        const isActive = ws.id === activeWsId
+        return `
       <div style="border:${isActive ? '1.5px solid #c7d2fe' : '1px solid #e2e8f0'};border-radius:8px;margin-bottom:8px;background:${isActive ? '#eef2ff' : 'white'};overflow:hidden">
         <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
           <div style="display:flex;align-items:center;gap:8px">
@@ -6040,9 +6044,9 @@ function renderAdminUsersTab() {
         </div>
         <div id="admin-ws-form-${ws.id}" style="display:none;padding:10px 14px;border-top:1px solid #e2e8f0;background:#f8fafc"></div>
       </div>`
-  }).join('')
+    }).join('')
 
-  return `
+    return `
     <!-- Users section -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div style="font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em">Users <span style="background:#e2e8f0;color:#64748b;border-radius:8px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px">${users.length}</span></div>
@@ -6073,17 +6077,17 @@ function renderAdminUsersTab() {
 // ─── Users & Grants CRUD ─────────────────────────────────────────────────────
 
 async function sha256(message) {
-  const msgBuffer = new TextEncoder().encode(message)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    const msgBuffer = new TextEncoder().encode(message)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 function adminShowAddUserForm() {
-  const el = document.getElementById('admin-add-user-form')
-  if (!el) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-add-user-form')
+    if (!el) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="background:#f8fafc;border:1.5px solid #c7d2fe;border-radius:8px;padding:14px">
       <div style="font-size:10px;font-weight:900;color:#4338ca;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add User</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -6114,28 +6118,28 @@ function adminShowAddUserForm() {
 }
 
 async function adminSaveNewUser() {
-  const id = (document.getElementById('admin-new-user-id')?.value || '').trim()
-  const name = (document.getElementById('admin-new-user-name')?.value || '').trim()
-  const email = (document.getElementById('admin-new-user-email')?.value || '').trim()
-  const password = (document.getElementById('admin-new-user-password')?.value || '').trim()
-  if (!id || !name || !password) { showToast('User ID, name, and password are required', 'error'); return }
-  if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
-  if ((_adminUsersData.users || []).find(u => u.id === id)) { showToast('User ID already exists', 'error'); return }
-  const passwordHash = await sha256(password)
-  const newUser = { id, name, email, passwordHash, grants: [] }
-  if (!_adminUsersData.users) _adminUsersData.users = []
-  _adminUsersData.users.push(newUser)
-  renderAdminView()
-  showToast('User added — click Save to persist', 'info')
+    const id = (document.getElementById('admin-new-user-id')?.value || '').trim()
+    const name = (document.getElementById('admin-new-user-name')?.value || '').trim()
+    const email = (document.getElementById('admin-new-user-email')?.value || '').trim()
+    const password = (document.getElementById('admin-new-user-password')?.value || '').trim()
+    if (!id || !name || !password) { showToast('User ID, name, and password are required', 'error'); return }
+    if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
+    if ((_adminUsersData.users || []).find(u => u.id === id)) { showToast('User ID already exists', 'error'); return }
+    const passwordHash = await sha256(password)
+    const newUser = { id, name, email, passwordHash, grants: [] }
+    if (!_adminUsersData.users) _adminUsersData.users = []
+    _adminUsersData.users.push(newUser)
+    renderAdminView()
+    showToast('User added — click Save to persist', 'info')
 }
 
 function adminEditUserInline(userId) {
-  const registry = _adminUsersData || { users: [] }
-  const user = (registry.users || []).find(u => u.id === userId)
-  if (!user) return
-  const detailEl = document.getElementById('admin-user-detail-' + userId)
-  if (!detailEl) return
-  detailEl.innerHTML = `
+    const registry = _adminUsersData || { users: [] }
+    const user = (registry.users || []).find(u => u.id === userId)
+    if (!user) return
+    const detailEl = document.getElementById('admin-user-detail-' + userId)
+    if (!detailEl) return
+    detailEl.innerHTML = `
     <div style="background:#f8fafc;border:1px solid #c7d2fe;border-radius:6px;padding:10px;margin-bottom:8px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
@@ -6155,30 +6159,30 @@ function adminEditUserInline(userId) {
 }
 
 function adminSaveUserEdit(userId) {
-  const registry = _adminUsersData || { users: [] }
-  const user = (registry.users || []).find(u => u.id === userId)
-  if (!user) return
-  user.name = (document.getElementById('admin-edit-user-name-' + userId)?.value || '').trim() || user.name
-  user.email = (document.getElementById('admin-edit-user-email-' + userId)?.value || '').trim() || user.email
-  renderAdminView()
-  showToast('User updated — click Save to persist', 'info')
+    const registry = _adminUsersData || { users: [] }
+    const user = (registry.users || []).find(u => u.id === userId)
+    if (!user) return
+    user.name = (document.getElementById('admin-edit-user-name-' + userId)?.value || '').trim() || user.name
+    user.email = (document.getElementById('admin-edit-user-email-' + userId)?.value || '').trim() || user.email
+    renderAdminView()
+    showToast('User updated — click Save to persist', 'info')
 }
 
 function adminRemoveUser(userId) {
-  if (!confirm('Remove user "' + userId + '"? This also removes all their grants.')) return
-  const registry = _adminUsersData || { users: [] }
-  registry.users = (registry.users || []).filter(u => u.id !== userId)
-  renderAdminView()
-  showToast('User removed — click Save to persist', 'info')
+    if (!confirm('Remove user "' + userId + '"? This also removes all their grants.')) return
+    const registry = _adminUsersData || { users: [] }
+    registry.users = (registry.users || []).filter(u => u.id !== userId)
+    renderAdminView()
+    showToast('User removed — click Save to persist', 'info')
 }
 
 function adminShowGrantForm(userId) {
-  const el = document.getElementById('admin-grant-form-' + userId)
-  if (!el) return
-  const registry = _adminUsersData || { users: [], projects: [] }
-  const workspaces = registry.projects || []
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-grant-form-' + userId)
+    if (!el) return
+    const registry = _adminUsersData || { users: [], projects: [] }
+    const workspaces = registry.projects || []
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="background:#f8fafc;border:1px solid #c7d2fe;border-radius:5px;padding:8px;margin-top:6px">
       <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:flex-end">
         <div>
@@ -6202,34 +6206,34 @@ function adminShowGrantForm(userId) {
 }
 
 function adminSaveGrant(userId) {
-  const registry = _adminUsersData || { users: [] }
-  const user = (registry.users || []).find(u => u.id === userId)
-  if (!user) return
-  const projectId = document.getElementById('admin-grant-ws-' + userId)?.value
-  const mode = document.getElementById('admin-grant-role-' + userId)?.value
-  if (!projectId || !mode) return
-  if (!user.grants) user.grants = []
-  if (user.grants.find(g => g.projectId === projectId)) { showToast('Grant already exists for this workspace', 'error'); return }
-  user.grants.push({ projectId, mode })
-  renderAdminView()
-  showToast('Grant added — click Save to persist', 'info')
+    const registry = _adminUsersData || { users: [] }
+    const user = (registry.users || []).find(u => u.id === userId)
+    if (!user) return
+    const projectId = document.getElementById('admin-grant-ws-' + userId)?.value
+    const mode = document.getElementById('admin-grant-role-' + userId)?.value
+    if (!projectId || !mode) return
+    if (!user.grants) user.grants = []
+    if (user.grants.find(g => g.projectId === projectId)) { showToast('Grant already exists for this workspace', 'error'); return }
+    user.grants.push({ projectId, mode })
+    renderAdminView()
+    showToast('Grant added — click Save to persist', 'info')
 }
 
 function adminRevokeGrant(userId, grantIdx) {
-  if (!confirm('Remove this grant?')) return
-  const registry = _adminUsersData || { users: [] }
-  const user = (registry.users || []).find(u => u.id === userId)
-  if (!user || !user.grants) return
-  user.grants.splice(grantIdx, 1)
-  renderAdminView()
-  showToast('Grant revoked — click Save to persist', 'info')
+    if (!confirm('Remove this grant?')) return
+    const registry = _adminUsersData || { users: [] }
+    const user = (registry.users || []).find(u => u.id === userId)
+    if (!user || !user.grants) return
+    user.grants.splice(grantIdx, 1)
+    renderAdminView()
+    showToast('Grant revoked — click Save to persist', 'info')
 }
 
 function adminShowAddWorkspaceForm() {
-  const el = document.getElementById('admin-add-ws-form')
-  if (!el) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-add-ws-form')
+    if (!el) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="background:#f8fafc;border:1.5px solid #c7d2fe;border-radius:8px;padding:14px">
       <div style="font-size:10px;font-weight:900;color:#4338ca;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add Workspace</div>
       <div style="margin-bottom:8px">
@@ -6248,35 +6252,35 @@ function adminShowAddWorkspaceForm() {
 }
 
 function adminPreviewWsId(name) {
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  const fileEl = document.getElementById('admin-new-ws-file')
-  if (fileEl) fileEl.value = slug ? 'data-' + slug + '.json' : ''
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const fileEl = document.getElementById('admin-new-ws-file')
+    if (fileEl) fileEl.value = slug ? 'data-' + slug + '.json' : ''
 }
 
 async function adminSaveNewWorkspace() {
-  const name = (document.getElementById('admin-new-ws-name')?.value || '').trim()
-  if (!name) { showToast('Workspace name is required', 'error'); return }
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  const id = slug
-  const dataFile = 'data-' + slug + '.json'
-  if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
-  if ((_adminUsersData.projects || []).find(p => p.id === id)) { showToast('Workspace ID already exists', 'error'); return }
-  if (!_adminUsersData.projects) _adminUsersData.projects = []
-  _adminUsersData.projects.push({ id, name, filePath: dataFile })
-  window.PROJECT_REGISTRY = _adminUsersData.projects
-  await scaffoldProjectDataFile(id, name)
-  renderAdminView()
-  showToast('Workspace created — click Save to persist registry', 'info')
+    const name = (document.getElementById('admin-new-ws-name')?.value || '').trim()
+    if (!name) { showToast('Workspace name is required', 'error'); return }
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const id = slug
+    const dataFile = 'data-' + slug + '.json'
+    if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
+    if ((_adminUsersData.projects || []).find(p => p.id === id)) { showToast('Workspace ID already exists', 'error'); return }
+    if (!_adminUsersData.projects) _adminUsersData.projects = []
+    _adminUsersData.projects.push({ id, name, filePath: dataFile })
+    window.PROJECT_REGISTRY = _adminUsersData.projects
+    await scaffoldProjectDataFile(id, name)
+    renderAdminView()
+    showToast('Workspace created — click Save to persist registry', 'info')
 }
 
 function adminEditWorkspaceInline(wsId) {
-  const el = document.getElementById('admin-ws-form-' + wsId)
-  if (!el) return
-  const registry = _adminUsersData || { projects: [] }
-  const ws = (registry.projects || []).find(p => p.id === wsId)
-  if (!ws) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-ws-form-' + wsId)
+    if (!el) return
+    const registry = _adminUsersData || { projects: [] }
+    const ws = (registry.projects || []).find(p => p.id === wsId)
+    if (!ws) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div>
         <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Workspace Name</label>
@@ -6294,76 +6298,76 @@ function adminEditWorkspaceInline(wsId) {
 }
 
 function adminSaveWorkspaceEdit(wsId) {
-  const registry = _adminUsersData || { projects: [] }
-  const ws = (registry.projects || []).find(p => p.id === wsId)
-  if (!ws) return
-  ws.name = (document.getElementById('admin-edit-ws-name-' + wsId)?.value || '').trim() || ws.name
-  renderAdminView()
-  showToast('Workspace updated — click Save to persist', 'info')
+    const registry = _adminUsersData || { projects: [] }
+    const ws = (registry.projects || []).find(p => p.id === wsId)
+    if (!ws) return
+    ws.name = (document.getElementById('admin-edit-ws-name-' + wsId)?.value || '').trim() || ws.name
+    renderAdminView()
+    showToast('Workspace updated — click Save to persist', 'info')
 }
 
 function adminDeleteWorkspace(wsId) {
-  const registry = _adminUsersData || { projects: [] }
-  const ws = (registry.projects || []).find(p => p.id === wsId)
-  if (!ws) return
-  if (wsId === window.ACTIVE_PROJECT_ID) { showToast('Cannot delete the active workspace. Switch first.', 'error'); return }
-  if (!confirm('Delete workspace "' + ws.name + '"? This will tombstone its data file on GitHub. This cannot be undone.')) return
-  registry.projects = (registry.projects || []).filter(p => p.id !== wsId)
-  window.PROJECT_REGISTRY = registry.projects || []
-  deleteProjectDataFile(wsId)
-  renderAdminView()
-  showToast('Workspace deleted — click Save to persist registry', 'info')
+    const registry = _adminUsersData || { projects: [] }
+    const ws = (registry.projects || []).find(p => p.id === wsId)
+    if (!ws) return
+    if (wsId === window.ACTIVE_PROJECT_ID) { showToast('Cannot delete the active workspace. Switch first.', 'error'); return }
+    if (!confirm('Delete workspace "' + ws.name + '"? This will tombstone its data file on GitHub. This cannot be undone.')) return
+    registry.projects = (registry.projects || []).filter(p => p.id !== wsId)
+    window.PROJECT_REGISTRY = registry.projects || []
+    deleteProjectDataFile(wsId)
+    renderAdminView()
+    showToast('Workspace deleted — click Save to persist registry', 'info')
 }
 
 function adminSwitchWorkspace(wsId) {
-  if (!confirm('Switch to workspace "' + wsId + '"? The page will reload.')) return
-  window.ACTIVE_PROJECT_ID = wsId
-  localStorage.setItem('khyaal_active_project', wsId)
-  location.reload()
+    if (!confirm('Switch to workspace "' + wsId + '"? The page will reload.')) return
+    window.ACTIVE_PROJECT_ID = wsId
+    localStorage.setItem('khyaal_active_project', wsId)
+    location.reload()
 }
 
 async function adminSaveUsersJson() {
-  if (!_adminUsersData) { showToast('No registry data to save', 'error'); return }
-  if (window.isActionLockActive) { showToast('Save already in progress', 'error'); return }
-  window.isActionLockActive = true
-  try {
-    const jwt = localStorage.getItem('khyaal_site_auth')
-    const content = btoa(JSON.stringify(_adminUsersData, null, 2))
-    const response = await fetch(LAMBDA_URL + '?action=write', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + jwt, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, sha: window._lastUsersSha || undefined, message: 'chore: update users.json via admin panel', filePath: 'users.json' })
-    })
-    if (!response.ok) throw new Error('Write failed: ' + response.status)
-    const { sha } = await response.json()
-    if (sha) window._lastUsersSha = sha
-    showToast('Users and Workspaces saved to GitHub', 'success')
-  } catch (err) {
-    console.error('❌ adminSaveUsersJson:', err)
-    showToast('Save failed — check connection and try again', 'error')
-  } finally {
-    window.isActionLockActive = false
-  }
+    if (!_adminUsersData) { showToast('No registry data to save', 'error'); return }
+    if (window.isActionLockActive) { showToast('Save already in progress', 'error'); return }
+    window.isActionLockActive = true
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const content = btoa(JSON.stringify(_adminUsersData, null, 2))
+        const response = await fetch(LAMBDA_URL + '?action=write', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + jwt, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, sha: window._lastUsersSha || undefined, message: 'chore: update users.json via admin panel', filePath: 'users.json' })
+        })
+        if (!response.ok) throw new Error('Write failed: ' + response.status)
+        const { sha } = await response.json()
+        if (sha) window._lastUsersSha = sha
+        showToast('Users and Workspaces saved to GitHub', 'success')
+    } catch (err) {
+        console.error('❌ adminSaveUsersJson:', err)
+        showToast('Save failed — check connection and try again', 'error')
+    } finally {
+        window.isActionLockActive = false
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 function renderAdminStructureTab() {
-  const projects = (window.UPDATE_DATA?.projects) || []
-  const registry = _adminUsersData || { projects: [] }
-  const activeWsId = window.ACTIVE_PROJECT_ID || 'default'
-  const activeWsName = (registry.projects || []).find(p => p.id === activeWsId)?.name || activeWsId
+    const projects = (window.UPDATE_DATA?.projects) || []
+    const registry = _adminUsersData || { projects: [] }
+    const activeWsId = window.ACTIVE_PROJECT_ID || 'default'
+    const activeWsName = (registry.projects || []).find(p => p.id === activeWsId)?.name || activeWsId
 
-  const projectRows = projects.map((proj, pi) => {
-    const trackCount = (proj.tracks || []).length
-    const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
+    const projectRows = projects.map((proj, pi) => {
+        const trackCount = (proj.tracks || []).length
+        const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
 
-    const trackRows = (proj.tracks || []).map((track, ti) => {
-      const trackId = track.id || String(ti)
-      const trackItemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
-      const colorDot = track.color ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${track.color};margin-right:5px"></span>` : ''
+        const trackRows = (proj.tracks || []).map((track, ti) => {
+            const trackId = track.id || String(ti)
+            const trackItemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
+            const colorDot = track.color ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${track.color};margin-right:5px"></span>` : ''
 
-      const subtracks = (track.subtracks || []).map((st, sti) => `
+            const subtracks = (track.subtracks || []).map((st, sti) => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#f8fafc;border-radius:4px;border:1px solid #f1f5f9">
           <span style="font-size:10px;color:#475569">+ ${st.name} <span style="color:#94a3b8">(${(st.items || []).length})</span></span>
           <div style="display:flex;gap:4px">
@@ -6372,7 +6376,7 @@ function renderAdminStructureTab() {
           </div>
         </div>`).join('')
 
-      return `
+            return `
         <div style="border:1px solid #e2e8f0;border-radius:6px;margin-bottom:5px;overflow:hidden">
           <div style="padding:7px 10px;display:flex;justify-content:space-between;align-items:center;background:#fafafa">
             <div style="display:flex;align-items:center">${colorDot}<span style="font-weight:700;font-size:11px;color:#1e293b">${track.name}</span><span style="color:#94a3b8;font-size:10px;margin-left:6px">${trackItemCount} items</span></div>
@@ -6393,9 +6397,9 @@ function renderAdminStructureTab() {
             <div id="admin-subtrack-form-${proj.id}-${trackId}" style="display:none;margin-top:5px"></div>
           </div>
         </div>`
-    }).join('')
+        }).join('')
 
-    return `
+        return `
       <div style="border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;overflow:hidden;background:white">
         <div style="padding:10px 14px;background:#f8fafc;display:flex;justify-content:space-between;align-items:center">
           <div style="display:flex;align-items:center;gap:8px">
@@ -6419,9 +6423,9 @@ function renderAdminStructureTab() {
           <div id="admin-track-add-form-${proj.id}" style="display:none;margin-top:6px"></div>
         </div>
       </div>`
-  }).join('')
+    }).join('')
 
-  return `
+    return `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
         <div style="font-size:11px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em">Projects</div>
@@ -6439,10 +6443,10 @@ function renderAdminStructureTab() {
 }
 
 function adminAddProject() {
-  const el = document.getElementById('admin-add-project-form')
-  if (!el) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-add-project-form')
+    if (!el) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="background:#f8fafc;border:1.5px solid #a7f3d0;border-radius:8px;padding:14px">
       <div style="font-size:10px;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Add Project</div>
       <div style="margin-bottom:8px">
@@ -6457,23 +6461,23 @@ function adminAddProject() {
 }
 
 function adminSaveNewProject() {
-  const name = (document.getElementById('admin-new-proj-name')?.value || '').trim()
-  if (!name) { showToast('Project name is required', 'error'); return }
-  const id = 'proj-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now()
-  const newProject = { id, name, tracks: [] }
-  if (!window.UPDATE_DATA.projects) window.UPDATE_DATA.projects = []
-  window.UPDATE_DATA.projects.push(newProject)
-  renderAdminView()
-  showToast('Project added — click Save to persist', 'info')
+    const name = (document.getElementById('admin-new-proj-name')?.value || '').trim()
+    if (!name) { showToast('Project name is required', 'error'); return }
+    const id = 'proj-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now()
+    const newProject = { id, name, tracks: [] }
+    if (!window.UPDATE_DATA.projects) window.UPDATE_DATA.projects = []
+    window.UPDATE_DATA.projects.push(newProject)
+    renderAdminView()
+    showToast('Project added — click Save to persist', 'info')
 }
 
 function adminEditProjectInline(projectId) {
-  const el = document.getElementById('admin-project-form-' + projectId)
-  if (!el) return
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  if (!proj) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-project-form-' + projectId)
+    if (!el) return
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    if (!proj) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:flex-end">
       <div>
         <label style="display:block;font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px">Project Name</label>
@@ -6487,28 +6491,28 @@ function adminEditProjectInline(projectId) {
 }
 
 function adminSaveProjectEdit(projectId) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  if (!proj) return
-  proj.name = (document.getElementById('admin-edit-proj-name-' + projectId)?.value || '').trim() || proj.name
-  renderAdminView()
-  showToast('Project updated — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    if (!proj) return
+    proj.name = (document.getElementById('admin-edit-proj-name-' + projectId)?.value || '').trim() || proj.name
+    renderAdminView()
+    showToast('Project updated — click Save to persist', 'info')
 }
 
 function adminDeleteProject(projectId) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  if (!proj) return
-  const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
-  if (!confirm('Delete project "' + proj.name + '"? This will permanently remove ' + itemCount + ' items, all tracks, and all subtracks within it.')) return
-  window.UPDATE_DATA.projects = (window.UPDATE_DATA.projects || []).filter(p => p.id !== projectId)
-  renderAdminView()
-  showToast('Project deleted — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    if (!proj) return
+    const itemCount = (proj.tracks || []).reduce((sum, t) => sum + (t.subtracks || []).reduce((s2, st) => s2 + (st.items || []).length, 0), 0)
+    if (!confirm('Delete project "' + proj.name + '"? This will permanently remove ' + itemCount + ' items, all tracks, and all subtracks within it.')) return
+    window.UPDATE_DATA.projects = (window.UPDATE_DATA.projects || []).filter(p => p.id !== projectId)
+    renderAdminView()
+    showToast('Project deleted — click Save to persist', 'info')
 }
 
 function adminAddTrack(projectId) {
-  const el = document.getElementById('admin-track-add-form-' + projectId)
-  if (!el) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-track-add-form-' + projectId)
+    if (!el) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px">
       <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:flex-end">
         <div>
@@ -6526,26 +6530,26 @@ function adminAddTrack(projectId) {
 }
 
 function adminSaveNewTrack(projectId) {
-  const name = (document.getElementById('admin-new-track-name-' + projectId)?.value || '').trim()
-  if (!name) { showToast('Track name is required', 'error'); return }
-  const color = document.getElementById('admin-new-track-color-' + projectId)?.value || '#3b82f6'
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  if (!proj) return
-  const id = 't-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()
-  if (!proj.tracks) proj.tracks = []
-  proj.tracks.push({ id, name, color, subtracks: [] })
-  renderAdminView()
-  showToast('Track added — click Save to persist', 'info')
+    const name = (document.getElementById('admin-new-track-name-' + projectId)?.value || '').trim()
+    if (!name) { showToast('Track name is required', 'error'); return }
+    const color = document.getElementById('admin-new-track-color-' + projectId)?.value || '#3b82f6'
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    if (!proj) return
+    const id = 't-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now()
+    if (!proj.tracks) proj.tracks = []
+    proj.tracks.push({ id, name, color, subtracks: [] })
+    renderAdminView()
+    showToast('Track added — click Save to persist', 'info')
 }
 
 function adminEditTrackInline(projectId, trackId) {
-  const el = document.getElementById('admin-track-form-' + projectId + '-' + trackId)
-  if (!el) return
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
-  if (!track) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-track-form-' + projectId + '-' + trackId)
+    if (!el) return
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+    if (!track) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:flex-end">
       <div>
         <label style="display:block;font-size:9px;font-weight:700;color:#64748b;margin-bottom:2px">Track Name</label>
@@ -6563,32 +6567,32 @@ function adminEditTrackInline(projectId, trackId) {
 }
 
 function adminSaveTrackEdit(projectId, trackId) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
-  if (!track) return
-  track.name = (document.getElementById('admin-edit-track-name-' + projectId + '-' + trackId)?.value || '').trim() || track.name
-  track.color = document.getElementById('admin-edit-track-color-' + projectId + '-' + trackId)?.value || track.color
-  renderAdminView()
-  showToast('Track updated — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+    if (!track) return
+    track.name = (document.getElementById('admin-edit-track-name-' + projectId + '-' + trackId)?.value || '').trim() || track.name
+    track.color = document.getElementById('admin-edit-track-color-' + projectId + '-' + trackId)?.value || track.color
+    renderAdminView()
+    showToast('Track updated — click Save to persist', 'info')
 }
 
 function adminDeleteTrack(projectId, trackId) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  if (!proj) return
-  const track = (proj.tracks || []).find(t => (t.id || '') === trackId)
-  if (!track) return
-  const itemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
-  if (!confirm('Delete track "' + track.name + '"? This removes ' + itemCount + ' items and all its subtracks.')) return
-  proj.tracks = (proj.tracks || []).filter(t => (t.id || '') !== trackId)
-  renderAdminView()
-  showToast('Track deleted — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    if (!proj) return
+    const track = (proj.tracks || []).find(t => (t.id || '') === trackId)
+    if (!track) return
+    const itemCount = (track.subtracks || []).reduce((s, st) => s + (st.items || []).length, 0)
+    if (!confirm('Delete track "' + track.name + '"? This removes ' + itemCount + ' items and all its subtracks.')) return
+    proj.tracks = (proj.tracks || []).filter(t => (t.id || '') !== trackId)
+    renderAdminView()
+    showToast('Track deleted — click Save to persist', 'info')
 }
 
 function adminAddSubtrack(projectId, trackId) {
-  const el = document.getElementById('admin-subtrack-form-' + projectId + '-' + trackId)
-  if (!el) return
-  el.style.display = 'block'
-  el.innerHTML = `
+    const el = document.getElementById('admin-subtrack-form-' + projectId + '-' + trackId)
+    if (!el) return
+    el.style.display = 'block'
+    el.innerHTML = `
     <div style="display:flex;gap:5px;align-items:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:6px 8px">
       <input id="admin-new-subtrack-name-${projectId}-${trackId}" type="text" placeholder="e.g. Backlog" style="flex:1;padding:4px 6px;border:1px solid #bbf7d0;border-radius:3px;font-size:10px">
       <button onclick="adminSaveNewSubtrack('${projectId}','${trackId}')" style="padding:4px 8px;background:#166534;color:white;border:none;border-radius:3px;font-size:9px;font-weight:800;cursor:pointer">Add</button>
@@ -6597,50 +6601,50 @@ function adminAddSubtrack(projectId, trackId) {
 }
 
 function adminSaveNewSubtrack(projectId, trackId) {
-  const name = (document.getElementById('admin-new-subtrack-name-' + projectId + '-' + trackId)?.value || '').trim()
-  if (!name) { showToast('Subtrack name is required', 'error'); return }
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
-  if (!track) return
-  if (!track.subtracks) track.subtracks = []
-  track.subtracks.push({ name, items: [] })
-  renderAdminView()
-  showToast('Subtrack added — click Save to persist', 'info')
+    const name = (document.getElementById('admin-new-subtrack-name-' + projectId + '-' + trackId)?.value || '').trim()
+    if (!name) { showToast('Subtrack name is required', 'error'); return }
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+    if (!track) return
+    if (!track.subtracks) track.subtracks = []
+    track.subtracks.push({ name, items: [] })
+    renderAdminView()
+    showToast('Subtrack added — click Save to persist', 'info')
 }
 
 function adminRenameSubtrack(projectId, trackId, subtractIdx) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
-  if (!track) return
-  const st = (track.subtracks || [])[subtractIdx]
-  if (!st) return
-  const newName = prompt('Rename subtrack "' + st.name + '":', st.name)
-  if (!newName || !newName.trim()) return
-  st.name = newName.trim()
-  renderAdminView()
-  showToast('Subtrack renamed — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+    if (!track) return
+    const st = (track.subtracks || [])[subtractIdx]
+    if (!st) return
+    const newName = prompt('Rename subtrack "' + st.name + '":', st.name)
+    if (!newName || !newName.trim()) return
+    st.name = newName.trim()
+    renderAdminView()
+    showToast('Subtrack renamed — click Save to persist', 'info')
 }
 
 function adminDeleteSubtrack(projectId, trackId, subtractIdx) {
-  const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
-  const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
-  if (!track) return
-  const st = (track.subtracks || [])[subtractIdx]
-  if (!st) return
-  if (!confirm('Delete subtrack "' + st.name + '"? This removes ' + (st.items || []).length + ' items permanently.')) return
-  track.subtracks.splice(subtractIdx, 1)
-  renderAdminView()
-  showToast('Subtrack deleted — click Save to persist', 'info')
+    const proj = (window.UPDATE_DATA?.projects || []).find(p => p.id === projectId)
+    const track = proj ? (proj.tracks || []).find(t => (t.id || '') === trackId) : null
+    if (!track) return
+    const st = (track.subtracks || [])[subtractIdx]
+    if (!st) return
+    if (!confirm('Delete subtrack "' + st.name + '"? This removes ' + (st.items || []).length + ' items permanently.')) return
+    track.subtracks.splice(subtractIdx, 1)
+    renderAdminView()
+    showToast('Subtrack deleted — click Save to persist', 'info')
 }
 
 async function adminSaveStructure() {
-  try {
-    await saveToGithub(window.UPDATE_DATA)
-    showToast('Structure saved to GitHub', 'success')
-    renderDashboard()
-  } catch (err) {
-    console.error('❌ adminSaveStructure:', err)
-  }
+    try {
+        await saveToGithub(window.UPDATE_DATA)
+        showToast('Structure saved to GitHub', 'success')
+        renderDashboard()
+    } catch (err) {
+        console.error('❌ adminSaveStructure:', err)
+    }
 }
 
 async function deleteProjectDataFile(projectId) {

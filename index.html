@@ -46,7 +46,7 @@
                             window.UPDATE_DATA = JSON.parse(cachedData);
                             console.log('✅ Session Synced: Prioritizing local data state');
                             initDashboardOrWait();
-                            return; 
+                            return;
                         } catch (e) {
                             console.error('LocalStorage Data Corrupt, falling back to data.json');
                         }
@@ -110,7 +110,7 @@
         <script src="app.js?v=04122"></script>
         <script>
             // Phase 6 Reset: Early-boot functional mapping
-            window.openAddItemModal = function(type) {
+            window.openAddItemModal = function (type) {
                 if (typeof addItem === 'function') {
                     addItem(type);
                 } else if (typeof openAddItem === 'function') {
@@ -141,7 +141,8 @@
         <div id="guide-panel">
             <!-- Populated by meeting-guide.js -->
         </div>
-        <button id="guide-fab" onclick="typeof openMeetingGuide==='function'&&openMeetingGuide()" title="Meeting Co-Pilot — step-by-step guide for any meeting">
+        <button id="guide-fab" onclick="typeof openMeetingGuide==='function'&&openMeetingGuide()"
+            title="Meeting Co-Pilot — step-by-step guide for any meeting">
             <span style="font-size:16px">🧭</span> Guide Me
         </button>
 
@@ -151,10 +152,9 @@
             <div id="cmd-palette-inner">
                 <div id="cmd-palette-search-wrap">
                     <span id="cmd-palette-icon" aria-hidden="true">⌘</span>
-                    <input id="cmd-palette-input" type="text" placeholder="Search views, items, epics… or type > for actions"
-                        autocomplete="off" spellcheck="false"
-                        oninput="onCmdPaletteInput(this.value)"
-                        onkeydown="onCmdPaletteKey(event)">
+                    <input id="cmd-palette-input" type="text"
+                        placeholder="Search views, items, epics… or type > for actions" autocomplete="off"
+                        spellcheck="false" oninput="onCmdPaletteInput(this.value)" onkeydown="onCmdPaletteKey(event)">
                 </div>
                 <div id="cmd-palette-results" role="listbox" aria-label="Results"></div>
             </div>
@@ -165,7 +165,8 @@
             onclick="if(event.target===this) closeAdminPanel()">
             <div class="modal-inner" style="max-width:760px">
                 <div class="modal-header">
-                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Admin — Settings & Management</h2>
+                    <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Admin — Settings &
+                        Management</h2>
                     <button onclick="closeAdminPanel()" aria-label="Close admin panel"
                         class="text-slate-400 hover:text-slate-600 transition-colors">
                         <span class="text-2xl">&times;</span>
@@ -206,13 +207,16 @@
                 <div class="app-bar-left">
                     <div class="kp-logo">KP</div>
                     <div class="nav-breadcrumb-chain">
-                        <select id="team-switcher" class="nav-select" onchange="onTeamSwitcherChange(this.value)" title="Switch team" aria-label="Switch team"></select>
+                        <select id="team-switcher" class="nav-select" onchange="onTeamSwitcherChange(this.value)"
+                            title="Switch team" aria-label="Switch team"></select>
                         <span class="nav-chain-sep">/</span>
-                        <select id="project-filter" class="nav-select" onchange="onProjectFilterChange()" title="Filter by team" aria-label="Filter by team">
+                        <select id="project-filter" class="nav-select" onchange="onProjectFilterChange()"
+                            title="Filter by team" aria-label="Filter by team">
                             <option value="">All Teams</option>
                         </select>
                         <span class="nav-chain-sep">/</span>
-                        <select id="global-team-filter" class="nav-select" onchange="onProjectChange()" title="Filter by track" aria-label="Filter by track">
+                        <select id="global-team-filter" class="nav-select" onchange="onProjectChange()"
+                            title="Filter by track" aria-label="Filter by track">
                             <option value="">All Tracks</option>
                         </select>
                     </div>
@@ -266,7 +270,8 @@
             <div id="strategy-backdrop"
                 class="hidden fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[90] transition-opacity duration-300">
             </div>
-            <div id="workflow-nav-container" class="hidden fixed inset-x-0 z-[100] flex justify-center p-4" style="top:92px">
+            <div id="workflow-nav-container" class="hidden fixed inset-x-0 z-[100] flex justify-center p-4"
+                style="top:92px">
             </div>
 
 
@@ -356,13 +361,13 @@
                         // Decode payload (no verify here — Lambda verifies on read)
                         const parts = cachedSession.split('.');
                         if (parts.length === 3) {
-                            const claims = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+                            const claims = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
                             if (claims.exp > Math.floor(Date.now() / 1000)) {
                                 // Token still valid — restore session from claims
                                 window.CURRENT_USER = { name: claims.name, grants: claims.grants || [] };
                                 window.PROJECT_REGISTRY = (claims.grants || []).map(g => ({
                                     id: g.projectId,
-                                    name: g.name || (g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId),
+                                    name: g.name || (g.projectId === 'default' ? 'Core Platform Engineering' : g.projectId),
                                     filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
                                     maxMode: g.mode
                                 }));
@@ -437,7 +442,7 @@
                     window.CURRENT_USER = { name: authResult.name, grants: authResult.grants || [] };
                     window.PROJECT_REGISTRY = (authResult.grants || []).map(g => ({
                         id: g.projectId,
-                        name: g.name || (g.projectId === 'default' ? 'Khyaal Engineering' : g.projectId),
+                        name: g.name || (g.projectId === 'default' ? 'Core Platform Engineering' : g.projectId),
                         filePath: g.projectId !== 'default' ? `data-${g.projectId}.json` : 'data.json',
                         maxMode: g.mode
                     }));
@@ -497,24 +502,34 @@
     </div> <!-- Close p-3 md:p-6 -->
 
     <!-- Keyboard Shortcut Reference Sheet (? key) -->
-    <div id="kbd-modal-overlay" class="kbd-modal-overlay" onclick="if(event.target===this)closeKbdModal()" role="dialog" aria-label="Keyboard Shortcuts" aria-modal="true">
+    <div id="kbd-modal-overlay" class="kbd-modal-overlay" onclick="if(event.target===this)closeKbdModal()" role="dialog"
+        aria-label="Keyboard Shortcuts" aria-modal="true">
         <div class="kbd-modal">
             <div class="kbd-modal-header">
                 <span class="kbd-modal-title">Keyboard Shortcuts</span>
                 <button class="kbd-close-btn" onclick="closeKbdModal()" aria-label="Close">✕</button>
             </div>
             <div class="kbd-section-title">Navigation</div>
-            <div class="kbd-row"><span class="kbd-desc">Views 1–9, 0</span><span class="kbd-keys"><kbd>1</kbd><span style="color:#94a3b8;font-size:0.7rem">–</span><kbd>9</kbd><kbd>0</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Command palette</span><span class="kbd-keys"><kbd>⌘</kbd><kbd>K</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Focus search</span><span class="kbd-keys"><kbd>/</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Keyboard shortcuts</span><span class="kbd-keys"><kbd>?</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Views 1–9, 0</span><span class="kbd-keys"><kbd>1</kbd><span
+                        style="color:#94a3b8;font-size:0.7rem">–</span><kbd>9</kbd><kbd>0</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Command palette</span><span
+                    class="kbd-keys"><kbd>⌘</kbd><kbd>K</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Focus search</span><span class="kbd-keys"><kbd>/</kbd></span>
+            </div>
+            <div class="kbd-row"><span class="kbd-desc">Keyboard shortcuts</span><span
+                    class="kbd-keys"><kbd>?</kbd></span></div>
             <div class="kbd-section-title">Persona</div>
-            <div class="kbd-row"><span class="kbd-desc">PM mode</span><span class="kbd-keys"><kbd>Alt</kbd><kbd>1</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Dev mode</span><span class="kbd-keys"><kbd>Alt</kbd><kbd>2</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Exec mode</span><span class="kbd-keys"><kbd>Alt</kbd><kbd>3</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">PM mode</span><span
+                    class="kbd-keys"><kbd>Alt</kbd><kbd>1</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Dev mode</span><span
+                    class="kbd-keys"><kbd>Alt</kbd><kbd>2</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Exec mode</span><span
+                    class="kbd-keys"><kbd>Alt</kbd><kbd>3</kbd></span></div>
             <div class="kbd-section-title">CMS (Edit mode only)</div>
-            <div class="kbd-row"><span class="kbd-desc">Save item</span><span class="kbd-keys"><kbd>⌘</kbd><kbd>S</kbd></span></div>
-            <div class="kbd-row"><span class="kbd-desc">Close modal</span><span class="kbd-keys"><kbd>Esc</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Save item</span><span
+                    class="kbd-keys"><kbd>⌘</kbd><kbd>S</kbd></span></div>
+            <div class="kbd-row"><span class="kbd-desc">Close modal</span><span class="kbd-keys"><kbd>Esc</kbd></span>
+            </div>
         </div>
     </div>
 
