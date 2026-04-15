@@ -2264,7 +2264,21 @@ function renderSprintView() {
             </div>
         ` : '';
 
-        const sprintOKR = UPDATE_DATA.metadata.okrs?.find(o => o.id === s.linkedOKR);
+        // Select OKR for the banner: Prioritize track-exclusive OKRs over shared/global ones
+        let sprintOKR = null;
+        if (activeTeam && UPDATE_DATA.metadata?.okrs) {
+            const trackExclusiveOKRs = UPDATE_DATA.metadata.okrs.filter(o => 
+                isTrackMatch(o, activeTeam) && 
+                (Array.isArray(o.tracks) && o.tracks.length === 1)
+            );
+            if (trackExclusiveOKRs.length > 0) sprintOKR = trackExclusiveOKRs[0];
+        }
+
+        if (!sprintOKR) {
+            const sprintOKRRaw = (UPDATE_DATA.metadata?.okrs || []).find(o => o.id === s.linkedOKR);
+            sprintOKR = (sprintOKRRaw && isTrackMatch(sprintOKRRaw, activeTeam)) ? sprintOKRRaw : sprintOKRRaw;
+            if (!sprintOKR && sprintOKRRaw) sprintOKR = sprintOKRRaw;
+        }
 
         // Compute which release(s) this sprint feeds into, via items' releasedIn field
         const releases = UPDATE_DATA.metadata?.releases || [];
@@ -2609,9 +2623,17 @@ function renderReleasesView() {
 function findItemsByMetadataId(key, value) {
     const found = [];
     const data = window.UPDATE_DATA || { tracks: [] };
-    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
+    const target = activeTeam ? activeTeam.toLowerCase().trim() : null;
+
     data.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.id) return
+        // Robust track matching for traversal
+        if (target) {
+            const tId = (track.id || "").toLowerCase();
+            const tName = (track.name || "").toLowerCase();
+            if (tId !== target && tName !== target && !tName.includes(target) && !target.includes(tId)) return;
+        }
+
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 if (item[key] === value) {
@@ -2626,6 +2648,7 @@ function findItemsByMetadataId(key, value) {
 function renderGroupedItems(items, viewPrefix = 'main') {
     if (items.length === 0) return '<div class="text-center py-8 text-slate-400 italic text-sm">No items assigned yet.</div>';
 
+    const activeTeamId = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
     const grouped = {};
     items.forEach(i => {
         if (!grouped[i.trackName]) grouped[i.trackName] = { theme: i.trackTheme, items: [] };
@@ -2635,12 +2658,20 @@ function renderGroupedItems(items, viewPrefix = 'main') {
     return Object.keys(grouped).map(trackName => {
         const group = grouped[trackName];
         const color = themeColors[group.theme] || '#1e293b';
+        
+        // Hide track headers if we are already filtered to a specific team
+        const headerHtml = !activeTeamId ? `
+            <div class="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white rounded-t-lg" style="background: ${color}">
+                ${trackName}
+            </div>
+        ` : '';
+        const borderClass = !activeTeamId ? 'border border-t-0' : 'border';
+        const roundedClass = !activeTeamId ? 'rounded-b-lg' : 'rounded-lg';
+
         return `
             <div class="mb-4 last:mb-0">
-                <div class="px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-white rounded-t-lg" style="background: ${color}">
-                    ${trackName}
-                </div>
-                <div class="border border-t-0 p-0 rounded-b-lg overflow-hidden">
+                ${headerHtml}
+                <div class="${borderClass} p-0 ${roundedClass} overflow-hidden shadow-sm">
                     ${group.items.map(item => renderItem(item, viewPrefix, item.trackIndex, item.subtrackIndex, item.itemIndex)).join('')}
                 </div>
             </div>

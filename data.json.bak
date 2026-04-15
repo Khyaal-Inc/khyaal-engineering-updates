@@ -384,40 +384,14 @@
     ],
     "sprints": [
       {
-        "id": "sprint-1-platform",
+        "id": "sprint-1",
         "name": "Foundation Sprint",
         "startDate": "2026-02-01",
         "endDate": "2026-02-14",
-        "goal": "Establish platform core and foundational libraries",
+        "goal": "Establish platform foundation and security baseline",
         "tracks": [
-          "platform"
-        ],
-        "plannedPoints": 45,
-        "completedPoints": 38,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-platform"
-      },
-      {
-        "id": "sprint-1-pulse",
-        "name": "Data Foundation Sprint",
-        "startDate": "2026-02-01",
-        "endDate": "2026-02-14",
-        "goal": "Initialize analytics engine and behavioral tracking foundation",
-        "tracks": [
-          "pulse"
-        ],
-        "plannedPoints": 45,
-        "completedPoints": 38,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-platform"
-      },
-      {
-        "id": "sprint-1-devops",
-        "name": "Infrastructure Foundation",
-        "startDate": "2026-02-01",
-        "endDate": "2026-02-14",
-        "goal": "Setup core CI/CD pipelines and cloud base resources",
-        "tracks": [
+          "platform",
+          "pulse",
           "devops"
         ],
         "plannedPoints": 45,
@@ -440,41 +414,14 @@
         "linkedOKR": "okr-q1-2026-platform"
       },
       {
-        "id": "sprint-3-platform",
-        "name": "Security Hardening",
+        "id": "sprint-3",
+        "name": "Security & AI Sprint",
         "startDate": "2026-03-01",
         "endDate": "2026-03-14",
-        "goal": "Identify and patch critical vulnerabilities, VAPT remediation",
+        "goal": "Complete security hardening, VAPT remediation, and initiate AI Sales Agent development",
         "tracks": [
-          "platform"
-        ],
-        "plannedPoints": 52,
-        "completedPoints": 48,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-platform"
-      },
-      {
-        "id": "sprint-3-pulse",
-        "name": "AI Intelligence Launch",
-        "startDate": "2026-03-01",
-        "endDate": "2026-03-14",
-        "goal": "Initiate AI Sales Agent and recommendation engine backbone",
-        "tracks": [
+          "platform",
           "pulse"
-        ],
-        "plannedPoints": 52,
-        "completedPoints": 48,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-platform"
-      },
-      {
-        "id": "sprint-3-devops",
-        "name": "Compliance Hardening",
-        "startDate": "2026-03-01",
-        "endDate": "2026-03-14",
-        "goal": "Implement SOC2/compliance automation checks",
-        "tracks": [
-          "devops"
         ],
         "plannedPoints": 52,
         "completedPoints": 48,
@@ -496,26 +443,13 @@
         "linkedOKR": "okr-q1-2026-analytics"
       },
       {
-        "id": "sprint-5-platform",
-        "name": "Platform Integration",
+        "id": "sprint-5",
+        "name": "Integration Sprint",
         "startDate": "2026-03-29",
         "endDate": "2026-04-11",
-        "goal": "Integrate cross-module components for v2.5 launch",
+        "goal": "Ship personalization engine, recommendation features, and complete Pulse Gold Tier analytics launch",
         "tracks": [
-          "platform"
-        ],
-        "plannedPoints": 60,
-        "completedPoints": 55,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-analytics"
-      },
-      {
-        "id": "sprint-5-pulse",
-        "name": "Analytics Integration",
-        "startDate": "2026-03-29",
-        "endDate": "2026-04-11",
-        "goal": "Deep-link behavioral insights into operator dashboards",
-        "tracks": [
+          "platform",
           "pulse"
         ],
         "plannedPoints": 60,
@@ -524,40 +458,13 @@
         "linkedOKR": "okr-q1-2026-analytics"
       },
       {
-        "id": "sprint-5-devops",
-        "name": "CI/CD Integration",
-        "startDate": "2026-03-29",
-        "endDate": "2026-04-11",
-        "goal": "Blue-green deployment automation and rollback safety",
-        "tracks": [
-          "devops"
-        ],
-        "plannedPoints": 60,
-        "completedPoints": 55,
-        "status": "completed",
-        "linkedOKR": "okr-q1-2026-analytics"
-      },
-      {
-        "id": "sprint-6-platform",
-        "name": "Community Bug Fixes",
+        "id": "sprint-6",
+        "name": "Community Bug Fix Sprint",
         "startDate": "2026-04-12",
         "endDate": "2026-04-25",
-        "goal": "Resolve all critical community bugs, fix 50A50 issues",
+        "goal": "Resolve all critical community bugs, fix 50A50 issues, ship \u20b999 plan on homepage, complete Badminton landing page",
         "tracks": [
-          "platform"
-        ],
-        "plannedPoints": 55,
-        "completedPoints": 0,
-        "status": "active",
-        "linkedOKR": "okr-q2-2026-reliability-excellence"
-      },
-      {
-        "id": "sprint-6-pulse",
-        "name": "v3.1 Personalization Launch",
-        "startDate": "2026-04-12",
-        "endDate": "2026-04-25",
-        "goal": "Ship personalized homepage and community event recommendations",
-        "tracks": [
+          "platform",
           "pulse"
         ],
         "plannedPoints": 55,
@@ -566,55 +473,14 @@
         "linkedOKR": "okr-q2-2026-reliability-excellence"
       },
       {
-        "id": "sprint-6-devops",
-        "name": "Zero-Down Time Fixes",
-        "startDate": "2026-04-12",
-        "endDate": "2026-04-25",
-        "goal": "Database migration script safety and optimization",
-        "tracks": [
-          "devops"
-        ],
-        "plannedPoints": 55,
-        "completedPoints": 0,
-        "status": "active",
-        "linkedOKR": "okr-q2-2026-reliability-excellence"
-      },
-      {
-        "id": "sprint-7-platform",
-        "name": "Feature Delivery",
+        "id": "sprint-7",
+        "name": "Feature Delivery Sprint",
         "startDate": "2026-04-26",
         "endDate": "2026-05-09",
-        "goal": "Deliver priority membership features for Q3 roadmap",
+        "goal": "Ship Offline Events server API, Voice of Kalinga landing page, 50A50 app upload server side, CMS membership details page",
         "tracks": [
-          "platform"
-        ],
-        "plannedPoints": 55,
-        "completedPoints": 0,
-        "status": "planned",
-        "linkedOKR": "okr-q2-2026-growth-impact"
-      },
-      {
-        "id": "sprint-7-pulse",
-        "name": "AI Feature Rollout",
-        "startDate": "2026-04-26",
-        "endDate": "2026-05-09",
-        "goal": "Scale personalization engine to 100% of user base",
-        "tracks": [
+          "platform",
           "pulse"
-        ],
-        "plannedPoints": 55,
-        "completedPoints": 0,
-        "status": "planned",
-        "linkedOKR": "okr-q2-2026-growth-impact"
-      },
-      {
-        "id": "sprint-7-devops",
-        "name": "Scalability Delivery",
-        "startDate": "2026-04-26",
-        "endDate": "2026-05-09",
-        "goal": "Kubernetes auto-scaling fine-tuning for high load",
-        "tracks": [
-          "devops"
         ],
         "plannedPoints": 55,
         "completedPoints": 0,
@@ -995,7 +861,7 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11",
               "tracks": [
@@ -1030,7 +896,7 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11",
               "tracks": [
@@ -1132,7 +998,7 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "3M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "due": "2026-04-11",
               "tracks": [
@@ -1162,7 +1028,7 @@
               "due": "2026-02-28",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-website-8",
               "tags": [
@@ -1292,7 +1158,7 @@
               "due": "2026-02-16",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-website-12",
               "tags": [],
@@ -1357,7 +1223,7 @@
               "due": "2026-03-08",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-platform",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "platform-website-14",
               "tracks": [
@@ -1390,7 +1256,7 @@
               "due": "2026-03-10",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-platform",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "platform-website-15",
               "tracks": [
@@ -1420,7 +1286,7 @@
               "startDate": "2026-03-15",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-platform",
+              "sprintId": "sprint-3",
               "id": "platform-website-16",
               "tags": [],
               "tracks": [
@@ -1482,7 +1348,7 @@
               "due": "2026-04-03",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1515,7 +1381,7 @@
               "due": "2026-04-09",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1549,7 +1415,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1583,7 +1449,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1615,7 +1481,7 @@
               "due": "2026-04-06",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1648,7 +1514,7 @@
               "due": "2026-04-08",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -1678,7 +1544,7 @@
               "due": "2026-04-17",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -1892,7 +1758,7 @@
               "due": "2026-02-14",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-3",
               "tags": [],
@@ -2050,7 +1916,7 @@
               "due": "2026-03-07",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-platform",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "platform-50a50-web-8",
               "tracks": [
@@ -2112,7 +1978,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2145,7 +2011,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2178,7 +2044,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2209,7 +2075,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2240,7 +2106,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -2271,7 +2137,7 @@
               "due": "2026-05-08",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -2410,7 +2276,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2443,7 +2309,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2476,7 +2342,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2509,7 +2375,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2573,7 +2439,7 @@
               "due": "2026-02-17",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-0",
               "tags": [],
@@ -2728,7 +2594,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2760,7 +2626,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2793,7 +2659,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2826,7 +2692,7 @@
               "due": "",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2860,7 +2726,7 @@
               "due": "",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -2892,7 +2758,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -2924,7 +2790,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -3052,7 +2918,7 @@
               "due": "2026-02-15",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-7",
               "tags": [],
@@ -3175,7 +3041,7 @@
               "due": "2026-02-14",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-1-platform",
+              "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-11",
               "tags": [],
@@ -3331,7 +3197,7 @@
               "due": "2026-03-09",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-platform",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "platform-api-16",
               "tracks": [
@@ -3364,7 +3230,7 @@
               "epicId": "community-bug-resolution",
               "id": "platform-api-17",
               "due": "2026-06-30",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -3393,7 +3259,7 @@
               "id": "platform-api-18",
               "due": "2026-07-01",
               "tags": [],
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -3480,7 +3346,7 @@
               "due": "2026-04-02",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-5-platform",
+              "sprintId": "sprint-5",
               "releasedIn": "v3.1-personalization-engine",
               "tracks": [
                 "platform"
@@ -3512,7 +3378,7 @@
               "due": "2026-04-02",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-5-platform",
+              "sprintId": "sprint-5",
               "releasedIn": "v3.1-personalization-engine",
               "tracks": [
                 "platform"
@@ -3545,7 +3411,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -3577,7 +3443,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -3611,7 +3477,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -3645,7 +3511,7 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6-platform",
+              "sprintId": "sprint-6",
               "tracks": [
                 "platform"
               ]
@@ -3707,7 +3573,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -3738,7 +3604,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -3771,7 +3637,7 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7-platform",
+              "sprintId": "sprint-7",
               "tracks": [
                 "platform"
               ]
@@ -3867,7 +3733,7 @@
               "due": "2026-04-02",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-5-platform",
+              "sprintId": "sprint-5",
               "releasedIn": "v3.1-personalization-engine",
               "tracks": [
                 "platform"
@@ -4450,7 +4316,7 @@
               "due": "2026-03-03",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-analytics-segment-4",
@@ -4580,7 +4446,7 @@
               "due": "2026-03-05",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-journey-3",
@@ -4641,7 +4507,7 @@
               "due": "2026-03-07",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-journey-5",
@@ -4672,7 +4538,7 @@
               "due": "2026-03-04",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-journey-6",
@@ -4703,7 +4569,7 @@
               "due": "2026-03-08",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-journey-7",
@@ -4734,7 +4600,7 @@
               "due": "2026-03-10",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "id": "pulse-journey-8",
@@ -5134,7 +5000,7 @@
               "due": "2026-03-05",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "pulse-ai-agents-6",
               "tracks": [
@@ -5169,7 +5035,7 @@
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
               "id": "pulse-ai-agents-7",
-              "sprintId": "sprint-6-pulse",
+              "sprintId": "sprint-6",
               "tracks": [
                 "pulse"
               ]
@@ -5200,7 +5066,7 @@
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
               "id": "pulse-ai-agents-8",
-              "sprintId": "sprint-6-pulse",
+              "sprintId": "sprint-6",
               "tracks": [
                 "pulse"
               ]
@@ -5451,7 +5317,7 @@
               ],
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-6-pulse",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "tracks": [
                 "pulse"
@@ -5486,7 +5352,7 @@
               ],
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-6-pulse",
+              "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
               "tracks": [
                 "pulse"
@@ -5555,7 +5421,7 @@
               "due": "2026-03-10",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "pulse-cdp-9",
               "tracks": [
@@ -5593,7 +5459,7 @@
               "due": "2026-03-10",
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
-              "sprintId": "sprint-3-pulse",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [
                 "cms"
@@ -5665,7 +5531,7 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
-              "sprintId": "sprint-5-pulse",
+              "sprintId": "sprint-5",
               "releasedIn": "v3.1-personalization-engine",
               "tags": [],
               "tracks": [
@@ -5833,7 +5699,7 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "1M",
               "epicId": "infrastructure-optimization",
-              "sprintId": "sprint-3-devops",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
               "tracks": [
@@ -5992,7 +5858,7 @@
               "due": "2026-03-12",
               "planningHorizon": "1M",
               "epicId": "infrastructure-optimization",
-              "sprintId": "sprint-3-devops",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "id": "devops-infra-6",
               "tracks": [
@@ -6122,7 +5988,7 @@
               "due": "2026-03-05",
               "planningHorizon": "1M",
               "epicId": "infrastructure-optimization",
-              "sprintId": "sprint-3-devops",
+              "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [
                 "observability"
