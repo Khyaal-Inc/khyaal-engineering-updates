@@ -28,7 +28,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     },
     {
@@ -41,7 +41,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     },
     {
@@ -54,7 +54,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     },
     {
@@ -67,7 +67,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     },
     {
@@ -80,7 +80,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     },
     {
@@ -129,7 +129,7 @@
           "projectId": "default",
           "name": "Core Platform Engineering",
           "mode": "dev"
-        },
+        }
       ]
     }
   ],
