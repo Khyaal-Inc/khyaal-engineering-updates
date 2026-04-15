@@ -385,7 +385,7 @@ function _buildSpSettingsTab() {
         </div>`
 }
 
-async function _buildSpAdminTab() {
+function _buildSpAdminTab() {
     const el = document.getElementById('settings-panel-body')
     if (!el) return
     const isPm = (window.CURRENT_USER?.grants || []).some(g => g.mode === 'pm')
@@ -396,28 +396,6 @@ async function _buildSpAdminTab() {
         </div>`
         return
     }
-
-    el.innerHTML = `<div class="text-slate-400 text-sm text-center py-8">Loading…</div>`
-
-    try {
-        const jwt = localStorage.getItem('khyaal_site_auth')
-        const res = await fetch(`${LAMBDA_URL}?action=read&projectId=default&filePath=users.json`, {
-            headers: { 'Authorization': `Bearer ${jwt}` }
-        })
-        if (!res.ok) throw new Error(`Read failed: ${res.status}`)
-        const { data, sha } = await res.json()
-        _adminUsersData = data
-        _adminUsersSha = sha || null
-        if (Array.isArray(data?.projects) && data.projects.length > 0) {
-            window.PROJECT_REGISTRY = data.projects
-            renderTeamSwitcher()
-        }
-    } catch (err) {
-        console.error('❌ [settings admin] load users:', err)
-        el.innerHTML = `<div class="text-red-500 text-sm text-center py-8">Failed to load: ${err.message}</div>`
-        return
-    }
-
     _renderSpAdminBody(el)
 }
 
@@ -1602,8 +1580,14 @@ async function adminLoadUsersRegistry() {
     })
     if (!response.ok) return
     const { data, sha } = await response.json()
-    if (data) window.PROJECT_REGISTRY = data
-    if (sha) window._lastUsersSha = sha
+    if (data) {
+      _adminUsersData = data
+      _adminUsersSha = sha || null
+      if (Array.isArray(data.projects) && data.projects.length > 0) {
+        window.PROJECT_REGISTRY = data.projects
+        renderTeamSwitcher()
+      }
+    }
   } catch (err) {
     console.warn('⚠️ adminLoadUsersRegistry: could not load users.json', err)
   }
@@ -5935,6 +5919,12 @@ function renderAdminView() {
     return
   }
 
+  if (!_adminUsersData) {
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">Loading admin data…</div>`
+    adminLoadUsersRegistry().then(() => renderAdminView())
+    return
+  }
+
   const usersActive = _adminActiveTab === 'users'
   const structActive = _adminActiveTab === 'structure'
 
@@ -5975,7 +5965,7 @@ function adminSwitchTab(tab) {
 }
 
 function renderAdminUsersTab() {
-  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  const registry = _adminUsersData || { users: [], projects: [] }
   const users = registry.users || []
   const workspaces = registry.projects || []
   const activeWsId = window.ACTIVE_PROJECT_ID || ''
@@ -6040,7 +6030,7 @@ function renderAdminUsersTab() {
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isActive ? '#6366f1' : '#cbd5e1'}"></span>
             <span style="font-weight:800;color:${isActive ? '#312e81' : '#475569'};font-size:12px">${ws.name}</span>
             ${isActive ? '<span style="background:#6366f1;color:white;border-radius:8px;padding:1px 7px;font-size:9px;font-weight:900">ACTIVE</span>' : ''}
-            <span style="font-size:10px;color:#94a3b8">${ws.dataFile || ws.id + '.json'}</span>
+            <span style="font-size:10px;color:#94a3b8">${ws.dataFile || ws.filePath || ws.id + '.json'}</span>
           </div>
           <div style="display:flex;gap:6px">
             ${!isActive ? `<button onclick="adminSwitchWorkspace('${ws.id}')" style="padding:3px 10px;background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Switch</button>` : ''}
@@ -6129,19 +6119,18 @@ async function adminSaveNewUser() {
   const email = (document.getElementById('admin-new-user-email')?.value || '').trim()
   const password = (document.getElementById('admin-new-user-password')?.value || '').trim()
   if (!id || !name || !password) { showToast('User ID, name, and password are required', 'error'); return }
-  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
-  if ((registry.users || []).find(u => u.id === id)) { showToast('User ID already exists', 'error'); return }
+  if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
+  if ((_adminUsersData.users || []).find(u => u.id === id)) { showToast('User ID already exists', 'error'); return }
   const passwordHash = await sha256(password)
   const newUser = { id, name, email, passwordHash, grants: [] }
-  if (!registry.users) registry.users = []
-  registry.users.push(newUser)
-  window.PROJECT_REGISTRY = registry
+  if (!_adminUsersData.users) _adminUsersData.users = []
+  _adminUsersData.users.push(newUser)
   renderAdminView()
   showToast('User added — click Save to persist', 'info')
 }
 
 function adminEditUserInline(userId) {
-  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const registry = _adminUsersData || { users: [] }
   const user = (registry.users || []).find(u => u.id === userId)
   if (!user) return
   const detailEl = document.getElementById('admin-user-detail-' + userId)
@@ -6166,21 +6155,19 @@ function adminEditUserInline(userId) {
 }
 
 function adminSaveUserEdit(userId) {
-  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const registry = _adminUsersData || { users: [] }
   const user = (registry.users || []).find(u => u.id === userId)
   if (!user) return
   user.name = (document.getElementById('admin-edit-user-name-' + userId)?.value || '').trim() || user.name
   user.email = (document.getElementById('admin-edit-user-email-' + userId)?.value || '').trim() || user.email
-  window.PROJECT_REGISTRY = registry
   renderAdminView()
   showToast('User updated — click Save to persist', 'info')
 }
 
 function adminRemoveUser(userId) {
   if (!confirm('Remove user "' + userId + '"? This also removes all their grants.')) return
-  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const registry = _adminUsersData || { users: [] }
   registry.users = (registry.users || []).filter(u => u.id !== userId)
-  window.PROJECT_REGISTRY = registry
   renderAdminView()
   showToast('User removed — click Save to persist', 'info')
 }
@@ -6188,7 +6175,7 @@ function adminRemoveUser(userId) {
 function adminShowGrantForm(userId) {
   const el = document.getElementById('admin-grant-form-' + userId)
   if (!el) return
-  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
+  const registry = _adminUsersData || { users: [], projects: [] }
   const workspaces = registry.projects || []
   el.style.display = 'block'
   el.innerHTML = `
@@ -6215,7 +6202,7 @@ function adminShowGrantForm(userId) {
 }
 
 function adminSaveGrant(userId) {
-  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const registry = _adminUsersData || { users: [] }
   const user = (registry.users || []).find(u => u.id === userId)
   if (!user) return
   const projectId = document.getElementById('admin-grant-ws-' + userId)?.value
@@ -6224,18 +6211,16 @@ function adminSaveGrant(userId) {
   if (!user.grants) user.grants = []
   if (user.grants.find(g => g.projectId === projectId)) { showToast('Grant already exists for this workspace', 'error'); return }
   user.grants.push({ projectId, mode })
-  window.PROJECT_REGISTRY = registry
   renderAdminView()
   showToast('Grant added — click Save to persist', 'info')
 }
 
 function adminRevokeGrant(userId, grantIdx) {
   if (!confirm('Remove this grant?')) return
-  const registry = window.PROJECT_REGISTRY || { users: [] }
+  const registry = _adminUsersData || { users: [] }
   const user = (registry.users || []).find(u => u.id === userId)
   if (!user || !user.grants) return
   user.grants.splice(grantIdx, 1)
-  window.PROJECT_REGISTRY = registry
   renderAdminView()
   showToast('Grant revoked — click Save to persist', 'info')
 }
@@ -6274,11 +6259,11 @@ async function adminSaveNewWorkspace() {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   const id = slug
   const dataFile = 'data-' + slug + '.json'
-  const registry = window.PROJECT_REGISTRY || { users: [], projects: [] }
-  if ((registry.projects || []).find(p => p.id === id)) { showToast('Workspace ID already exists', 'error'); return }
-  if (!registry.projects) registry.projects = []
-  registry.projects.push({ id, name, dataFile })
-  window.PROJECT_REGISTRY = registry
+  if (!_adminUsersData) { showToast('Admin data not loaded', 'error'); return }
+  if ((_adminUsersData.projects || []).find(p => p.id === id)) { showToast('Workspace ID already exists', 'error'); return }
+  if (!_adminUsersData.projects) _adminUsersData.projects = []
+  _adminUsersData.projects.push({ id, name, filePath: dataFile })
+  window.PROJECT_REGISTRY = _adminUsersData.projects
   await scaffoldProjectDataFile(id, name)
   renderAdminView()
   showToast('Workspace created — click Save to persist registry', 'info')
@@ -6287,7 +6272,7 @@ async function adminSaveNewWorkspace() {
 function adminEditWorkspaceInline(wsId) {
   const el = document.getElementById('admin-ws-form-' + wsId)
   if (!el) return
-  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const registry = _adminUsersData || { projects: [] }
   const ws = (registry.projects || []).find(p => p.id === wsId)
   if (!ws) return
   el.style.display = 'block'
@@ -6309,23 +6294,22 @@ function adminEditWorkspaceInline(wsId) {
 }
 
 function adminSaveWorkspaceEdit(wsId) {
-  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const registry = _adminUsersData || { projects: [] }
   const ws = (registry.projects || []).find(p => p.id === wsId)
   if (!ws) return
   ws.name = (document.getElementById('admin-edit-ws-name-' + wsId)?.value || '').trim() || ws.name
-  window.PROJECT_REGISTRY = registry
   renderAdminView()
   showToast('Workspace updated — click Save to persist', 'info')
 }
 
 function adminDeleteWorkspace(wsId) {
-  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const registry = _adminUsersData || { projects: [] }
   const ws = (registry.projects || []).find(p => p.id === wsId)
   if (!ws) return
   if (wsId === window.ACTIVE_PROJECT_ID) { showToast('Cannot delete the active workspace. Switch first.', 'error'); return }
   if (!confirm('Delete workspace "' + ws.name + '"? This will tombstone its data file on GitHub. This cannot be undone.')) return
   registry.projects = (registry.projects || []).filter(p => p.id !== wsId)
-  window.PROJECT_REGISTRY = registry
+  window.PROJECT_REGISTRY = registry.projects || []
   deleteProjectDataFile(wsId)
   renderAdminView()
   showToast('Workspace deleted — click Save to persist registry', 'info')
@@ -6339,13 +6323,12 @@ function adminSwitchWorkspace(wsId) {
 }
 
 async function adminSaveUsersJson() {
-  const registry = window.PROJECT_REGISTRY
-  if (!registry) { showToast('No registry data to save', 'error'); return }
+  if (!_adminUsersData) { showToast('No registry data to save', 'error'); return }
   if (window.isActionLockActive) { showToast('Save already in progress', 'error'); return }
   window.isActionLockActive = true
   try {
     const jwt = localStorage.getItem('khyaal_site_auth')
-    const content = btoa(JSON.stringify(registry, null, 2))
+    const content = btoa(JSON.stringify(_adminUsersData, null, 2))
     const response = await fetch(LAMBDA_URL + '?action=write', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + jwt, 'Content-Type': 'application/json' },
@@ -6367,7 +6350,7 @@ async function adminSaveUsersJson() {
 
 function renderAdminStructureTab() {
   const projects = (window.UPDATE_DATA?.projects) || []
-  const registry = window.PROJECT_REGISTRY || { projects: [] }
+  const registry = _adminUsersData || { projects: [] }
   const activeWsId = window.ACTIVE_PROJECT_ID || 'default'
   const activeWsName = (registry.projects || []).find(p => p.id === activeWsId)?.name || activeWsId
 

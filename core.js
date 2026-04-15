@@ -40,26 +40,46 @@ function getActiveTracks() {
     return projects.flatMap(p => p.tracks || [])
 }
 
-function switchProject(projectId) {
+async function switchProject(projectId) {
     if (window.ACTIVE_PROJECT_ID === projectId) return
     window.ACTIVE_PROJECT_ID = projectId
     window.ACTIVE_SUBPROJECT_ID = null
-    const project = window.PROJECT_REGISTRY.find(p => p.id === projectId)
+    const project = (window.PROJECT_REGISTRY || []).find(p => p.id === projectId)
     if (project && typeof CMS_CONFIG !== 'undefined') {
         CMS_CONFIG.filePath = project.filePath
     }
-    const cacheKey = `khyaal_data_${projectId}`
-    localStorage.removeItem(cacheKey)
+    // Clear cached data and filter state so they repopulate from new workspace
+    localStorage.removeItem(`khyaal_data_${projectId}`)
     window.UPDATE_DATA = null
-    // Enforce max-mode from grant — auto-switch persona to the ceiling for this project
+    const _tf = document.getElementById('global-team-filter')
+    if (_tf) { _tf.dataset.populated = ''; _tf.value = '' }
+    const _pf = document.getElementById('project-filter')
+    if (_pf) { _pf.dataset.populated = ''; _pf.value = '' }
+    // Enforce max-mode from grant
     if (window.CURRENT_USER) {
         const grant = (window.CURRENT_USER.grants || []).find(g => g.projectId === projectId)
         if (grant && typeof switchMode === 'function') {
-            switchMode(grant.mode, true)  // stayInModal=true: switch mode without switching view
+            switchMode(grant.mode, true)
         }
     }
     if (typeof showToast === 'function') showToast(`Switching to ${project?.name || projectId}…`, 'info')
-    if (typeof initDashboard === 'function') initDashboard()
+    // Fetch new workspace data from Lambda, then re-render
+    try {
+        const jwt = localStorage.getItem('khyaal_site_auth')
+        const response = await fetch(`${LAMBDA_URL}?action=read&projectId=${projectId}&cb=${Date.now()}`, {
+            headers: { Authorization: `Bearer ${jwt}` }
+        })
+        if (!response.ok) throw new Error(`Read failed: ${response.status}`)
+        const { data, sha } = await response.json()
+        window.UPDATE_DATA = data
+        window._lastDataSha = sha
+        if (typeof normalizeData === 'function') normalizeData()
+        if (typeof renderDashboard === 'function') renderDashboard()
+        if (typeof renderTeamSwitcher === 'function') renderTeamSwitcher()
+    } catch (err) {
+        console.error('❌ switchProject fetch:', err)
+        if (typeof showToast === 'function') showToast(`Failed to load ${project?.name || projectId} data`, 'error')
+    }
 }
 
 // Called when the project filter (#project-filter) changes
