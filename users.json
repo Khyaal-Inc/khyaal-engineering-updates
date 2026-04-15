@@ -29,11 +29,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     },
     {
@@ -47,11 +42,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     },
     {
@@ -65,11 +55,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     },
     {
@@ -83,11 +68,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     },
     {
@@ -101,11 +81,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     },
     {
@@ -155,11 +130,6 @@
           "name": "Khyaal Engineering",
           "mode": "dev"
         },
-        {
-          "projectId": "mobile",
-          "name": "Khyaal Mobile",
-          "mode": "dev"
-        }
       ]
     }
   ],
