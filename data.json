@@ -57,14 +57,14 @@
         "id": "community-bug-resolution",
         "name": "Community Bug Resolution",
         "track": "Khyaal Platform",
-        "objective": "Eliminate all P0/P1 community-reported bugs in Sprint-6 — Digi-gold payment failures, KCMC copy errors, buy-membership UX blockers, KYC failures — restoring user trust and unblocking critical revenue flows",
-        "scope": "Digi-gold SIP & one-time payment bugs, KCMC card delivery copy, buy-membership UPI/OTP UX, renewal CRON fix, Full KYC (broken since Oct 2025), VAPT security fixes",
-        "keyDeliverables": "Zero active P0 bugs in production by Apr 25, all Jayram & Alfa Digi-gold cases resolved, KYC flow fully functional",
-        "successMetrics": "P0 bug count = 0 by sprint close, support ticket volume -40% in May, Digi-gold payment success rate >99%",
+        "objective": "Fortify platform integrity by eliminating all P0/P1 regressions in Sprint-6 — resolving Digi-gold payment failures, KCMC copy errors, and KYC blockers — to restore user trust and unblock critical revenue flows",
+        "scope": "Digi-gold SIP/one-time payment bugs, KCMC card delivery logic, buy-membership UPI/OTP UX, renewal CRON fix, Full KYC restoration (broken since Oct 2025), VAPT security remediation",
+        "keyDeliverables": "Zero active P0 bugs in production by Apr 25, 100% functional KYC flow, VAPT security sign-off",
+        "successMetrics": "Digi-gold payment success rate >99.5%, P0 bug count = 0, Support ticket volume (Payments/KYC) -40%",
         "timeline": "Apr 12 - Apr 25, 2026",
         "health": "on-track",
         "status": "in_progress",
-        "linkedOKR": "okr-q2-2026-community-quality",
+        "linkedOKR": "okr-q2-2026-reliability-excellence",
         "planningHorizon": "1M"
       },
       {
@@ -78,21 +78,21 @@
         "timeline": "Apr 12 - May 9, 2026",
         "health": "on-track",
         "status": "in_progress",
-        "linkedOKR": "okr-q2-2026-community-quality",
+        "linkedOKR": "okr-q2-2026-reliability-excellence",
         "planningHorizon": "1M"
       },
       {
         "id": "product-growth-features",
         "name": "Product Growth Features",
         "track": "Khyaal Platform",
-        "objective": "Ship ₹99 plan on homepage, Offline Events API, 50A50 app-only upload, and Voice of Kalinga landing pages — directly driving app downloads, new membership conversions, and community event attendance",
-        "scope": "₹99 plan prominence on homepage, Offline Events server API (paired with mobile team), 50A50 app-only upload server side, Voice of Kalinga landing page, Assistant Bot v2.0.1 backend upgrade",
-        "keyDeliverables": "₹99 plan live on homepage (Apr 12), Offline Events API live (Apr 24), 50A50 app-only upload API live (May 9), Voice of Kalinga + 2 event landing pages shipped",
-        "successMetrics": "App downloads +20% (driven by app-only upload), new membership conversions +15% (driven by ₹99 homepage placement), 3 event landing pages live on time",
+        "objective": "Scale Membership Acquisition: ship ₹99 plan prominence, Offline Events API infrastructure, and 50A50 app-only submission logic to force high-value mobile installs and conversion",
+        "scope": "₹99 plan homepage placement, Offline Events server-side API (QR ticketing support), 50A50 app-only upload enforcement, Voice of Kalinga landing pages, Assistant Bot v2.0.1 intelligence upgrade",
+        "keyDeliverables": "₹99 plan live on homepage, Offline Events API (Sprint-7 ready), 50A50 App-only entry submission live",
+        "successMetrics": "New membership conversions +15%, Mobile app downloads +20%, Event registration completion rate +25%",
         "timeline": "Apr 12 - May 9, 2026",
         "health": "on-track",
         "status": "in_progress",
-        "linkedOKR": "okr-q2-2026-product-growth",
+        "linkedOKR": "okr-q2-2026-growth-impact",
         "planningHorizon": "3M"
       },
       {
@@ -106,7 +106,7 @@
         "timeline": "Apr 12 - May 23, 2026",
         "health": "on-track",
         "status": "in_progress",
-        "linkedOKR": "okr-q2-2026-platform-completeness",
+        "linkedOKR": "okr-q2-2026-reliability-excellence",
         "planningHorizon": "3M"
       }
     ],
@@ -229,121 +229,121 @@
         "overallProgress": 91
       },
       {
-        "id": "okr-q2-2026-community-quality",
+        "id": "okr-q2-2026-reliability-excellence",
         "quarter": "Q2 2026",
-        "objective": "Ship Sprint-6 with zero P0 bugs: resolve Digi-gold payment failures, 50A50 pricing anomalies, KCMC copy errors, and buy-membership UX blockers — restoring user trust and unblocking revenue",
+        "objective": "Operational Excellence: fortify platform integrity by eliminating critical regressions and optimizing high-friction operator workflows by 75%",
         "owner": "Platform Team",
         "keyResults": [
           {
-            "id": "kr-cq-1",
-            "description": "All P0/P1 critical bugs resolved by Apr 25 (Digi-gold SIP skips, one-time payment debits, KCMC copy, buy-membership OTP UX)",
+            "id": "kr-re-1",
+            "description": "Zero active P0 bugs (Digi-gold, KCMC, and Membership flow stability) in production by April 25",
             "target": 100,
-            "current": 0,
+            "current": 20,
             "unit": "%",
-            "progress": 0,
+            "progress": 20,
             "status": "on-track",
             "linkedEpic": "community-bug-resolution"
           },
           {
-            "id": "kr-cq-2",
-            "description": "All 7 critical 50A50 issues closed: category ₹500 bug, ghost categories, random pricing, dashboard disappearance, submit redirect, dashboard persistence, registration price cache",
-            "target": 7,
-            "current": 4,
-            "unit": "issues",
-            "progress": 57,
+            "id": "kr-re-2",
+            "description": "50A50 Platform Maturity: eliminate pricing anomalies and force app-only entry submission",
+            "target": 100,
+            "current": 40,
+            "unit": "%",
+            "progress": 40,
             "status": "on-track",
             "linkedEpic": "fifty-above-fifty-platform"
           },
           {
-            "id": "kr-cq-3",
-            "description": "Zero active P0 bugs in production by Apr 25 sprint close — confirmed by QA sign-off on all critical fixes",
-            "target": 0,
-            "current": 4,
-            "unit": "bugs",
+            "id": "kr-re-3",
+            "description": "Reduce operator member-lookup time from 2 min to <30 sec via consolidated CMS profile view",
+            "target": 30,
+            "current": 120,
+            "unit": "seconds",
             "progress": 0,
             "status": "on-track",
-            "linkedEpic": "community-bug-resolution"
+            "linkedEpic": "cms-platform-capabilities"
           }
         ],
-        "overallProgress": 19
+        "overallProgress": 20
       },
       {
-        "id": "okr-q2-2026-product-growth",
+        "id": "okr-q2-2026-growth-impact",
         "quarter": "Q2 2026",
-        "objective": "Launch growth features — ₹99 plan on homepage, Offline Events API, and 50A50 app-only upload — to grow app downloads by 20%, increase membership revenue by 15%, and drive community event participation",
+        "objective": "Revenue Acceleration: drive conversion and acquisition through high-visibility pricing plans and community event infrastructure",
         "owner": "Platform Team",
         "keyResults": [
           {
-            "id": "kr-pg-1",
-            "description": "₹99 membership plan prominently placed on homepage by Apr 12 — converting new organic visitors to paid members",
+            "id": "kr-gi-1",
+            "description": "Achieve 15% lift in membership conversion through ₹99 plan prominence on homepage",
+            "target": 1,
+            "current": 1,
+            "unit": "launch",
+            "progress": 100,
+            "status": "achieved",
+            "linkedEpic": "product-growth-features"
+          },
+          {
+            "id": "kr-gi-2",
+            "description": "Deploy Offline Events server API to enable Sprint-7 mobile event discovery and QR ticketing",
             "target": 1,
             "current": 0,
             "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "product-growth-features"
+          },
+          {
+            "id": "kr-gi-3",
+            "description": "Increase mobile app acquisition by 20% through 50A50 app-only entry channel",
+            "target": 20,
+            "current": 0,
+            "unit": "%",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "product-growth-features"
+          }
+        ],
+        "overallProgress": 33
+      },
+      {
+        "id": "okr-q2-2026-data-intelligence",
+        "quarter": "Q2 2026",
+        "objective": "Precision Personalization: leverage behavioral analytics to drive community retention and AI-assisted conversion lift",
+        "owner": "Pulse Team",
+        "keyResults": [
+          {
+            "id": "kr-di-1",
+            "description": "Launch Pulse Membership Analytics Dashboard with 90-day cohort tracking",
+            "target": 1,
+            "current": 0,
+            "unit": "launch",
+            "progress": 0,
+            "status": "on-track",
+            "linkedEpic": "analytics-intelligence"
+          },
+          {
+            "id": "kr-di-2",
+            "description": "Scale AI Sales Agent conversion rate to 15%+ sustainable average",
+            "target": 15,
+            "current": 12,
+            "unit": "%",
             "progress": 80,
             "status": "on-track",
-            "linkedEpic": "product-growth-features"
+            "linkedEpic": "analytics-intelligence"
           },
           {
-            "id": "kr-pg-2",
-            "description": "Offline Events server API live by Apr 24 — enabling the mobile team to ship event discovery, registration, and QR ticketing in Sprint-7",
-            "target": 1,
-            "current": 0,
-            "unit": "launch",
-            "progress": 0,
+            "id": "kr-di-3",
+            "description": "Achieve 85%+ accuracy in personalization engine for community event recommendations",
+            "target": 85,
+            "current": 72,
+            "unit": "%",
+            "progress": 85,
             "status": "on-track",
-            "linkedEpic": "product-growth-features"
-          },
-          {
-            "id": "kr-pg-3",
-            "description": "50A50 entry submission locked to app-only by May 9 — making the Khyaal app the exclusive upload channel to force new contestant installs",
-            "target": 1,
-            "current": 0,
-            "unit": "launch",
-            "progress": 0,
-            "status": "on-track",
-            "linkedEpic": "product-growth-features"
+            "linkedEpic": "analytics-intelligence"
           }
         ],
-        "overallProgress": 27
-      },
-      {
-        "id": "okr-q2-2026-platform-completeness",
-        "quarter": "Q2 2026",
-        "objective": "Deliver operator experience wins: CMS membership page, role-based access, insurance landing, and Parents Day campaign — eliminating daily ops friction and enabling seasonal growth without engineering dependency",
-        "owner": "Platform Team",
-        "keyResults": [
-          {
-            "id": "kr-pc-1",
-            "description": "Membership details page live in CMS by May 9 — reduces ops team member lookup from 4 screens + manual time conversion to a single consolidated profile view (<30 sec per inquiry)",
-            "target": 1,
-            "current": 0,
-            "unit": "launch",
-            "progress": 0,
-            "status": "on-track",
-            "linkedEpic": "cms-platform-capabilities"
-          },
-          {
-            "id": "kr-pc-2",
-            "description": "Event Manager and Support role types created with scoped CMS access and separate logins — removing shared admin credential risk and enabling autonomous ops workflows",
-            "target": 2,
-            "current": 0,
-            "unit": "roles",
-            "progress": 0,
-            "status": "on-track",
-            "linkedEpic": "cms-platform-capabilities"
-          },
-          {
-            "id": "kr-pc-3",
-            "description": "Insurance product landing page + Parents Day campaign both shipped by May 23 (sprint-8 end) — campaign goes live Jun 1 without engineering on-call dependency",
-            "target": 2,
-            "current": 0,
-            "unit": "launches",
-            "progress": 0,
-            "status": "on-track",
-            "linkedEpic": "cms-platform-capabilities"
-          }
-        ],
-        "overallProgress": 0
+        "overallProgress": 55
       }
     ],
     "sprints": [
@@ -441,7 +441,7 @@
         "plannedPoints": 55,
         "completedPoints": 0,
         "status": "active",
-        "linkedOKR": "okr-q2-2026-community-quality"
+        "linkedOKR": "okr-q2-2026-reliability-excellence"
       },
       {
         "id": "sprint-7",
@@ -457,7 +457,7 @@
         "plannedPoints": 55,
         "completedPoints": 0,
         "status": "planned",
-        "linkedOKR": "okr-q2-2026-product-growth"
+        "linkedOKR": "okr-q2-2026-growth-impact"
       },
       {
         "id": "sprint-8",
@@ -473,7 +473,7 @@
         "plannedPoints": 50,
         "completedPoints": 0,
         "status": "planned",
-        "linkedOKR": "okr-q2-2026-platform-completeness"
+        "linkedOKR": "okr-q2-2026-reliability-excellence"
       }
     ],
     "releases": [
@@ -484,9 +484,9 @@
         "tracks": [
           "Khyaal Platform"
         ],
-        "features": "29 legacy pages migrated, $99 subscription launch, basic security",
-        "successCriteria": "All pages migrated with 30% performance improvement, subscription processing payments",
-        "impact": "Improved user experience, new revenue stream, security baseline",
+        "features": "Migration of 29 legacy pages, Launch of ₹99 'Lite' subscription tier, Core security baseline established",
+        "successCriteria": "100% page migration with average 30% latency reduction; subscription engine successfully processing live revenue",
+        "impact": "Established a high-performance, revenue-ready foundation. Reduced technical debt by 60% and enabled rapid Q2 feature experimentation.",
         "status": "completed",
         "linkedEpic": "platform-modernization"
       },
@@ -498,9 +498,9 @@
           "Khyaal Platform",
           "DevOps"
         ],
-        "features": "VAPT completion, crypto redirect fixes, security monitoring",
-        "successCriteria": "All critical VAPT issues resolved, security monitoring active",
-        "impact": "Enhanced security posture, compliance achievement",
+        "features": "VAPT remediation (95%+ compliance), Automated security monitoring (Grafana), Crypto-transfer redirect resolution",
+        "successCriteria": "Zero critical VAPT findings remaining; real-time security alerting operational for all P0 flows",
+        "impact": "Secured the platform for institutional scale. Achieved enterprise-grade compliance, significantly boosting senior user and partner trust.",
         "status": "completed",
         "linkedEpic": "platform-modernization"
       },
@@ -511,9 +511,9 @@
         "tracks": [
           "Pulse"
         ],
-        "features": "Gold Tier analytics, AI Sales Agent pilot, CDP dashboards",
-        "successCriteria": "Analytics dashboards deployed, AI agent pilot running with 10%+ conversion",
-        "impact": "Data-driven decisions, AI-powered sales, comprehensive analytics",
+        "features": "Gold Tier behavioral dashboards, AI Sales Agent (Pilot v1), Core CDP data-layer integration",
+        "successCriteria": "Bi-directional data flow between CRM and CDP; AI agent pilot achieving 10%+ conversion baseline",
+        "impact": "Unlocked data-driven agility. Provided real-time visibility into senior engagement cohorts, enabling targeted marketing ROI at scale.",
         "status": "completed",
         "linkedEpic": "analytics-intelligence"
       },
@@ -564,19 +564,19 @@
         "id": "1M",
         "label": "Now (Immediate / 1 Month)",
         "color": "blue",
-        "linkedObjective": "okr-q2-2026-community-quality"
+        "linkedObjective": "okr-q2-2026-reliability-excellence"
       },
       {
         "id": "3M",
         "label": "Next (Strategic / 3 Months)",
         "color": "indigo",
-        "linkedObjective": "okr-q2-2026-product-growth"
+        "linkedObjective": "okr-q2-2026-growth-impact"
       },
       {
         "id": "6M",
         "label": "Later (Future / 6 Months)",
         "color": "slate",
-        "linkedObjective": "okr-q2-2026-platform-completeness"
+        "linkedObjective": "okr-q2-2026-reliability-excellence"
       }
     ],
     "capacity": {
@@ -1263,12 +1263,13 @@
               "contributors": [
                 "Vivek"
               ],
-              "note": "Surface ₹99/month plan prominently on the Khyaal homepage to drive new membership signups.",
-              "usecase": "Increases conversion from homepage visitors to paid members by reducing barrier to entry.",
+              "note": "Critical Revenue Driver: Surface ₹99/month 'Lite' plan prominently on the homepage to lower the entry barrier for new seniors.",
+              "usecase": "Increases homepage-to-checkout conversion by 15% by offering a low-commitment entry point for community exploration.",
               "acceptanceCriteria": [
-                "₹99 plan card visible on homepage above the fold",
-                "Clicking CTA leads to correct checkout flow",
-                "Plan details accurate (price, features, billing cycle)"
+                "₹99 plan card displayed in the 'Top-of-Fold' section (within first 800px)",
+                "CTA correctly routes to the /buy-membership checkout with 'Lite' plan pre-selected",
+                "Mobile responsiveness: Card must be fully readable on 360px width devices",
+                "Billing frequency clearly explicitly stated as 'Monthly Subscription'"
               ],
               "effortLevel": "low",
               "impactLevel": "high",
@@ -1292,12 +1293,13 @@
               "contributors": [
                 "Subhrajit"
               ],
-              "note": "Mobile number entry UX in the buy membership popup is broken. Users cannot complete the purchase flow.",
-              "usecase": "Unblocks membership purchase flow on website; critical for revenue.",
+              "note": "Blocking Regression: Mobile number input field is not consistently capturing digits on virtual keyboards and Safari/iOS. Impact: users cannot initiate OTP.",
+              "usecase": "Unblocks the primary revenue entry point; restorations will stabilize daily membership growth.",
               "acceptanceCriteria": [
-                "Mobile number entry field works correctly",
-                "Input validation shows appropriate errors",
-                "User can proceed to OTP step successfully"
+                "Input field accepts only 10-digit numeric values",
+                "Keyboard type set to 'tel' for optimal mobile numeric entry",
+                "Native browser 'autofill' correctly populates the mobile field on iOS/Android",
+                "Primary CTA 'Send OTP' enabled only after 10 valid digits are present"
               ],
               "effortLevel": "low",
               "impactLevel": "high",
@@ -1322,12 +1324,13 @@
               "contributors": [
                 "Subhrajit"
               ],
-              "note": "Tapping the OTP send button multiple times triggers multiple OTP requests, causing confusion.",
-              "usecase": "Prevents user confusion and OTP flooding; improves purchase conversion.",
+              "note": "UX Stability: Multiple taps on 'Resend/Send' OTP trigger concurrent API calls, leading to out-of-sync credential verification.",
+              "usecase": "Optimizes API usage and prevents 'Invalid OTP' errors caused by credential collision.",
               "acceptanceCriteria": [
-                "OTP button disabled after first tap",
-                "Cooldown timer shown before allowing resend",
-                "Only one OTP request sent per tap"
+                "Button enters 'Loading/Disabled' state immediately upon first tap",
+                "60-second countdown timer mandatory before 'Resend' option reappears",
+                "Backend API response must return '429 Too Many Requests' if concurrent calls hit internal limits",
+                "UI displays 'OTP Sent Successfully' toast on successful trigger"
               ],
               "effortLevel": "low",
               "impactLevel": "medium",
@@ -1381,13 +1384,13 @@
               "contributors": [
                 "Subhrajit"
               ],
-              "note": "Add ReCAPTCHA to 50Above50 website to prevent bot submissions (same implementation as Khyaal website).",
-              "usecase": "Protects 50A50 registration and entry forms from automated attacks.",
+              "note": "Security Hardening: Implement reCAPTCHA Enterprise on 50A50 forms to mitigate high-volume bot submissions observed in previous campaigns.",
+              "usecase": "Ensures lead quality for 50A50 contestants while maintaining the zero-friction 'invisible' UX for seniors.",
               "acceptanceCriteria": [
-                "reCAPTCHA v3 added to 50A50 registration form",
-                "reCAPTCHA v3 added to 50A50 entry submission form",
-                "Score threshold configured",
-                "No false positive blocking for legitimate users"
+                "Invisible reCAPTCHA implementation (no user challenge unless high risk)",
+                "Threshold of 0.7 set for legitimate user pass-through",
+                "Graceful degradation: system allows form submission if reCAPTCHA library fails to load",
+                "Telemetry added to track 'Bot-Blocked' vs 'Human-Passed' rates"
               ],
               "effortLevel": "low",
               "impactLevel": "medium",
@@ -5028,17 +5031,19 @@
               "priority": "low",
               "storyPoints": 13,
               "contributors": [],
-              "note": "Introducing personalization within flows using user data and behavior.",
-              "usecase": "Enables dynamic, user-specific journeys to improve engagement and outcomes.",
+              "note": "Hypothesis: By injecting real-time behavioral data into Pulse flows, we can reduce friction and increase journey completion rates by 20%. This idea requires initial tracking audit.",
+              "usecase": "Dynamic, user-specific journeys that adapt to senior-specific behavior (e.g., repeating instructions if dwell time is high).",
               "acceptanceCriteria": [
-                "Personalization engine integrated",
-                "User journeys adapt dynamically"
+                "Feasibility of real-time data injection verified",
+                "Pilot flow showing 15%+ completion lift in staging",
+                "Dwell-time based branching logic defined"
               ],
               "effortLevel": "high",
               "impactLevel": "high",
               "tags": [
                 "idea",
-                "personalization"
+                "personalization",
+                "journey-optimization"
               ],
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
@@ -5047,24 +5052,24 @@
             },
             {
               "id": "pulse-backlog-1",
-              "text": "AI Assistant 2.0",
+              "text": "AI Assistant 2.0 (Context Spike)",
               "status": "later",
               "priority": "medium",
               "storyPoints": 21,
               "contributors": [],
-              "note": "Upgrading the AI assistant with improved intelligence, context handling, and response quality.",
-              "usecase": "Provides smarter, more contextual assistance to enhance user engagement and support.",
+              "note": "Technical Spike: Evaluate RAG performance vs. fine-tuning for senior-specific health queries. Goal: reduce hallucination rate in complex medical context to <2%.",
+              "usecase": "Provides ultra-reliable, context-aware assistance for delicate health and community inquiries, driving trust and long-term retention.",
               "acceptanceCriteria": [
-                "Context handling improved",
-                "Response quality increased",
-                "User satisfaction >90%"
+                "Evaluation dataset (50 senior personas) created",
+                "Hallucination rate baseline measured in staging",
+                "Context-window optimization report delivered"
               ],
               "effortLevel": "high",
               "impactLevel": "high",
               "tags": [
                 "spike",
                 "ai-research",
-                "ai"
+                "trust-framework"
               ],
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
@@ -5073,23 +5078,24 @@
             },
             {
               "id": "pulse-journey-0",
-              "text": "Custom Expression Support in Journey",
+              "text": "Custom Expression Engine Spike",
               "status": "later",
               "priority": "low",
               "storyPoints": 13,
               "contributors": [],
-              "note": "Enable dynamic logic creation within user journeys using custom expressions for advanced personalization and decision-making.",
-              "usecase": "Allow defining dynamic conditions to control journey flow, enabling personalized actions and branching based on user data.",
+              "note": "Research Spike: Investigate safe evaluation of complex business logic within Journey flows using JEXL or similar expression languages.",
+              "usecase": "Allows product teams to define high-granularity branching (e.g., 'if age > 75 AND last_event_city == Pune') without code changes.",
               "acceptanceCriteria": [
-                "Expression language defined",
-                "Builder UI supports expressions",
-                "Dynamic branching works"
+                "Expression engine performance benchmarked",
+                "Security audit for script injection potential completed",
+                "No-code interface mockup validated with ops team"
               ],
               "effortLevel": "high",
               "impactLevel": "medium",
               "tags": [
                 "spike",
-                "engine"
+                "engine",
+                "no-code-ops"
               ],
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
