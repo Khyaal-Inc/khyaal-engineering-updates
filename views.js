@@ -1374,9 +1374,13 @@ function renderEpicsView() {
         if (Array.isArray(itemTracks) && itemTracks.length > 0) {
             if (itemTracks.some(t => {
                 const s = String(t).toLowerCase().trim();
+                if (!s) return false;
                 if (s === target) return true;
                 const trackObj = (tracks || []).find(tr => tr.id.toLowerCase() === target);
-                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                if (trackObj) {
+                    const tName = trackObj.name.toLowerCase();
+                    if (tName === s || (s.length > 2 && tName.includes(s)) || (trackObj.id.length > 2 && s.includes(trackObj.id))) return true;
+                }
                 return false;
             })) return true;
         }
@@ -1389,12 +1393,14 @@ function renderEpicsView() {
             else if (owner.includes('devops')) source = 'devops';
         }
 
-        if (source === target) return true;
-        const trackObj = tracks.find(t => t.id.toLowerCase() === target);
-        if (trackObj) {
-            const tName = trackObj.name.toLowerCase();
-            if (tName === source || tName.includes(source)) return true;
-            if (source.includes(trackObj.id)) return true;
+        if (source && source === target) return true;
+        if (source && source.length > 2) {
+            const trackObj = tracks.find(t => t.id.toLowerCase() === target);
+            if (trackObj) {
+                const tName = trackObj.name.toLowerCase();
+                if (tName === source || tName.includes(source)) return true;
+                if (source.includes(trackObj.id)) return true;
+            }
         }
         return false;
     };
@@ -1737,6 +1743,7 @@ function renderRoadmapView() {
 
     const _roadmapActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
     // Standardized matcher for Roadmap components (Array-aware)
+    // Standardized matcher for Roadmap components (Array-aware)
     const isTrackMatch = (item, activeId) => {
         if (!activeId) return true;
         const target = activeId.toLowerCase().trim();
@@ -1745,9 +1752,13 @@ function renderRoadmapView() {
         if (Array.isArray(itemTracks) && itemTracks.length > 0) {
             if (itemTracks.some(t => {
                 const s = String(t).toLowerCase().trim();
+                if (!s) return false;
                 if (s === target) return true;
                 const trackObj = (UPDATE_DATA.tracks || []).find(tr => tr.id.toLowerCase() === target);
-                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                if (trackObj) {
+                    const tName = trackObj.name.toLowerCase();
+                    if (tName === s || (s.length > 2 && tName.includes(s)) || (trackObj.id.length > 2 && s.includes(trackObj.id))) return true;
+                }
                 return false;
             })) return true;
         }
@@ -1759,12 +1770,14 @@ function renderRoadmapView() {
             else if (owner.includes('pulse')) source = 'pulse';
             else if (owner.includes('devops')) source = 'devops';
         }
-        if (source === target) return true;
-        const trackObj = (UPDATE_DATA.tracks || []).find(t => t.id.toLowerCase() === target);
-        if (trackObj) {
-            const tName = trackObj.name.toLowerCase();
-            if (tName === source || tName.includes(source)) return true;
-            if (source.includes(trackObj.id)) return true;
+        if (source && source === target) return true;
+        if (source && source.length > 2) {
+            const trackObj = (UPDATE_DATA.tracks || []).find(t => t.id.toLowerCase() === target);
+            if (trackObj) {
+                const tName = trackObj.name.toLowerCase();
+                if (tName === source || tName.includes(source)) return true;
+                if (source.includes(trackObj.id)) return true;
+            }
         }
         return false;
     };
@@ -1805,8 +1818,26 @@ function renderRoadmapView() {
     }
 
     horizons.forEach(h => {
-        const horizonOKRRaw = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
-        const horizonOKR = (horizonOKRRaw && isTrackMatch(horizonOKRRaw, _roadmapActiveTeam)) ? horizonOKRRaw : null;
+        // Select OKR for the banner: Prioritize track-exclusive OKRs over shared/global ones
+        let horizonOKR = null;
+        if (_roadmapActiveTeam && UPDATE_DATA.metadata?.okrs) {
+            // Find OKRs exclusively for this track
+            const trackExclusiveOKRs = UPDATE_DATA.metadata.okrs.filter(o => 
+                isTrackMatch(o, _roadmapActiveTeam) && 
+                (Array.isArray(o.tracks) && o.tracks.length === 1)
+            );
+            
+            if (trackExclusiveOKRs.length > 0) {
+                // Try to find one matching this horizon ID specifically, or pick the best active match
+                horizonOKR = trackExclusiveOKRs.find(o => o.planningHorizon === h.id) || trackExclusiveOKRs[0];
+            }
+        }
+
+        // Fallback to hardcoded strategic objective if no exclusive track OKR was found
+        if (!horizonOKR) {
+            const horizonOKRRaw = (UPDATE_DATA.metadata?.okrs || []).find(o => o.id === h.linkedObjective);
+            horizonOKR = (horizonOKRRaw && isTrackMatch(horizonOKRRaw, _roadmapActiveTeam)) ? horizonOKRRaw : null;
+        }
         const horizonEpics = visibleEpics.filter(e => e.planningHorizon === h.id)
         const horizonItems = applyExecFilter(findItemsByMetadataId('planningHorizon', h.id), 'roadmap');
 
@@ -1833,7 +1864,7 @@ function renderRoadmapView() {
                         <div class="h-[2px] flex-1 bg-slate-200"></div>
                     </div>
 
-                    ${buildRoadmapHorizonBar(allEpics, h.id)}
+                    ${buildRoadmapHorizonBar(visibleEpics, h.id)}
 
                     ${horizonOKR ? `
                         <div class="w-full max-w-4xl px-8 py-6 bg-indigo-600 text-white rounded-3xl shadow-2xl relative overflow-hidden group">
@@ -2099,7 +2130,56 @@ window.toggleSprintPlanning = toggleSprintPlanning
 function renderSprintView() {
     const container = document.getElementById('sprint-view');
     if (!container) return;
-    const sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
+    let sprints = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints) || [];
+
+    // Tracks object for name resolution
+    const tracks = UPDATE_DATA.tracks || [];
+
+    // Hardened track matching helper (Array-aware)
+    const isTrackMatch = (item, activeId) => {
+        if (!activeId) return true;
+        const target = activeId.toLowerCase().trim();
+
+        const itemTracks = item.tracks || [];
+        if (Array.isArray(itemTracks) && itemTracks.length > 0) {
+            if (itemTracks.some(t => {
+                const s = String(t).toLowerCase().trim();
+                if (!s) return false;
+                if (s === target) return true;
+                const trackObj = (tracks || []).find(tr => tr.id.toLowerCase() === target);
+                if (trackObj) {
+                    const tName = trackObj.name.toLowerCase();
+                    if (tName === s || (s.length > 2 && tName.includes(s)) || (trackObj.id.length > 2 && s.includes(trackObj.id))) return true;
+                }
+                return false;
+            })) return true;
+        }
+
+        let source = (item.trackId || item.track || "").toLowerCase().trim();
+        if (!source && item.owner) {
+            const owner = item.owner.toLowerCase();
+            if (owner.includes('platform')) source = 'platform';
+            else if (owner.includes('pulse')) source = 'pulse';
+            else if (owner.includes('devops')) source = 'devops';
+        }
+
+        if (source && source === target) return true;
+        if (source && source.length > 2) {
+            const trackObj = (tracks || []).find(t => t.id.toLowerCase() === target);
+            if (trackObj) {
+                const tName = trackObj.name.toLowerCase();
+                if (tName === source || tName.includes(source)) return true;
+                if (source.includes(trackObj.id)) return true;
+            }
+        }
+        return false;
+    };
+
+    // Filter sprints by active track
+    if (activeTeam) {
+        sprints = sprints.filter(s => isTrackMatch(s, activeTeam));
+    }
 
     let ribbonHtml = `
         <div style="position:relative;margin-bottom:24px;">

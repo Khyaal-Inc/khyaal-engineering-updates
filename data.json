@@ -390,9 +390,9 @@
         "endDate": "2026-02-14",
         "goal": "Establish platform foundation and security baseline",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform",
+          "pulse",
+          "devops"
         ],
         "plannedPoints": 45,
         "completedPoints": 38,
@@ -406,9 +406,7 @@
         "endDate": "2026-02-28",
         "goal": "Complete legacy page migration and launch subscription",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform"
         ],
         "plannedPoints": 50,
         "completedPoints": 45,
@@ -422,9 +420,8 @@
         "endDate": "2026-03-14",
         "goal": "Complete security hardening, VAPT remediation, and initiate AI Sales Agent development",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform",
+          "pulse"
         ],
         "plannedPoints": 52,
         "completedPoints": 48,
@@ -438,9 +435,7 @@
         "endDate": "2026-03-28",
         "goal": "Complete security compliance and launch analytics capabilities",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform"
         ],
         "plannedPoints": 55,
         "completedPoints": 51,
@@ -454,9 +449,8 @@
         "endDate": "2026-04-11",
         "goal": "Ship personalization engine, recommendation features, and complete Pulse Gold Tier analytics launch",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform",
+          "pulse"
         ],
         "plannedPoints": 60,
         "completedPoints": 55,
@@ -470,9 +464,8 @@
         "endDate": "2026-04-25",
         "goal": "Resolve all critical community bugs, fix 50A50 issues, ship \u20b999 plan on homepage, complete Badminton landing page",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform",
+          "pulse"
         ],
         "plannedPoints": 55,
         "completedPoints": 0,
@@ -486,9 +479,8 @@
         "endDate": "2026-05-09",
         "goal": "Ship Offline Events server API, Voice of Kalinga landing page, 50A50 app upload server side, CMS membership details page",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "platform",
+          "pulse"
         ],
         "plannedPoints": 55,
         "completedPoints": 0,
@@ -502,9 +494,7 @@
         "endDate": "2026-05-23",
         "goal": "Parents Day campaign, Insurance landing page, Pulse Membership Dashboard, Cached Categories Re-Migration",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse",
-          "DevOps"
+          "pulse"
         ],
         "plannedPoints": 50,
         "completedPoints": 0,

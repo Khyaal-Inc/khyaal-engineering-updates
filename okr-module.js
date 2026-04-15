@@ -132,9 +132,13 @@ function renderOkrView() {
         if (Array.isArray(itemTracks) && itemTracks.length > 0) {
             if (itemTracks.some(t => {
                 const s = String(t).toLowerCase().trim();
+                if (!s) return false;
                 if (s === target) return true;
                 const trackObj = (tracks || []).find(tr => tr.id.toLowerCase() === target);
-                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                if (trackObj) {
+                    const tName = trackObj.name.toLowerCase();
+                    if (tName === s || (s.length > 2 && tName.includes(s)) || (trackObj.id.length > 2 && s.includes(trackObj.id))) return true;
+                }
                 return false;
             })) return true;
         }
@@ -151,14 +155,16 @@ function renderOkrView() {
         }
 
         // 3. Direct match (ID or mapped owner)
-        if (source === target) return true;
+        if (source && source === target) return true;
 
-        // 4. Fuzzy match against track name (e.g. "Pulse" matches "pulse")
-        const trackObj = tracks.find(t => t.id.toLowerCase() === target);
-        if (trackObj) {
-            const tName = trackObj.name.toLowerCase();
-            if (tName === source || tName.includes(source)) return true;
-            if (source.includes(trackObj.id)) return true;
+        // 4. Fuzzy match against track name (Strict for non-empty source)
+        if (source && source.length > 2) {
+            const trackObj = tracks.find(t => t.id.toLowerCase() === target);
+            if (trackObj) {
+                const tName = trackObj.name.toLowerCase();
+                if (tName === source || tName.includes(source)) return true;
+                if (source.includes(trackObj.id)) return true;
+            }
         }
 
         return false;
