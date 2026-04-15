@@ -751,7 +751,10 @@
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
-              "releasedIn": "v2.2-security-hardening"
+              "releasedIn": "v2.2-security-hardening",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-0",
@@ -788,7 +791,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-2",
@@ -820,7 +826,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
               "releasedIn": "v3.0-analytics-intelligence",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-3",
@@ -854,7 +863,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
-              "due": "2026-04-11"
+              "due": "2026-04-11",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-4",
@@ -886,7 +898,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
-              "due": "2026-04-11"
+              "due": "2026-04-11",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-5",
@@ -916,7 +931,10 @@
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
-              "releasedIn": "v2.2-security-hardening"
+              "releasedIn": "v2.2-security-hardening",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-6",
@@ -946,7 +964,10 @@
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
-              "releasedIn": "v2.2-security-hardening"
+              "releasedIn": "v2.2-security-hardening",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-7",
@@ -979,7 +1000,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-6",
               "releasedIn": "v3.1-personalization-engine",
-              "due": "2026-04-11"
+              "due": "2026-04-11",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Legacy page refresh \u2013 29 pages migrated and modernized",
@@ -1010,6 +1034,9 @@
               "tags": [
                 "migration",
                 "infrastructure"
+              ],
+              "tracks": [
+                "platform"
               ]
             },
             {
@@ -1040,7 +1067,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "platform-website-9"
+              "id": "platform-website-9",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Delhi Marathon event page",
@@ -1068,7 +1098,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-website-10",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Emailer templates for Travel and Axis Max",
@@ -1097,6 +1130,9 @@
               "id": "platform-website-11",
               "tags": [
                 "cms"
+              ],
+              "tracks": [
+                "platform"
               ]
             },
             {
@@ -1125,7 +1161,10 @@
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-website-12",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Pulse SDK integration",
@@ -1153,7 +1192,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-website-13",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Crypto redirection issue RCA completed",
@@ -1183,7 +1225,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "platform-website-14"
+              "id": "platform-website-14",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Initiated VAPT with Appknox",
@@ -1213,7 +1258,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "platform-website-15"
+              "id": "platform-website-15",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Rajkot event page",
@@ -1240,7 +1288,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-3",
               "id": "platform-website-16",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Events listing and joining via Web Zoom SDK",
@@ -1264,7 +1315,10 @@
               "epicId": "platform-modernization",
               "id": "platform-website-17",
               "due": "2026-10-01",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-badminton",
@@ -1294,7 +1348,10 @@
               "due": "2026-04-03",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-99plan",
@@ -1324,7 +1381,10 @@
               "due": "2026-04-09",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-buy-membership-ux",
@@ -1355,7 +1415,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-buy-membership-otp",
@@ -1386,7 +1449,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-pending-migration",
@@ -1415,7 +1481,10 @@
               "due": "2026-04-06",
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-recaptcha-50a50",
@@ -1445,7 +1514,10 @@
               "due": "2026-04-08",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-voice-of-kalinga",
@@ -1472,7 +1544,10 @@
               "due": "2026-04-17",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-website-online-events",
@@ -1499,7 +1574,10 @@
               "due": "",
               "planningHorizon": "6M",
               "epicId": "product-growth-features",
-              "sprintId": null
+              "sprintId": null,
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -1532,7 +1610,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
               "releasedIn": "v3.0-analytics-intelligence",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50above50-website-1",
@@ -1560,7 +1641,10 @@
               "planningHorizon": "6M",
               "epicId": "platform-modernization",
               "releasedIn": "v2.2-security-hardening",
-              "due": "2026-10-01"
+              "due": "2026-10-01",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Home page redesign",
@@ -1587,7 +1671,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-0",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Category details page redesign",
@@ -1614,7 +1701,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-1",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Certificate downloads for returning participants",
@@ -1641,7 +1731,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-2",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "2026 registration and app membership bundle",
@@ -1668,7 +1761,10 @@
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-3",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Coin redemption for category access",
@@ -1695,7 +1791,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-4",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "50-50 Category Structure Refinement & Migration",
@@ -1726,7 +1825,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "platform-50a50-web-5"
+              "id": "platform-50a50-web-5",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Zoho integration",
@@ -1753,7 +1855,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-6",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Pulse SDK integration",
@@ -1780,7 +1885,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-web-7",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Security review kick-off",
@@ -1810,7 +1918,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "platform-50a50-web-8"
+              "id": "platform-50a50-web-8",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "In-app transition",
@@ -1834,7 +1945,10 @@
               "epicId": "platform-modernization",
               "id": "platform-50a50-web-9",
               "due": "2026-10-01",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-registration-cache",
@@ -1864,7 +1978,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-dashboard-disappears",
@@ -1894,7 +2011,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-submit-redirect",
@@ -1924,7 +2044,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-dashboard-persistent",
@@ -1952,7 +2075,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-upload-flow",
@@ -1980,7 +2106,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-web-app-upload-server",
@@ -2008,7 +2137,10 @@
               "due": "2026-05-08",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -2050,7 +2182,10 @@
               "planningHorizon": "1M",
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Coin redemption integration in CRM",
@@ -2077,7 +2212,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-crm-0",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Zoho CRM connector",
@@ -2104,7 +2242,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-50a50-crm-1",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-crm-category-500",
@@ -2135,7 +2276,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-crm-extra-categories",
@@ -2165,7 +2309,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-crm-fresh-pricing",
@@ -2195,7 +2342,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-crm-partially-completed",
@@ -2225,7 +2375,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-50a50-crm-export-filter",
@@ -2254,7 +2407,10 @@
               "due": "",
               "planningHorizon": "6M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": null
+              "sprintId": null,
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -2286,7 +2442,10 @@
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-0",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Event data entry improvements",
@@ -2313,7 +2472,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-1",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Event categories and sub-categories",
@@ -2340,7 +2502,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-2",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Backward compatibility maintenance",
@@ -2367,7 +2532,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-3",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Product requests from Raissa",
@@ -2394,7 +2562,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-admin-4",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-tambola-ticket",
@@ -2423,7 +2594,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-events-cms",
@@ -2452,7 +2626,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-cache-clear",
@@ -2482,7 +2659,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-bulk-coins",
@@ -2512,7 +2692,10 @@
               "due": "",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-bulk-users",
@@ -2543,7 +2726,10 @@
               "due": "",
               "planningHorizon": "1M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-membership-details",
@@ -2572,7 +2758,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-admin-individual-roles",
@@ -2601,7 +2790,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -2634,7 +2826,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
               "releasedIn": "v3.0-analytics-intelligence",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-5",
@@ -2662,7 +2857,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
               "releasedIn": "v3.1-personalization-engine",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-6",
@@ -2693,7 +2891,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-4",
               "releasedIn": "v3.1-personalization-engine",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Tambola enhancements",
@@ -2720,7 +2921,10 @@
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-7",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Event data and category support",
@@ -2747,7 +2951,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-8",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Backward compatibility layer",
@@ -2774,7 +2981,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-9",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "KYC protocol migration",
@@ -2804,7 +3014,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "platform-api-10"
+              "id": "platform-api-10",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Event pagination support",
@@ -2831,7 +3044,10 @@
               "sprintId": "sprint-1",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-11",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "99 Subscription API endpoints",
@@ -2860,7 +3076,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "platform-api-12"
+              "id": "platform-api-12",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Event restriction logic",
@@ -2887,7 +3106,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-13",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Coin redemption API",
@@ -2914,7 +3136,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-14",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Zoho CRM integration API",
@@ -2941,7 +3166,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "id": "platform-api-15",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Security review kick-off",
@@ -2971,7 +3199,10 @@
               "epicId": "platform-modernization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "platform-api-16"
+              "id": "platform-api-16",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "VAPT fixes implementation",
@@ -2999,7 +3230,10 @@
               "epicId": "community-bug-resolution",
               "id": "platform-api-17",
               "due": "2026-06-30",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Centerstage: Chat / Messenger backend",
@@ -3025,7 +3259,10 @@
               "id": "platform-api-18",
               "due": "2026-07-01",
               "tags": [],
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Support for app-code authentication in API",
@@ -3049,7 +3286,10 @@
               "epicId": "platform-modernization",
               "id": "platform-api-19",
               "due": "2026-10-01",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "text": "Streaks",
@@ -3075,7 +3315,10 @@
               "epicId": "platform-modernization",
               "id": "platform-api-20",
               "due": "2026-10-01",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-renewal-fix",
@@ -3104,7 +3347,10 @@
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
               "sprintId": "sprint-5",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-full-kyc",
@@ -3133,7 +3379,10 @@
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
               "sprintId": "sprint-5",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-kcmc-card-copy",
@@ -3162,7 +3411,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-khyaal-card-track",
@@ -3191,7 +3443,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-digi-gold-sip",
@@ -3222,7 +3477,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-digi-gold-one-time",
@@ -3253,7 +3511,10 @@
               "due": "2026-04-25",
               "planningHorizon": "1M",
               "epicId": "community-bug-resolution",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-login-error",
@@ -3281,7 +3542,10 @@
               "due": "",
               "planningHorizon": "6M",
               "epicId": "community-bug-resolution",
-              "sprintId": null
+              "sprintId": null,
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-cached-categories",
@@ -3309,7 +3573,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "fifty-above-fifty-platform",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-assistant-bot",
@@ -3337,7 +3604,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-offline-events",
@@ -3367,7 +3637,10 @@
               "due": "2026-05-09",
               "planningHorizon": "3M",
               "epicId": "product-growth-features",
-              "sprintId": "sprint-7"
+              "sprintId": "sprint-7",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-api-zoho-crm-travel",
@@ -3395,7 +3668,10 @@
               "due": "",
               "planningHorizon": "6M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": null
+              "sprintId": null,
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -3422,7 +3698,10 @@
               "planningHorizon": "1M",
               "sprintId": "sprint-4",
               "tags": [],
-              "epicId": "platform-modernization"
+              "epicId": "platform-modernization",
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         },
@@ -3455,7 +3734,10 @@
               "planningHorizon": "1M",
               "epicId": "product-growth-features",
               "sprintId": "sprint-5",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-campaign-insurance-landing",
@@ -3482,7 +3764,10 @@
               "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-8"
+              "sprintId": "sprint-8",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-campaign-parents-day",
@@ -3512,7 +3797,10 @@
               "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-8"
+              "sprintId": "sprint-8",
+              "tracks": [
+                "platform"
+              ]
             },
             {
               "id": "platform-campaign-pulse-membership-dashboard",
@@ -3542,7 +3830,10 @@
               "due": "",
               "planningHorizon": "3M",
               "epicId": "cms-platform-capabilities",
-              "sprintId": "sprint-8"
+              "sprintId": "sprint-8",
+              "tracks": [
+                "platform"
+              ]
             }
           ]
         }
@@ -3585,7 +3876,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "pulse-others-0"
+              "id": "pulse-others-0",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "GCP cost optimization",
@@ -3614,7 +3908,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "pulse-others-1"
+              "id": "pulse-others-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Session support for Pulse console",
@@ -3642,7 +3939,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-others-2"
+              "id": "pulse-others-2",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -3674,7 +3974,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-users-0"
+              "id": "pulse-analytics-users-0",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Null filter support",
@@ -3701,7 +4004,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-users-1"
+              "id": "pulse-analytics-users-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "User timeline tracking",
@@ -3728,7 +4034,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-users-2"
+              "id": "pulse-analytics-users-2",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Near real-time user sync",
@@ -3755,7 +4064,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-users-3"
+              "id": "pulse-analytics-users-3",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -3787,7 +4099,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-events-0"
+              "id": "pulse-analytics-events-0",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Null filter support",
@@ -3815,7 +4130,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-events-1"
+              "id": "pulse-analytics-events-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "IST timestamp view",
@@ -3842,7 +4160,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-events-2"
+              "id": "pulse-analytics-events-2",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -3875,7 +4196,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-segment-0"
+              "id": "pulse-analytics-segment-0",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "External user data support",
@@ -3902,7 +4226,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-segment-1"
+              "id": "pulse-analytics-segment-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Clone support for segments and cohorts",
@@ -3930,7 +4257,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-segment-2"
+              "id": "pulse-analytics-segment-2",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Utility support for DOB, current time, and event time",
@@ -3958,7 +4288,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-analytics-segment-3"
+              "id": "pulse-analytics-segment-3",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Scheduled cohort refresh",
@@ -3986,7 +4319,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-analytics-segment-4"
+              "id": "pulse-analytics-segment-4",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -4020,7 +4356,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
               "releasedIn": "v3.0-analytics-intelligence",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "External user data support",
@@ -4048,7 +4387,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-journey-1"
+              "id": "pulse-journey-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Clone support for journeys",
@@ -4076,7 +4418,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-journey-2"
+              "id": "pulse-journey-2",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Utility support for DOB, current time, and event time",
@@ -4104,7 +4449,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-journey-3"
+              "id": "pulse-journey-3",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Journey engine optimization",
@@ -4131,7 +4479,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-journey-4"
+              "id": "pulse-journey-4",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Condition-based triggers",
@@ -4159,7 +4510,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-journey-5"
+              "id": "pulse-journey-5",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Null filter support",
@@ -4187,7 +4541,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-journey-6"
+              "id": "pulse-journey-6",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Google Sheets and Slack actions",
@@ -4215,7 +4572,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-journey-7"
+              "id": "pulse-journey-7",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Tag support and tag filters",
@@ -4243,7 +4603,10 @@
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
               "tags": [],
-              "id": "pulse-journey-8"
+              "id": "pulse-journey-8",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Custom Expression Support in Journey",
@@ -4269,7 +4632,10 @@
               "epicId": "analytics-intelligence",
               "due": "2026-10-01",
               "tags": [],
-              "id": "pulse-journey-9"
+              "id": "pulse-journey-9",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -4302,7 +4668,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-campaign-0"
+              "id": "pulse-campaign-0",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Dynamic topic creation",
@@ -4330,7 +4699,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-campaign-1"
+              "id": "pulse-campaign-1",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Scheduled campaign sending",
@@ -4359,7 +4731,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-campaign-2"
+              "id": "pulse-campaign-2",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Campaign logs and history",
@@ -4387,7 +4762,10 @@
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
               "tags": [],
-              "id": "pulse-campaign-3"
+              "id": "pulse-campaign-3",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -4424,7 +4802,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-ai-agents-1",
@@ -4457,7 +4838,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-ai-agents-2",
@@ -4486,7 +4870,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-ai-agents-3",
@@ -4519,7 +4906,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "AI Sales Agent for calls",
@@ -4548,7 +4938,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "pulse-ai-agents-4"
+              "id": "pulse-ai-agents-4",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "AI Sales Agent \u2013 Call summarization setup",
@@ -4577,7 +4970,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "pulse-ai-agents-5"
+              "id": "pulse-ai-agents-5",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "AI Sales Agent \u2013 Tour-specific setup",
@@ -4606,7 +5002,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "pulse-ai-agents-6"
+              "id": "pulse-ai-agents-6",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Sales Agent \u2013 Specific Tours Pilot launch tesing, stakeholder alignment",
@@ -4636,7 +5035,10 @@
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
               "id": "pulse-ai-agents-7",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "AI Assistant 2.0",
@@ -4664,7 +5066,10 @@
               "epicId": "analytics-intelligence",
               "due": "2026-07-01",
               "id": "pulse-ai-agents-8",
-              "sprintId": "sprint-6"
+              "sprintId": "sprint-6",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -4700,7 +5105,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-1",
@@ -4734,7 +5142,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-2",
@@ -4768,7 +5179,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-3",
@@ -4802,7 +5216,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.0-analytics-intelligence"
+              "releasedIn": "v3.0-analytics-intelligence",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-4",
@@ -4832,7 +5249,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-5",
@@ -4863,7 +5283,10 @@
               "planningHorizon": "1M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-4",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-6",
@@ -4895,7 +5318,10 @@
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-6",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-cdp-7",
@@ -4927,7 +5353,10 @@
               "planningHorizon": "3M",
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-6",
-              "releasedIn": "v3.1-personalization-engine"
+              "releasedIn": "v3.1-personalization-engine",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "MongoDB and Shopify data migration",
@@ -4960,7 +5389,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "pulse-cdp-8"
+              "id": "pulse-cdp-8",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "text": "Data Hub Launch",
@@ -4991,7 +5423,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "pulse-cdp-9"
+              "id": "pulse-cdp-9",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -5029,7 +5464,10 @@
               "tags": [
                 "cms"
               ],
-              "id": "pulse-headless-cms-0"
+              "id": "pulse-headless-cms-0",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -5059,7 +5497,10 @@
               "epicId": "analytics-intelligence",
               "due": "2026-10-01",
               "tags": [],
-              "id": "pulse-flow-0"
+              "id": "pulse-flow-0",
+              "tracks": [
+                "pulse"
+              ]
             }
           ]
         },
@@ -5092,7 +5533,10 @@
               "epicId": "analytics-intelligence",
               "sprintId": "sprint-5",
               "releasedIn": "v3.1-personalization-engine",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "pulse"
+              ]
             }
           ],
           "note": ""
@@ -5124,7 +5568,10 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
               "epicId": "analytics-intelligence",
-              "due": "2026-10-01"
+              "due": "2026-10-01",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-backlog-1",
@@ -5150,7 +5597,10 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
               "epicId": "analytics-intelligence",
-              "due": "2026-10-01"
+              "due": "2026-10-01",
+              "tracks": [
+                "pulse"
+              ]
             },
             {
               "id": "pulse-journey-0",
@@ -5176,7 +5626,10 @@
               "publishedDate": "2026-03-20",
               "planningHorizon": "6M",
               "epicId": "analytics-intelligence",
-              "due": "2026-10-01"
+              "due": "2026-10-01",
+              "tracks": [
+                "pulse"
+              ]
             }
           ],
           "note": ""
@@ -5218,7 +5671,10 @@
               "planningHorizon": "1M",
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-4",
-              "releasedIn": "v2.2-security-hardening"
+              "releasedIn": "v2.2-security-hardening",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "id": "devops-infrastructure-&-security-1",
@@ -5245,7 +5701,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "id": "task-1774000413314",
@@ -5275,6 +5734,9 @@
               "releasedIn": "v2.2-security-hardening",
               "tags": [
                 "analytics"
+              ],
+              "tracks": [
+                "devops"
               ]
             },
             {
@@ -5304,7 +5766,10 @@
               "planningHorizon": "1M",
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-4",
-              "releasedIn": "v2.2-security-hardening"
+              "releasedIn": "v2.2-security-hardening",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "id": "task-1774507736813",
@@ -5333,7 +5798,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-4",
               "releasedIn": "v2.2-security-hardening",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "id": "task-1774595770185",
@@ -5359,7 +5827,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-4",
               "releasedIn": "v2.2-security-hardening",
-              "tags": []
+              "tags": [],
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "text": "VAPT documentation",
@@ -5389,7 +5860,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-3",
               "releasedIn": "v2.2-security-hardening",
-              "id": "devops-infra-6"
+              "id": "devops-infra-6",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "text": "S3 to GCS migration",
@@ -5420,7 +5894,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "devops-infra-7"
+              "id": "devops-infra-7",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "text": "Grafana monitoring dashboards",
@@ -5450,7 +5927,10 @@
               "epicId": "infrastructure-optimization",
               "sprintId": "sprint-2",
               "releasedIn": "v2.1-platform-foundation",
-              "id": "devops-infra-8"
+              "id": "devops-infra-8",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "text": "Slack alerting",
@@ -5480,7 +5960,10 @@
               "tags": [
                 "observability"
               ],
-              "id": "devops-infra-9"
+              "id": "devops-infra-9",
+              "tracks": [
+                "devops"
+              ]
             },
             {
               "text": "Application monitoring",
@@ -5510,7 +5993,10 @@
               "tags": [
                 "observability"
               ],
-              "id": "devops-infra-10"
+              "id": "devops-infra-10",
+              "tracks": [
+                "devops"
+              ]
             }
           ]
         },
@@ -5543,7 +6029,10 @@
               "publishedDate": "2026-03-30",
               "planningHorizon": "3M",
               "epicId": "infrastructure-optimization",
-              "due": "2026-07-01"
+              "due": "2026-07-01",
+              "tracks": [
+                "devops"
+              ]
             }
           ],
           "note": ""

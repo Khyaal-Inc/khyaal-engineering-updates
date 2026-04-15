@@ -2224,8 +2224,24 @@ function renderSprintView() {
     const _filteredSprintItems = applyExecFilter(_allSprintItems, 'sprint');
     let html = ribbonHtml + renderExecFilterBanner(_filteredSprintItems.length, _allSprintItems.length, 'sprint');
 
+    // Filter sprints by active track AND ensure they have relevant items (Zero-Noise Filter)
+    if (activeTeam) {
+        sprints = sprints.filter(s => {
+            if (!isTrackMatch(s, activeTeam)) return false;
+            // Check if this sprint has at least one task for the active track
+            const sprintItems = typeof findItemsByMetadataId === 'function' ? findItemsByMetadataId('sprintId', s.id) : [];
+            return sprintItems.some(i => isTrackMatch(i, activeTeam));
+        });
+    }
+
     if (sprints.length === 0) {
-        container.innerHTML = html + '<div class="text-center py-20 text-slate-400">No sprints defined</div>';
+        container.innerHTML = ribbonHtml + `
+            <div class="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                <div class="text-4xl mb-4">🏜️</div>
+                <div class="text-slate-800 font-bold mb-1">No active sprints for this track</div>
+                <div class="text-slate-400 text-sm">Either no work is assigned or the team has zero tasks in current sprints.</div>
+            </div>
+        `;
         return;
     }
 
