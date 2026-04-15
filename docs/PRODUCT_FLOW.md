@@ -140,66 +140,81 @@ flowchart TD
 
 ---
 
-## 5. Multi-Project Architecture (Confirmed Design)
+## 5. Multi-Workspace Architecture (Shipped)
 
 > **Hierarchy:** Workspace → Project → Track → Subtrack → Item
-> **Auth boundary:** Role-based per user — each user has a configured set of `{ projectId, mode }` grants
-> **Data isolation:** One `data-{projectId}.json` per Project on GitHub
-> **Tracks:** Data tiers within a Project's data file — contain Subtracks which contain Items
+> **Auth boundary:** Role-based per user — each user has a configured set of `{ projectId, mode }` grants scoped to a Workspace
+> **Data isolation:** One `data-{id}.json` per Workspace on GitHub
+> **Projects:** Logical groupings inside a workspace's data file — no sub-file isolation per Project
+> **Tracks:** Data tiers within a Project — contain Subtracks which contain Items
 
 ### 5.1 Organisational Hierarchy
 
+| Tier | Location | UI control | Example |
+|------|----------|------------|---------|
+| **Workspace** | `users.json → projects[]` entry | Team-switcher (top-left dropdown) | `"Core Platform Engineering"` → `data.json` |
+| **Project** | `data.json → projects[]` entry | Project-filter dropdown | `"Khyaal Platform"`, `"Pulse Analytics & CXP"` |
+| **Track** | `project.tracks[]` | Track filter | `"Khyaal Platform"`, `"DevOps & Infrastructure"` |
+| **Subtrack** | `track.subtracks[]` | Inline within track | `"Website"`, `"API"`, `"Backlog"` |
+| **Item** | `subtrack.items[]` | Cards in all views | individual tasks |
+
 ```mermaid
 flowchart TD
-    WS[Workspace\ne.g. Core Platform Engineering\nusers.json → projects]
-    WS --> P1[Project: Platform\ndata-platform.json]
-    WS --> P2[Project: AI Agent\ndata-ai-agent.json]
-    P1 --> T1A[Track: Website]
-    P1 --> T1B[Track: Mobile]
-    P1 --> T1C[Track: Backend]
-    P2 --> T2A[Track: Sales Agent]
-    P2 --> T2B[Track: Rec Engine]
-    T1A --> S1A[Subtrack: Frontend\nSubtrack: API\nSubtrack: Backlog]
-    T1B --> S1B[Subtrack: iOS\nSubtrack: Android]
-    T2A --> S2A[Subtrack: NLP\nSubtrack: Backlog]
-    S1A & S1B & S2A --> I[Items\nsubtrack.items]
+    WS[Workspace\ne.g. Core Platform Engineering\nusers.json → projects\ndata.json]
+    WS --> P1[Project: Khyaal Platform\ndata.json → projects]
+    WS --> P2[Project: Pulse Analytics and CXP\ndata.json → projects]
+    WS --> P3[Project: DevOps and Infrastructure\ndata.json → projects]
+    P1 --> T1A[Track: Khyaal Platform]
+    P1 --> T1B[Track subtracks...]
+    P2 --> T2A[Track: Pulse Analytics]
+    P2 --> T2B[Track subtracks...]
+    T1A --> S1A[Subtrack: Website\nSubtrack: API\nSubtrack: Backlog]
+    T2A --> S2A[Subtrack: Analytics\nSubtrack: CDP]
+    S1A & S2A --> I[Items\nsubtrack.items]
+
+    WS2[Workspace\nKhyaal Mobile\ndata-mobile.json]
+    WS2 --> MP1[Project: Main Project\ndata-mobile.json → projects]
+    MP1 --> MT1[Tracks and Subtracks...]
 ```
+
+**Key implementation detail:** Switching Workspace triggers an async Lambda fetch (`?action=read&projectId={id}`) and fully replaces `UPDATE_DATA`. Switching Project only changes the active project filter within already-loaded data — no network call.
 
 ### 5.2 Role-Based Access Model
 
-Each user has a list of Project grants. Each grant specifies the Project and the permitted mode:
+Each user has a list of Workspace grants. Each grant specifies the Workspace (`projectId`) and the permitted mode:
 
 ```
 User {
-  id, name, email (optional)
+  id, name, role, email (optional)
   grants: [
-    { projectId: 'platform', mode: 'pm'   },   // PM access to Platform
-    { projectId: 'ai-agent', mode: 'exec' }    // Exec-only view of AI Agent
+    { projectId: 'default', name: 'Core Platform Engineering', mode: 'pm'   },
+    { projectId: 'mobile',  name: 'Khyaal Mobile',             mode: 'dev'  }
   ]
 }
 ```
 
 **Rules:**
-- A user with no grant for a Project cannot see it in the Project Switcher
-- The mode in the grant is the *maximum* mode — the user cannot elevate to PM if granted `dev`
-- An admin user (configured in `users.json`) can manage grants without a code deploy
-- If a user has only one accessible Project, the switcher is hidden (no noise for single-project users)
+- A user with no grant for a Workspace cannot see it in the team-switcher
+- The mode in the grant is the *maximum* mode — a `dev` grant cannot be elevated to PM
+- An admin user (any user with `pm` grant on any workspace) can manage grants via the full-screen Admin view (`switchView('admin')`) without raw JSON edits
+- If a user has exactly one accessible Workspace, the team-switcher is hidden (zero noise)
 
-### 5.3 Data Files per Project
+### 5.3 Data Files per Workspace
 
 ```
 GitHub repo
-├── data.json              ← legacy single-project file (projectId: 'default')
-├── data-platform.json     ← Platform Project
-├── data-ai-agent.json     ← AI Agent Project
-└── users.json             ← User registry with grants (admin-managed)
+├── users.json             ← User registry + workspace definitions (admin-managed)
+├── data.json              ← Default workspace (projectId: 'default') — Core Platform Engineering
+└── data-mobile.json       ← Khyaal Mobile workspace (projectId: 'mobile')
 ```
 
-Lambda resolves the correct file:
+Lambda resolves the correct file from `users.json → projects[id].filePath`:
 ```
-GET  ?action=read&projectId=platform   → reads data-platform.json
-POST ?action=write&projectId=platform  → writes data-platform.json
-GET  ?action=read-users                → reads users.json (admin only)
+GET  ?action=read&projectId=default   → reads data.json
+GET  ?action=read&projectId=mobile    → reads data-mobile.json
+POST ?action=write&projectId=mobile   → writes data-mobile.json
+GET  ?action=read&filePath=users.json → reads users.json (admin panel only)
+POST ?action=write&filePath=users.json → writes users.json (admin panel only)
 ```
 
 ### 5.4 Auth + Session Flow (Role-Based)
@@ -236,12 +251,16 @@ sequenceDiagram
 
 Lambda validates the JWT on every request and asserts the grant before touching the file.
 
-### 5.5 Project Switcher UX
+### 5.5 Workspace Switcher UX
 
-- Lives in the Strategic Ribbon header (between the KP logo and persona control)
-- Shows only projects the current user has a grant for
-- On switch: clears `UPDATE_DATA`, updates `CMS_CONFIG.filePath`, forces persona mode to the grant's `mode` if current mode exceeds the grant, calls `initDashboard()`
-- Hidden when user has exactly one project grant (zero cognitive overhead for single-project users)
+- Lives in the Strategic Ribbon header (between the KP logo and persona control) as a `<select>` element (`#team-switcher`)
+- Shows only workspaces the current user has a grant for
+- On switch: calls `switchProject(id)` which (1) clears `UPDATE_DATA`, (2) resets both `#global-team-filter` and `#project-filter` `dataset.populated` flags, (3) fetches fresh data from Lambda for the new workspace, (4) sets `UPDATE_DATA + _lastDataSha`, (5) calls `normalizeData()` + `renderDashboard()` to repopulate all filters and re-render all views
+- Hidden when user has exactly one workspace grant (zero cognitive overhead for single-workspace users)
+
+**Admin panel (full-screen):** accessible via Settings → "Open Admin ↗" or `switchView('admin')`. PM-only. Two tabs:
+- **Users & Grants** — list/add/edit/remove users; manage workspace grants per user; Save to GitHub commits `users.json`
+- **Structure** — list/add/edit/delete Projects, Tracks, and Subtracks within the active workspace's data file; Save to GitHub commits the workspace's data file
 
 ### 5.6 SaaS Path (Future)
 

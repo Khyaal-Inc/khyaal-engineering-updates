@@ -5,32 +5,38 @@
 ## Quick Start (Always Loaded)
 
 ### Project Type
-Frontend-only engineering dashboard (no backend)
+Zero-deployment frontend-only SPA — Vanilla JS, GitHub Pages, single AWS Lambda for auth + data proxy.
 
-### Current Focus Areas
-- OKR tracking and analytics
-- Kanban workflow management
-- Sprint planning and capacity management
+### Data Hierarchy (5 levels)
+```
+Workspace (users.json → projects[] → filePath)   ← team-switcher; each owns a data file
+  └─ Project (data.json → projects[])             ← project-filter dropdown
+      └─ Track (project.tracks[])                 ← track filter
+          └─ Subtrack (track.subtracks[])
+              └─ Item (subtrack.items[])
+```
+Switching **Workspace** = async Lambda fetch + full UPDATE_DATA replacement + filter reset.  
+Switching **Project** = in-memory filter only, no network call.
+
+### Current Workspaces
+- `default` → `data.json` — Core Platform Engineering
+- `mobile` → `data-mobile.json` — Khyaal Mobile
 
 ### Critical Files (Read First)
-- `core.js` - State management and routing
-- `app.js` - Data normalization
-- `views.js` - Core renderers
+- `core.js` — State management, routing (`switchView`), workspace switching (`switchProject`)
+- `app.js` — Data normalization (`normalizeData`), `renderDashboard`
+- `cms.js` — Edit modal, admin view (`renderAdminView`), GitHub sync, ceremony engine
+- `views.js` — All 19+ view renderers
 
-### Common Operations
-| Task | Command/Skill |
-|------|---------------|
-| Review code | Use `code-review` skill |
-| Fix bug | Use `quick-fix` skill |
-| Explain code | Use `code-explain` skill |
-| Add feature | Use `feature-add` skill |
-| Optimize | Use `performance-optimize` skill |
+### Admin Panel
+Full-screen view: `switchView('admin')` — PM-only. Two tabs:
+- **Users & Grants**: user CRUD + workspace grant management → saves `users.json`
+- **Structure**: Project → Track → Subtrack CRUD within active workspace → saves workspace data file
 
 ### Exclusions (Token Savings)
 - `archive/` - Historical data (large)
 - `lambda.zip` - Deployment artifact
-- `node_modules/` - Dependencies
-- `data.json` - Read only when explicitly needed
+- `data.json` / `data-mobile.json` - Read only when explicitly needed
 
 ### Recent Changes (Auto-Updated)
 Check `git log -5 --oneline` for latest commits
@@ -44,11 +50,15 @@ Frontend SPA with GitHub-backed data storage. AWS Lambda handles authentication.
 
 ### #data-model
 Central `UPDATE_DATA` global object contains:
-- `tracks[]` - Product areas with subtracks and items
+- `projects[]` - Logical project groupings, each with `tracks[]`
+- `tracks[]` - Synced to active project's tracks via `normalizeData()` (CMS code reads this)
 - `metadata.epics[]` - Strategic goals
 - `metadata.okrs[]` - Quarterly objectives
 - `metadata.sprints[]` - 2-week cycles
 - `metadata.capacity` - Team capacity planning
+
+`window.PROJECT_REGISTRY` = array of workspace entries from `users.json.projects[]` (used by team-switcher).  
+`_adminUsersData` = full `users.json` object `{ users[], projects[] }` loaded only for Admin view.
 
 Items have: id, text, status, priority, storyPoints, contributors, dependencies, etc.
 

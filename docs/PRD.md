@@ -213,19 +213,28 @@ Existing tools solve parts of the problem:
 - SVG hover affordance: cursor + brightness filter on node hover signals interactivity
 - Reverse node map (`_depNodeMap`) bridges Mermaid's sanitised SVG IDs back to original item IDs
 
-#### F11 — Multi-Project + Role-Based Access *(Confirmed design — internal vNext)*
+#### F11 — Multi-Workspace + Role-Based Access ✅ Shipped
 
 **Hierarchy:** Workspace → Project → Track → Subtrack → Item
 
-- Each Project has a dedicated `data-{projectId}.json` file on GitHub (full data isolation)
-- Tracks and Subtracks are data tiers within a Project's data file — no sub-file isolation per Track
-- `users.json` on GitHub stores the user registry: `{ id, name, passwordHash, grants[] }`
-- Each grant: `{ projectId, mode }` — controls which projects a user can see and at what max persona level
-- Lambda issues a user-scoped JWT containing `grants[]`; validates grants on every read/write request
-- Project Switcher in the Strategic Ribbon shows only the user's accessible projects
-- Persona switcher disables modes above the user's grant level for the active project
+| Tier | Storage | Notes |
+|------|---------|-------|
+| **Workspace** | `users.json → projects[]` entry; each has a `filePath` | Full data isolation — one `data-{id}.json` per workspace |
+| **Project** | `[workspace].json → projects[]` entry | Logical grouping within a workspace's data file |
+| **Track** | `project.tracks[]` | Functional area filter |
+| **Subtrack** | `track.subtracks[]` | Sub-area within a track |
+| **Item** | `subtrack.items[]` | Individual task/card |
 
-**Admin surface:** A PM-only admin CMS panel to manage users and grants without raw JSON edits.
+- `users.json` on GitHub stores the user registry: `{ id, name, role, passwordHash, grants[] }`
+- Each grant: `{ projectId, name, mode }` — scoped to a Workspace; controls visibility and max persona level
+- Lambda issues a user-scoped JWT containing `grants[]`; validates grants on every read/write request
+- Workspace switcher (`#team-switcher`) shows only the user's accessible workspaces
+- Persona switcher disables modes above the user's grant level for the active workspace
+- Switching workspace: async Lambda fetch → full `UPDATE_DATA` replacement → all filters + views re-render
+
+**Admin surface ✅ Shipped:** Full-screen Admin view (`switchView('admin')`), PM-only, two tabs:
+- **Users & Grants** — inline user CRUD, grant management per workspace, saves `users.json` via Lambda
+- **Structure** — accordion Project → Track → Subtrack CRUD within active workspace's data file
 
 #### F11b — Multi-Tenant SaaS *(Productization — future)*
 - Each customer org gets a dedicated GitHub repo + Lambda deployment

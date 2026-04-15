@@ -60,33 +60,40 @@ The backend (Lambda) adopts a serverless routing model, extended to accept `proj
 
 ## 4. Multi-Project + Role-Based Auth Architecture (Primary Decision)
 
-### Confirmed organisational model
+### Confirmed organisational model — Shipped
 
 **Hierarchy: Workspace → Project → Track → Subtrack → Item**
 
-Tracks and Subtracks are data tiers within a Project's data file — no separate data files per Track. Each Project has full data isolation via its own `data-{projectId}.json` file on GitHub. The Workspace is the top-level container defined in `users.json → projects[]`.
+| Tier | Storage | Isolation boundary |
+|------|---------|-------------------|
+| **Workspace** | `users.json → projects[]` entry; each has a `filePath` | Full data isolation — one `data-{id}.json` per workspace on GitHub |
+| **Project** | `[workspace].json → projects[]` entry | Logical grouping within a workspace's data file — no sub-file per project |
+| **Track** | `project.tracks[]` | Functional area filter |
+| **Subtrack** | `track.subtracks[]` | Sub-area within a track |
+| **Item** | `subtrack.items[]` | Individual task / card |
 
-### Current state
+Switching **Workspace** = Lambda fetches a new data file. Switching **Project** = filters already-loaded data.
 
-All data is global. One shared password grants full access. No user identity. `data.json` is the single source of truth for every view, every persona.
-
-### Target state
+### Current state (shipped)
 
 ```
-Workspace: Core Platform Engineering  (users.json → projects[])
-├── Platform Project       → data-platform.json
-│   ├── Track: Website
-│   │   ├── Subtrack: Frontend
-│   │   └── Subtrack: API           ← data tiers (no separate isolation)
-│   ├── Track: Mobile
-│   └── Track: Backend
-└── AI Agent Project       → data-ai-agent.json
-    ├── Track: Sales Agent
-    └── Track: Rec Engine
+Workspace: Core Platform Engineering  (users.json → projects[] → data.json)
+├── Project: Khyaal Platform
+│   ├── Track: Khyaal Platform
+│   │   ├── Subtrack: Website
+│   │   ├── Subtrack: API
+│   │   └── Subtrack: Backlog
+│   └── Track: ... (other tracks)
+├── Project: Pulse Analytics & CXP
+└── Project: DevOps & Infrastructure
 
-User "Gautam"  → grants: [{ projectId: 'platform', mode: 'pm' }, { projectId: 'ai-agent', mode: 'exec' }]
-User "Priya"   → grants: [{ projectId: 'platform', mode: 'dev' }]
-User "CEO"     → grants: [{ projectId: 'platform', mode: 'exec' }, { projectId: 'ai-agent', mode: 'exec' }]
+Workspace: Khyaal Mobile  (users.json → projects[] → data-mobile.json)
+└── Project: Main Project
+    └── Track: ... (mobile tracks)
+
+User "Gautam"    → grants: [{ projectId: 'default', mode: 'pm' }, { projectId: 'mobile', mode: 'pm' }]
+User "Vivek"     → grants: [{ projectId: 'default', mode: 'dev' }, { projectId: 'mobile', mode: 'dev' }]
+User "Pritish"   → grants: [{ projectId: 'default', mode: 'exec' }, { projectId: 'mobile', mode: 'exec' }]
 ```
 
 ### Data files on GitHub
@@ -215,12 +222,12 @@ if (!grant || grant.mode === 'exec') return { statusCode: 403, body: 'Write not 
 | 1 | **Concurrent edit collision** — two users save simultaneously, one overwrites the other | High | Medium | Optimistic lock: compare `last-commit SHA` before write; show warning toast if SHA changed | M | 1 |
 | 2 | **`users.json` corruption or deletion** — no one can log in | High | Low | Keep a local backup; Lambda returns `503` with a clear diagnostic if file is missing; add CloudWatch alarm on 5xx spike | S | 2 |
 | 3 | **JWT grant bypass from client** — a user manually upgrades their JWT mode in localStorage | High | Low | Lambda validates grants on every request server-side; client persona state is display-only | S | 2 |
-| 4 | **Accidental cross-project data bleed** — `cms.js` writes an item to the wrong project file | High | Low | Lambda asserts: `payload.projectId === queryParam.projectId`; reject with 400 if mismatch | S | 2 |
-| 5 | **`normalizeData()` migration** — adding `projectId` without migrating existing `data.json` breaks entity lookups | High | High | `normalizeData()` stamps `projectId: 'default'` on entities that lack it (idempotent, already implemented in Phase 1) | ✅ done | 1 |
-| 6 | **Stale data after project switch** — `UPDATE_DATA` reflects the previous project | Medium | High | `switchProject()` clears `UPDATE_DATA` and calls `initDashboard()` (implemented in Phase 1) | ✅ done | 1 |
+| 4 | **Accidental cross-workspace data bleed** — `cms.js` writes an item to the wrong workspace file | High | Low | Lambda asserts: `payload.projectId === queryParam.projectId`; reject with 400 if mismatch | S | 2 |
+| 5 | **`normalizeData()` migration** — adding `projectId` without migrating existing `data.json` breaks entity lookups | High | High | `normalizeData()` stamps `projectId: 'default'` on entities that lack it (idempotent, implemented) | ✅ done | 1 |
+| 6 | **Stale data after workspace switch** — `UPDATE_DATA` reflects the previous workspace | Medium | High | `switchProject()` is async: fetches new workspace data from Lambda, then calls `normalizeData()` + `renderDashboard()`. Both `#global-team-filter` and `#project-filter` `dataset.populated` flags are cleared before fetch so they repopulate from new data. | ✅ done | ✅ |
 | 7 | **Persona escalation** — user granted `dev` switches to `pm` via keyboard shortcut | Medium | Medium | `switchProject()` enforces max-mode from JWT grant; persona switcher greys out modes above grant | ✅ done | ✅ |
 | 8 | **GitHub API rate limit** — 5k req/hr shared across all users | Medium | Low | 2 req per login × 20 users × 10 logins/day = 400 req/day — well within limit. Add header check if team grows | S | 2 |
-| 9 | **`users.json` admin UX** — raw JSON editing is error-prone; a typo locks someone out | Medium | Medium | PM-only Admin CMS panel built: list users, add/remove users, manage grants, set passwords — writes via Lambda `filePath: 'users.json'` | ✅ done | ✅ |
+| 9 | **`users.json` admin UX** — raw JSON editing is error-prone; a typo locks someone out | Medium | Medium | Full-screen Admin view (`switchView('admin')`): PM-only, two tabs (Users & Grants / Structure), inline forms, no `prompt()` dialogs, saves `users.json` via Lambda | ✅ done | ✅ |
 | 10 | **Lambda cold start on auth** — first login after idle reads `users.json` + project file (2 GitHub calls) | Low | High | Acceptable at internal scale (<3s total); add provisioned concurrency if P95 > 5s in CloudWatch | S | 2 |
 | 11 | **CDN version drift** — unpinned Tailwind CDN ships a breaking change | Low | Low | Pin to `cdn.tailwindcss.com/3.4.1` in `index.html` | S | 1 |
 | 12 | **SaaS path breaks `users.json` model** — per-org user management needs more than a flat file | Low | Low (now) | When productizing: move user/grant store to a managed DB (DynamoDB or Supabase); JWT structure stays identical | L | future |

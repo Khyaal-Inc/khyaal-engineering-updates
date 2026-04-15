@@ -36,13 +36,13 @@ We leverage the power of modern browsers to eliminate deployment complexity:
 ### File Structure
 ```
 Browser
-  └── index.html          (HTML shell, auth, view containers)
-       ├── core.js         (constants, helpers, switchView, keyboard shortcuts)
+  └── index.html          (HTML shell, auth, view containers including #admin-view)
+       ├── core.js         (constants, helpers, switchView, switchProject, keyboard shortcuts)
        ├── app.js          (UPDATE_DATA, renderDashboard, normalizeData)
        ├── workflow-nav.js (**OWNER**: Unified Strategic Ribbon, lifecycle taxonomy)
        ├── modes.js        (PM/Dev/Exec personas, mode-based filtering, Alt+1/2/3)
        ├── views.js        (Track, Backlog, Sprint, Status, Priority, Contributor, Releases, Gantt, Roadmap, Epics, Workflow, Discovery)
-       ├── cms.js          (edit modal, GitHub sync, ceremony engine, audit system)
+       ├── cms.js          (edit modal, GitHub sync, ceremony engine, audit system, full-screen Admin view)
        ├── lifecycle-guide.js  (quick actions, gateway checks, toasts, sprint HUD)
        ├── okr-module.js   (OKR view + progress calculation)
        ├── kanban-view.js  (drag-drop Kanban board)
@@ -52,6 +52,11 @@ Browser
        ├── dev-focus.js    (Developer "My Tasks" view)
        ├── executive-dashboard.js (Exec KPI summary)
        └── styles.css      (full design system)
+
+Data files:
+       ├── users.json      (user registry + workspace definitions — admin-managed)
+       ├── data.json       (default workspace data — Core Platform Engineering)
+       └── data-{id}.json  (additional workspace data files, e.g. data-mobile.json)
 ```
 
 ### Data Flow Strategy
@@ -70,15 +75,17 @@ graph LR
 Workspace → Project → Track → Subtrack → Item
 ```
 
-| Tier | JSON location | Example |
-|------|--------------|---------|
-| **Workspace** | `users.json → projects[].name` | `"Core Platform Engineering"` |
-| **Project** | `users.json → projects[]` (each has a `filePath`) | `"Khyaal Engineering"` → `data.json` |
-| **Track** | `data.json → tracks[]` | `"platform"`, `"pulse"`, `"devops"` |
-| **Subtrack** | `track.subtracks[]` | `"Website"`, `"API"`, `"Backlog"` |
-| **Item** | `subtrack.items[]` | individual tasks / cards |
+| Tier | JSON location | UI control | Example |
+|------|--------------|------------|---------|
+| **Workspace** | `users.json → projects[]` (`id`, `name`, `filePath`) | Team-switcher dropdown | `"Core Platform Engineering"` → `data.json` |
+| **Project** | `[workspace-data].json → projects[]` | Project-filter dropdown | `"Khyaal Platform"`, `"Pulse Analytics & CXP"` |
+| **Track** | `project.tracks[].name` | Track filter | `"platform"`, `"pulse"`, `"devops"` |
+| **Subtrack** | `track.subtracks[].name` | Inline within track | `"Website"`, `"API"`, `"Backlog"` |
+| **Item** | `subtrack.items[]` | Cards in all views | individual tasks / cards |
 
-User grants in `users.json` are scoped to the **Project** tier (`projectId`). Tracks and Subtracks are data tiers inside a project's data file — not separately permissioned.
+**Workspace vs Project:** A Workspace maps to a distinct GitHub data file (e.g. `data.json`, `data-mobile.json`). Switching workspaces fetches fresh data from Lambda. A Project is a logical grouping *inside* a workspace's data file — switching projects filters the already-loaded data without a network call.
+
+User grants in `users.json` are scoped to the **Workspace** tier (`projectId`). Tracks and Subtracks are data tiers inside a workspace's data file — not separately permissioned.
 
 ---
 

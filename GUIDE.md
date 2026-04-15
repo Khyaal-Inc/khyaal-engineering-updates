@@ -157,15 +157,29 @@ Now → [Move to QA] → QA → [Send to Review] → Review → [Mark Done] → 
 
 ---
 
-## Projects & Tracks
+## Workspaces, Projects & Tracks
 
-**Tracks are the top-level product areas within a project.** Everything in this dashboard — tasks, epics, sprints, releases — belongs to a track. Each track contains subtracks, and each subtrack holds the individual work items.
+The dashboard uses a 5-level hierarchy:
 
-Examples: `platform` (Website, API, Backlog), `pulse` (Analytics, CDP, AI Agents), `devops` (Infrastructure, Backlog)
+```
+Workspace → Project → Track → Subtrack → Item
+```
 
-Use the **📁 Project** dropdown in the top bar to filter the entire dashboard to one project. All views, counts, and ceremonies respect this filter.
+| Level | What it is | How to switch |
+|-------|-----------|---------------|
+| **Workspace** | Top-level data boundary — each maps to a separate data file on GitHub (e.g. `data.json`, `data-mobile.json`) | Team-switcher dropdown (top-left, next to the KP logo) |
+| **Project** | Logical grouping of tracks within a workspace's data file | Project-filter dropdown (next to team-switcher) |
+| **Track** | Functional product area within a project | Track filter dropdown |
+| **Subtrack** | Sub-area within a track | Inline within each track card |
+| **Item** | Individual task / card | Cards in every view |
 
-**Why this matters**: When you run a Sprint Kickoff ceremony, it's for a specific project's sprint. When you check the Kanban board filtered to "Mobile," you only see Mobile team work. This is how teams of 10+ stay in their lanes without losing sight of the big picture.
+**Switching Workspaces** fetches a completely different data file from GitHub. All views, filters, sprints, OKRs, and epics switch to the new workspace's data. Example: switching from "Core Platform Engineering" to "Khyaal Mobile" loads `data-mobile.json` — a fully independent dataset.
+
+**Switching Projects** filters the already-loaded workspace data — no network call. Example: switching from "All Projects" to "Khyaal Platform" filters every view to only show Khyaal Platform tracks and items.
+
+**Tracks** are the functional product areas within a project (e.g. `platform` → Website, API, Backlog). Use the **track filter** to focus any view on a single team's work.
+
+**Admin (PM only):** Click ⚙️ → "Open Admin ↗" to manage workspaces, users, grants, projects, tracks, and subtracks in the full-screen Admin view. No raw JSON editing needed.
 
 ---
 

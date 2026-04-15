@@ -16,20 +16,22 @@ Zero-deployment, no-build, frontend-only SPA. No Node.js, no bundler, no server.
 ## Data Hierarchy
 
 ```
-Workspace  (users.json → projects[])
-  └─ Project  (each projects[] entry → owns a data.json file)
-      └─ Track  (data.json → tracks[])
+Workspace  (users.json → projects[] → each owns a data file)
+  └─ Project  (data.json → projects[] → groups tracks)
+      └─ Track  (project.tracks[])
           └─ Subtrack  (track.subtracks[])
               └─ Item  (subtrack.items[])
 ```
 
-| Tier | JSON location | Example |
-|------|--------------|---------|
-| Workspace | `users.json → projects[].name` | `"Core Platform Engineering"` |
-| Project | `users.json → projects[]` (each has a `filePath`) | `"Khyaal Engineering"` → `data.json` |
-| Track | `data.json → tracks[].name` | `"platform"`, `"pulse"`, `"devops"` |
-| Subtrack | `track.subtracks[].name` | `"Website"`, `"API"`, `"Backlog"` |
-| Item | `subtrack.items[]` | individual tasks / cards |
+| Tier | JSON location | UI control | Example |
+|------|--------------|------------|---------|
+| Workspace | `users.json → projects[]` (each has `id`, `name`, `filePath`) | Team-switcher dropdown (top-left) | `"Core Platform Engineering"` → `data.json` |
+| Project | `[workspace].json → projects[]` (groups tracks within data file) | Project-filter dropdown | `"Khyaal Platform"`, `"Pulse Analytics & CXP"` |
+| Track | `project.tracks[].name` | Track filter (`global-team-filter`) | `"platform"`, `"pulse"`, `"devops"` |
+| Subtrack | `track.subtracks[].name` | Inline within track | `"Website"`, `"API"`, `"Backlog"` |
+| Item | `subtrack.items[]` | Cards in all views | individual tasks / cards |
+
+**Key distinction:** Workspace = top-level data-file boundary (one `data-{id}.json` per workspace on GitHub). Project = logical grouping inside that data file. Switching workspaces fetches a new data file from Lambda; switching projects filters within the already-loaded data.
 
 ## File Responsibilities
 
@@ -40,7 +42,7 @@ Workspace  (users.json → projects[])
 | `workflow-nav.js` | **Unified Strategic Ribbon**, `WORKFLOW_STAGES`, lifecycle taxonomy |
 | `modes.js` | PM/Dev/Exec persona filtering, `Alt+1/2/3` switching |
 | `views.js` | All 19 primary view renderers, `renderItem()`, grooming mode |
-| `cms.js` | Edit modal, GitHub sync, ceremony engine, audit records, CRUD |
+| `cms.js` | Edit modal, GitHub sync, ceremony engine, audit records, CRUD, full-screen Admin view (`renderAdminView`) |
 | `lifecycle-guide.js` | Quick actions, gateway checks, toasts, sprint HUD, cadence nudge |
 
 ## Build / Lint / Deploy Commands

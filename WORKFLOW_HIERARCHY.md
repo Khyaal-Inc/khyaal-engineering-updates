@@ -115,7 +115,21 @@ Discover → Vision → Plan → Build → Ship → (loops back)
 
 ## Data Hierarchy & Linkages
 
-The 7-layer data hierarchy maps to the lifecycle stages:
+### Organisational Hierarchy (5 levels)
+
+```
+Workspace   (users.json → projects[])              ← team-switcher; each maps to a data file
+  └─ Project (data.json → projects[])              ← project-filter dropdown within a workspace
+      └─ Track (project.tracks[])                  ← track filter; functional area
+          └─ Subtrack (track.subtracks[])           ← sub-area within a track
+              └─ Item (subtrack.items[])            ← individual task / card
+```
+
+**Workspace vs Project distinction:**
+- Switching **Workspace** = Lambda fetches a different data file (e.g. `data-mobile.json`). All filters reset.
+- Switching **Project** = filters already-loaded data within the active workspace's file. No network call.
+
+### Strategic Hierarchy (maps to lifecycle stages)
 
 ```
 Vision (metadata.vision)                     ← Stage 2 (Vision)
