@@ -8,7 +8,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "pm"
         },
         {
@@ -26,7 +26,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]
@@ -39,7 +39,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]
@@ -52,7 +52,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]
@@ -65,7 +65,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]
@@ -78,7 +78,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]
@@ -91,7 +91,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "pm"
         },
         {
@@ -109,7 +109,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "exec"
         },
         {
@@ -127,7 +127,7 @@
       "grants": [
         {
           "projectId": "default",
-          "name": "Khyaal Engineering",
+          "name": "Core Platform Engineering",
           "mode": "dev"
         },
       ]

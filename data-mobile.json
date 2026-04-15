@@ -3,8 +3,8 @@
     "title": "Khyaal Mobile",
     "workspace": "Khyaal Mobile",
     "dateRange": "12th April 2026 – Active",
-    "description": "Engineering pulse for Khyaal Mobile app development — tracking OKRs, sprints, and app feature delivery.",
-    "vision": "Build the best mobile experience for active seniors in India, with seamless onboarding, engaging features, and reliable performance.",
+    "description": "Live engineering pulse for the Khyaal Mobile workspace — tracking app feature delivery, bug resolution, sprint velocity, and release cadence across Q2 2026.",
+    "vision": "Make Khyaal the daily companion for active Indian seniors — with instant onboarding, engaging features, and the reliability that builds long-term trust and daily habit.",
     "modes": {
       "default": "pm",
       "devDefaultView": "my-tasks",
@@ -15,10 +15,10 @@
         "id": "app-experience",
         "name": "App Experience & Feature Expansion",
         "track": "Khyaal App",
-        "objective": "Ship app features that grow downloads, engagement, and user retention",
-        "scope": "App bugs batch, Offline Events mobile, 50A50 app upload, Guided Tours, Center Stage, Streak, Gamification",
-        "keyDeliverables": "App bugs released, Offline Events mobile UI, 50A50 app-only upload, Guided Tours for new users",
-        "successMetrics": "App downloads +20%, retention D7 +15%, Guided Tour completion >60%",
+        "objective": "Fix app stability, ship Offline Events mobile UI and 50A50 app-only upload, and introduce Guided Tours onboarding — driving Q2 downloads growth and improving D7 retention through a polished first-run experience",
+        "scope": "App Bugs Batch (released Apr 11), Offline Events mobile UI (Sprint-7), 50A50 app-only upload mobile (Sprint-7), Guided Tours for first-launch (Sprint-8), Center Stage (Sprint-8), Streak and Gamification (Q3 backlog)",
+        "keyDeliverables": "App Bugs Batch v1.0 released Apr 11, Offline Events mobile UI live Apr 24, 50A50 app-only upload live May 9, Guided Tours onboarding live May 23",
+        "successMetrics": "App downloads +20% vs Q1, D7 retention +15%, Guided Tour completion rate >60% of new installs",
         "timeline": "Apr 12 - May 23, 2026",
         "health": "on-track",
         "status": "in_progress",
@@ -30,12 +30,12 @@
       {
         "id": "okr-q2-2026-mobile",
         "quarter": "Q2 2026",
-        "objective": "Ship app features that grow downloads, engagement, and user retention",
+        "objective": "Ship a stable, feature-rich app experience that grows Q2 downloads by 20% and improves D7 retention by 15% — through critical bug fixes, Offline Events, app-only upload, and onboarding improvements",
         "owner": "Mobile Team",
         "keyResults": [
           {
             "id": "kr-mob-1",
-            "description": "App Bugs Batch released (Apr 11)",
+            "description": "App Bugs Batch v1.0 released Apr 11 — resolving event listing auto-refresh, subscription cancelled sheet, and existing crash/UX issues",
             "target": 1,
             "current": 1,
             "unit": "release",
@@ -45,7 +45,7 @@
           },
           {
             "id": "kr-mob-2",
-            "description": "Offline Events mobile UI shipped (Apr 24)",
+            "description": "Offline Events mobile UI live by Apr 24 — enabling users to discover, register for, and manage QR-ticketed offline events directly from the app",
             "target": 1,
             "current": 0,
             "unit": "launch",
@@ -55,7 +55,7 @@
           },
           {
             "id": "kr-mob-3",
-            "description": "50A50 app-only entry upload live to drive app downloads (May 8)",
+            "description": "50A50 entry submission locked to app-only by May 9 — making the Khyaal app the exclusive upload channel to drive new contestant installs",
             "target": 1,
             "current": 0,
             "unit": "launch",
@@ -65,7 +65,7 @@
           },
           {
             "id": "kr-mob-4",
-            "description": "Guided Tours launched for new users on first launch",
+            "description": "Guided onboarding tour live by May 23 — showing new users events, membership, Digi-gold, and community features on first launch, targeting >60% tour completion rate",
             "target": 1,
             "current": 0,
             "unit": "launch",
@@ -80,10 +80,10 @@
     "sprints": [
       {
         "id": "sprint-6",
-        "name": "App Bug Fix + Stability",
+        "name": "App Stability & Bug Fix Sprint",
         "startDate": "2026-04-12",
         "endDate": "2026-04-25",
-        "goal": "Fix remaining app bugs (modify event link, login OTP UX, KCMC card copy), prepare for Offline Events mobile work",
+        "goal": "Resolve the 3 remaining app bugs from the v1.0 batch (modify event link cache, login OTP error UX, KCMC card delivery copy) and complete groundwork for Offline Events mobile UI in Sprint-7",
         "tracks": [
           "Khyaal App"
         ],
@@ -94,10 +94,10 @@
       },
       {
         "id": "sprint-7",
-        "name": "App Feature Sprint",
+        "name": "Offline Events & Upload Sprint",
         "startDate": "2026-04-26",
         "endDate": "2026-05-09",
-        "goal": "Offline Events mobile UI, 50A50 app-only entry upload mobile UI, Assistant Bot v2.0.1 mobile update",
+        "goal": "Ship Offline Events mobile UI (discovery, registration, QR ticket view), 50A50 app-only entry upload mobile flow, and Assistant Bot v2.0.1 mobile UI upgrade",
         "tracks": [
           "Khyaal App"
         ],
@@ -108,10 +108,10 @@
       },
       {
         "id": "sprint-8",
-        "name": "App Growth Sprint",
+        "name": "Onboarding & Campaign Sprint",
         "startDate": "2026-05-10",
         "endDate": "2026-05-23",
-        "goal": "Guided Tours for new users, Center Stage, Parents Day campaign mobile side",
+        "goal": "Ship Guided Tours for new user onboarding (first-launch flow), Center Stage feature, and Parents Day mobile campaign assets — all ready by May 23 for Jun 1 go-live",
         "tracks": [
           "Khyaal App"
         ],
@@ -172,7 +172,7 @@
     "capacity": {
       "teamMembers": [
         {
-          "name": "Mobile Team",
+          "name": "Reefaq",
           "capacity": 40,
           "track": "Khyaal App",
           "role": "Mobile Engineer"
@@ -205,7 +205,9 @@
               "status": "done",
               "priority": "high",
               "storyPoints": 13,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "Batch of current app bug fixes. Released Apr 11.",
               "usecase": "Improves app stability and fixes user-reported issues.",
               "acceptanceCriteria": [
@@ -233,7 +235,9 @@
               "status": "done",
               "priority": "medium",
               "storyPoints": 3,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "Event listing only refreshed on pull-to-refresh. Seniors expect auto-refresh when visiting the screen. Fixed in 3.1.5.",
               "usecase": "Ensures seniors always see up-to-date events without knowing the pull-to-refresh gesture.",
               "acceptanceCriteria": [
@@ -261,7 +265,9 @@
               "status": "done",
               "priority": "medium",
               "storyPoints": 5,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "Dashboard to view and export list of users with cancelled UPI subscriptions. Released Apr 2.",
               "usecase": "Enables ops team to identify and follow up with lapsed subscribers.",
               "acceptanceCriteria": [
@@ -289,7 +295,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 3,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "Modifying an event 2-3 days early still shows the old link for some users due to caching.",
               "usecase": "Ensures all users see the correct event link immediately after modification.",
               "acceptanceCriteria": [
@@ -317,7 +325,9 @@
               "status": "next",
               "priority": "low",
               "storyPoints": 2,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "After OTP entry some users see Oops something went wrong due to network issues. Needs better error message.",
               "usecase": "Reduces user confusion and support tickets for temporary network errors.",
               "acceptanceCriteria": [
@@ -345,7 +355,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 1,
-              "contributors": [],
+              "contributors": [
+                "Reefaq"
+              ],
               "note": "App shows 5-7 days for KCMC card delivery. Update to 15 business days on app-side display.",
               "usecase": "Sets accurate delivery expectations; prevents support tickets.",
               "acceptanceCriteria": [
@@ -459,18 +471,19 @@
             },
             {
               "id": "mobile-feat-guided-tours",
-              "text": "Guided Tours — onboarding flow for new users on first launch",
+              "text": "Guided Tours — interactive onboarding flow for new users on first launch",
               "status": "later",
               "priority": "medium",
               "storyPoints": 13,
               "contributors": [],
-              "note": "Guided tour for new users on first app launch. Increases app usage by reducing onboarding friction.",
-              "usecase": "Increases D7 retention by showing users key app features on first launch.",
+              "note": "Step-by-step guided tour shown to new users on first app launch. Reduces onboarding friction by surfacing 4 key features (events, membership, Digi-gold, community) before the user reaches the home screen.",
+              "usecase": "Increases D7 retention by ensuring new users understand and engage with core features within their first session — targeting >60% tour completion rate.",
               "acceptanceCriteria": [
-                "Tour shown on first launch only",
-                "Covers: events, membership, digi-gold, community",
-                "Skip option available",
-                "Tour completion tracked"
+                "Tour shown automatically on first launch only (flag stored in local storage)",
+                "Covers 4 screens: events discovery, membership benefits, Digi-gold, community tab",
+                "Skip / I'll explore later option available at any step",
+                "Tour completion tracked as an analytics event",
+                "Tour does not block navigation if dismissed"
               ],
               "effortLevel": "high",
               "impactLevel": "high",
@@ -481,24 +494,25 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-05-10",
-              "due": "",
+              "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "app-experience",
               "sprintId": "sprint-8"
             },
             {
               "id": "mobile-feat-center-stage",
-              "text": "Center Stage",
+              "text": "Center Stage — member spotlight section for sharing achievements and milestones",
               "status": "next",
               "priority": "medium",
               "storyPoints": 8,
               "contributors": [],
-              "note": "Center Stage feature for the Khyaal App. Details to be spec with server team.",
-              "usecase": "New engagement feature for app users.",
+              "note": "Center Stage is a community spotlight section where members can share personal achievements, event highlights, and life milestones. API spec to be finalized with the Core Platform team before Sprint-8 development begins.",
+              "usecase": "Promotes active community participation and social connection — giving members a stage to celebrate achievements and inspiring others to engage more deeply with the platform.",
               "acceptanceCriteria": [
-                "Feature spec defined and approved",
-                "Mobile UI implemented",
-                "Server API integration complete"
+                "Feature spec signed off with Core Platform team before sprint-8 starts",
+                "Mobile UI: feed view, post creation flow, like/comment interactions",
+                "Server API integration working (create post, list posts, moderate content)",
+                "Content moderation hooks in place before launch"
               ],
               "effortLevel": "high",
               "impactLevel": "medium",
@@ -508,24 +522,27 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-05-10",
-              "due": "",
+              "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "app-experience",
               "sprintId": "sprint-8"
             },
             {
               "id": "mobile-feat-parents-day",
-              "text": "Parents Day Campaign — mobile side (Jun 1 release)",
+              "text": "Parents Day Campaign — mobile banner, deep link, and push notification (ready May 23, launches Jun 1)",
               "status": "next",
               "priority": "high",
               "storyPoints": 5,
-              "contributors": [],
-              "note": "Mobile-side campaign for Parents Day. Dev must start by May 10 for May 8 release.",
-              "usecase": "Seasonal campaign to drive engagement around Parents Day.",
+              "contributors": [
+                "Reefaq"
+              ],
+              "note": "Mobile-side assets for the Parents Day campaign. Dev starts May 10 (sprint-8 start). All in-app banner, deep link, and push notification must be QA'd by May 23. Campaign goes live Jun 1 — ops team schedules the push independently.",
+              "usecase": "Seasonal campaign to drive membership sign-ups and event attendance around Parents Day (Jun 1), reaching users directly in the app with a personalised notification.",
               "acceptanceCriteria": [
-                "Campaign banner/notification in app by May 8",
-                "Deep link to campaign landing page works",
-                "Push notification configured for Jun 1"
+                "In-app campaign banner built and QA'd by May 23",
+                "Deep link to campaign landing page tested on both iOS and Android",
+                "Push notification template configured and tested (scheduled for Jun 1)",
+                "Ops team briefed — can launch Jun 1 without engineering on-call"
               ],
               "effortLevel": "medium",
               "impactLevel": "high",
@@ -536,7 +553,7 @@
               ],
               "mediaUrl": "",
               "startDate": "2026-05-10",
-              "due": "2026-05-08",
+              "due": "2026-05-23",
               "planningHorizon": "3M",
               "epicId": "app-experience",
               "sprintId": "sprint-8"
