@@ -2,9 +2,9 @@
   "metadata": {
     "title": "Khyaal Engineering Pulse",
     "workspace": "Core Platform Engineering",
-    "dateRange": "12th April 2026 – Active",
-    "description": "Live engineering pulse for Khyaal's Core Platform Engineering workspace — a single source of truth for epics, OKRs, sprints, releases, and team velocity across Platform, Pulse Analytics, and DevOps. Serves PM, Dev, and Exec personas.",
-    "vision": "Become the most trusted platform for active aging in India — delivering exceptional digital experiences that help seniors live richer, more connected lives through technology, community, and personalized service.",
+    "dateRange": "12th April 2026 \u2013 Active",
+    "description": "Live engineering pulse for Khyaal's Core Platform Engineering workspace \u2014 a single source of truth for epics, OKRs, sprints, releases, and team velocity across Platform, Pulse Analytics, and DevOps. Serves PM, Dev, and Exec personas.",
+    "vision": "Become the most trusted platform for active aging in India \u2014 delivering exceptional digital experiences that help seniors live richer, more connected lives through technology, community, and personalized service.",
     "modes": {
       "default": "pm",
       "devDefaultView": "my-tasks",
@@ -14,10 +14,12 @@
       {
         "id": "platform-modernization",
         "name": "Platform Modernization & Launch",
-        "track": "Khyaal Platform",
-        "objective": "Migrate 29 legacy pages to the new stack, achieve 95% VAPT security compliance, and launch the ₹99 subscription tier — establishing a stable, revenue-generating platform foundation for Q2 growth",
-        "scope": "Website migration (29 pages), ₹99 subscription launch, VAPT security hardening, 50Above50 improvements, CRM integration, API enhancements",
-        "keyDeliverables": "29 pages migrated to new stack, ₹99 subscription live and processing payments, VAPT compliance >92%, app-code authentication shipped",
+        "tracks": [
+          "platform"
+        ],
+        "objective": "Migrate 29 legacy pages to the new stack, achieve 95% VAPT security compliance, and launch the \u20b999 subscription tier \u2014 establishing a stable, revenue-generating platform foundation for Q2 growth",
+        "scope": "Website migration (29 pages), \u20b999 subscription launch, VAPT security hardening, 50Above50 improvements, CRM integration, API enhancements",
+        "keyDeliverables": "29 pages migrated to new stack, \u20b999 subscription live and processing payments, VAPT compliance >92%, app-code authentication shipped",
         "successMetrics": "Page speed improvement 40%, revenue growth, security compliance 95%+",
         "timeline": "Feb 1 - Apr 10, 2026",
         "health": "on-track",
@@ -28,7 +30,9 @@
       {
         "id": "analytics-intelligence",
         "name": "Analytics & AI Intelligence",
-        "track": "Pulse",
+        "tracks": [
+          "pulse"
+        ],
         "objective": "Build a data-driven decision layer with AI-powered sales agents, CDP dashboards, and personalised recommendations to accelerate Khyaal's membership conversion and community engagement",
         "scope": "CDP development, Gold Tier analytics dashboards, AI Sales Agent pilot, ML personalisation engine, recommendation system",
         "keyDeliverables": "Gold Tier analytics dashboards live, AI Sales Agent at 12%+ conversion, ML recommendation engine at 72% accuracy",
@@ -42,11 +46,13 @@
       {
         "id": "infrastructure-optimization",
         "name": "Infrastructure Optimization & SRE",
-        "track": "DevOps",
-        "objective": "Reduce cloud infrastructure costs by 30%, sustain 99.9% uptime, and achieve sub-1-hour security incident response — laying the SRE foundation for Khyaal's next scale phase",
+        "tracks": [
+          "devops"
+        ],
+        "objective": "Reduce cloud infrastructure costs by 30%, sustain 99.9% uptime, and achieve sub-1-hour security incident response \u2014 laying the SRE foundation for Khyaal's next scale phase",
         "scope": "Cloud cost optimization (AWS rightsizing + GCP evaluation), monitoring and alerting setup, security compliance and incident response",
         "keyDeliverables": "30% cost reduction vs baseline, 99.95% uptime achieved, security incident response time <1 hour",
-        "successMetrics": "Infrastructure cost savings ≥30%, system uptime ≥99.9%, security incident response <1hr",
+        "successMetrics": "Infrastructure cost savings \u226530%, system uptime \u226599.9%, security incident response <1hr",
         "timeline": "Feb 1 - Apr 10, 2026",
         "health": "on-track",
         "status": "in_progress",
@@ -56,8 +62,10 @@
       {
         "id": "community-bug-resolution",
         "name": "Community Bug Resolution",
-        "track": "Khyaal Platform",
-        "objective": "Fortify platform integrity by eliminating all P0/P1 regressions in Sprint-6 — resolving Digi-gold payment failures, KCMC copy errors, and KYC blockers — to restore user trust and unblock critical revenue flows",
+        "tracks": [
+          "platform"
+        ],
+        "objective": "Fortify platform integrity by eliminating all P0/P1 regressions in Sprint-6 \u2014 resolving Digi-gold payment failures, KCMC copy errors, and KYC blockers \u2014 to restore user trust and unblock critical revenue flows",
         "scope": "Digi-gold SIP/one-time payment bugs, KCMC card delivery logic, buy-membership UPI/OTP UX, renewal CRON fix, Full KYC restoration (broken since Oct 2025), VAPT security remediation",
         "keyDeliverables": "Zero active P0 bugs in production by Apr 25, 100% functional KYC flow, VAPT security sign-off",
         "successMetrics": "Digi-gold payment success rate >99.5%, P0 bug count = 0, Support ticket volume (Payments/KYC) -40%",
@@ -70,9 +78,11 @@
       {
         "id": "fifty-above-fifty-platform",
         "name": "50 Above 50 Platform Maturity",
-        "track": "Khyaal Platform",
-        "objective": "Fix all 7 critical 50A50 issues (pricing display glitches, category data corruption, dashboard disappearance) and ship app-only entry upload — stabilising the contestant experience and driving app downloads",
-        "scope": "50A50 CRM category-₹500 bug, extra-categories ghost data, pricing randomness, dashboard disappearance & persistence, submit redirect bug, upload format guidance, app-only entry upload API",
+        "tracks": [
+          "platform"
+        ],
+        "objective": "Fix all 7 critical 50A50 issues (pricing display glitches, category data corruption, dashboard disappearance) and ship app-only entry upload \u2014 stabilising the contestant experience and driving app downloads",
+        "scope": "50A50 CRM category-\u20b9500 bug, extra-categories ghost data, pricing randomness, dashboard disappearance & persistence, submit redirect bug, upload format guidance, app-only entry upload API",
         "keyDeliverables": "All 7 critical 50A50 issues resolved by Apr 25, app-only upload API live by May 9, contestant data cleaned via data script",
         "successMetrics": "50A50 open critical issue count = 0, upload flow completion rate >80%, zero contestant data anomalies post-sprint",
         "timeline": "Apr 12 - May 9, 2026",
@@ -84,10 +94,12 @@
       {
         "id": "product-growth-features",
         "name": "Product Growth Features",
-        "track": "Khyaal Platform",
-        "objective": "Scale Membership Acquisition: ship ₹99 plan prominence, Offline Events API infrastructure, and 50A50 app-only submission logic to force high-value mobile installs and conversion",
-        "scope": "₹99 plan homepage placement, Offline Events server-side API (QR ticketing support), 50A50 app-only upload enforcement, Voice of Kalinga landing pages, Assistant Bot v2.0.1 intelligence upgrade",
-        "keyDeliverables": "₹99 plan live on homepage, Offline Events API (Sprint-7 ready), 50A50 App-only entry submission live",
+        "tracks": [
+          "platform"
+        ],
+        "objective": "Scale Membership Acquisition: ship \u20b999 plan prominence, Offline Events API infrastructure, and 50A50 app-only submission logic to force high-value mobile installs and conversion",
+        "scope": "\u20b999 plan homepage placement, Offline Events server-side API (QR ticketing support), 50A50 app-only upload enforcement, Voice of Kalinga landing pages, Assistant Bot v2.0.1 intelligence upgrade",
+        "keyDeliverables": "\u20b999 plan live on homepage, Offline Events API (Sprint-7 ready), 50A50 App-only entry submission live",
         "successMetrics": "New membership conversions +15%, Mobile app downloads +20%, Event registration completion rate +25%",
         "timeline": "Apr 12 - May 9, 2026",
         "health": "on-track",
@@ -98,11 +110,13 @@
       {
         "id": "cms-platform-capabilities",
         "name": "CMS & Platform Capabilities",
-        "track": "Khyaal Platform",
-        "objective": "Deliver operator experience wins: reduce member lookup from 4 screens to 1, launch role-based access for ops, ship the insurance product landing page, and execute the Parents Day Jun 1 campaign — reducing daily ops friction and enabling seasonal growth",
+        "tracks": [
+          "platform"
+        ],
+        "objective": "Deliver operator experience wins: reduce member lookup from 4 screens to 1, launch role-based access for ops, ship the insurance product landing page, and execute the Parents Day Jun 1 campaign \u2014 reducing daily ops friction and enabling seasonal growth",
         "scope": "CMS membership details page (single profile view), Event Manager + Support individual roles, manual cache clear, events CMS improvements (start time column, mandatory link, image upload), insurance landing page, Parents Day campaign, Pulse Membership Dashboard",
         "keyDeliverables": "Membership details page live (ops time <30s per inquiry), 2 roles provisioned (Event Manager, Support), cache clear in CMS, insurance landing live, Parents Day campaign ready by May 23 for Jun 1 launch",
-        "successMetrics": "Member lookup time: 2 min → <30 sec, 2 roles operational by May 9, Parents Day campaign executes on Jun 1 without engineering dependency",
+        "successMetrics": "Member lookup time: 2 min \u2192 <30 sec, 2 roles operational by May 9, Parents Day campaign executes on Jun 1 without engineering dependency",
         "timeline": "Apr 12 - May 23, 2026",
         "health": "on-track",
         "status": "in_progress",
@@ -113,6 +127,9 @@
     "okrs": [
       {
         "id": "okr-q1-2026-platform",
+        "tracks": [
+          "platform"
+        ],
         "quarter": "Q1 2026",
         "objective": "Modernize platform infrastructure and achieve security excellence",
         "owner": "Platform Team",
@@ -152,6 +169,9 @@
       },
       {
         "id": "okr-q1-2026-analytics",
+        "tracks": [
+          "pulse"
+        ],
         "quarter": "Q1 2026",
         "objective": "Build data-driven decision foundation with AI capabilities",
         "owner": "Pulse Team",
@@ -191,6 +211,9 @@
       },
       {
         "id": "okr-q1-2026-infrastructure",
+        "tracks": [
+          "devops"
+        ],
         "quarter": "Q1 2026",
         "objective": "Reduce infrastructure costs and improve reliability",
         "owner": "DevOps Team",
@@ -230,6 +253,11 @@
       },
       {
         "id": "okr-q2-2026-reliability-excellence",
+        "tracks": [
+          "platform",
+          "pulse",
+          "devops"
+        ],
         "quarter": "Q2 2026",
         "objective": "Operational Excellence: fortify platform integrity by eliminating critical regressions and optimizing high-friction operator workflows by 75%",
         "owner": "Platform Team",
@@ -269,13 +297,18 @@
       },
       {
         "id": "okr-q2-2026-growth-impact",
+        "tracks": [
+          "platform",
+          "pulse",
+          "devops"
+        ],
         "quarter": "Q2 2026",
         "objective": "Revenue Acceleration: drive conversion and acquisition through high-visibility pricing plans and community event infrastructure",
         "owner": "Platform Team",
         "keyResults": [
           {
             "id": "kr-gi-1",
-            "description": "Achieve 15% lift in membership conversion through ₹99 plan prominence on homepage",
+            "description": "Achieve 15% lift in membership conversion through \u20b999 plan prominence on homepage",
             "target": 1,
             "current": 1,
             "unit": "launch",
@@ -308,6 +341,9 @@
       },
       {
         "id": "okr-q2-2026-data-intelligence",
+        "tracks": [
+          "pulse"
+        ],
         "quarter": "Q2 2026",
         "objective": "Precision Personalization: leverage behavioral analytics to drive community retention and AI-assisted conversion lift",
         "owner": "Pulse Team",
@@ -432,7 +468,7 @@
         "name": "Community Bug Fix Sprint",
         "startDate": "2026-04-12",
         "endDate": "2026-04-25",
-        "goal": "Resolve all critical community bugs, fix 50A50 issues, ship ₹99 plan on homepage, complete Badminton landing page",
+        "goal": "Resolve all critical community bugs, fix 50A50 issues, ship \u20b999 plan on homepage, complete Badminton landing page",
         "tracks": [
           "Khyaal Platform",
           "Pulse",
@@ -484,7 +520,7 @@
         "tracks": [
           "Khyaal Platform"
         ],
-        "features": "Migration of 29 legacy pages, Launch of ₹99 'Lite' subscription tier, Core security baseline established",
+        "features": "Migration of 29 legacy pages, Launch of \u20b999 'Lite' subscription tier, Core security baseline established",
         "successCriteria": "100% page migration with average 30% latency reduction; subscription engine successfully processing live revenue",
         "impact": "Established a high-performance, revenue-ready foundation. Reduced technical debt by 60% and enabled rapid Q2 feature experimentation.",
         "status": "completed",
@@ -495,8 +531,8 @@
         "name": "v2.2 Security Hardening",
         "targetDate": "2026-03-20",
         "tracks": [
-          "Khyaal Platform",
-          "DevOps"
+          "platform",
+          "devops"
         ],
         "features": "VAPT remediation (95%+ compliance), Automated security monitoring (Grafana), Crypto-transfer redirect resolution",
         "successCriteria": "Zero critical VAPT findings remaining; real-time security alerting operational for all P0 flows",
@@ -509,7 +545,7 @@
         "name": "v3.0 Analytics Intelligence",
         "targetDate": "2026-03-27",
         "tracks": [
-          "Pulse"
+          "pulse"
         ],
         "features": "Gold Tier behavioral dashboards, AI Sales Agent (Pilot v1), Core CDP data-layer integration",
         "successCriteria": "Bi-directional data flow between CRM and CDP; AI agent pilot achieving 10%+ conversion baseline",
@@ -522,8 +558,8 @@
         "name": "v3.1 Personalization Engine",
         "targetDate": "2026-04-10",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse"
+          "platform",
+          "pulse"
         ],
         "features": "Recommendation engines, template-based events, app-code authentication",
         "successCriteria": "Recommendation accuracy 85%+, event templates deployed, authentication working",
@@ -536,9 +572,9 @@
         "name": "v3.2 Community Fix",
         "targetDate": "2026-04-25",
         "tracks": [
-          "Khyaal Platform"
+          "platform"
         ],
-        "features": "Critical bugs (Digi-gold SIP/one-time, KCMC card copy, buy membership UX/OTP), ₹99 plan on homepage, 50A50 category/pricing/dashboard fixes, CMS improvements (cache clear, tambola ticket, events CMS)",
+        "features": "Critical bugs (Digi-gold SIP/one-time, KCMC card copy, buy membership UX/OTP), \u20b999 plan on homepage, 50A50 category/pricing/dashboard fixes, CMS improvements (cache clear, tambola ticket, events CMS)",
         "successCriteria": "Zero P0 bugs in production, all community-reported critical issues resolved",
         "impact": "Restored user trust, unblocked revenue flows, stabilized 50A50 platform",
         "status": "in_progress",
@@ -549,8 +585,8 @@
         "name": "v4.0 Feature Release",
         "targetDate": "2026-05-09",
         "tracks": [
-          "Khyaal Platform",
-          "Pulse"
+          "platform",
+          "pulse"
         ],
         "features": "Offline Events server API, Voice of Kalinga landing page, 50A50 app-only upload server, CMS membership details page, Individual roles (Event Manager, Support)",
         "successCriteria": "Offline Events API live, 50A50 app upload functional, CMS membership page reduces workflow to 1 click",
@@ -584,49 +620,65 @@
         {
           "name": "Subhrajit",
           "capacity": 13,
-          "track": "Khyaal Platform",
+          "tracks": [
+            "platform"
+          ],
           "role": "Full Stack Engineer"
         },
         {
           "name": "Vivek",
           "capacity": 8,
-          "track": "Khyaal Platform",
+          "tracks": [
+            "platform"
+          ],
           "role": "Full Stack Engineer"
         },
         {
           "name": "Manish",
           "capacity": 13,
-          "track": "Khyaal Platform",
+          "tracks": [
+            "platform"
+          ],
           "role": "Backend Engineer"
         },
         {
           "name": "Nikhil",
           "capacity": 13,
-          "track": "Pulse",
+          "tracks": [
+            "pulse"
+          ],
           "role": "Data Engineer"
         },
         {
           "name": "Rushikesh",
           "capacity": 13,
-          "track": "Pulse",
+          "tracks": [
+            "pulse"
+          ],
           "role": "ML Engineer"
         },
         {
           "name": "Susmit",
           "capacity": 8,
-          "track": "Pulse",
+          "tracks": [
+            "pulse"
+          ],
           "role": "AI Engineer"
         },
         {
           "name": "Pritish",
           "capacity": 5,
-          "track": "Pulse",
+          "tracks": [
+            "pulse"
+          ],
           "role": "AI Specialist"
         },
         {
           "name": "Raj",
           "capacity": 13,
-          "track": "DevOps",
+          "tracks": [
+            "devops"
+          ],
           "role": "DevOps Engineer"
         }
       ],
@@ -940,7 +992,7 @@
               "due": "2026-04-11"
             },
             {
-              "text": "Legacy page refresh – 29 pages migrated and modernized",
+              "text": "Legacy page refresh \u2013 29 pages migrated and modernized",
               "status": "done",
               "contributors": [
                 "Subhrajit"
@@ -971,7 +1023,7 @@
               ]
             },
             {
-              "text": "₹99 Subscription launch",
+              "text": "\u20b999 Subscription launch",
               "status": "done",
               "contributors": [
                 "Subhrajit",
@@ -1256,17 +1308,17 @@
             },
             {
               "id": "platform-website-99plan",
-              "text": "₹99 Monthly Membership — surface on homepage",
+              "text": "\u20b999 Monthly Membership \u2014 surface on homepage",
               "status": "review",
               "priority": "high",
               "storyPoints": 3,
               "contributors": [
                 "Vivek"
               ],
-              "note": "Critical Revenue Driver: Surface ₹99/month 'Lite' plan prominently on the homepage to lower the entry barrier for new seniors.",
+              "note": "Critical Revenue Driver: Surface \u20b999/month 'Lite' plan prominently on the homepage to lower the entry barrier for new seniors.",
               "usecase": "Increases homepage-to-checkout conversion by 15% by offering a low-commitment entry point for community exploration.",
               "acceptanceCriteria": [
-                "₹99 plan card displayed in the 'Top-of-Fold' section (within first 800px)",
+                "\u20b999 plan card displayed in the 'Top-of-Fold' section (within first 800px)",
                 "CTA correctly routes to the /buy-membership checkout with 'Lite' plan pre-selected",
                 "Mobile responsiveness: Card must be fully readable on 360px width devices",
                 "Billing frequency clearly explicitly stated as 'Monthly Subscription'"
@@ -1286,7 +1338,7 @@
             },
             {
               "id": "platform-website-buy-membership-ux",
-              "text": "Buy membership popup — mobile number entry UX broken",
+              "text": "Buy membership popup \u2014 mobile number entry UX broken",
               "status": "now",
               "priority": "high",
               "storyPoints": 3,
@@ -1317,7 +1369,7 @@
             },
             {
               "id": "platform-website-buy-membership-otp",
-              "text": "Buy membership popup — multiple OTPs triggered on multiple taps",
+              "text": "Buy membership popup \u2014 multiple OTPs triggered on multiple taps",
               "status": "review",
               "priority": "high",
               "storyPoints": 2,
@@ -1348,7 +1400,7 @@
             },
             {
               "id": "platform-website-pending-migration",
-              "text": "Pending migration from old website — complete remaining pages",
+              "text": "Pending migration from old website \u2014 complete remaining pages",
               "status": "now",
               "priority": "high",
               "storyPoints": 8,
@@ -1407,7 +1459,7 @@
             },
             {
               "id": "platform-website-voice-of-kalinga",
-              "text": "Voice of Kalinga — landing page + communications setup",
+              "text": "Voice of Kalinga \u2014 landing page + communications setup",
               "status": "next",
               "priority": "medium",
               "storyPoints": 5,
@@ -1434,7 +1486,7 @@
             },
             {
               "id": "platform-website-online-events",
-              "text": "Online Events on Web — web-based online event support",
+              "text": "Online Events on Web \u2014 web-based online event support",
               "status": "later",
               "priority": "medium",
               "storyPoints": 8,
@@ -1478,7 +1530,7 @@
               "acceptanceCriteria": [
                 "All user interaction events tracked (view, click, search, purchase)",
                 "Events appear in Pulse dashboard with <1 minute latency",
-                "Multi-step funnel analysis functional (browse → view → cart → purchase)",
+                "Multi-step funnel analysis functional (browse \u2192 view \u2192 cart \u2192 purchase)",
                 "UTM parameters captured and attributed correctly"
               ],
               "effortLevel": "medium",
@@ -1796,15 +1848,17 @@
             },
             {
               "id": "platform-50a50-web-registration-cache",
-              "text": "50A50 registration shows ₹500 instead of ₹999 (cache issue)",
+              "text": "50A50 registration shows \u20b9500 instead of \u20b9999 (cache issue)",
               "status": "next",
               "priority": "high",
               "storyPoints": 3,
-              "contributors": ["Subhrajit"],
-              "note": "New registration page shows ₹500 instead of ₹999 due to a cache issue.",
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "New registration page shows \u20b9500 instead of \u20b9999 due to a cache issue.",
               "usecase": "Fixes incorrect pricing display that confuses new registrants.",
               "acceptanceCriteria": [
-                "New registration always shows ₹999",
+                "New registration always shows \u20b9999",
                 "Cache cleared for affected pages",
                 "No price mismatch between display and checkout"
               ],
@@ -1828,7 +1882,9 @@
               "status": "now",
               "priority": "high",
               "storyPoints": 3,
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Dashboard button vanishes after token/cookie expiry. Check Token/Cookie TTL and contest caching.",
               "usecase": "Ensures users can always access their dashboard without hard-refreshing.",
               "acceptanceCriteria": [
@@ -1856,7 +1912,9 @@
               "status": "now",
               "priority": "high",
               "storyPoints": 3,
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Clicking Submit Entry redirects user back to home page. Likely token/cookie TTL or contest caching issue.",
               "usecase": "Users lose submission progress; fixing this prevents data loss and user frustration.",
               "acceptanceCriteria": [
@@ -1884,7 +1942,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 2,
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "Dashboard button should be visible throughout the website top bar for all logged-in users.",
               "usecase": "Improves navigation and reduces friction for returning contestants.",
               "acceptanceCriteria": [
@@ -1906,7 +1966,7 @@
             },
             {
               "id": "platform-50a50-web-upload-flow",
-              "text": "50A50 upload entry flow — show submission format before uploading",
+              "text": "50A50 upload entry flow \u2014 show submission format before uploading",
               "status": "next",
               "priority": "medium",
               "storyPoints": 3,
@@ -1934,7 +1994,7 @@
             },
             {
               "id": "platform-50a50-web-app-upload-server",
-              "text": "50A50 app-only entry upload — server-side API",
+              "text": "50A50 app-only entry upload \u2014 server-side API",
               "status": "next",
               "priority": "high",
               "storyPoints": 8,
@@ -2058,12 +2118,14 @@
             },
             {
               "id": "platform-50a50-crm-category-500",
-              "text": "50A50 category change asks ₹500 — category edit button missing",
+              "text": "50A50 category change asks \u20b9500 \u2014 category edit button missing",
               "status": "next",
               "priority": "high",
               "storyPoints": 5,
-              "contributors": ["Manish"],
-              "note": "Changing category in the dashboard triggers a ₹500 charge. Category edit button needs to be added separately from the payment flow.",
+              "contributors": [
+                "Manish"
+              ],
+              "note": "Changing category in the dashboard triggers a \u20b9500 charge. Category edit button needs to be added separately from the payment flow.",
               "usecase": "Allows contestants to correct category errors without being incorrectly charged.",
               "acceptanceCriteria": [
                 "Category edit button added to dashboard",
@@ -2091,7 +2153,9 @@
               "status": "review",
               "priority": "high",
               "storyPoints": 3,
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Unchecked categories re-appear after manual entry. Fix involves data script to remove impacted users and fixing pre-selected category display logic.",
               "usecase": "Ensures category list is clean and accurate; prevents duplicate/ghost category entries.",
               "acceptanceCriteria": [
@@ -2115,17 +2179,19 @@
             },
             {
               "id": "platform-50a50-crm-fresh-pricing",
-              "text": "50A50 fresh user back-to-back entries showing ₹500 and ₹999 randomly",
+              "text": "50A50 fresh user back-to-back entries showing \u20b9500 and \u20b9999 randomly",
               "status": "review",
               "priority": "high",
               "storyPoints": 3,
-              "contributors": ["Manish"],
-              "note": "Fresh users making back-to-back contest entries randomly see ₹500 and ₹999. Pricing logic must be consistent.",
+              "contributors": [
+                "Manish"
+              ],
+              "note": "Fresh users making back-to-back contest entries randomly see \u20b9500 and \u20b9999. Pricing logic must be consistent.",
               "usecase": "Ensures consistent and correct pricing for all users.",
               "acceptanceCriteria": [
-                "First entry always ₹999",
+                "First entry always \u20b9999",
                 "Subsequent entries follow correct pricing rules",
-                "No random price flip between ₹500 and ₹999"
+                "No random price flip between \u20b9500 and \u20b9999"
               ],
               "effortLevel": "medium",
               "impactLevel": "high",
@@ -2147,7 +2213,9 @@
               "status": "review",
               "priority": "high",
               "storyPoints": 2,
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Deleting a pending entry from the partially-completed list does not update the user status correctly.",
               "usecase": "Accurate status tracking ensures users can re-enter without being stuck in a limbo state.",
               "acceptanceCriteria": [
@@ -2176,7 +2244,7 @@
               "priority": "low",
               "storyPoints": 3,
               "contributors": [],
-              "note": "Add filter capability to the submission export feature — filter by category, status, or date range.",
+              "note": "Add filter capability to the submission export feature \u2014 filter by category, status, or date range.",
               "usecase": "Reduces manual data filtering work for operations team.",
               "acceptanceCriteria": [
                 "Export filtered by category",
@@ -2373,7 +2441,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 5,
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Three CMS event improvements: (1) show start time in event list column; (2) make link field mandatory; (3) image upload from CMS instead of URL-only.",
               "usecase": "Reduces ops friction in event management; prevents events going live without links.",
               "acceptanceCriteria": [
@@ -2400,7 +2470,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 3,
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Add a manual cache clear button in CMS so ops team can clear cache without developer intervention.",
               "usecase": "Reduces ops dependency on engineering for routine cache busting after content updates.",
               "acceptanceCriteria": [
@@ -2428,7 +2500,9 @@
               "status": "review",
               "priority": "medium",
               "storyPoints": 5,
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Allow bulk coin assignment to multiple users via CSV upload in CMS.",
               "usecase": "Reduces manual effort for campaign coin rewards; enables bulk operations team workflows.",
               "acceptanceCriteria": [
@@ -2456,7 +2530,9 @@
               "status": "review",
               "priority": "medium",
               "storyPoints": 5,
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "Allow batch creation of users and assignment of memberships via CSV upload in CMS.",
               "usecase": "Enables onboarding of corporate or community group members in bulk.",
               "acceptanceCriteria": [
@@ -2481,7 +2557,7 @@
             },
             {
               "id": "platform-admin-membership-details",
-              "text": "CMS membership details page — single profile view (4-click to 1)",
+              "text": "CMS membership details page \u2014 single profile view (4-click to 1)",
               "status": "next",
               "priority": "high",
               "storyPoints": 8,
@@ -2773,7 +2849,7 @@
               "contributors": [
                 "Vivek"
               ],
-              "note": "Built complete RESTful API suite for ₹99 subscription management including purchase, renewal, cancellation, and status queries.",
+              "note": "Built complete RESTful API suite for \u20b999 subscription management including purchase, renewal, cancellation, and status queries.",
               "usecase": "Supports subscription purchase and lifecycle management with automated billing integration.",
               "acceptanceCriteria": [
                 "Subscription creation endpoint working",
@@ -3013,7 +3089,7 @@
             },
             {
               "id": "platform-api-renewal-fix",
-              "text": "Renewal issue fix — post-autopay cancel + renewal (CRON frequency)",
+              "text": "Renewal issue fix \u2014 post-autopay cancel + renewal (CRON frequency)",
               "status": "done",
               "priority": "high",
               "storyPoints": 5,
@@ -3042,7 +3118,7 @@
             },
             {
               "id": "platform-api-full-kyc",
-              "text": "Full KYC fix — not working since Oct 2025",
+              "text": "Full KYC fix \u2014 not working since Oct 2025",
               "status": "done",
               "priority": "high",
               "storyPoints": 8,
@@ -3075,7 +3151,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 1,
-              "contributors": ["Subhrajit"],
+              "contributors": [
+                "Subhrajit"
+              ],
               "note": "App currently shows 5-7 days. Change to 15 business days. Add 30 min daily for card printing (marketing).",
               "usecase": "Sets accurate delivery expectations; prevents support tickets.",
               "acceptanceCriteria": [
@@ -3102,7 +3180,9 @@
               "status": "next",
               "priority": "medium",
               "storyPoints": 2,
-              "contributors": ["Vivek"],
+              "contributors": [
+                "Vivek"
+              ],
               "note": "The Khyaal card track delivery feature needs to be removed from the app.",
               "usecase": "Removes deprecated feature to reduce confusion.",
               "acceptanceCriteria": [
@@ -3125,11 +3205,13 @@
             },
             {
               "id": "platform-api-digi-gold-sip",
-              "text": "Digi-gold SIP: random monthly payment skip — setup Caratlane call + fix",
+              "text": "Digi-gold SIP: random monthly payment skip \u2014 setup Caratlane call + fix",
               "status": "next",
               "priority": "high",
               "storyPoints": 8,
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "Digi-gold SIP randomly skips monthly payments. Requires call with Caratlane team + log of recent failures.",
               "usecase": "Protects user investments; prevents SIP irregularities causing financial harm.",
               "acceptanceCriteria": [
@@ -3158,7 +3240,9 @@
               "status": "next",
               "priority": "high",
               "storyPoints": 8,
-              "contributors": ["Manish"],
+              "contributors": [
+                "Manish"
+              ],
               "note": "One-time digi-gold payment fails on platform but user bank account is debited. Jayram & Alfa cases documented.",
               "usecase": "Prevents financial harm to users; critical compliance issue.",
               "acceptanceCriteria": [
@@ -3183,7 +3267,7 @@
             },
             {
               "id": "platform-api-login-error",
-              "text": "Login/Join OTP: Oops something went wrong — better error message",
+              "text": "Login/Join OTP: Oops something went wrong \u2014 better error message",
               "status": "later",
               "priority": "low",
               "storyPoints": 2,
@@ -3211,7 +3295,7 @@
             },
             {
               "id": "platform-api-cached-categories",
-              "text": "Cached Old Categories Re-Migration — platform API cleanup",
+              "text": "Cached Old Categories Re-Migration \u2014 platform API cleanup",
               "status": "next",
               "priority": "medium",
               "storyPoints": 5,
@@ -3239,7 +3323,7 @@
             },
             {
               "id": "platform-api-assistant-bot",
-              "text": "Assistant Bot v2.0.1 — server-side upgrade",
+              "text": "Assistant Bot v2.0.1 \u2014 server-side upgrade",
               "status": "next",
               "priority": "medium",
               "storyPoints": 8,
@@ -3267,7 +3351,7 @@
             },
             {
               "id": "platform-api-offline-events",
-              "text": "Offline Events — server-side API (register, view booked events, tickets, info)",
+              "text": "Offline Events \u2014 server-side API (register, view booked events, tickets, info)",
               "status": "next",
               "priority": "high",
               "storyPoints": 13,
@@ -3297,7 +3381,7 @@
             },
             {
               "id": "platform-api-zoho-crm-travel",
-              "text": "Zoho CRM for Travel setup — driven by Pulse Journey",
+              "text": "Zoho CRM for Travel setup \u2014 driven by Pulse Journey",
               "status": "later",
               "priority": "medium",
               "storyPoints": 5,
@@ -3357,7 +3441,7 @@
           "items": [
             {
               "id": "platform-campaign-senior-spotlight",
-              "text": "Khyaal Senior Spotlight (Trivandrum) — landing page + comms",
+              "text": "Khyaal Senior Spotlight (Trivandrum) \u2014 landing page + comms",
               "status": "done",
               "priority": "high",
               "storyPoints": 5,
@@ -3412,12 +3496,14 @@
             },
             {
               "id": "platform-campaign-parents-day",
-              "text": "Parents Day Campaign — landing page + comms ready by May 23 for Jun 1 public launch",
+              "text": "Parents Day Campaign \u2014 landing page + comms ready by May 23 for Jun 1 public launch",
               "status": "next",
               "priority": "high",
               "storyPoints": 8,
-              "contributors": ["Subhrajit"],
-              "note": "Parents Day (Jun 1) campaign targeting membership sign-ups and event attendance. Dev starts May 10 (sprint-8 start). All assets — landing page, email template, push notifications — must be QA'd and handed to ops by May 23 for ops to schedule the Jun 1 go-live without engineering dependency.",
+              "contributors": [
+                "Subhrajit"
+              ],
+              "note": "Parents Day (Jun 1) campaign targeting membership sign-ups and event attendance. Dev starts May 10 (sprint-8 start). All assets \u2014 landing page, email template, push notifications \u2014 must be QA'd and handed to ops by May 23 for ops to schedule the Jun 1 go-live without engineering dependency.",
               "usecase": "Seasonal campaign to drive new membership conversions and community event attendance around Parents Day (Jun 1).",
               "acceptanceCriteria": [
                 "Campaign landing page built and QA'd by May 23",
@@ -3445,7 +3531,7 @@
               "priority": "medium",
               "storyPoints": 8,
               "contributors": [],
-              "note": "Build a Pulse dashboard view for membership metrics — new vs renewing members, churn rate, plan distribution.",
+              "note": "Build a Pulse dashboard view for membership metrics \u2014 new vs renewing members, churn rate, plan distribution.",
               "usecase": "Gives leadership data-driven visibility into membership health.",
               "acceptanceCriteria": [
                 "Dashboard shows new and renewing member counts",
@@ -3571,7 +3657,7 @@
           ]
         },
         {
-          "name": "Analytics – Users",
+          "name": "Analytics \u2013 Users",
           "items": [
             {
               "text": "User query optimization",
@@ -3684,7 +3770,7 @@
           ]
         },
         {
-          "name": "Analytics – Events",
+          "name": "Analytics \u2013 Events",
           "items": [
             {
               "text": "Event query optimization",
@@ -3771,7 +3857,7 @@
           ]
         },
         {
-          "name": "Analytics – Segment / Cohort",
+          "name": "Analytics \u2013 Segment / Cohort",
           "items": [
             {
               "text": "Null filter support",
@@ -4320,7 +4406,7 @@
           "items": [
             {
               "id": "pulse-ai-agents-0",
-              "text": "Sales Agent – Specific Tours Pilot launch testing, stakeholder alignment",
+              "text": "Sales Agent \u2013 Specific Tours Pilot launch testing, stakeholder alignment",
               "status": "done",
               "priority": "high",
               "storyPoints": 8,
@@ -4475,7 +4561,7 @@
               "id": "pulse-ai-agents-4"
             },
             {
-              "text": "AI Sales Agent – Call summarization setup",
+              "text": "AI Sales Agent \u2013 Call summarization setup",
               "status": "done",
               "contributors": [
                 "Nikhil"
@@ -4504,7 +4590,7 @@
               "id": "pulse-ai-agents-5"
             },
             {
-              "text": "AI Sales Agent – Tour-specific setup",
+              "text": "AI Sales Agent \u2013 Tour-specific setup",
               "status": "done",
               "contributors": [
                 "Nikhil"
@@ -4533,7 +4619,7 @@
               "id": "pulse-ai-agents-6"
             },
             {
-              "text": "Sales Agent – Specific Tours Pilot launch tesing, stakeholder alignment",
+              "text": "Sales Agent \u2013 Specific Tours Pilot launch tesing, stakeholder alignment",
               "status": "next",
               "contributors": [
                 "Susmit",
@@ -4640,7 +4726,7 @@
               "acceptanceCriteria": [
                 "Star schema implemented with fact and dimension tables documented",
                 "Schema documentation includes entity relationships and cardinality",
-                "Data migration scripts tested for Bronze/Silver → Gold transformation",
+                "Data migration scripts tested for Bronze/Silver \u2192 Gold transformation",
                 "Query performance benchmarks show 10x improvement over raw data"
               ],
               "effortLevel": "high",
@@ -4743,7 +4829,7 @@
                 "50+ features engineered covering user demographics, behavioral signals, event affinity, and engagement recency",
                 "Feature store populated and validated against 90-day historical data",
                 "Feature pipeline runs on scheduled refresh with < 5% data staleness",
-                "Baseline model accuracy established at ≥ 70% before persona engine integration"
+                "Baseline model accuracy established at \u2265 70% before persona engine integration"
               ],
               "effortLevel": "high",
               "impactLevel": "high",
@@ -4920,7 +5006,7 @@
           ]
         },
         {
-          "name": "Pages – Headless CMS",
+          "name": "Pages \u2013 Headless CMS",
           "note": "A centralized content system enabling teams to create once and reuse content across the platform without engineering dependency.",
           "items": [
             {
@@ -5125,7 +5211,7 @@
                 "Raj"
               ],
               "note": "Implementing comprehensive AWS cost optimization strategy including rightsizing EC2 instances based on utilization metrics, migrating infrequent access data to S3 Glacier, implementing auto-scaling policies, removing idle resources, and negotiating Reserved Instance commitments for baseline workloads to achieve 30% cost reduction without performance degradation.",
-              "usecase": "Reduces monthly AWS spend by 30% ($15K → $10.5K savings/month, $180K annually) while maintaining 99.9% uptime, frees budget for innovation initiatives, establishes ongoing cost monitoring culture, and provides infrastructure cost transparency enabling better technical decision-making.",
+              "usecase": "Reduces monthly AWS spend by 30% ($15K \u2192 $10.5K savings/month, $180K annually) while maintaining 99.9% uptime, frees budget for innovation initiatives, establishes ongoing cost monitoring culture, and provides infrastructure cost transparency enabling better technical decision-making.",
               "acceptanceCriteria": [
                 "Monthly AWS bill reduced by 30% vs. baseline (tracked month-over-month)",
                 "Application performance metrics unchanged (p95 latency, error rates)",
@@ -5240,7 +5326,7 @@
                 "Raj"
               ],
               "note": "Building Docker Compose-based local staging environment replicating production architecture (API, database, cache, queues) to enable rapid testing and validation before deployment. Includes seed data scripts, environment variable templates, and integration with existing CI/CD pipeline for automated testing.",
-              "usecase": "Reduces deployment cycle time by 60% (2 days → 8 hours) through earlier bug detection, eliminates 'works on my machine' issues, enables parallel development without environment conflicts, and provides safe testing ground for infrastructure changes before production deployment.",
+              "usecase": "Reduces deployment cycle time by 60% (2 days \u2192 8 hours) through earlier bug detection, eliminates 'works on my machine' issues, enables parallel development without environment conflicts, and provides safe testing ground for infrastructure changes before production deployment.",
               "acceptanceCriteria": [
                 "Full staging stack runs locally with single command (docker-compose up)",
                 "CI/CD pipeline executes integration tests against local staging",
@@ -5454,7 +5540,7 @@
                 "Qdrant vector DB migrated to GCP with < 5% query latency regression vs. AWS baseline",
                 "Assistant Service container deployed to GCP Cloud Run with health checks passing",
                 "Data migration verified: all vector embeddings intact with 100% count match",
-                "Monthly cost reduced by ≥ 15% vs. AWS equivalent compute",
+                "Monthly cost reduced by \u2265 15% vs. AWS equivalent compute",
                 "Rollback plan documented and tested in staging before production cutover"
               ],
               "effortLevel": "high",

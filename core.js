@@ -153,7 +153,7 @@ function renderBlockerStrip() {
     const activeTeam = getActiveTeam();
 
     UPDATE_DATA.tracks.forEach(track => {
-        if (activeTeam && activeTeam !== track.name) return;
+        if (activeTeam && activeTeam !== track.id) return;
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 if (item.blocker) {
@@ -305,8 +305,12 @@ function getActiveTeam() {
 }
 
 function updateTabCounts() {
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
     let allItems = [];
-    (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => allItems.push(i))));
+    (UPDATE_DATA.tracks || []).forEach(t => {
+        if (activeTeam && activeTeam !== t.id) return;
+        t.subtracks.forEach(s => s.items.forEach(i => allItems.push(i)));
+    });
 
     // Get current user for my-tasks count
     const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
@@ -319,11 +323,11 @@ function updateTabCounts() {
         contributor: allItems.length,
         gantt: allItems.filter(i => i.startDate || i.due).length,
         backlog: 0,
-        sprint: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.sprints ? UPDATE_DATA.metadata.sprints.length : 0),
-        epics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.epics ? UPDATE_DATA.metadata.epics.length : 0),
+        sprint: (UPDATE_DATA.metadata?.sprints || []).length,
+        epics: (UPDATE_DATA.metadata?.epics || []).filter(e => !activeTeam || e.track === activeTeam).length,
         roadmap: allItems.filter(i => i.planningHorizon).length,
-        releases: allItems.filter(i => i.releasedIn).length,
-        okr: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.okrs ? UPDATE_DATA.metadata.okrs.length : 0),
+        releases: (UPDATE_DATA.metadata?.releases || []).filter(r => !activeTeam || (r.tracks && r.tracks.includes(activeTeam))).length,
+        okr: (UPDATE_DATA.metadata?.okrs || []).filter(o => !activeTeam || o.trackId === activeTeam).length,
         kanban: allItems.length,
         analytics: (UPDATE_DATA.metadata && UPDATE_DATA.metadata.velocityHistory ? UPDATE_DATA.metadata.velocityHistory.length : 0),
         capacity: (() => { const s = (UPDATE_DATA.metadata?.sprints || []).find(s => s.status === 'active'); if (!s) return 0; const names = new Set(); (UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(st => st.items.forEach(i => { if (i.sprintId === s.id) (i.contributors || []).forEach(c => names.add(c)) }))); return names.size })(),

@@ -201,7 +201,7 @@ function renderTrackView() {
     let html = '';
 
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-        if (activeTeam && activeTeam !== track.name) return;
+        if (activeTeam && activeTeam !== track.id) return;
         const accentColor = themeColors[track.theme] || '#0f172a';
 
         // Calculate Team Pulse (Health)
@@ -703,7 +703,7 @@ function renderStatusView() {
     statuses.forEach(status => {
         let items = [];
         UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-            if (activeTeam && activeTeam !== track.name) return;
+            if (activeTeam && activeTeam !== track.id) return;
             track.subtracks.forEach((subtrack, subtrackIndex) => {
                 subtrack.items.forEach((item, itemIndex) => {
                     if (item.status === status && isItemMatchingTagFilter(item) && isItemInDateRange(item) && isItemInSearch(item)) {
@@ -776,7 +776,7 @@ function renderPriorityView() {
     priorities.forEach(priority => {
         let items = [];
         UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-            if (activeTeam && activeTeam !== track.name) return;
+            if (activeTeam && activeTeam !== track.id) return;
             track.subtracks.forEach((subtrack, subtrackIndex) => {
                 subtrack.items.forEach((item, itemIndex) => {
                     const itemPriority = item.priority || 'medium';
@@ -830,7 +830,7 @@ function buildContributorMap() {
     const map = {} // name → [enriched items]
     const activeTeam = getActiveTeam()
     UPDATE_DATA.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 if (!isItemMatchingTagFilter(item) || !isItemInDateRange(item) || !isItemInSearch(item)) return
@@ -1135,7 +1135,7 @@ function renderBacklogView() {
     // ---- Gather all backlog items and compute stats ----
     const allBacklogItems = []
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         const bl = track.subtracks.find(s => s.name === 'Backlog')
         if (!bl) return
         const si = track.subtracks.indexOf(bl)
@@ -1261,7 +1261,7 @@ function renderBacklogView() {
     // ---- Item list ----
     let totalItems = 0
     UPDATE_DATA.tracks.forEach((track, trackIndex) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         const backlogSub = track.subtracks.find(s => s.name === 'Backlog')
         if (!backlogSub || !backlogSub.items.length) return
 
@@ -1363,7 +1363,43 @@ function renderEpicsView() {
     const data = window.UPDATE_DATA || {};
     const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     const allEpicsRaw = (data.metadata && data.metadata.epics) || [];
-    const epics = activeTeam ? allEpicsRaw.filter(e => !e.track || e.track === activeTeam) : allEpicsRaw
+    const tracks = UPDATE_DATA.tracks || [];
+
+    // Robust, strict track matching helper (Array-aware)
+    const isTrackMatch = (item, activeId) => {
+        if (!activeId) return true;
+        const target = activeId.toLowerCase().trim();
+
+        const itemTracks = item.tracks || [];
+        if (Array.isArray(itemTracks) && itemTracks.length > 0) {
+            if (itemTracks.some(t => {
+                const s = String(t).toLowerCase().trim();
+                if (s === target) return true;
+                const trackObj = (tracks || []).find(tr => tr.id.toLowerCase() === target);
+                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                return false;
+            })) return true;
+        }
+
+        let source = (item.trackId || item.track || "").toLowerCase().trim();
+        if (!source && item.owner) {
+            const owner = item.owner.toLowerCase();
+            if (owner.includes('platform')) source = 'platform';
+            else if (owner.includes('pulse')) source = 'pulse';
+            else if (owner.includes('devops')) source = 'devops';
+        }
+
+        if (source === target) return true;
+        const trackObj = tracks.find(t => t.id.toLowerCase() === target);
+        if (trackObj) {
+            const tName = trackObj.name.toLowerCase();
+            if (tName === source || tName.includes(source)) return true;
+            if (source.includes(trackObj.id)) return true;
+        }
+        return false;
+    };
+
+    const epics = activeTeam ? allEpicsRaw.filter(e => isTrackMatch(e, activeTeam)) : allEpicsRaw;
     const activeMode = (typeof getCurrentMode === 'function') ? getCurrentMode() : 'pm';
 
     let ribbonHtml = `
@@ -1699,11 +1735,43 @@ function renderRoadmapView() {
         return;
     }
 
-    // Track filter — applied before persona filtering
-    const _roadmapActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const _roadmapActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
+    // Standardized matcher for Roadmap components (Array-aware)
+    const isTrackMatch = (item, activeId) => {
+        if (!activeId) return true;
+        const target = activeId.toLowerCase().trim();
+
+        const itemTracks = item.tracks || [];
+        if (Array.isArray(itemTracks) && itemTracks.length > 0) {
+            if (itemTracks.some(t => {
+                const s = String(t).toLowerCase().trim();
+                if (s === target) return true;
+                const trackObj = (UPDATE_DATA.tracks || []).find(tr => tr.id.toLowerCase() === target);
+                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                return false;
+            })) return true;
+        }
+
+        let source = (item.trackId || item.track || "").toLowerCase().trim();
+        if (!source && item.owner) {
+            const owner = item.owner.toLowerCase();
+            if (owner.includes('platform')) source = 'platform';
+            else if (owner.includes('pulse')) source = 'pulse';
+            else if (owner.includes('devops')) source = 'devops';
+        }
+        if (source === target) return true;
+        const trackObj = (UPDATE_DATA.tracks || []).find(t => t.id.toLowerCase() === target);
+        if (trackObj) {
+            const tName = trackObj.name.toLowerCase();
+            if (tName === source || tName.includes(source)) return true;
+            if (source.includes(trackObj.id)) return true;
+        }
+        return false;
+    };
+
     const trackFilteredEpics = _roadmapActiveTeam
-        ? allEpics.filter(e => !e.track || e.track === _roadmapActiveTeam)
-        : allEpics
+        ? allEpics.filter(e => isTrackMatch(e, _roadmapActiveTeam))
+        : allEpics;
 
     // Persona filtering for epics
     const activeOKRIds = new Set(allOKRs.filter(o => o.status === 'active' || !o.status).map(o => o.id))
@@ -1737,7 +1805,8 @@ function renderRoadmapView() {
     }
 
     horizons.forEach(h => {
-        const horizonOKR = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
+        const horizonOKRRaw = data.metadata.okrs?.find(o => o.id === h.linkedObjective);
+        const horizonOKR = (horizonOKRRaw && isTrackMatch(horizonOKRRaw, _roadmapActiveTeam)) ? horizonOKRRaw : null;
         const horizonEpics = visibleEpics.filter(e => e.planningHorizon === h.id)
         const horizonItems = applyExecFilter(findItemsByMetadataId('planningHorizon', h.id), 'roadmap');
 
@@ -1881,7 +1950,7 @@ function buildSprintPlanningPanel(sprint) {
     const _plannerActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     const allItems = []
     UPDATE_DATA.tracks.forEach(track => {
-        if (_plannerActiveTeam && _plannerActiveTeam !== track.name) return
+        if (_plannerActiveTeam && _plannerActiveTeam !== track.id) return
         track.subtracks.forEach(sub => {
             sub.items.forEach(item => {
                 if (!item.sprintId) allItems.push(item)
@@ -2307,7 +2376,9 @@ window.toggleReleaseReadiness = toggleReleaseReadiness
 function renderReleasesView() {
     const container = document.getElementById('releases-view');
     if (!container) return;
-    const releases = (UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [];
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const releases = ((UPDATE_DATA.metadata && UPDATE_DATA.metadata.releases) || [])
+        .filter(r => !activeTeam || (r.tracks && r.tracks.includes(activeTeam)));
 
     const _allReleaseItems = releases.flatMap(r => findItemsByMetadataId('releasedIn', r.id));
     const _filteredReleaseItems = applyExecFilter(_allReleaseItems, 'releases');
@@ -2444,7 +2515,7 @@ function findItemsByMetadataId(key, value) {
     const data = window.UPDATE_DATA || { tracks: [] };
     const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     data.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 if (item[key] === value) {
@@ -2599,16 +2670,17 @@ function drawGanttChart(mode) {
     const _ganttActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
 
     // Determine which epic IDs are visible for this persona
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let visibleEpicIds = null // null = all
     if (mode === 'exec') {
         // Exec: only epics linked to an active/in-flight OKR
-        const activeOkrIds = new Set(allOkrs.map(o => o.id))
+        const activeOkrIds = new Set(allOkrs.filter(o => !activeTeam || o.trackId === activeTeam).map(o => o.id))
         visibleEpicIds = new Set(allEpics.filter(e => activeOkrIds.has(e.linkedOKR)).map(e => e.id))
     } else if (mode === 'dev' && currentUser) {
         // Dev: only epics where the contributor has at least one item
         const devEpicIds = new Set()
         ;(UPDATE_DATA.tracks || []).forEach(track => {
-            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.id) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     if ((item.contributors || []).includes(currentUser) && item.epicId) {
@@ -2626,6 +2698,9 @@ function drawGanttChart(mode) {
 
     allEpics.forEach(epic => {
         if (visibleEpicIds !== null && !visibleEpicIds.has(epic.id)) return
+        
+        // Final track-level enforcement
+        if (activeTeam && epic.track && epic.track !== activeTeam) return
 
         let start = epic.startDate ? new Date(epic.startDate) : null
         let end   = epic.endDate   ? new Date(epic.endDate)   : null
@@ -2633,7 +2708,7 @@ function drawGanttChart(mode) {
 
         // Scan items to fill missing dates and compute progress
         ;(UPDATE_DATA.tracks || []).forEach(track => {
-            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.id) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     if (item.epicId !== epic.id) return
@@ -2678,7 +2753,7 @@ function drawGanttChart(mode) {
 
     if (mode === 'pm') {
         ;(UPDATE_DATA.tracks || []).forEach(track => {
-            if (_ganttActiveTeam && _ganttActiveTeam !== track.name) return
+            if (_ganttActiveTeam && _ganttActiveTeam !== track.id) return
             track.subtracks.forEach(subtrack => {
                 subtrack.items.forEach(item => {
                     // Item must belong to a visible epic that has a row
@@ -3011,7 +3086,10 @@ function renderDiscoveryView() {
     let allItems = [];
     if (UPDATE_DATA && UPDATE_DATA.tracks) {
         UPDATE_DATA.tracks.forEach(t => {
-            if (_discoveryActiveTeam && _discoveryActiveTeam !== t.name) return
+            // Robust match for discovery items
+            const activeId = (_discoveryActiveTeam || "").toLowerCase().trim();
+            if (activeId && t.id.toLowerCase() !== activeId && !t.name.toLowerCase().includes(activeId)) return;
+            
             if (t.subtracks) {
                 t.subtracks.forEach(s => {
                     if (s.items) {
@@ -3358,7 +3436,7 @@ function renderIdeationView() {
     // Collect matching items
     const groups = {}
     UPDATE_DATA.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 const isIdea = item.type === 'idea' ||
@@ -3376,7 +3454,7 @@ function renderIdeationView() {
     if (Object.keys(groups).length === 0) {
         usedFallback = true
         UPDATE_DATA.tracks.forEach((track, ti) => {
-            if (activeTeam && activeTeam !== track.name) return
+            if (activeTeam && activeTeam !== track.id) return
             track.subtracks.forEach((subtrack, si) => {
                 subtrack.items.forEach((item, ii) => {
                     if (item.status === 'backlog' && !item.epicId) {
@@ -3459,7 +3537,7 @@ function renderSpikesView() {
 
     const groups = {}
     UPDATE_DATA.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 const tagMatch = Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase() === 'spike')

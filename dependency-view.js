@@ -140,7 +140,10 @@ function renderDependencyView() {
     const itemMap = {}
     const itemTrackMap = {}   // itemId → trackName
 
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
+
     ;(window.UPDATE_DATA?.tracks || []).forEach(track => {
+        if (activeTeam && activeTeam !== track.id) return;
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 if (item.id) {

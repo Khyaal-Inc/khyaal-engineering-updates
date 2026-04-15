@@ -96,8 +96,8 @@ function countShippedThisQuarter() {
 }
 
 function renderExecutiveSummary() {
-    let totalItems = 0, doneItems = 0, blockedItems = 0
-    UPDATE_DATA.tracks.forEach(track => {
+    let totalItems = 0, doneItems = 0, blockedItems = 0;
+    (UPDATE_DATA.tracks || []).forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 totalItems++
@@ -446,7 +446,7 @@ function renderTopRisks() {
     const atRiskOkrs = [];
 
     // Collect all blocked items with full context
-    UPDATE_DATA.tracks.forEach(track => {
+    (UPDATE_DATA.tracks || []).forEach(track => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 if (item.blocker || item.status === 'blocked') {

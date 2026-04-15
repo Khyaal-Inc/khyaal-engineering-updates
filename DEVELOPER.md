@@ -342,7 +342,7 @@ Tracks are the top-level project containers. Every item lives inside a track →
 UPDATE_DATA.tracks[trackIndex].subtracks[subtrackIndex].items[itemIndex]
 ```
 
-`getActiveTeam()` in `core.js` reads `#global-team-filter` value and returns the selected track name. All views use this to filter.
+`getActiveTeam()` in `core.js` reads `#global-team-filter` value and returns the selected track ID (e.g., 'platform', 'pulse'). All views use this to filter.
 
 ---
 
@@ -954,7 +954,7 @@ showHandoffToast('No sprint active', null, null, 3000)  // no CTA
 
 11. **`acceptanceCriteria` is string or array** — some items have it as a newline-separated string, others as an array. Always handle both: `Array.isArray(ac) ? ac.join('\n') : (ac || '')`.
 
-12. **`getActiveTeam()`** — reads from `#global-team-filter` by element ID. This works because the same element ID is used in the app bar after the redesign. If you ever rename the element, update `getActiveTeam()` in `core.js`.
+12. **`getActiveTeam()`** — reads from `#global-team-filter` by element ID. This returns the track ID (not the descriptive name). If you ever rename the element, update `getActiveTeam()` in `core.js`.
 
 ---
 

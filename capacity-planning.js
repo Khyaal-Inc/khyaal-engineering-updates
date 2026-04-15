@@ -26,7 +26,10 @@ function getCapacitySprints(maxClosed) {
 function buildCapacityMatrix(sprintIds) {
     const matrix = {} // { contributorName: { sprintId: { points, done, items } } }
 
+    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+
     ;(UPDATE_DATA.tracks || []).forEach(track => {
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach((item, ii) => {
                 if (!sprintIds.has(item.sprintId)) return

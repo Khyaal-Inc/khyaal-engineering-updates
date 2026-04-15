@@ -115,20 +115,59 @@ function renderOkrView() {
         }
     }
 
-    const allOkrs = UPDATE_DATA.metadata?.okrs || [];
-    const allEpics = UPDATE_DATA.metadata?.epics || [];
-    const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
+    const allOkrs = (UPDATE_DATA.metadata?.okrs || UPDATE_DATA.okrs || []);
+    const allEpics = (UPDATE_DATA.metadata?.epics || UPDATE_DATA.epics || []);
+    const activeTeamId = typeof getActiveTeam === 'function' ? getActiveTeam() : null;
+    const tracks = UPDATE_DATA.tracks || [];
 
-    // Filter OKRs by track: include an OKR if any of its linked epics belong to the active track
-    const trackEpicIds = activeTeam
-        ? new Set(allEpics.filter(e => !e.track || e.track === activeTeam).map(e => e.id))
-        : null
-    const okrs = trackEpicIds
-        ? allOkrs.filter(o =>
-            (o.keyResults || []).some(kr => kr.linkedEpic && trackEpicIds.has(kr.linkedEpic)) ||
-            allEpics.some(e => e.linkedOKR === o.id && trackEpicIds.has(e.id))
-          )
-        : allOkrs
+    // Helper for robust, strict track matching (Array-aware)
+    const isTrackMatch = (item, activeId) => {
+        if (!activeId) return true;
+        
+        // Normalize active ID
+        const target = activeId.toLowerCase().trim();
+
+        // 1. Check for multi-track array (new)
+        const itemTracks = item.tracks || [];
+        if (Array.isArray(itemTracks) && itemTracks.length > 0) {
+            if (itemTracks.some(t => {
+                const s = String(t).toLowerCase().trim();
+                if (s === target) return true;
+                const trackObj = (tracks || []).find(tr => tr.id.toLowerCase() === target);
+                if (trackObj && (trackObj.name.toLowerCase() === s || trackObj.name.toLowerCase().includes(s) || s.includes(trackObj.id))) return true;
+                return false;
+            })) return true;
+        }
+
+        // 2. Determine item's single track (fallback)
+        let source = (item.trackId || item.track || "").toLowerCase().trim();
+        
+        // OWNER FALLBACK: If track is missing, try to derive from owner
+        if (!source && item.owner) {
+            const owner = item.owner.toLowerCase();
+            if (owner.includes('platform')) source = 'platform';
+            else if (owner.includes('pulse')) source = 'pulse';
+            else if (owner.includes('devops')) source = 'devops';
+        }
+
+        // 3. Direct match (ID or mapped owner)
+        if (source === target) return true;
+
+        // 4. Fuzzy match against track name (e.g. "Pulse" matches "pulse")
+        const trackObj = tracks.find(t => t.id.toLowerCase() === target);
+        if (trackObj) {
+            const tName = trackObj.name.toLowerCase();
+            if (tName === source || tName.includes(source)) return true;
+            if (source.includes(trackObj.id)) return true;
+        }
+
+        return false;
+    };
+
+    // Filter OKRs by strict track assignment
+    const okrs = activeTeamId
+        ? allOkrs.filter(o => isTrackMatch(o, activeTeamId))
+        : allOkrs;
 
     const vision = UPDATE_DATA.metadata?.vision || '';
     const showManagement = (typeof shouldShowManagement === 'function') ? shouldShowManagement() : false;

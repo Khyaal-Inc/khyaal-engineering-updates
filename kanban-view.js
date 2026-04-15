@@ -41,7 +41,7 @@ function renderKanbanView() {
     const activeTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     const items = [];
     UPDATE_DATA.tracks.forEach((track, ti) => {
-        if (activeTeam && activeTeam !== track.name) return
+        if (activeTeam && activeTeam !== track.id) return
         track.subtracks.forEach((subtrack, si) => {
             subtrack.items.forEach((item, ii) => {
                 items.push({ ...item, track: track.name, trackIndex: ti, subtrackIndex: si, itemIndex: ii });
@@ -97,9 +97,9 @@ function renderKanbanView() {
         });
         swimlaneGroups = Object.values(groupsMap).filter(g => g.items.length > 0 || g.id !== 'unassigned');
     } else if (swimlane === 'track') {
-        UPDATE_DATA.tracks.forEach(t => swimlaneGroups.push({ id: t.name, title: t.name, items: [] }));
+        UPDATE_DATA.tracks.forEach(t => swimlaneGroups.push({ id: t.id, title: t.name, items: [] }));
         filteredItems.forEach(item => {
-            const group = swimlaneGroups.find(g => g.id === item.track);
+            const group = swimlaneGroups.find(g => g.id === item.trackId || g.title === item.track);
             if (group) group.items.push(item);
         });
     } else if (swimlane === 'contributor') {

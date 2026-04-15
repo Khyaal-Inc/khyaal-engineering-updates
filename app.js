@@ -45,10 +45,11 @@ function normalizeData() {
     const filterEl = document.getElementById('global-team-filter');
     if (filterEl && !filterEl.dataset.populated) {
         const tracks = (typeof getActiveTracks === 'function') ? getActiveTracks() : (UPDATE_DATA.tracks || [])
-        const trackNames = Array.from(new Set(tracks.filter(tr => tr.name).map(tr => tr.name)));
-        if (trackNames.length > 0) {
+        const validTracks = tracks.filter(tr => tr.name && tr.id);
+        if (validTracks.length > 0) {
             const currentVal = filterEl.value;
-            filterEl.innerHTML = '<option value="">🌍 All Tracks</option>' + trackNames.map(n => `<option value="${n}" ${n === currentVal ? 'selected' : ''}>${n}</option>`).join('');
+            filterEl.innerHTML = '<option value="">🌍 All Tracks</option>' + 
+                validTracks.map(tr => `<option value="${tr.id}" ${tr.id === currentVal ? 'selected' : ''}>${tr.name}</option>`).join('');
             filterEl.dataset.populated = "true";
         }
     }
@@ -62,7 +63,7 @@ function normalizeData() {
     }
 
     // 3. Ensure every item has a unique ID and common fields
-    UPDATE_DATA.tracks.forEach((track, trackIndex) => {
+    ;(UPDATE_DATA.tracks || []).forEach((track, trackIndex) => {
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach((item, index) => {
                 // Ensure unique ID
@@ -159,7 +160,10 @@ function renderDashboard() {
     };
 
     runSafe(renderWorkflowView, 'Workflow');
-    runSafe(renderDiscoveryView, 'Discovery');
+    const currentActiveView = window.currentActiveView || 'okr';
+    if (currentActiveView === 'ideation' || currentActiveView === 'spikes') {
+        runSafe(() => renderDiscoveryView(currentActiveView), 'Discovery');
+    }
     runSafe(renderTrackView, 'Track');
     runSafe(renderContributorView, 'Contributor');
     runSafe(renderStatusView, 'Status');
@@ -267,7 +271,7 @@ function syncMetadataToUI() {
 // Helper: Update backlog badge (needed for initial load)
 function updateBacklogBadge() {
     let count = 0;
-    UPDATE_DATA.tracks.forEach(t => {
+    ;(UPDATE_DATA.tracks || []).forEach(t => {
         const bl = t.subtracks.find(s => s.name === 'Backlog');
         if (bl) count += bl.items.length;
     });

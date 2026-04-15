@@ -75,8 +75,8 @@ function calculateCurrentSprintVelocity() {
 
     const _analyticsActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let planned = 0, completed = 0, inReview = 0, inProgress = 0
-    UPDATE_DATA.tracks.forEach(track => {
-        if (_analyticsActiveTeam && _analyticsActiveTeam !== track.name) return
+    ;(UPDATE_DATA.tracks || []).forEach(track => {
+        if (_analyticsActiveTeam && _analyticsActiveTeam !== track.id) return
         track.subtracks.forEach(sub => {
             sub.items.forEach(item => {
                 if (item.sprintId !== activeSprint.id) return
@@ -107,8 +107,8 @@ function renderKPICards() {
     const _kpiActiveTeam = typeof getActiveTeam === 'function' ? getActiveTeam() : null
     let activeItems = 0, completedItems = 0, inReviewItems = 0, blockedItems = 0
     let completedPoints = 0, inReviewPoints = 0
-    UPDATE_DATA.tracks.forEach(track => {
-        if (_kpiActiveTeam && _kpiActiveTeam !== track.name) return
+    ;(UPDATE_DATA.tracks || []).forEach(track => {
+        if (_kpiActiveTeam && _kpiActiveTeam !== track.id) return
         track.subtracks.forEach(subtrack => {
             subtrack.items.forEach(item => {
                 const pts = parseInt(item.storyPoints) || 0
@@ -176,7 +176,7 @@ function renderStrategicAnalyticsBanner() {
     // Formula: (Avg OKR Progress) / (Total Items Completed Ratio)
     let completedItems = 0;
     let totalItems = 0;
-    UPDATE_DATA.tracks.forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
+    ;(UPDATE_DATA.tracks || []).forEach(t => t.subtracks.forEach(s => s.items.forEach(i => {
         totalItems++;
         if (i.status === 'done') completedItems++;
     })));
